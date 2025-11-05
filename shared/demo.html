@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Auto Sniper - Tactical Demo</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="grid-overlay"></div>
+    <div class="app">
+      <!-- Left Rail -->
+      <aside class="app-rail">
+        <div class="rail-logo" title="Auto Sniper">
+          <span class="crosshair" style="color:var(--autosniper-accent)">
+            <span class="dot"></span>
+          </span>
+        </div>
+        <nav class="rail-nav">
+          <button class="rail-btn" aria-current="page" title="Overview" aria-label="Overview"></button>
+          <button class="rail-btn" title="Live Auctions" aria-label="Live Auctions"></button>
+          <button class="rail-btn" title="Watchlist" aria-label="Watchlist"></button>
+          <button class="rail-btn" title="Arbitrage" aria-label="Arbitrage"></button>
+          <button class="rail-btn" title="Sold-Comp" aria-label="Sold-Comp"></button>
+          <button class="rail-btn" title="Settings" aria-label="Settings"></button>
+        </nav>
+      </aside>
+
+      <!-- Top Bar -->
+      <header class="topbar">
+        <div class="row">
+          <div class="status-dot" title="Scanner online"></div>
+          <h1>SpecTech Tactical</h1>
+        </div>
+        <div class="search">
+          <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              fill="currentColor"
+              d="M21 20.3l-5.6-5.6a7.5 7.5 0 10-1.3 1.3L19.7 21 21 20.3zM4.5 10a5.5 5.5 0 1111 0a5.5 5.5 0 01-11 0z"
+            />
+          </svg>
+          <input placeholder="Search make, model, badge, rego..." />
+        </div>
+        <div class="right row">
+          <button class="btn btn-ghost">Docs</button>
+          <button class="btn btn-primary" id="arm-bid">Arm Auto-Bid</button>
+        </div>
+      </header>
+
+      <!-- Content -->
+      <main class="content">
+        <!-- KPI Row -->
+        <section class="kpi-row">
+          <div class="kpi">
+            <div class="label">Live auctions</div>
+            <div class="value mono">312</div>
+            <div class="delta up mono">+18 in last hour</div>
+          </div>
+          <div class="kpi">
+            <div class="label">Qualified leads</div>
+            <div class="value mono">47</div>
+            <div class="delta up mono">+6 today</div>
+          </div>
+          <div class="kpi">
+            <div class="label">Avg predicted margin</div>
+            <div class="value mono">$2,430</div>
+            <div class="delta down mono">-$120 vs 7-day</div>
+          </div>
+          <div class="kpi">
+            <div class="label">Next deadline</div>
+            <div class="value mono">T-12:44</div>
+            <div class="delta mono">2 ending in next 15m</div>
+          </div>
+        </section>
+
+        <!-- Filters + Timeline -->
+        <section class="card">
+          <div class="card-header">
+            <div class="row">
+              <div class="card-title">Scanner Filters</div>
+              <span class="card-subtle">Keep columns lean; open the row for full details</span>
+            </div>
+            <div class="row">
+              <button class="btn">Reset</button>
+              <button class="btn btn-primary">Apply</button>
+            </div>
+          </div>
+          <div class="card-body stack">
+            <div class="chips" id="filter-chips">
+              <button class="chip" aria-pressed="true">VIC</button>
+              <button class="chip" aria-pressed="false">NSW</button>
+              <button class="chip" aria-pressed="false">QLD</button>
+              <button class="chip" aria-pressed="false">Registered</button>
+              <button class="chip" aria-pressed="false">&lt; 150k km</button>
+              <button class="chip" aria-pressed="false">Ends &lt; 24h</button>
+              <button class="chip" aria-pressed="false">No major engine faults</button>
+            </div>
+
+            <div class="timeline">
+              <div class="time-pill">T-60m</div>
+              <div class="time-pill">T-45m</div>
+              <div class="time-pill active">T-30m</div>
+              <div class="time-pill">T-15m</div>
+              <div class="time-pill">T-00m</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Scanner Feed -->
+        <section class="card">
+          <div class="card-header">
+            <div class="card-title">Live Auctions</div>
+            <div class="row">
+              <span class="badge gold">Gold pick</span>
+              <span class="badge silver">Silver pick</span>
+              <span class="badge bronze">Bronze pick</span>
+            </div>
+          </div>
+          <div class="card-body table-wrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Ends In</th>
+                  <th>Make / Model</th>
+                  <th>Odo</th>
+                  <th>Reg</th>
+                  <th>Bid</th>
+                  <th>Our Max</th>
+                  <th>Pred. Margin</th>
+                  <th>Verdict</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="mono">T-12:44</td>
+                  <td>2019 VW Tiguan 132TSI Comfortline</td>
+                  <td class="mono">80,908 km</td>
+                  <td>VIC | Yes</td>
+                  <td class="mono">$18,200</td>
+                  <td class="mono">$19,950</td>
+                  <td class="mono text-profit">+$2,150</td>
+                  <td><span class="badge gold">Gold</span></td>
+                  <td class="right">
+                    <button class="btn btn-primary">Open</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="mono">T-27:10</td>
+                  <td>2013 Toyota Camry Altise</td>
+                  <td class="mono">230,674 km</td>
+                  <td>VIC | No</td>
+                  <td class="mono">$5,600</td>
+                  <td class="mono">$6,100</td>
+                  <td class="mono text-warn">+$450</td>
+                  <td><span class="badge bronze">Bronze</span></td>
+                  <td class="right">
+                    <button class="btn">Open</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="mono">T-41:22</td>
+                  <td>2017 Holden Colorado LS 4x4</td>
+                  <td class="mono">206,147 km</td>
+                  <td>VIC | Yes</td>
+                  <td class="mono">$17,400</td>
+                  <td class="mono">$18,300</td>
+                  <td class="mono text-loss">-$300</td>
+                  <td><span class="badge silver">Silver</span></td>
+                  <td class="right">
+                    <button class="btn btn-danger">Skip</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="card-footer">
+            <button class="btn">Prev</button>
+            <button class="btn btn-primary">Next</button>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- Modal -->
+    <dialog class="modal" id="autoBidModal">
+      <div class="dialog">
+        <div class="card-header">
+          <div class="card-title">Arm Auto-Bid</div>
+          <button class="btn btn-ghost" id="closeModal">Close</button>
+        </div>
+        <div class="card-body grid grid-2">
+          <label class="stack">
+            <span class="muted">Max bid (AUD)</span>
+            <input class="input mono" placeholder="19950" />
+          </label>
+          <label class="stack">
+            <span class="muted">Stop loss (AUD)</span>
+            <input class="input mono" placeholder="18500" />
+          </label>
+          <label class="stack">
+            <span class="muted">Time buffer (sec)</span>
+            <input class="input mono" placeholder="4" />
+          </label>
+          <label class="stack">
+            <span class="muted">Only Gold/Silver</span>
+            <input type="checkbox" class="checkbox" checked />
+          </label>
+        </div>
+        <div class="card-footer">
+          <button class="btn">Cancel</button>
+          <button class="btn btn-primary">Arm</button>
+        </div>
+      </div>
+    </dialog>
+
+    <script>
+      document.getElementById("filter-chips").addEventListener("click", (event) => {
+        if (event.target.classList.contains("chip")) {
+          const isPressed = event.target.getAttribute("aria-pressed") === "true";
+          event.target.setAttribute("aria-pressed", String(!isPressed));
+        }
+      });
+
+      const modal = document.getElementById("autoBidModal");
+      document.getElementById("arm-bid").addEventListener("click", () => modal.setAttribute("open", ""));
+      document.getElementById("closeModal").addEventListener("click", () => modal.removeAttribute("open"));
+      modal.addEventListener("click", (event) => {
+        if (event.target === modal) {
+          modal.removeAttribute("open");
+        }
+      });
+    </script>
+  </body>
+</html>

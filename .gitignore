@@ -13,3 +13,6 @@ __pycache__/
 tmp/
 tmp_*/
 error_*.html
+.vscode/
+status/
+tmp_ai_analysis.txt
