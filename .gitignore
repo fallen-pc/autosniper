@@ -12,3 +12,4 @@ __pycache__/
 .streamlit/secrets.toml
 tmp/
 tmp_*/
+error_*.html
