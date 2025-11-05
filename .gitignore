@@ -1,0 +1,14 @@
+.venv/
+.venv_backup/
+logs/
+CSV_data/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+*.env
+.env.local
+.streamlit/secrets.toml
+tmp/
+tmp_*/
