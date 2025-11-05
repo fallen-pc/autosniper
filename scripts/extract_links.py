@@ -1,11 +1,13 @@
+import re
+
+import pandas as pd
 import requests
 from bs4 import BeautifulSoup
-import pandas as pd
-import re
-import os
+
+from shared.data_loader import DATA_DIR
 
 BASE_URL = "https://www.grays.com/search/automotive-trucks-and-marine/motor-vehiclesmotor-cycles/motor-vehicles"
-OUTPUT_FILE = "CSV_data/all_vehicle_links.csv"  # Updated filename
+OUTPUT_FILE = DATA_DIR / "all_vehicle_links.csv"  # Updated filename
 
 def extract_all_vehicle_links():
     all_links = []
@@ -38,7 +40,7 @@ def extract_all_vehicle_links():
         all_links.extend(unique_links)
         page += 1
 
-    os.makedirs("CSV_data", exist_ok=True)
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
     df = pd.DataFrame(sorted(set(all_links)), columns=["url"])
     df.to_csv(OUTPUT_FILE, index=False)
     print(f"✅ Saved {len(df)} vehicle links to {OUTPUT_FILE}")

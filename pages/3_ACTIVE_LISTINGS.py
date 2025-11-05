@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 from openai import OpenAI
 
 from scripts.update_bids import update_bids
+from shared.data_loader import dataset_path, ensure_datasets_available
 from shared.styling import clean_html, display_banner, inject_global_styles
 
 if os.name == "nt":
@@ -39,8 +40,16 @@ else:
     load_dotenv()
 client = OpenAI()
 
-CSV_FILE = "CSV_data/vehicle_static_details.csv"
-VERDICT_FILE = "CSV_data/ai_verdicts.csv"
+missing = ensure_datasets_available(["vehicle_static_details.csv"])
+if missing:
+    st.error(
+        "Required dataset `vehicle_static_details.csv` is missing. "
+        "Configure `AUTOSNIPER_DATA_URL` or upload the CSV to `CSV_data/`."
+    )
+    st.stop()
+
+CSV_FILE = dataset_path("vehicle_static_details.csv")
+VERDICT_FILE = dataset_path("ai_verdicts.csv")
 
 if "skipped_urls" not in st.session_state:
     st.session_state.skipped_urls = []
@@ -57,7 +66,7 @@ def safe_text(value: object, default: str = "N/A") -> str:
 def shorten_condition(text: str, width: int = 160) -> str:
     if not text:
         return ""
-    return textwrap.shorten(text, width=width, placeholder="…")
+    return textwrap.shorten(text, width=width, placeholder="ΓÇª")
 
 
 def combine_odometer(row: pd.Series) -> str:
@@ -89,7 +98,7 @@ def render_listing_card(row: pd.Series, verdict_info: dict[str, str] | None = No
         vehicle_title = "Untitled listing"
     vehicle_url = row.get("url", "")
     link_html = (
-        f"<a class='autosniper-link autosniper-link-button' href='{vehicle_url}' target='_blank'>Open Listing ↗</a>"
+        f"<a class='autosniper-link autosniper-link-button' href='{vehicle_url}' target='_blank'>Open Listing Γåù</a>"
         if vehicle_url
         else ""
     )
@@ -188,7 +197,7 @@ def render_listing_card(row: pd.Series, verdict_info: dict[str, str] | None = No
 
 
 async def run_bid_update(links: list[str] | None = None) -> None:
-    with st.spinner("Updating bid and time data…"):
+    with st.spinner("Updating bid and time dataΓÇª"):
         df, skipped_urls = await update_bids(input_links=links)
         st.session_state.skipped_urls = skipped_urls
         if not df.empty:
@@ -228,7 +237,7 @@ def load_csv() -> pd.DataFrame:
     return pd.read_csv(CSV_FILE)
 
 
-if os.path.exists(CSV_FILE):
+if CSV_FILE.exists():
     df = load_csv()
 
     for col in df.select_dtypes(include="object").columns:
@@ -339,7 +348,7 @@ if os.path.exists(CSV_FILE):
 
     st.markdown(f"### {len(df)} Active Listings")
 
-    verdicts_df = pd.read_csv(VERDICT_FILE) if os.path.exists(VERDICT_FILE) else pd.DataFrame()
+    verdicts_df = pd.read_csv(VERDICT_FILE) if VERDICT_FILE.exists() else pd.DataFrame()
 
     if df.empty:
         st.info("No active listings match the current filters.")
@@ -375,5 +384,3 @@ if os.path.exists(CSV_FILE):
                         else:
                             st.error("Failed to parse AI response.")
                             st.code(result["raw"])
-else:
-    st.warning("vehicle_static_details.csv not found.")

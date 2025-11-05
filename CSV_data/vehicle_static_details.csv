@@ -1,4 +1,4 @@
 url,year,make,model,variant,price,bids,time_remaining_or_date_sold,odometer_reading,odometer_unit,location,body_type,transmission,engine_size,general_condition,no_of_plates,status
-https://www.grays.com/lot/12345-2021-toyota-hilux,2021,Toyota,HiLux,SR5,"$45,000",3,"1d 4h 20m",35000,km,VIC,Utility,Automatic,2.8L,"Drives well. Minor scratches on tub.",1,active
-https://www.grays.com/lot/24567-2018-hyundai-i30,2018,Hyundai,i30,Premium,"$16,500",5,"18h 15m",62000,km,NSW,Hatchback,Automatic,1.6L,"Excellent service history; two keys.",2,active
-https://www.grays.com/lot/38901-2015-subaru-outback,2015,Subaru,Outback,2.5i,"$12,750",7,"Sold 2024-09-02",98000,km,VIC,Wagon,Automatic,2.5L,"Engine replaced 10k km ago.",0,sold
+https://www.grays.com/lot/12345-2021-toyota-hilux,2021,Toyota,HiLux,SR5,45000,3,1d 4h 20m,35000,km,VIC,Utility,Automatic,2.8L,Drives well. Minor scratches on tub.,1,active
+https://www.grays.com/lot/24567-2018-hyundai-i30,2018,Hyundai,i30,Premium,16500,5,18h 15m,62000,km,NSW,Hatchback,Automatic,1.6L,Excellent service history; two keys.,2,active
+https://www.grays.com/lot/38901-2015-subaru-outback,2015,Subaru,Outback,2.5i,12750,7,Sold 2024-09-02,98000,km,VIC,Wagon,Automatic,2.5L,Engine replaced 10k km ago.,0,sold

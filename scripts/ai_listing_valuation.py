@@ -9,8 +9,10 @@ import pandas as pd
 from dotenv import load_dotenv, find_dotenv
 from openai import OpenAI
 
+from shared.data_loader import DATA_DIR
 
-AI_RESULTS_PATH = Path("CSV_data") / "ai_listing_valuations.csv"
+
+AI_RESULTS_PATH = DATA_DIR / "ai_listing_valuations.csv"
 REQUIRED_COLUMNS = [
     "url",
     "analysis_timestamp",

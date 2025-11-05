@@ -21,6 +21,7 @@ from scripts.ai_listing_valuation import (
     update_manual_carsales_data,
 )
 from scripts.update_bids import update_bids
+from shared.data_loader import ensure_datasets_available
 from shared.styling import clean_html, display_banner, inject_global_styles
 
 if os.name == "nt":
@@ -42,6 +43,22 @@ st.markdown(
     "<p class='autosniper-tagline'>Blend AI valuations with live market data to rank the sharpest buying opportunities.</p>",
     unsafe_allow_html=True,
 )
+
+required_files = [
+    "vehicle_static_details.csv",
+    "active_vehicle_details.csv",
+    "ai_verdicts.csv",
+    "ai_listing_valuations.csv",
+    "sold_cars.csv",
+]
+missing = ensure_datasets_available(required_files)
+if missing:
+    st.error(
+        "Missing required datasets: "
+        + ", ".join(missing)
+        + ". Configure `AUTOSNIPER_DATA_URL` or upload the files to `CSV_data/`."
+    )
+    st.stop()
 
 MANUAL_COLS = [
     "manual_carsales_count",

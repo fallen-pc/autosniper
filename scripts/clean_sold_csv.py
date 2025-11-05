@@ -7,8 +7,10 @@ from pathlib import Path
 
 import pandas as pd
 
+from shared.data_loader import DATA_DIR
 
-CSV_PATH = Path("CSV_data") / "sold_cars.csv"
+
+CSV_PATH = DATA_DIR / "sold_cars.csv"
 DEDUP_BACKUP_PATH = CSV_PATH.with_suffix(".csv.bak")
 
 

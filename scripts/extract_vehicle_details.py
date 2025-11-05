@@ -1,17 +1,20 @@
 import asyncio
 import os
 import re
+import shutil
+import tempfile
+
 import pandas as pd
 from bs4 import BeautifulSoup
 from playwright.async_api import async_playwright
-import tempfile
-import shutil
+
+from shared.data_loader import DATA_DIR
 
 # ─── File Paths ────────────────────────────────────────────────
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, ".."))
-INPUT_FILE = os.path.join(ROOT_DIR, "CSV_data", "all_vehicle_links.csv")
-OUTPUT_FILE = os.path.join(ROOT_DIR, "CSV_data", "vehicle_static_details.csv")
+INPUT_FILE = str(DATA_DIR / "all_vehicle_links.csv")
+OUTPUT_FILE = str(DATA_DIR / "vehicle_static_details.csv")
 SKIPPED_LOG = os.path.join(ROOT_DIR, "logs", "skipped_links.txt")
 
 # ─── Schema Field Order ───────────────────────────────────

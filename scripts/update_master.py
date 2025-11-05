@@ -1,13 +1,16 @@
-import pandas as pd
 import os
-import tempfile
 import shutil
+import tempfile
+
+import pandas as pd
+
+from shared.data_loader import DATA_DIR
 
 # File paths
-DETAILS_FILE = "CSV_data/vehicle_static_details.csv"
-SOLD_FILE = "CSV_data/sold_cars.csv"
-REFERRED_FILE = "CSV_data/referred_cars.csv"
-ACTIVE_FILE = "CSV_data/active_vehicle_details.csv"
+DETAILS_FILE = str(DATA_DIR / "vehicle_static_details.csv")
+SOLD_FILE = str(DATA_DIR / "sold_cars.csv")
+REFERRED_FILE = str(DATA_DIR / "referred_cars.csv")
+ACTIVE_FILE = str(DATA_DIR / "active_vehicle_details.csv")
 
 def update_master_database():
     if not os.path.exists(DETAILS_FILE):

@@ -2,11 +2,10 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-
 import pandas as pd
 import streamlit as st
 
+from shared.data_loader import dataset_path, ensure_datasets_available
 from shared.styling import clean_html, display_banner, inject_global_styles, section_heading
 
 
@@ -33,11 +32,15 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-CSV_FILE = Path("CSV_data/vehicle_static_details.csv")
-if not CSV_FILE.exists():
-    st.error("`CSV_data/vehicle_static_details.csv` was not found. Run the extractor to populate the dataset.")
+missing = ensure_datasets_available(["vehicle_static_details.csv"])
+if missing:
+    st.error(
+        "Required dataset `vehicle_static_details.csv` is missing. "
+        "Configure `AUTOSNIPER_DATA_URL` or upload the CSV to `CSV_data/`."
+    )
     st.stop()
 
+CSV_FILE = dataset_path("vehicle_static_details.csv")
 df = pd.read_csv(CSV_FILE)
 
 if df.empty:

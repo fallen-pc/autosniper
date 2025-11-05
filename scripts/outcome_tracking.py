@@ -8,9 +8,10 @@ import pandas as pd
 
 from scripts.ai_listing_valuation import load_cached_results
 from scripts.ai_price_analysis import load_historical_sales
+from shared.data_loader import DATA_DIR
 
 
-SCORING_DIR = Path("CSV_data")
+SCORING_DIR = DATA_DIR
 SCORING_PATH = SCORING_DIR / "scored_listings.csv"
 ENRICHED_PATH = SCORING_DIR / "scored_listings_enriched.csv"
 WEEKLY_METRICS_PATH = SCORING_DIR / "model_accuracy_weekly.csv"

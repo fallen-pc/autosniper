@@ -3,6 +3,7 @@ import os
 import pandas as pd
 import streamlit as st
 
+from shared.data_loader import dataset_path
 from shared.styling import clean_html, display_banner, inject_global_styles
 
 
@@ -23,7 +24,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-CSV_PATH = "CSV_data/all_vehicle_links.csv"
+CSV_PATH = dataset_path("all_vehicle_links.csv")
 
 if st.button("Run link scraper"):
     with st.spinner("Scraping vehicle links from Grays…"):
@@ -33,7 +34,7 @@ if st.button("Run link scraper"):
         else:
             st.error("Script failed. Check the terminal output for details.")
 
-if os.path.exists(CSV_PATH):
+if CSV_PATH.exists():
     df = pd.read_csv(CSV_PATH)
     summary_html = clean_html(
         f"""

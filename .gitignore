@@ -12,6 +12,7 @@ CSV_data/*
 !CSV_data/ai_analysis_ready/
 CSV_data/ai_analysis_ready/*
 !CSV_data/ai_analysis_ready/sample_sales.csv
+CSV_data/.remote_sync.json
 __pycache__/
 *.pyc
 *.pyo

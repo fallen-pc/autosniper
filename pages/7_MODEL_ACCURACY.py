@@ -3,6 +3,7 @@ import pandas as pd
 import streamlit as st
 
 from scripts.outcome_tracking import compute_outcome_metrics
+from shared.data_loader import ensure_datasets_available
 from shared.styling import clean_html, display_banner, inject_global_styles
 
 
@@ -22,6 +23,20 @@ st.markdown(
     "<p class='autosniper-tagline'>See how well predictions lined up with real-world results so you can tighten bids and confidence bands.</p>",
     unsafe_allow_html=True,
 )
+
+required_files = [
+    "ai_listing_valuations.csv",
+    "sold_cars.csv",
+    "ai_verdicts.csv",
+]
+missing = ensure_datasets_available(required_files)
+if missing:
+    st.error(
+        "Missing required datasets: "
+        + ", ".join(missing)
+        + ". Configure `AUTOSNIPER_DATA_URL` or upload the files to `CSV_data/`."
+    )
+    st.stop()
 
 
 def _format_currency(value: float | None) -> str:

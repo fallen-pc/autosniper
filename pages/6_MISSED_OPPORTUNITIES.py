@@ -3,6 +3,7 @@ import streamlit as st
 
 from scripts.ai_listing_valuation import load_cached_results
 from scripts.ai_price_analysis import load_historical_sales
+from shared.data_loader import ensure_datasets_available
 from shared.styling import clean_html, display_banner, inject_global_styles
 
 
@@ -21,6 +22,16 @@ st.markdown(
     "<p class='autosniper-tagline'>Spot the listings that got away so you can refine bidding rules and sourcing playbooks.</p>",
     unsafe_allow_html=True,
 )
+
+required_files = ["ai_listing_valuations.csv", "sold_cars.csv"]
+missing = ensure_datasets_available(required_files)
+if missing:
+    st.error(
+        "Missing required datasets for analysis: "
+        + ", ".join(missing)
+        + ". Configure `AUTOSNIPER_DATA_URL` or upload the files to `CSV_data/`."
+    )
+    st.stop()
 
 
 @st.cache_data(ttl=300)

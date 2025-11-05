@@ -1,9 +1,11 @@
 import os
+from pathlib import Path
 from typing import Iterable
 
 import pandas as pd
 import streamlit as st
 
+from shared.data_loader import dataset_path, ensure_datasets_available
 from shared.styling import clean_html, display_banner, inject_global_styles
 
 
@@ -23,9 +25,23 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-DETAILS_FILE = "CSV_data/vehicle_static_details.csv"
-SOLD_FILE = "CSV_data/sold_cars.csv"
-REFERRED_FILE = "CSV_data/referred_cars.csv"
+required_files = [
+    "vehicle_static_details.csv",
+    "sold_cars.csv",
+    "referred_cars.csv",
+]
+missing = ensure_datasets_available(required_files)
+if missing:
+    st.error(
+        "Missing required datasets: "
+        + ", ".join(missing)
+        + ". Configure `AUTOSNIPER_DATA_URL` or upload the files to `CSV_data/`."
+    )
+    st.stop()
+
+DETAILS_FILE = dataset_path("vehicle_static_details.csv")
+SOLD_FILE = dataset_path("sold_cars.csv")
+REFERRED_FILE = dataset_path("referred_cars.csv")
 
 
 def render_dataset(title: str, file_path: str, columns: Iterable[str] | None = None) -> None:
@@ -68,8 +84,9 @@ if st.button("Update Master Database"):
 
 
 @st.cache_data(ttl=0)
-def load_csv(file_path: str) -> pd.DataFrame:
-    return pd.read_csv(file_path) if os.path.exists(file_path) else pd.DataFrame()
+def load_csv(file_path: Path | str) -> pd.DataFrame:
+    path = Path(file_path)
+    return pd.read_csv(path) if path.exists() else pd.DataFrame()
 
 
 render_dataset(

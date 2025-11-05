@@ -10,11 +10,13 @@ from datetime import datetime
 import random
 import logging
 
+from shared.data_loader import DATA_DIR
+
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-CSV_FILE = "CSV_data/vehicle_static_details.csv"
+CSV_FILE = str(DATA_DIR / "vehicle_static_details.csv")
 SKIPPED_LOG = "logs/skipped_links.txt"
 PROGRESS_FILE = "logs/update_progress.txt"
 

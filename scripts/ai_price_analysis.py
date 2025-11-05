@@ -1,16 +1,18 @@
 import re
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Iterable, List, Optional
 
 import pandas as pd
 from difflib import SequenceMatcher
+from pathlib import Path
+
+from shared.data_loader import DATA_DIR
 
 
-ACTIVE_PRIMARY_PATH = Path("CSV_data") / "vehicle_static_details.csv"
-ACTIVE_FALLBACK_PATH = Path("CSV_data") / "active_vehicle_details.csv"
-BASE_SOLD_PATH = Path("CSV_data") / "sold_cars.csv"
-SOLD_ARCHIVE_DIR = Path("CSV_data") / "ai_analysis_ready"
+ACTIVE_PRIMARY_PATH = DATA_DIR / "vehicle_static_details.csv"
+ACTIVE_FALLBACK_PATH = DATA_DIR / "active_vehicle_details.csv"
+BASE_SOLD_PATH = DATA_DIR / "sold_cars.csv"
+SOLD_ARCHIVE_DIR = DATA_DIR / "ai_analysis_ready"
 
 
 @dataclass

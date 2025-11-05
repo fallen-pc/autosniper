@@ -3,6 +3,7 @@ import os
 import pandas as pd
 import streamlit as st
 
+from shared.data_loader import dataset_path
 from shared.styling import clean_html, display_banner, inject_global_styles
 
 
@@ -23,11 +24,11 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-LINKS_FILE = "CSV_data/all_vehicle_links.csv"
-OUTPUT_FILE = "CSV_data/vehicle_static_details.csv"
+LINKS_FILE = dataset_path("all_vehicle_links.csv")
+OUTPUT_FILE = dataset_path("vehicle_static_details.csv")
 
 if st.button("Run detail scraper"):
-    if not os.path.exists(LINKS_FILE):
+    if not LINKS_FILE.exists():
         st.error("The links CSV is missing. Collect links before running the detail scraper.")
     else:
         with st.spinner("Extracting vehicle details from Grays listings…"):
@@ -37,7 +38,7 @@ if st.button("Run detail scraper"):
             else:
                 st.error("Script failed. Check the terminal or logs for more information.")
 
-if os.path.exists(OUTPUT_FILE):
+if OUTPUT_FILE.exists():
     try:
         df = pd.read_csv(OUTPUT_FILE)
     except Exception as exc:  # noqa: BLE001
