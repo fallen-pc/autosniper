@@ -1,0 +1,446 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Count 8 /Kids [5 0 R 7 0 R 9 0 R 11 0 R 13 0 R 15 0 R 17 0 R 19 0 R] >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+4 0 obj
+<< /Length 918 >>
+stream
+BT
+/F1 18 Tf
+20 TL
+1 0 0 1 72 720 Tm
+(1. Link Extractor) Tj
+/F1 12 Tf
+15 TL
+T*
+(Purpose) Tj
+T*
+(Collect a clean list of every active Grays auction URL so downstream scrapers and dashboards) Tj
+T*
+(always start from a consistent queue of listings.) Tj
+T*
+T*
+(Key capabilities) Tj
+T*
+(• Runs `scripts/extract_links.py` when the **Run link scraper** button is pressed and) Tj
+T*
+(  surfaces immediate success / failure feedback in the UI.) Tj
+T*
+(• Counts the rows in `CSV_data/all_vehicle_links.csv` and previews the first 20 links so you) Tj
+T*
+(  know what was captured in the latest crawl.) Tj
+T*
+T*
+(Data flow) Tj
+T*
+(→ Input: none — the scraper hits Grays directly.) Tj
+T*
+(→ Output: `CSV_data/all_vehicle_links.csv` \(listing URL, title, metadata\).) Tj
+T*
+T*
+(Notes) Tj
+T*
+(– Kick this page off whenever you want to refresh the entire discovery pipeline before) Tj
+T*
+(  running deeper scrapes.) Tj
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 4 0 R >>
+endobj
+6 0 obj
+<< /Length 1013 >>
+stream
+BT
+/F1 18 Tf
+20 TL
+1 0 0 1 72 720 Tm
+(2. Vehicle Detail Extractor) Tj
+/F1 12 Tf
+15 TL
+T*
+(Purpose) Tj
+T*
+(Expand each tracked link into a fully structured record that captures specs, condition) Tj
+T*
+(notes, pricing, and other static context for the Active Listings dashboard.) Tj
+T*
+T*
+(Key capabilities) Tj
+T*
+(• Guards against missing link data — if `all_vehicle_links.csv` does not exist the page) Tj
+T*
+(  blocks you from running the detail scraper and surfaces an error state.) Tj
+T*
+(• Runs `scripts/extract_vehicle_details.py`, then previews up to 50 rows from) Tj
+T*
+(  `vehicle_static_details.csv` along with a total count so you can sanity-check the pull.) Tj
+T*
+T*
+(Data flow) Tj
+T*
+(→ Input: `CSV_data/all_vehicle_links.csv` \(required\).) Tj
+T*
+(→ Output: `CSV_data/vehicle_static_details.csv` \(master spec sheet for each listing\).) Tj
+T*
+T*
+(Notes) Tj
+T*
+(– Use this immediately after refreshing the link list so the remaining tools have up-to-date) Tj
+T*
+(  vehicle snapshots.) Tj
+ET
+endstream
+endobj
+7 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 6 0 R >>
+endobj
+8 0 obj
+<< /Length 1535 >>
+stream
+BT
+/F1 18 Tf
+20 TL
+1 0 0 1 72 720 Tm
+(3. Active Listings Dashboard) Tj
+/F1 12 Tf
+15 TL
+T*
+(Purpose) Tj
+T*
+(Serve as the mission control for live auctions: filter noisy stock, refresh bid data, and) Tj
+T*
+(optionally trigger GPT-powered profit checks per vehicle.) Tj
+T*
+T*
+(Key capabilities) Tj
+T*
+(• Loads `vehicle_static_details.csv`, enforces that only `status == 'active'` records) Tj
+T*
+(  remain, and displays listing cards grouped by time-to-close buckets \(<24h) Tj
+T*
+(• 1-2d) Tj
+T*
+(• 2-3d) Tj
+T*
+(• 3+d\).) Tj
+T*
+(• Sidebar filters hide engine defect notes, unregistered vehicles, and/or anything outside) Tj
+T*
+(  Victoria so buyers can focus on viable stock.) Tj
+T*
+(• Provides **Refresh Active Listings** and **Refresh Visible Listings** actions that call) Tj
+T*
+(  `scripts.update_bids.update_bids` \(optionally limited to the filtered URLs\).) Tj
+T*
+(• Each card exposes a Run AI Analysis button. The handler sends the row through the OpenAI) Tj
+T*
+(  chat API, parses a JSON resale verdict, and persists the result in) Tj
+T*
+(  `CSV_data/ai_verdicts.csv` for future sessions.) Tj
+T*
+T*
+(Data flow) Tj
+T*
+(→ Inputs: `vehicle_static_details.csv` plus optional `ai_verdicts.csv` for overlaying prior) Tj
+T*
+(  AI recommendations.) Tj
+T*
+(→ Outputs: updated `vehicle_static_details.csv` \(bid/time refreshes\) and appended) Tj
+T*
+(  `ai_verdicts.csv` rows when new analyses run.) Tj
+T*
+T*
+(Notes) Tj
+T*
+(– Skipped URLs from bid refreshes are cached in-session so you can retry only the failures.) Tj
+ET
+endstream
+endobj
+9 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 8 0 R >>
+endobj
+10 0 obj
+<< /Length 1071 >>
+stream
+BT
+/F1 18 Tf
+20 TL
+1 0 0 1 72 720 Tm
+(4. Master Database Overview) Tj
+/F1 12 Tf
+15 TL
+T*
+(Purpose) Tj
+T*
+(Provide a quick audit of every lifecycle stage — active listings, sold stock, and referred) Tj
+T*
+(vehicles — without jumping between CSVs.) Tj
+T*
+T*
+(Key capabilities) Tj
+T*
+(• Verifies the presence of `vehicle_static_details.csv`, `sold_cars.csv`, and) Tj
+T*
+(  `referred_cars.csv` before rendering so you catch missing exports early.) Tj
+T*
+(• Exposes an **Update Master Database** button that runs `scripts/update_master.py` and) Tj
+T*
+(  clears Streamlit caches so fresh data is immediately visible.) Tj
+T*
+(• Uses a reusable renderer to show record counts plus up to 200-row previews for the Active,) Tj
+T*
+(  Sold, and Referred datasets \(with the most relevant columns per table\).) Tj
+T*
+T*
+(Data flow) Tj
+T*
+(→ Inputs: the three CSV snapshots mentioned above.) Tj
+T*
+(→ Output: refreshed CSVs when `update_master.py` is executed.) Tj
+T*
+T*
+(Notes) Tj
+T*
+(– Any missing columns are explicitly flagged so schema drift is easy to spot.) Tj
+ET
+endstream
+endobj
+11 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 10 0 R >>
+endobj
+12 0 obj
+<< /Length 1837 >>
+stream
+BT
+/F1 18 Tf
+20 TL
+1 0 0 1 72 720 Tm
+(5. AI Pricing Analysis) Tj
+/F1 12 Tf
+15 TL
+T*
+(Purpose) Tj
+T*
+(Blend rule-based pricing heuristics, historical sale comps, manual Carsales research, and) Tj
+T*
+(GPT valuations to prioritise listings finishing soon.) Tj
+T*
+T*
+(Key capabilities) Tj
+T*
+(• Requires a rich data stack \(`vehicle_static_details.csv`, `active_vehicle_details.csv`,) Tj
+T*
+(  `ai_verdicts.csv`, `ai_listing_valuations.csv`, and `sold_cars.csv`\) so comparisons always) Tj
+T*
+(  combine the latest auction context with historical baselines.) Tj
+T*
+(• Lets you focus on a time window \(24/48/72h\) plus reuse the Active Listings filters to hide) Tj
+T*
+(  engine issues, unregistered stock, or non-VIC locations.) Tj
+T*
+(• Calculates median discounts versus comparable sales, surfaces the most underpriced cars in) Tj
+T*
+(  one tab, and routes listings with no comps into a second review queue.) Tj
+T*
+(• Inside each listing panel you can refresh bid data, run or re-run the Carsales-oriented) Tj
+T*
+(  GPT valuation \(`scripts.ai_listing_valuation.run_ai_listing_analysis`\), and capture manual) Tj
+T*
+(  Carsales research \(instant offer, sell range, comps table, recent sales\).) Tj
+T*
+(• AI verdict widgets show Carsales estimate, recommended max bid, expected profit, and any) Tj
+T*
+(  qualitative confidence notes saved in the cache.) Tj
+T*
+T*
+(Data flow) Tj
+T*
+(→ Inputs: active auction snapshots, historical sold data, cached AI Carsales checks, and) Tj
+T*
+(  operator-entered Carsales estimates.) Tj
+T*
+(→ Outputs: updated `ai_listing_valuations.csv` plus refreshed bid data when you trigger) Tj
+T*
+(  updates from the page.) Tj
+T*
+T*
+(Notes) Tj
+T*
+(– The page stores manual Carsales inputs per URL in `st.session_state` so partially entered) Tj
+T*
+(  values persist while you compare vehicles.) Tj
+ET
+endstream
+endobj
+13 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 12 0 R >>
+endobj
+14 0 obj
+<< /Length 992 >>
+stream
+BT
+/F1 18 Tf
+20 TL
+1 0 0 1 72 720 Tm
+(6. Missed Opportunities) Tj
+/F1 12 Tf
+15 TL
+T*
+(Purpose) Tj
+T*
+(Cross-check recent sale prices against the manual Carsales valuations to highlight deals) Tj
+T*
+(that should have been bought.) Tj
+T*
+T*
+(Key capabilities) Tj
+T*
+(• Loads cached Carsales tables and `sold_cars.csv`, filters to sold records, and computes) Tj
+T*
+(  the profit gap between the manual average price and the actual hammer price.) Tj
+T*
+(• Shows the top three gaps as callouts plus a full table with currency-formatted pricing and) Tj
+T*
+(  odometer stats so you can review the evidence.) Tj
+T*
+T*
+(Data flow) Tj
+T*
+(→ Inputs: `ai_listing_valuations.csv` \(for manual Carsales data\) and `sold_cars.csv`.) Tj
+T*
+(→ Output: in-app leaderboard of positive profit deltas for post-mortems.) Tj
+T*
+T*
+(Notes) Tj
+T*
+(– Every calculation normalises the saved text values into numeric form, so even loosely) Tj
+T*
+(  structured Carsales notes can be compared objectively.) Tj
+ET
+endstream
+endobj
+15 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 14 0 R >>
+endobj
+16 0 obj
+<< /Length 1178 >>
+stream
+BT
+/F1 18 Tf
+20 TL
+1 0 0 1 72 720 Tm
+(7. Outcome Accuracy Tracker) Tj
+/F1 12 Tf
+15 TL
+T*
+(Purpose) Tj
+T*
+(Measure how well AI predictions performed once vehicles settled, broken down by time,) Tj
+T*
+(verdict tier, and individual misses.) Tj
+T*
+T*
+(Key capabilities) Tj
+T*
+(• Requires `ai_listing_valuations.csv`, `sold_cars.csv`, and `ai_verdicts.csv`, then calls) Tj
+T*
+(  `scripts.outcome_tracking.compute_outcome_metrics\(\)` to assemble joined datasets.) Tj
+T*
+(• Displays aggregate KPIs \(scored listings, accuracy, MAE, MAPE, profit calibration\) plus) Tj
+T*
+(  Altair charts for weekly hit rates and accuracy by verdict tier.) Tj
+T*
+(• Provides a detailed Worst Misses table and download buttons for the scored listings,) Tj
+T*
+(  weekly metrics, and verdict metrics CSVs so analysts can dig deeper offline.) Tj
+T*
+T*
+(Data flow) Tj
+T*
+(→ Inputs: joined AI verdicts, pricing analyses, and sold outcomes.) Tj
+T*
+(→ Outputs: exported CSVs for accuracy tracking and on-screen diagnostics.) Tj
+T*
+T*
+(Notes) Tj
+T*
+(– Metrics update inside a spinner whenever the page loads to keep the accuracy dashboard) Tj
+T*
+(  consistent with the freshest data on disk.) Tj
+ET
+endstream
+endobj
+17 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 16 0 R >>
+endobj
+18 0 obj
+<< /Length 671 >>
+stream
+BT
+/F1 18 Tf
+20 TL
+1 0 0 1 72 720 Tm
+(99. Style Guide & Template) Tj
+/F1 12 Tf
+15 TL
+T*
+(Purpose) Tj
+T*
+(Act as a living design system so new Streamlit pages stay on brand without guesswork.) Tj
+T*
+T*
+(Key capabilities) Tj
+T*
+(• Applies the shared global CSS tokens, displays the AutoSniper colour palette with token) Tj
+T*
+(  names, and demonstrates responsive grid layouts, cards, and button styles.) Tj
+T*
+(• Provides copy-ready HTML snippets \(banner, palette, button rows\) developers can reuse when) Tj
+T*
+(  building future tooling pages.) Tj
+T*
+T*
+(Notes) Tj
+T*
+(– Use this page as a reference when adding UI polish or troubleshooting layout spacing.) Tj
+ET
+endstream
+endobj
+19 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 18 0 R >>
+endobj
+xref
+0 20
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000162 00000 n 
+0000000232 00000 n 
+0000001201 00000 n 
+0000001327 00000 n 
+0000002392 00000 n 
+0000002518 00000 n 
+0000004105 00000 n 
+0000004231 00000 n 
+0000005355 00000 n 
+0000005483 00000 n 
+0000007373 00000 n 
+0000007501 00000 n 
+0000008545 00000 n 
+0000008673 00000 n 
+0000009904 00000 n 
+0000010032 00000 n 
+0000010755 00000 n 
+trailer
+<< /Size 20 /Root 1 0 R >>
+startxref
+10883
+%%EOF
