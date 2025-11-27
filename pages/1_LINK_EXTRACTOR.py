@@ -45,6 +45,6 @@ if CSV_PATH.exists():
         """
     )
     st.markdown(summary_html, unsafe_allow_html=True)
-    st.dataframe(df.head(20), use_container_width=True)
+    st.dataframe(df.head(20), width="stretch")
 else:
     st.info("Run the scraper to generate the latest list of vehicle links.")

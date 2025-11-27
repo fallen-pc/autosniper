@@ -56,6 +56,6 @@ if OUTPUT_FILE.exists():
                 """
             )
             st.markdown(summary_html, unsafe_allow_html=True)
-            st.dataframe(df.head(50), use_container_width=True)
+        st.dataframe(df.head(50), width="stretch")
 else:
     st.info("Run the detail scraper to populate the vehicle dataset.")

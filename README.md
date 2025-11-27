@@ -1,177 +1,149 @@
-# 🚗 AutoSniper2 – AI-Driven Car Auction Profit Tool
+# AutoSniper 2
 
-AutoSniper2 is a Streamlit-based web application that helps users analyze and track used car auctions (primarily from Grays.com.au) to identify vehicles that can be purchased at a profit and resold. It uses AI to predict profitable purchase prices and visually presents each listing with real-time bid and time data.
+Streamlit dashboard and automation toolkit for monitoring Australian vehicle auctions.
 
----
-
-## 🧠 What It Does
-
-- Scrapes and displays current **active vehicle auctions**
-- Lets users **trigger AI analysis per vehicle** to estimate:
-  - Resale value
-  - Maximum profitable bid
-  - Estimated profit margin
-- Tracks and displays these results visually in the dashboard
-- Groups listings into auction time buckets (`<24h`, `1–2d`, `2–3d`, `3+d`)
-- Lets users filter vehicles (e.g., hide engine defects, unregistered, non-VIC)
-- Maintains data between sessions via `.csv` files
+The app reads lightweight CSV datasets, displays live inventory, and lets analysts trigger
+AI valuations for interesting cars. Scraping/refresh scripts live alongside the UI so the
+whole workflow can be shared on GitHub and hosted on Streamlit Cloud.
 
 ---
 
-## 🚀 Setup Instructions
+## Features
+- **Streamlit dashboard** (`DASHBOARD.py` & `pages/`) showing status metrics and detailed listings.
+- **Data bundle loader** (`shared/data_loader.py`) that optionally pulls CSVs from a remote ZIP.
+- **Scrapers** for Grays (production) and Exploratory Autotrader utilities under `scripts/` and `autotrader/`.
+- **AI enrichment** via OpenAI for vehicle valuations (`scripts/ai_listing_valuation.py`, Streamlit actions).
 
-1. **Install Python (3.10–3.12 recommended)**  
-   Download from https://www.python.org/downloads/
+---
 
-2. **Download this project** (ZIP or Git)
+## Local Development
 
-3. **Open a terminal** in the root folder
+> **Windows tip:** create the virtual environment with the Windows Python so Streamlit
+> resolves to `.\.venv\Scripts\python.exe`. A previous WSL venv (`.venv_wsl/`) is kept only
+> for experimentation and is ignored by Git.
 
-4. **Create and activate a virtual environment**:
-   ```bash
-   python -m venv .venv
-   .venv\Scripts\activate
+1. **Install Python 3.11+** from [python.org](https://www.python.org/downloads/).
+2. **Clone the repo** and open PowerShell in the project root.
+3. **Create & activate the venv**
+   ```powershell
+   py -3 -m venv .venv
+   .\.venv\Scripts\Activate.ps1
+   ```
+4. **Install dependencies**
+   ```powershell
+   python -m pip install --upgrade pip
+   python -m pip install -r requirements.txt
+   ```
+5. **Configure environment (optional)**
+   - Copy `.env.local` to `.streamlit/secrets.toml` or set environment variables directly.
+   - For remote data bundles (see below) set `AUTOSNIPER_DATA_URL`.
+6. **Run the dashboard**
+   ```powershell
+   streamlit run DASHBOARD.py
+   ```
 
-pip install -r requirements.txt
+---
 
-OPENAI_API_KEY=sk-xxxxxxx...
+## Dataset Management
 
-streamlit run app.py
+`CSV_data/` holds the working datasets. A `.gitignore` allowlist keeps the key files under
+version control so Streamlit Cloud receives them by default:
 
-autosniper2/
-│
-├── app.py                        ← Main Streamlit entrypoint
-├── pages/
-│   ├── ACTIVE LISTINGS.py        ← Displays live auction data + AI buttons
-│   └── ai_analysis_page.py       ← Tabs of completed AI analysis results
-│
-├── scripts/
-│   └── update_bids.py            ← Script to update time and bid info (called from UI)
-│
-├── CSV_data/
-│   ├── vehicle_static_details.csv ← Base data of all listings
-│   ├── ai_verdicts.csv           ← AI output results (generated dynamically)
-│   └── ...                       ← Other saved datasets
-│
-├── .env                          ← OpenAI key and other secrets
-├── requirements.txt              ← Python dependencies
-└── README.md                     ← This file
+```
+vehicle_static_details.csv
+active_vehicle_details.csv
+all_vehicle_links.csv
+ai_listing_valuations.csv
+ai_verdicts.csv
+sold_cars.csv
+referred_cars.csv
+```
 
-📄 Page & Feature Breakdown
-🔹 ACTIVE LISTINGS Page
-This is the main dashboard where all active auction listings are shown.
+If you prefer not to commit CSVs, host a ZIP bundle and point the app to it:
 
-Displays vehicles in rows grouped by auction time remaining.
+| Variable | Purpose |
+| -------- | ------- |
+| `AUTOSNIPER_DATA_URL` | HTTPS URL to CSV bundle (ZIP or raw CSV). |
+| `AUTOSNIPER_DATA_TOKEN` | Optional Bearer token while downloading. |
+| `AUTOSNIPER_DATA_CACHE_MINUTES` | Minutes before re-downloading (default 30). |
 
-Each vehicle tile shows:
+The loader extracts into `CSV_data/` on launch for both local and hosted runs.
 
-Year, make, model, variant
+---
 
-Price, number of bids
+## Autotrader Tools
 
-Time left
+The experimental Autotrader scrapers live in the `autotrader/` package. Direct access is
+rate-limited by Peakhour. If Autotrader returns HTTP 403 you must supply a browser session
+cookie or Playwright storage state captured from a real login.
 
-Odometer
+Environment variables:
 
-Includes a "💡 Run AI Analysis" button for each listing:
+| Variable | Description |
+| -------- | ----------- |
+| `AUTOTRADER_COOKIE` | Raw `Cookie:` header copied from a regular browser session (e.g. `PEAKHOUR_VISIT=...; other=value`). |
+| `AUTOTRADER_STORAGE_STATE` | Path to a Playwright storage state JSON export to seed cookies/localStorage. |
 
-Sends the vehicle’s info to OpenAI
+Usage:
 
-Receives: resale estimate, max bid, profit margin, verdict
+```powershell
+# Discover listing URLs (writes autotrader/output/all_listing_links.csv)
+python -m autotrader.extract_links --max-pages 5
 
-Saves result to ai_verdicts.csv
+# Pull detail pages using Playwright
+python -m autotrader.scrape_details
+```
 
-Displays a color-coded profit margin bar after completion
+Without cookies the script exits gracefully and lists the extra configuration required.
+The output directory is git-ignored so local runs do not dirty your working tree.
 
-You can also:
+---
 
-Filter to show only VIC cars
+## Streamlit Cloud Deployment
 
-Hide vehicles with engine issues
+1. Push the repository to GitHub (keep `requirements.txt` and the Streamlit files at root).
+2. Ensure either:
+   - The required CSVs are committed, **or**
+   - `AUTOSNIPER_DATA_URL` points to a remote bundle.
+3. Create a new app at [share.streamlit.io](https://share.streamlit.io):
+   - Connect to the GitHub repo/branch.
+   - Set **Main file** to `DASHBOARD.py`.
+   - Add secrets / environment variables (`AUTOSNIPER_*`, `OPENAI_API_KEY`, etc.).
+4. Deploy – Streamlit Cloud installs dependencies, hydrates the data bundle, and the app
+   becomes available at a shareable URL.
 
-Hide unregistered cars
+To keep the hosted instance in sync, continue committing code changes and updated CSVs (or
+refresh the remote ZIP). Redeployments re-run automatically.
 
-Refresh live bid/time data (calls scripts/update_bids.py)
+---
 
-🧠 AI Analysis Page
-Displays a tab for every vehicle that has completed AI analysis.
+## Scheduled & Manual Jobs
 
-Each tab includes:
+| Script | Purpose |
+| ------ | ------- |
+| `scripts/update_bids.py` | Refresh live bids and remaining time for Grays listings. |
+| `scripts/update_master.py` | Rebuild master CSVs from scraped data. |
+| `scripts/extract_links.py` | Core Grays link discovery. |
+| `scripts/extract_vehicle_details.py` | Scrape vehicle details from Grays pages. |
+| `scripts/ai_listing_valuation.py` | Batch AI valuations from the command line. |
+| `autotrader/extract_links.py` | Experimental Autotrader link crawler (needs cookie/state). |
+| `autotrader/scrape_details.py` | Playwright-based Autotrader detail scraper. |
 
-Vehicle summary + external link
+Execute these inside the activated virtual environment so they use the same dependencies.
 
-Auction status (location, time remaining, price)
+---
 
-AI result block:
+## Troubleshooting
 
-Estimated resale value
+- **`did not find executable at '/usr/bin\python.exe'`** – you are using the old WSL env.
+  Reactivate the Windows venv with `.\.venv\Scripts\Activate.ps1`.
+- **Autotrader 403 even with Playwright** – copy the browser `Cookie` header to
+  `AUTOTRADER_COOKIE` or export a Playwright storage state.
+- **Missing CSV warnings** – supply the dataset bundle via `AUTOSNIPER_DATA_URL` or commit
+  the files to the repo.
+- **Streamlit Cloud build failures** – confirm `requirements.txt` installs on a clean
+  environment and secrets are defined in the deployment settings.
 
-Max bid to stay profitable
+---
 
-Profit margin bar with color
-
-Verdict label (e.g., Good, Marginal)
-
-This page updates automatically as more vehicles are analyzed.
-
-🤖 AI Prompt Logic
-When a user clicks "Run AI Analysis", the app sends the following prompt to OpenAI:
-
-You are an automotive resale expert. Given the following car details, estimate the resale value in Victoria, calculate the profit margin, and determine the maximum bid to stay profitable...
-
-It then parses the JSON response with fields:
-
-resale_estimate
-
-max_bid
-
-profit_margin_percent
-
-verdict
-
-🔮 Next Steps & Improvements
-🧠 AI Improvements
-Fine-tune the prompt:
-
-Make it more structured to always return JSON without fluff
-
-Add clearer resale assumptions (e.g., assuming no repairs unless noted)
-
-AI Model Training (Future):
-
-Export hundreds of past sale examples to fine-tune a custom GPT model
-
-Train it using real resale data from sold_cars.csv and Autotrader
-
-Add confidence level or risk flag to help assess listings with vague data
-
-📊 Data Handling
-Add more status flags: Withdrawn, Referred, No Sale
-
-Detect and remove stale or expired listings automatically
-
-Track vehicles over time as they move from Active → Sold
-
-📈 UI Enhancements
-Color-coded verdict badges (e.g., 🟢 Good, 🟡 Marginal, 🔴 Avoid)
-
-Sorting by profit %, resale estimate, or AI confidence
-
-Export analyzed vehicles to Excel/PDF reports
-
-Add icons for missing documents, keys, or engine faults
-
-⚙️ Dev Improvements
-Use pydantic or dataclass for strict schema enforcement
-
-Replace CSVs with SQLite or Supabase backend (scalable)
-
-Add unit tests for prompt parsing & CSV updates
-
-🧑‍💻 Contributors
-Original Author: Ewan Ferrie
-
-Special thanks to OpenAI, Grays, and the auto reselling community.
-
-📬 Need Help?
-Feel free to open an issue or contact the author directly for support setting up or extending AutoSniper2.
+Maintained as an internal tool; feel free to adapt or prune modules as the workflow evolves.

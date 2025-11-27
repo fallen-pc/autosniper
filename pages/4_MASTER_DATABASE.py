@@ -70,7 +70,7 @@ def render_dataset(title: str, file_path: str, columns: Iterable[str] | None = N
         """
     )
     st.markdown(summary_html, unsafe_allow_html=True)
-    st.dataframe(displayed_df.head(200), use_container_width=True)
+    st.dataframe(displayed_df.head(200), width="stretch")
 
 
 if st.button("Update Master Database"):

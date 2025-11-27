@@ -15,7 +15,15 @@ from typing import Iterable, Tuple
 import pandas as pd
 from playwright.async_api import async_playwright
 
-from .settings import ALL_LINKS_CSV, DETAILS_CSV, SKIPPED_LOG
+if __package__ in (None, ""):
+    # Allow running the script directly: `python autotrader/scrape_details.py`
+    import sys
+    from pathlib import Path
+
+    sys.path.append(str(Path(__file__).resolve().parent))
+    from settings import ALL_LINKS_CSV, DETAILS_CSV, SKIPPED_LOG
+else:
+    from .settings import ALL_LINKS_CSV, DETAILS_CSV, SKIPPED_LOG
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)

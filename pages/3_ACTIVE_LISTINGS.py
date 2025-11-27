@@ -227,7 +227,7 @@ if st.session_state.skipped_urls:
     )
     st.markdown(skipped_html, unsafe_allow_html=True)
     skipped_df = pd.DataFrame(st.session_state.skipped_urls, columns=["URL"])
-    st.dataframe(skipped_df, use_container_width=True)
+    st.dataframe(skipped_df, width="stretch")
     if st.button("Re-run scraper with skipped URLs"):
         asyncio.run(run_bid_update(st.session_state.skipped_urls))
 
@@ -380,7 +380,7 @@ if CSV_FILE.exists():
 
                             st.success("AI analysis saved.")
                             st.cache_data.clear()
-                            st.experimental_rerun()
+                            st.rerun()
                         else:
                             st.error("Failed to parse AI response.")
                             st.code(result["raw"])

@@ -1,5 +1,6 @@
 .venv/
 .venv_backup/
+.venv_wsl/
 logs/
 CSV_data/*
 !CSV_data/vehicle_static_details.csv
@@ -27,3 +28,4 @@ error_*.html
 .vscode/
 status/
 tmp_ai_analysis.txt
+autotrader/output/

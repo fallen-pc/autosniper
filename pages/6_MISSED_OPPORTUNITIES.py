@@ -96,7 +96,11 @@ if "status" in sold_df.columns:
     if has_sold_status.any():
         sold_df = sold_df[has_sold_status].copy()
 
-manual_df["manual_avg_price"] = manual_df["manual_carsales_avg"].apply(parse_currency)
+manual_df["manual_avg_price"] = (
+    manual_df["manual_carsales_estimate"]
+    .fillna(manual_df["manual_carsales_avg"])
+    .apply(parse_currency)
+)
 manual_df["manual_avg_odometer"] = manual_df["manual_carsales_avg_odometer"].apply(parse_odometer)
 manual_df = manual_df.dropna(subset=["manual_avg_price"])
 if manual_df.empty:
@@ -165,4 +169,4 @@ if "manual_avg_odometer" in display_df.columns:
         format_odometer
     )
 
-st.dataframe(display_df, use_container_width=True)
+st.dataframe(display_df, width="stretch")

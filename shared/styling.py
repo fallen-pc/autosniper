@@ -14,24 +14,25 @@ _BASE_STYLES = textwrap.dedent(
     """
     <style>
     :root {
-        --autosniper-bg: #ffffff;
-        --autosniper-surface: #ffffff;
-        --autosniper-panel: #f2ecdb;
-        --autosniper-highlight: #d8caa3;
-        --autosniper-primary: #0d022d;
-        --autosniper-primary-dark: #07031a;
-        --autosniper-accent: #284735;
-        --autosniper-text: #1f1c17;
-        --autosniper-muted: #403030;
-        --autosniper-success: #284735;
-        --autosniper-warning: #b6a77c;
-        --autosniper-danger: #3c352f;
-        --autosniper-border: rgba(13, 2, 45, 0.22);
-        --autosniper-shadow: rgba(13, 2, 45, 0.18);
-        --autosniper-banner-navy: #07031a;
+        --autosniper-bg: #0f1724;
+        --autosniper-surface: #121724;
+        --autosniper-panel: #1a2130;
+        --autosniper-highlight: #1a2130;
+        --autosniper-primary: #e6edf6;
+        --autosniper-primary-dark: #b9c8dc;
+        --autosniper-accent: #1fa6ff;
+        --autosniper-accent-strong: #0c8beb;
+        --autosniper-text: #e6edf6;
+        --autosniper-muted: #9aa7b8;
+        --autosniper-success: #5ee6a7;
+        --autosniper-warning: #ffa726;
+        --autosniper-danger: #ff5a5f;
+        --autosniper-border: #263243;
+        --autosniper-shadow: rgba(0, 0, 0, 0.35);
+        --autosniper-banner-navy: #0f1724;
     }
     [data-testid="stAppViewContainer"] {
-        background: var(--autosniper-bg);
+        background: radial-gradient(circle at 20% -10%, rgba(31, 166, 255, 0.08), transparent 42%), radial-gradient(circle at 80% 0%, rgba(12, 139, 235, 0.1), transparent 52%), var(--autosniper-bg);
         color: var(--autosniper-text);
         font-family: "Segoe UI", Arial, sans-serif;
     }
@@ -39,9 +40,10 @@ _BASE_STYLES = textwrap.dedent(
         color: inherit;
     }
     [data-testid="stSidebar"] {
-        background: linear-gradient(185deg, #0a0424 0%, var(--autosniper-banner-navy) 100%);
+        background: linear-gradient(185deg, #0c1f35 0%, #11345a 100%);
         color: #f5f7fb;
-        border-right: 1px solid rgba(255, 255, 255, 0.08);
+        border-right: 1px solid rgba(31, 166, 255, 0.35);
+        box-shadow: 14px 0 26px rgba(0, 0, 0, 0.35);
     }
     [data-testid="stSidebar"] * {
         color: inherit;
@@ -77,10 +79,10 @@ _BASE_STYLES = textwrap.dedent(
         line-height: 1.55;
     }
     .autosniper-section {
-        background: linear-gradient(135deg, rgba(242, 236, 219, 0.95) 0%, rgba(216, 202, 163, 0.9) 100%);
+        background: linear-gradient(135deg, rgba(26, 33, 48, 0.96) 0%, rgba(18, 23, 36, 0.92) 100%);
         border-radius: 16px;
-        border: 1px solid rgba(40, 71, 53, 0.32);
-        box-shadow: 0 16px 36px rgba(13, 2, 45, 0.18);
+        border: 1px solid var(--autosniper-border);
+        box-shadow: 0 16px 36px rgba(0, 0, 0, 0.28);
         padding: 1.5rem 1.75rem;
         margin-bottom: 1.5rem;
     }
@@ -89,14 +91,15 @@ _BASE_STYLES = textwrap.dedent(
         font-weight: 700;
     }
     .autosniper-section .section-subtitle {
-        color: rgba(40, 71, 53, 0.78);
+        color: var(--autosniper-muted);
         margin-top: 0.35rem;
     }
     .autosniper-chip {
         display: inline-flex;
         align-items: center;
         padding: 0.35rem 0.75rem;
-        background: rgba(182, 167, 124, 0.24);
+        background: rgba(31, 166, 255, 0.12);
+        border: 1px solid rgba(31, 166, 255, 0.35);
         border-radius: 999px;
         color: var(--autosniper-primary);
         font-weight: 600;
@@ -104,39 +107,40 @@ _BASE_STYLES = textwrap.dedent(
         margin-bottom: 0.35rem;
     }
     .stButton>button {
-        background: var(--autosniper-primary);
-        color: #f5f7fb;
+        background: var(--autosniper-accent);
+        color: #041320;
         border-radius: 10px;
         border: none;
         padding: 0.65rem 1.3rem;
         font-weight: 600;
-        box-shadow: 0 12px 28px rgba(13, 2, 45, 0.28);
+        box-shadow: 0 12px 28px rgba(12, 139, 235, 0.35);
         transition: all 0.2s ease;
     }
     .stButton>button:hover {
-        background: var(--autosniper-primary-dark);
+        background: var(--autosniper-accent-strong);
         transform: translateY(-1px);
-        box-shadow: 0 16px 34px rgba(13, 2, 45, 0.34);
+        box-shadow: 0 16px 34px rgba(12, 139, 235, 0.45);
+        color: #e6edf6;
     }
     .autosniper-banner {
         display: flex;
         justify-content: center;
-        margin: 1.5rem 0 2.5rem;
+        margin: 0.75rem 0 1.25rem;
     }
     .autosniper-banner img {
         width: min(100%, 1600px);
         height: auto;
         border-radius: 18px;
-        box-shadow: 0 18px 36px rgba(13, 2, 45, 0.24);
+        box-shadow: 0 18px 36px rgba(0, 0, 0, 0.32);
         clip-path: inset(8px round 18px);
     }
     .rail-logo {
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 64px;
-        height: 64px;
-        border-radius: 20px;
+        width: 56px;
+        height: 56px;
+        border-radius: 18px;
         background: transparent;
         border: none;
         box-shadow: none;
@@ -145,7 +149,7 @@ _BASE_STYLES = textwrap.dedent(
         position: relative;
         width: 40px;
         height: 40px;
-        border: 2px solid rgba(40, 71, 53, 0.85);
+        border: 2px solid rgba(31, 166, 255, 0.8);
         border-radius: 50%;
         display: inline-flex;
         align-items: center;
@@ -155,7 +159,7 @@ _BASE_STYLES = textwrap.dedent(
     .crosshair::after {
         content: "";
         position: absolute;
-        background: rgba(214, 202, 163, 0.94);
+        background: rgba(31, 166, 255, 0.7);
     }
     .crosshair::before {
         width: 1px;
@@ -169,28 +173,28 @@ _BASE_STYLES = textwrap.dedent(
         width: 6px;
         height: 6px;
         border-radius: 50%;
-        background: rgba(40, 71, 53, 0.9);
-        box-shadow: 0 0 12px rgba(13, 2, 45, 0.45);
+        background: rgba(12, 139, 235, 0.95);
+        box-shadow: 0 0 12px rgba(0, 0, 0, 0.4);
     }
     .stDataFrame {
         border-radius: 14px;
-        box-shadow: 0 22px 40px rgba(13, 2, 45, 0.2);
-        border: 1px solid rgba(40, 71, 53, 0.32);
-        background: rgba(242, 236, 219, 0.92);
+        box-shadow: 0 22px 40px rgba(0, 0, 0, 0.32);
+        border: 1px solid var(--autosniper-border);
+        background: rgba(18, 23, 36, 0.9);
         overflow: hidden;
     }
     .stAlert {
         border-radius: 14px;
-        border: 1px solid rgba(40, 71, 53, 0.38);
-        box-shadow: 0 12px 26px rgba(13, 2, 45, 0.16);
-        background: rgba(216, 202, 163, 0.18);
+        border: 1px solid var(--autosniper-border);
+        box-shadow: 0 12px 26px rgba(0, 0, 0, 0.26);
+        background: rgba(31, 166, 255, 0.08);
         color: var(--autosniper-text);
     }
     [data-testid="stMetric"] {
         border-radius: 14px;
         border: 1px solid var(--autosniper-border);
-        background: rgba(242, 236, 219, 0.92);
-        box-shadow: 0 12px 26px rgba(13, 2, 45, 0.16);
+        background: rgba(26, 33, 48, 0.9);
+        box-shadow: 0 12px 26px rgba(0, 0, 0, 0.22);
         padding: 1.1rem 1.25rem;
     }
     [data-testid="stMetric"] > div {
@@ -218,10 +222,10 @@ _BASE_STYLES = textwrap.dedent(
         margin-bottom: 1.4rem;
     }
     .autosniper-panel {
-        background: linear-gradient(135deg, rgba(242, 236, 219, 0.94), rgba(216, 202, 163, 0.85));
+        background: linear-gradient(135deg, rgba(26, 33, 48, 0.92), rgba(18, 23, 36, 0.94));
         border-radius: 18px;
         border: 1px solid var(--autosniper-border);
-        box-shadow: 0 16px 32px rgba(13, 2, 45, 0.2);
+        box-shadow: 0 16px 32px rgba(0, 0, 0, 0.28);
         padding: 1.5rem 1.75rem;
         margin-bottom: 1.5rem;
     }
@@ -238,14 +242,30 @@ _BASE_STYLES = textwrap.dedent(
     }
     .stExpander {
         border-radius: 16px;
-        border: 1px solid rgba(40, 71, 53, 0.3);
-        background: rgba(242, 236, 219, 0.9);
-        box-shadow: 0 18px 32px rgba(13, 2, 45, 0.16);
+        border: 1px solid var(--autosniper-border);
+        background: rgba(26, 33, 48, 0.92);
+        box-shadow: 0 18px 32px rgba(0, 0, 0, 0.24);
     }
     hr {
         border: none;
-        border-top: 1px solid rgba(182, 167, 124, 0.46);
+        border-top: 1px solid var(--autosniper-border);
         margin: 1.8rem 0;
+    }
+    .ai-card {
+        background: var(--autosniper-surface);
+        border: 1px solid var(--autosniper-border);
+        border-radius: 26px;
+        box-shadow: none;
+        padding: 1.9rem 2.2rem;
+        margin-bottom: 1.7rem;
+    }
+    .ai-listing-wrapper {
+        margin: 1.75rem 0;
+        padding-bottom: 1.5rem;
+    }
+    .ai-listing-wrapper h3 {
+        margin-top: 1.6rem;
+        margin-bottom: 0.85rem;
     }
     .ai-card-header {
         display: flex;
@@ -253,12 +273,8 @@ _BASE_STYLES = textwrap.dedent(
         align-items: flex-start;
         justify-content: space-between;
         gap: 1.5rem;
-        padding: 1.6rem 1.9rem;
-        background: linear-gradient(135deg, rgba(242, 236, 219, 0.96), rgba(216, 202, 163, 0.88));
-        border: 1px solid rgba(40, 71, 53, 0.38);
-        border-radius: 20px;
-        box-shadow: 0 24px 48px rgba(13, 2, 45, 0.22);
-        margin-bottom: 1.4rem;
+        border-bottom: 1px solid var(--autosniper-border);
+        padding-bottom: 1.2rem;
     }
     .ai-card-title-group {
         display: flex;
@@ -279,43 +295,106 @@ _BASE_STYLES = textwrap.dedent(
     }
     .ai-card-subtitle span {
         background: var(--autosniper-panel);
-        border-radius: 40px;
+        border-radius: 999px;
         padding: 0.35rem 0.8rem;
         font-size: 0.92rem;
         font-weight: 600;
         color: var(--autosniper-primary);
         letter-spacing: 0.02em;
     }
-    .ai-card-metric {
-        min-width: 200px;
+    .ai-card-actions {
         display: flex;
         flex-direction: column;
         align-items: flex-end;
-        gap: 0.45rem;
+        gap: 0.75rem;
+        min-width: 180px;
     }
-    .ai-card-metric-label {
-        font-size: 0.82rem;
+    .ai-card-odometer {
+        text-align: right;
+    }
+    .ai-card-odometer-label {
+        font-size: 0.78rem;
         text-transform: uppercase;
         letter-spacing: 0.12em;
         color: var(--autosniper-muted);
     }
-    .ai-card-metric-value {
+    .ai-card-odometer-value {
         font-size: 1.6rem;
         font-weight: 700;
         color: var(--autosniper-primary);
     }
-    .ai-card-link {
+    .ai-card-link-button {
         display: inline-flex;
         align-items: center;
+        justify-content: center;
         gap: 0.35rem;
-        color: var(--autosniper-accent);
+        padding: 0.45rem 1.1rem;
+        border-radius: 999px;
+        background: var(--autosniper-primary);
+        color: #fff;
         font-weight: 600;
-        letter-spacing: 0.04em;
+        letter-spacing: 0.05em;
         text-transform: uppercase;
-        font-size: 0.8rem;
+        font-size: 0.78rem;
+        box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25);
     }
-    .ai-card-link:hover {
-        color: var(--autosniper-primary-dark);
+    .ai-card-link-button:hover {
+        background: var(--autosniper-primary-dark);
+        color: #fff;
+    }
+    .ai-card-body {
+        margin-top: 1.2rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    .ai-card-conditions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+    }
+    .ai-card-condition-summary {
+        font-size: 0.95rem;
+        color: var(--autosniper-text);
+        line-height: 1.35;
+    }
+    .ai-card-condition-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+    }
+    .ai-card-condition-badge {
+        background: rgba(31, 166, 255, 0.08);
+        border: 1px solid rgba(38, 50, 67, 0.8);
+        border-radius: 999px;
+        padding: 0.15rem 0.7rem;
+        font-size: 0.8rem;
+        color: var(--autosniper-muted);
+        font-weight: 500;
+    }
+    .ai-card-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 0.85rem;
+    }
+    .ai-card-stat {
+        background: rgba(26, 33, 48, 0.85);
+        border: 1px solid var(--autosniper-border);
+        border-radius: 18px;
+        padding: 0.85rem 1rem;
+        box-shadow: 0 18px 32px rgba(0, 0, 0, 0.16);
+    }
+    .ai-card-stat-label {
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: var(--autosniper-muted);
+        margin-bottom: 0.15rem;
+    }
+    .ai-card-stat-value {
+        font-size: 1.15rem;
+        font-weight: 600;
+        color: var(--autosniper-primary);
     }
     </style>
     """
@@ -376,17 +455,17 @@ def _load_logo_base64(width: int) -> str | None:
     return encoded
 
 
-def display_logo(width: int = 180) -> None:
-    """Show the AutoSniper logo centered on the page if available."""
+def display_logo(width: int = 150) -> None:
+    """Show the AutoSniper logo centered on the page if available, with a trimmed height."""
     encoded = _load_logo_base64(width)
     if not encoded:
         return
     inject_global_styles()
     st.markdown(
         f"""
-        <div style="display:flex;justify-content:center;margin-bottom:1.5rem;">
+        <div style="display:flex;justify-content:center;margin:0.1rem 0 0.35rem;">
             <img src="data:image/png;base64,{encoded}" alt="AutoSniper Logo"
-                 style="width:{width}px;max-width:100%;" />
+                 style="max-height:110px;width:{width}px;max-width:100%;height:auto;margin:0;" />
         </div>
         """,
         unsafe_allow_html=True,
@@ -416,7 +495,7 @@ def display_banner(width: int = 1600, image_path: Optional[str | Path] = None) -
     inject_global_styles()
     st.markdown(
         f"""
-        <div class="autosniper-banner" style="margin-top:2.5rem;margin-bottom:2rem;">
+        <div class="autosniper-banner" style="margin-top:0.75rem;margin-bottom:1.25rem;">
             <img src="data:image/png;base64,{encoded}" alt="AutoSniper Banner"
                  style="width:min(100%, {width}px); height:auto;" />
         </div>

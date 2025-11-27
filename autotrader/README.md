@@ -7,6 +7,16 @@ This folder holds an experimental pipeline for scraping autotrader.com.au withou
 - Keep the new code isolated so it can be iterated on quickly and deleted easily if Autotrader blocks access.
 - Once proven reliable, adapt the shared dashboards to accept Autotrader data (either merging or running in parallel tabs).
 
+## Access Requirements
+
+Autotrader is fronted by *Peakhour* and now blocks anonymous scraping with HTTP 403.
+To run either script you must supply a real browser session:
+
+- `AUTOTRADER_COOKIE`: paste the raw `Cookie:` header (e.g. `PEAKHOUR_VISIT=...; ...`)
+- or `AUTOTRADER_STORAGE_STATE`: path to a Playwright `storage_state.json`
+
+Both variables are read automatically when you execute the scripts.
+
 ## Proposed Flow
 1. **Link extraction** (`extract_links.py`): hit the relevant Autotrader search endpoints, paginate through results, capture unique listing URLs, and write them to `autotrader/output/all_listing_links.csv`.
 2. **Listing details scraper** (`scrape_details.py`): open each URL with Playwright (same async architecture as `scripts/update_bids.py`), extract price, seller info, odometer, etc., and update `autotrader/output/listing_details.csv`.

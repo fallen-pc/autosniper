@@ -229,7 +229,7 @@ st.markdown(
                 <h3>Data Tables</h3>
                 <div class="content">
                     <p class="autosniper-body">
-                        <code>st.dataframe(..., use_container_width=True)</code> automatically inherits rounded corners,
+                        <code>st.dataframe(..., width=&quot;stretch&quot;)</code> automatically inherits rounded corners,
                         borders, and shadows from the shared CSS. Keep tables dense and filterable where possible.
                     </p>
                 </div>

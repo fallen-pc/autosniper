@@ -4,10 +4,15 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+import sys
 
 import pandas as pd
 
-from shared.data_loader import DATA_DIR
+if __package__ in (None, ""):
+    sys.path.append(str(Path(__file__).resolve().parent.parent))
+    from shared.data_loader import DATA_DIR
+else:  # pragma: no cover
+    from shared.data_loader import DATA_DIR
 
 
 CSV_PATH = DATA_DIR / "sold_cars.csv"

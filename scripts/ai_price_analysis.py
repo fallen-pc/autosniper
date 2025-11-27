@@ -174,6 +174,7 @@ def load_active_listings_within_hours(
     csv_path: Optional[Path] = None,
     min_hours: float = 0.0,
     max_hours: Optional[float] = 24.0,
+    include_unknown: bool = False,
 ) -> pd.DataFrame:
     """
     Load active vehicle listings and filter them by a window of hours remaining.
@@ -191,12 +192,18 @@ def load_active_listings_within_hours(
         return df
 
     df["hours_remaining"] = df["time_remaining_or_date_sold"].apply(_extract_hours_remaining)
-    mask = df["hours_remaining"].notna()
+    known_mask = df["hours_remaining"].notna()
+    filtered_df = df[known_mask].copy()
     if min_hours is not None:
-        mask &= df["hours_remaining"] >= min_hours
+        filtered_df = filtered_df[filtered_df["hours_remaining"] >= min_hours]
     if max_hours is not None:
-        mask &= df["hours_remaining"] < max_hours
-    df = df[mask].copy()
+        filtered_df = filtered_df[filtered_df["hours_remaining"] < max_hours]
+
+    if include_unknown:
+        unknown_df = df[~known_mask].copy()
+        df = pd.concat([filtered_df, unknown_df], ignore_index=True, sort=False)
+    else:
+        df = filtered_df.copy()
 
     if df.empty:
         return df
@@ -215,6 +222,7 @@ def load_active_listings_within_hours(
 
 def load_active_listings_under_24h(
     csv_path: Optional[Path] = None,
+    include_unknown: bool = False,
 ) -> pd.DataFrame:
     """
     Backwards compatible wrapper for listings with less than 24 hours remaining.
@@ -223,6 +231,7 @@ def load_active_listings_under_24h(
         csv_path=csv_path,
         min_hours=0.0,
         max_hours=24.0,
+        include_unknown=include_unknown,
     )
 
 
@@ -443,6 +452,56 @@ def compare_active_to_history(
 
         return result
 
+    cleaned_sold_df = sold_df.copy()
+    if "url" in cleaned_sold_df.columns and "url" in active_df.columns:
+        active_urls = (
+            active_df["url"]
+            .dropna()
+            .astype(str)
+            .str.strip()
+        )
+        active_url_set = set(active_urls) if not active_urls.empty else set()
+        if active_url_set:
+            # Drop any records that are currently active to avoid showing live listings as "historical" matches.
+            cleaned_sold_df = cleaned_sold_df[
+                ~cleaned_sold_df["url"].astype(str).str.strip().isin(active_url_set)
+            ]
+    if "url" in cleaned_sold_df.columns:
+        cleaned_sold_df = cleaned_sold_df.drop_duplicates(subset=["url"], keep="first")
+
+    sold_df = cleaned_sold_df
+
+    def _apply_attribute_filters(active_row: pd.Series, candidate_df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Align candidates on key attributes to avoid mismatched trims.
+        """
+        filtered = candidate_df.copy()
+
+        def _norm(value: object) -> str:
+            if value is None or (isinstance(value, float) and pd.isna(value)):
+                return ""
+            return str(value).lower().strip()
+
+        active_variant_norm = active_row.get("variant_norm", "") or ""
+        active_variant_norm = str(active_variant_norm)
+        if active_variant_norm and "variant_norm" in filtered.columns:
+            contains_hybrid = "hybrid" in active_variant_norm
+            mask = filtered["variant_norm"].astype(str).str.contains("hybrid", na=False)
+            filtered = filtered[mask] if contains_hybrid else filtered[~mask]
+
+        if "transmission" in filtered.columns:
+            active_transmission = _norm(active_row.get("transmission"))
+            if active_transmission:
+                trans_series = filtered["transmission"].astype(str).str.lower().str.strip()
+                filtered = filtered[trans_series == active_transmission]
+
+        if "fuel_type" in filtered.columns:
+            active_fuel = _norm(active_row.get("fuel_type"))
+            if active_fuel:
+                fuel_series = filtered["fuel_type"].astype(str).str.lower().str.strip()
+                filtered = filtered[fuel_series == active_fuel]
+
+        return filtered
     summaries = []
 
     for _, active_row in active_df.iterrows():
@@ -450,56 +509,66 @@ def compare_active_to_history(
         model = active_row.get("model_norm", "")
         year = active_row.get("year_int")
 
-        initial_candidates = sold_df[
+        base_candidates = sold_df[
             (sold_df["make_norm"] == make) &
             (sold_df["model_norm"] == model)
         ]
 
-        # Prefer exact year matches when possible.
-        if year is not None:
-            year_matches = initial_candidates[initial_candidates["year_int"] == year]
-            if not year_matches.empty:
-                initial_candidates = year_matches
-
-        # Enforce key attribute alignment before scoring to avoid mismatched trims (e.g. hybrids vs non-hybrids).
-        active_variant_norm = active_row.get("variant_norm", "") or ""
-        active_variant_norm = str(active_variant_norm)
-        if active_variant_norm:
-            contains_hybrid = "hybrid" in active_variant_norm
-            mask = initial_candidates["variant_norm"].astype(str).str.contains("hybrid", na=False)
-            if contains_hybrid:
-                initial_candidates = initial_candidates[mask]
-            else:
-                initial_candidates = initial_candidates[~mask]
-
-        def _norm(value: object) -> str:
-            if value is None or (isinstance(value, float) and pd.isna(value)):
-                return ""
-            return str(value).lower().strip()
-
-        if "transmission" in initial_candidates.columns:
-            active_transmission = _norm(active_row.get("transmission"))
-            if active_transmission:
-                trans_series = (
-                    initial_candidates["transmission"].astype(str).str.lower().str.strip()
-                )
-                initial_candidates = initial_candidates[trans_series == active_transmission]
-
-        if "fuel_type" in initial_candidates.columns:
-            active_fuel = _norm(active_row.get("fuel_type"))
-            if active_fuel:
-                fuel_series = (
-                    initial_candidates["fuel_type"].astype(str).str.lower().str.strip()
-                )
-                initial_candidates = initial_candidates[fuel_series == active_fuel]
-
-        scored_matches = _score_matches(active_row, initial_candidates)
-        selected_matches = _select_relevant_matches(scored_matches)
+        base_candidates = _apply_attribute_filters(active_row, base_candidates)
         active_odometer = active_row.get("odometer_numeric")
-        stats, close_matches = _summarise_prices(selected_matches, active_odometer)
+        fallback_year_used = False
 
-        historical_rows = _prepare_match_rows(selected_matches, include_diff=False, limit=15)
-        close_rows = _prepare_match_rows(close_matches, include_diff=True, limit=10)
+        def _build_match_summary(candidate_df: pd.DataFrame) -> tuple[PriceStats, pd.DataFrame, pd.DataFrame]:
+            scored = _score_matches(active_row, candidate_df)
+            selected = _select_relevant_matches(scored)
+            stats_obj, close_df = _summarise_prices(selected, active_odometer)
+            selected = _dedupe_by_vin_and_odometer(selected)
+            close_df = _dedupe_by_vin_and_odometer(close_df)
+            return stats_obj, selected, close_df
+
+        candidates = base_candidates
+        # Prefer exact year matches when possible.
+        if year is not None and "year_int" in base_candidates.columns:
+            year_matches = base_candidates[base_candidates["year_int"] == year]
+            if not year_matches.empty:
+                candidates = year_matches
+
+        stats, selected_matches, close_matches = _build_match_summary(candidates)
+
+        if stats.count == 0 and year is not None:
+            near_year_candidates = base_candidates
+            if "year_int" in near_year_candidates.columns:
+                near_year_candidates = near_year_candidates[near_year_candidates["year_int"].notna()]
+                near_year_candidates = near_year_candidates[
+                    (near_year_candidates["year_int"] - year).abs() <= 1
+                ]
+            stats, selected_matches, close_matches = _build_match_summary(near_year_candidates)
+            fallback_year_used = stats.count > 0
+
+            if fallback_year_used:
+                def _delta(val):
+                    if val is None or (isinstance(val, float) and pd.isna(val)):
+                        return None
+                    try:
+                        return float(val) - float(year)
+                    except Exception:
+                        return None
+
+                selected_matches["year_delta"] = selected_matches["year_int"].apply(_delta)
+                close_matches["year_delta"] = close_matches["year_int"].apply(_delta)
+
+        historical_rows = _prepare_match_rows(
+            selected_matches,
+            include_diff=False,
+            limit=15,
+            include_year_delta=fallback_year_used,
+        )
+        close_rows = _prepare_match_rows(
+            close_matches,
+            include_diff=True,
+            limit=10,
+            include_year_delta=fallback_year_used,
+        )
 
         price_numeric = active_row.get("price_numeric")
         delta_to_median = None
@@ -559,12 +628,19 @@ def compare_active_to_history(
             "historical_matches_rows": historical_rows,
             "historical_close_matches_rows": close_rows,
             "historical_data_status": (
-                "No historical data available" if stats.count == 0 else "Matched"
+                "No historical data available"
+                if stats.count == 0
+                else ("Matched (+/-1 year comps)" if fallback_year_used else "Matched")
             ),
         })
 
     return pd.DataFrame(summaries)
-def _prepare_match_rows(df: pd.DataFrame, include_diff: bool = False, limit: int = 15) -> list[dict]:
+def _prepare_match_rows(
+    df: pd.DataFrame,
+    include_diff: bool = False,
+    limit: int = 15,
+    include_year_delta: bool = False,
+) -> list[dict]:
     if df is None or df.empty:
         return []
     display_columns = [
@@ -580,6 +656,8 @@ def _prepare_match_rows(df: pd.DataFrame, include_diff: bool = False, limit: int
     ]
     if include_diff and "odometer_diff" in df.columns:
         display_columns.append("odometer_diff")
+    if include_year_delta and "year_delta" in df.columns:
+        display_columns.append("year_delta")
 
     subset = df.copy()
     for column in display_columns:
@@ -589,7 +667,16 @@ def _prepare_match_rows(df: pd.DataFrame, include_diff: bool = False, limit: int
     if "odometer_reading" not in subset.columns and "odometer_numeric" in subset.columns:
         subset["odometer_reading"] = subset["odometer_numeric"]
 
+    if include_year_delta and "year_delta" not in subset.columns:
+        subset["year_delta"] = None
+
     subset = subset[display_columns].head(limit).copy()
+    source_urls = None
+    if "url" in df.columns:
+        try:
+            source_urls = df.loc[subset.index, "url"]
+        except Exception:  # noqa: BLE001
+            source_urls = df["url"].head(limit)
 
     def format_price(val):
         if pd.isna(val):
@@ -610,6 +697,27 @@ def _prepare_match_rows(df: pd.DataFrame, include_diff: bool = False, limit: int
                 return "—"
             return text if text.lower().endswith("km") else f"{text} km"
 
+    def format_year_with_delta(year_val, delta_val):
+        if pd.isna(year_val):
+            return "—"
+        try:
+            base_year = int(round(float(year_val)))
+            base_text = str(base_year)
+        except Exception:
+            base_text = str(year_val).strip() or "—"
+        if not include_year_delta:
+            return base_text
+        if pd.isna(delta_val) or delta_val in (None, 0):
+            return f"{base_text} (+/-1y fallback)"
+        try:
+            delta_int = int(round(float(delta_val)))
+        except Exception:
+            return f"{base_text} (+/-1y fallback)"
+        if delta_int == 0:
+            return f"{base_text} (+/-1y fallback)"
+        sign = "+" if delta_int > 0 else "-"
+        return f"{base_text} ({sign}{abs(delta_int)}y fallback)"
+
     if "final_price_numeric" in subset.columns:
         subset["final_price_numeric"] = subset["final_price_numeric"].apply(format_price)
 
@@ -618,6 +726,15 @@ def _prepare_match_rows(df: pd.DataFrame, include_diff: bool = False, limit: int
 
     if include_diff and "odometer_diff" in subset.columns:
         subset["odometer_diff"] = subset["odometer_diff"].apply(format_odometer)
+
+    if "year" in subset.columns:
+        if include_year_delta and "year_delta" in subset.columns:
+            delta_values = subset["year_delta"].tolist()
+        else:
+            delta_values = [None] * len(subset)
+        subset["year"] = [
+            format_year_with_delta(y, d) for y, d in zip(subset["year"].tolist(), delta_values)
+        ]
 
     rename_map = {
         "year": "Year",
@@ -649,4 +766,48 @@ def _prepare_match_rows(df: pd.DataFrame, include_diff: bool = False, limit: int
 
     subset = subset[[col for col in preferred_order if col in subset.columns]]
 
+    if source_urls is not None:
+        subset["_source_url"] = source_urls.reindex(subset.index).tolist()
+
     return subset.to_dict(orient="records")
+
+
+def _dedupe_by_vin_and_odometer(df: pd.DataFrame) -> pd.DataFrame:
+    if df is None or df.empty or "vin" not in df.columns:
+        return df
+
+    def _norm_vin(value: object) -> str | None:
+        if value is None or (isinstance(value, float) and pd.isna(value)):
+            return None
+        text = str(value).strip().lower()
+        return text or None
+
+    def _norm_odo(value: object) -> float | None:
+        if value is None or (isinstance(value, float) and pd.isna(value)):
+            return None
+        if isinstance(value, (int, float)):
+            return float(value)
+        return _parse_odometer(value)
+
+    seen: set[tuple[str, float]] = set()
+    keep_mask: list[bool] = []
+
+    for _, row in df.iterrows():
+        vin_norm = _norm_vin(row.get("vin"))
+        odo_value = row.get("odometer_numeric")
+        if odo_value is None or (isinstance(odo_value, float) and pd.isna(odo_value)):
+            odo_value = row.get("odometer_reading")
+        odo_norm = _norm_odo(odo_value)
+        key = None
+        if vin_norm and odo_norm is not None:
+            key = (vin_norm, float(odo_norm))
+        if key and key in seen:
+            keep_mask.append(False)
+            continue
+        if key:
+            seen.add(key)
+        keep_mask.append(True)
+
+    if all(keep_mask):
+        return df
+    return df.loc[keep_mask].copy()

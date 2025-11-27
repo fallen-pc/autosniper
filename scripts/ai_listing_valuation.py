@@ -159,15 +159,12 @@ def _parse_odometer_value(value: Any) -> Optional[float]:
 
 def update_manual_carsales_data(
     url: str,
-    comparable_count: Optional[int],
-    price_min: Optional[float],
-    price_max: Optional[float],
-    price_avg: Optional[float],
+    price_estimate: Optional[str],
     avg_odometer: Optional[float],
     table_raw: str,
-    price_estimate: Optional[str] = None,
     instant_offer_estimate: Optional[str] = None,
     recent_sales_30d: Optional[int] = None,
+    comparable_count: Optional[int] = None,
 ) -> pd.DataFrame:
     df = load_cached_results()
     if url in df["url"].values:
@@ -180,15 +177,6 @@ def update_manual_carsales_data(
 
     df.at[idx, "manual_carsales_count"] = (
         int(comparable_count) if comparable_count is not None else None
-    )
-    df.at[idx, "manual_carsales_min"] = (
-        _format_currency(price_min) if price_min is not None else None
-    )
-    df.at[idx, "manual_carsales_max"] = (
-        _format_currency(price_max) if price_max is not None else None
-    )
-    df.at[idx, "manual_carsales_avg"] = (
-        _format_currency(price_avg) if price_avg is not None else None
     )
     df.at[idx, "manual_carsales_avg_odometer"] = (
         _format_odometer(avg_odometer) if avg_odometer is not None else None
@@ -204,6 +192,9 @@ def update_manual_carsales_data(
         return None
 
     df.at[idx, "manual_carsales_estimate"] = _clean_string(price_estimate)
+    df.at[idx, "manual_carsales_min"] = df.at[idx, "manual_carsales_estimate"]
+    df.at[idx, "manual_carsales_max"] = df.at[idx, "manual_carsales_estimate"]
+    df.at[idx, "manual_carsales_avg"] = df.at[idx, "manual_carsales_estimate"]
     df.at[idx, "manual_instant_offer_estimate"] = _clean_string(instant_offer_estimate)
     df.at[idx, "manual_recent_sales_30d"] = (
         int(recent_sales_30d) if recent_sales_30d is not None else None
@@ -234,11 +225,9 @@ def _build_prompt(listing: Dict[str, Any]) -> str:
     }
     manual_snapshot = {
         "comparable_count": listing.get("manual_carsales_count"),
-        "carsales_price_min": listing.get("manual_carsales_min"),
-        "carsales_price_max": listing.get("manual_carsales_max"),
-        "carsales_price_average": listing.get("manual_carsales_avg"),
+        "carsales_manual_estimate": listing.get("manual_carsales_estimate")
+        or listing.get("manual_carsales_avg"),
         "carsales_average_odometer": listing.get("manual_carsales_avg_odometer"),
-        "carsales_manual_estimate": listing.get("manual_carsales_estimate"),
         "instant_offer_estimate": listing.get("manual_instant_offer_estimate"),
         "recent_sales_30d": listing.get("manual_recent_sales_30d"),
     }
@@ -288,11 +277,12 @@ def run_ai_listing_analysis(listing_row: pd.Series, force_refresh: bool = False)
     url = listing_row.get("url")
 
     manual_count_val = _parse_int(listing_row.get("manual_carsales_count"))
+    manual_avg_odo_val = _parse_odometer_value(listing_row.get("manual_carsales_avg_odometer"))
+    manual_estimate_val = _parse_currency(
+        listing_row.get("manual_carsales_estimate") or listing_row.get("manual_carsales_avg")
+    )
     manual_min_val = _parse_currency(listing_row.get("manual_carsales_min"))
     manual_max_val = _parse_currency(listing_row.get("manual_carsales_max"))
-    manual_avg_val = _parse_currency(listing_row.get("manual_carsales_avg"))
-    manual_avg_odo_val = _parse_odometer_value(listing_row.get("manual_carsales_avg_odometer"))
-    manual_estimate_val = _parse_currency(listing_row.get("manual_carsales_estimate"))
     manual_instant_offer_val = _parse_currency(listing_row.get("manual_instant_offer_estimate"))
     manual_recent_sales_val = _parse_int(listing_row.get("manual_recent_sales_30d"))
 
@@ -300,7 +290,7 @@ def run_ai_listing_analysis(listing_row: pd.Series, force_refresh: bool = False)
     if active_odometer_val is None:
         active_odometer_val = _parse_odometer_value(listing_row.get("odometer_reading"))
 
-    base_manual_price = manual_estimate_val if manual_estimate_val is not None else manual_avg_val
+    base_manual_price = manual_estimate_val
 
     if (
         not force_refresh
@@ -549,6 +539,10 @@ def run_ai_listing_analysis(listing_row: pd.Series, force_refresh: bool = False)
                 deduped_notes.append(note)
         notes_value = "; ".join(deduped_notes) if deduped_notes else None
 
+    manual_estimate_display = (
+        _format_currency(manual_estimate_val) if manual_estimate_val is not None else None
+    )
+
     result_row = {
         "url": url,
         "analysis_timestamp": datetime.now(tz=timezone.utc).isoformat(),
@@ -560,11 +554,11 @@ def run_ai_listing_analysis(listing_row: pd.Series, force_refresh: bool = False)
         "score_out_of_10": score_value,
         "confidence_notes": notes_value,
         "manual_carsales_count": manual_count_val,
-        "manual_carsales_min": _format_currency(manual_min_val) if manual_min_val is not None else None,
-        "manual_carsales_max": _format_currency(manual_max_val) if manual_max_val is not None else None,
-        "manual_carsales_avg": _format_currency(manual_avg_val) if manual_avg_val is not None else None,
+        "manual_carsales_min": manual_estimate_display,
+        "manual_carsales_max": manual_estimate_display,
+        "manual_carsales_avg": manual_estimate_display,
         "manual_carsales_avg_odometer": _format_odometer(manual_avg_odo_val) if manual_avg_odo_val is not None else None,
-        "manual_carsales_estimate": listing_row.get("manual_carsales_estimate"),
+        "manual_carsales_estimate": listing_row.get("manual_carsales_estimate") or manual_estimate_display,
         "manual_instant_offer_estimate": listing_row.get("manual_instant_offer_estimate"),
         "manual_recent_sales_30d": listing_row.get("manual_recent_sales_30d"),
     }

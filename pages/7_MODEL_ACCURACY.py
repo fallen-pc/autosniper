@@ -81,6 +81,7 @@ left_col, right_col = st.columns([2, 1])
 with left_col:
     st.subheader("Weekly Hit Rate")
     weekly_df = outcome_data.weekly_metrics.copy()
+    line_chart = None
     if weekly_df.empty:
         st.info("Log a few settled resale outcomes to start tracking accuracy over time.")
     else:
@@ -101,11 +102,13 @@ with left_col:
             )
             .properties(height=320)
         )
-        st.altair_chart(line_chart, use_container_width=True)
+    if line_chart is not None:
+        st.altair_chart(line_chart, width="stretch")
 
 with right_col:
     st.subheader("Tier Hit Rate")
     tier_df = outcome_data.tier_metrics.copy()
+    tier_chart = None
     if tier_df.empty:
         st.info("No verdict tiers have matched with actual profit outcomes yet.")
     else:
@@ -130,7 +133,8 @@ with right_col:
             )
             .properties(height=280)
         )
-        st.altair_chart(tier_chart, use_container_width=True)
+    if tier_chart is not None:
+        st.altair_chart(tier_chart, width="stretch")
 
 st.markdown("---")
 st.subheader("Worst Misses")
@@ -143,7 +147,7 @@ else:
     display_df["actual_sale_price"] = display_df["actual_sale_price"].apply(_format_currency)
     display_df["outcome_error_abs"] = display_df["outcome_error_abs"].apply(_format_currency)
     display_df["outcome_error_pct"] = display_df["outcome_error_pct"].apply(lambda value: f"{value * 100:,.1f}%" if pd.notna(value) else "N/A")
-    st.dataframe(display_df, use_container_width=True)
+    st.dataframe(display_df, width="stretch")
 
 st.markdown("---")
 st.subheader("Raw Data Snapshots")
@@ -161,7 +165,7 @@ with st.expander("Scored Listings (first 200 rows)"):
         "settled_date",
     ]
     existing_cols = [col for col in preview_cols if col in scored_df.columns]
-    st.dataframe(scored_df[existing_cols].head(200), use_container_width=True)
+    st.dataframe(scored_df[existing_cols].head(200), width="stretch")
 
 download_cols = st.columns(4)
 download_cols[0].markdown("Download CSV exports")
