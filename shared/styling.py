@@ -396,6 +396,36 @@ _BASE_STYLES = textwrap.dedent(
         font-weight: 600;
         color: var(--autosniper-primary);
     }
+    input[type="text"],
+    input[type="number"],
+    textarea,
+    select,
+    .stTextInput input,
+    .stNumberInput input,
+    .stSelectbox select {
+        background: var(--autosniper-surface);
+        color: var(--autosniper-text);
+        border: 1px solid var(--autosniper-border);
+        border-radius: 10px;
+        padding: 0.55rem 0.7rem;
+        box-shadow: inset 0 0 0 1px rgba(31, 166, 255, 0.1);
+    }
+    input[type="text"]::placeholder,
+    input[type="number"]::placeholder,
+    textarea::placeholder {
+        color: var(--autosniper-muted);
+    }
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    textarea:focus,
+    select:focus,
+    .stTextInput input:focus,
+    .stNumberInput input:focus,
+    .stSelectbox select:focus {
+        border-color: var(--autosniper-accent);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(31, 166, 255, 0.25);
+    }
     </style>
     """
 )
