@@ -18,6 +18,10 @@ st.set_page_config(
 )
 inject_global_styles()
 display_banner()
+st.markdown(
+    "<style>[data-testid='stSidebar']{display:block !important;}</style>",
+    unsafe_allow_html=True,
+)
 
 st.markdown(
     clean_html(
