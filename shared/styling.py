@@ -107,14 +107,16 @@ _BASE_STYLES = textwrap.dedent(
         margin-bottom: 0.35rem;
     }
     .stButton>button {
-        background: var(--autosniper-accent);
+        background: linear-gradient(135deg, var(--autosniper-accent) 0%, var(--autosniper-accent-strong) 100%);
         color: #041320;
         border-radius: 10px;
         border: none;
         padding: 0.65rem 1.3rem;
-        font-weight: 600;
+        font-weight: 700;
+        letter-spacing: 0.04em;
         box-shadow: 0 12px 28px rgba(12, 139, 235, 0.35);
         transition: all 0.2s ease;
+        opacity: 1 !important;
     }
     .stButton>button:hover {
         background: var(--autosniper-accent-strong);
@@ -402,7 +404,11 @@ _BASE_STYLES = textwrap.dedent(
     select,
     .stTextInput input,
     .stNumberInput input,
-    .stSelectbox select {
+    .stSelectbox select,
+    .stSelectbox > div > div,
+    .stMultiSelect > div > div,
+    .stSelectbox [data-baseweb="select"],
+    .stMultiSelect [data-baseweb="select"] {
         background: var(--autosniper-surface);
         color: var(--autosniper-text);
         border: 1px solid var(--autosniper-border);
@@ -412,7 +418,9 @@ _BASE_STYLES = textwrap.dedent(
     }
     input[type="text"]::placeholder,
     input[type="number"]::placeholder,
-    textarea::placeholder {
+    textarea::placeholder,
+    .stSelectbox [data-baseweb="select"] input::placeholder,
+    .stMultiSelect [data-baseweb="select"] input::placeholder {
         color: var(--autosniper-muted);
     }
     input[type="text"]:focus,
@@ -421,7 +429,9 @@ _BASE_STYLES = textwrap.dedent(
     select:focus,
     .stTextInput input:focus,
     .stNumberInput input:focus,
-    .stSelectbox select:focus {
+    .stSelectbox select:focus,
+    .stSelectbox [data-baseweb="select"]:focus-within,
+    .stMultiSelect [data-baseweb="select"]:focus-within {
         border-color: var(--autosniper-accent);
         outline: none;
         box-shadow: 0 0 0 3px rgba(31, 166, 255, 0.25);
