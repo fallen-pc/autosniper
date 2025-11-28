@@ -124,6 +124,11 @@ _BASE_STYLES = textwrap.dedent(
         box-shadow: 0 16px 34px rgba(12, 139, 235, 0.45);
         color: #e6edf6;
     }
+    .stButton>button:disabled {
+        background: linear-gradient(135deg, rgba(31, 166, 255, 0.35) 0%, rgba(12, 139, 235, 0.35) 100%);
+        color: rgba(4, 19, 32, 0.7);
+        opacity: 1;
+    }
     .autosniper-banner {
         display: flex;
         justify-content: center;
@@ -408,13 +413,23 @@ _BASE_STYLES = textwrap.dedent(
     .stSelectbox > div > div,
     .stMultiSelect > div > div,
     .stSelectbox [data-baseweb="select"],
-    .stMultiSelect [data-baseweb="select"] {
+    .stMultiSelect [data-baseweb="select"],
+    [data-baseweb="select"] [aria-label="Select"] {
         background: var(--autosniper-surface);
         color: var(--autosniper-text);
         border: 1px solid var(--autosniper-border);
         border-radius: 10px;
         padding: 0.55rem 0.7rem;
         box-shadow: inset 0 0 0 1px rgba(31, 166, 255, 0.1);
+    }
+    [data-baseweb="select"] * {
+        color: var(--autosniper-text);
+    }
+    [data-baseweb="popover"] {
+        background: var(--autosniper-panel);
+        color: var(--autosniper-text);
+        border: 1px solid var(--autosniper-border);
+        box-shadow: 0 18px 32px rgba(0, 0, 0, 0.35);
     }
     input[type="text"]::placeholder,
     input[type="number"]::placeholder,
@@ -435,6 +450,11 @@ _BASE_STYLES = textwrap.dedent(
         border-color: var(--autosniper-accent);
         outline: none;
         box-shadow: 0 0 0 3px rgba(31, 166, 255, 0.25);
+    }
+    .stNumberInput button {
+        color: var(--autosniper-text);
+        background: var(--autosniper-panel);
+        border: 1px solid var(--autosniper-border);
     }
     </style>
     """
