@@ -11,7 +11,11 @@ from shared.data_loader import dataset_path, ensure_datasets_available
 from shared.styling import clean_html, display_banner, inject_global_styles
 
 
-st.set_page_config(page_title="Manual Carsales Estimate Input", layout="wide")
+st.set_page_config(
+    page_title="Manual Carsales Estimate Input",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
 inject_global_styles()
 display_banner()
 
