@@ -108,10 +108,10 @@ _BASE_STYLES = textwrap.dedent(
     }
     .stButton>button {
         background: linear-gradient(135deg, var(--autosniper-accent) 0%, var(--autosniper-accent-strong) 100%);
-        color: #041320;
-        border-radius: 10px;
+        color: #f6f9ff;
+        border-radius: 12px;
         border: none;
-        padding: 0.65rem 1.3rem;
+        padding: 0.7rem 1.35rem;
         font-weight: 700;
         letter-spacing: 0.04em;
         box-shadow: 0 12px 28px rgba(12, 139, 235, 0.35);
@@ -119,15 +119,15 @@ _BASE_STYLES = textwrap.dedent(
         opacity: 1 !important;
     }
     .stButton>button:hover {
-        background: var(--autosniper-accent-strong);
+        background: linear-gradient(135deg, var(--autosniper-accent-strong) 0%, var(--autosniper-accent) 100%);
         transform: translateY(-1px);
         box-shadow: 0 16px 34px rgba(12, 139, 235, 0.45);
-        color: #e6edf6;
+        color: #f6f9ff;
     }
     .stButton>button:disabled {
-        background: linear-gradient(135deg, rgba(31, 166, 255, 0.35) 0%, rgba(12, 139, 235, 0.35) 100%);
-        color: rgba(4, 19, 32, 0.7);
-        opacity: 1;
+        background: linear-gradient(135deg, rgba(31, 166, 255, 0.25) 0%, rgba(12, 139, 235, 0.25) 100%);
+        color: rgba(230, 237, 246, 0.65);
+        box-shadow: none;
     }
     .autosniper-banner {
         display: flex;
