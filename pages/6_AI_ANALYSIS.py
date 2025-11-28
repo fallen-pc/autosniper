@@ -279,6 +279,33 @@ for column in CONDITION_COLUMNS:
             comparison_df["url"].map(condition_lookup[column])
         )
 
+# Pull manual Carsales fields from the active snapshot so completed rows stay visible.
+manual_columns = [
+    "manual_carsales_min",
+    "manual_carsales_max",
+    "manual_instant_offer_estimate",
+    "manual_instant_offer_max",
+    "manual_carsales_sold_30d",
+    "carsales_skipped",
+]
+available_manual_columns = [col for col in manual_columns if col in active_snapshot.columns]
+manual_lookup = active_snapshot.set_index("url")[available_manual_columns] if available_manual_columns else pd.DataFrame()
+for column in manual_columns:
+    if column not in comparison_df.columns:
+        comparison_df[column] = None
+    if not manual_lookup.empty and column in manual_lookup.columns:
+        comparison_df[column] = comparison_df[column].fillna(
+            comparison_df["url"].map(manual_lookup[column])
+        )
+
+# Backward-compatible alias for recent sales count.
+if "manual_recent_sales_30d" not in comparison_df.columns:
+    comparison_df["manual_recent_sales_30d"] = comparison_df.get("manual_carsales_sold_30d")
+elif "manual_carsales_sold_30d" in comparison_df.columns:
+    comparison_df["manual_recent_sales_30d"] = comparison_df["manual_recent_sales_30d"].fillna(
+        comparison_df["manual_carsales_sold_30d"]
+    )
+
 # Enforce presence of manual Carsales fields and filter out rows missing them.
 for manual_column in ("manual_carsales_min", "manual_instant_offer_estimate"):
     if manual_column not in comparison_df.columns:
