@@ -318,7 +318,7 @@ for _, row in filtered.iterrows():
             )
             if updated:
                 st.success("Saved Carsales estimates.")
-                st.experimental_rerun()
+                st.rerun()
             else:
                 st.error("Unable to update this vehicle.")
 
@@ -326,6 +326,6 @@ for _, row in filtered.iterrows():
             updated = update_vehicle_estimates(url, skipped=True)
             if updated:
                 st.info("Skipped. You can revisit later by clearing the flag in CSV.")
-                st.experimental_rerun()
+                st.rerun()
             else:
                 st.error("Unable to skip this vehicle.")
