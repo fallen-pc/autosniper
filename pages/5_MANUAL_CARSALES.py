@@ -24,16 +24,17 @@ st.markdown(
     unsafe_allow_html=True,
 )
 st.markdown(
-    "<p class='autosniper-tagline'>Open the Carsales search links, record resale and instant-offer values, or skip listings that cannot be valued right now.</p>",
+    "<p class='autosniper-tagline'>Enter Carsales resale and instant-buy ranges plus recent sales counts. Saved rows disappear from the list because completed items are filtered out.</p>",
     unsafe_allow_html=True,
 )
 st.markdown(
     clean_html(
         """
         <div class="autosniper-section">
-            <div class="section-title">Workflow</div>
+            <div class="section-title">Entry format</div>
             <div class="section-subtitle">
-                Filter for auctions closing soon, jump to Carsales, then submit both pricing fields or mark a listing as skipped.
+                Use <strong>min - max</strong> for price ranges (e.g. <code>$15,000 - $18,000</code>).
+                Instant buy uses the same format. Enter the <strong>sold last 30 days</strong> count as a whole number.
             </div>
         </div>
         """
@@ -47,12 +48,17 @@ EXCLUDED_STATUSES = {"sold", "closed", "canceled", "cancelled", "referred"}
 
 def _ensure_columns(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
-    if "manual_carsales_min" not in df.columns:
-        df["manual_carsales_min"] = None
-    if "manual_instant_offer_estimate" not in df.columns:
-        df["manual_instant_offer_estimate"] = None
-    if "carsales_skipped" not in df.columns:
-        df["carsales_skipped"] = False
+    for col in (
+        "manual_carsales_min",
+        "manual_carsales_max",
+        "manual_instant_offer_estimate",
+        "manual_instant_offer_max",
+        "manual_carsales_sold_30d",
+        "carsales_skipped",
+    ):
+        if col not in df.columns:
+            df[col] = None
+    df["carsales_skipped"] = df["carsales_skipped"].fillna(False)
     return df
 
 
@@ -79,9 +85,7 @@ def _load_vehicle_table() -> pd.DataFrame:
     df = _ensure_columns(df)
 
     df["status"] = df.get("status", "").astype(str).str.strip().str.lower()
-    df["carsales_skipped"] = df["carsales_skipped"].fillna(False)
 
-    # Compute hours remaining for filtering when possible.
     if "hours_remaining" not in df.columns:
         df["hours_remaining"] = df.get("time_remaining_or_date_sold", "").apply(_extract_hours_remaining)
 
@@ -89,6 +93,14 @@ def _load_vehicle_table() -> pd.DataFrame:
         df["auction_end_time_parsed"] = pd.to_datetime(df["auction_end_time"], errors="coerce")
     else:
         df["auction_end_time_parsed"] = pd.NaT
+
+    df["location_clean"] = (
+        df.get("location", pd.Series([None] * len(df), index=df.index))
+        .fillna("")
+        .astype(str)
+        .str.strip()
+        .replace({"nan": "", "None": ""})
+    )
 
     return df
 
@@ -111,6 +123,37 @@ def _format_odometer(value: Any) -> str:
         return f"{text} km" if text else "N/A"
 
 
+def _format_range_text(min_val: Any, max_val: Any) -> str:
+    if min_val is None and max_val is None:
+        return ""
+    min_txt = f"${float(min_val):,.0f}" if min_val is not None and not pd.isna(min_val) else ""
+    max_txt = f"${float(max_val):,.0f}" if max_val is not None and not pd.isna(max_val) else ""
+    if min_txt and max_txt:
+        return f"{min_txt} - {max_txt}"
+    return min_txt or max_txt
+
+
+def _parse_range_text(raw: Any) -> tuple[Optional[float], Optional[float]]:
+    """Accept '12000-15000' or '$12k - $15k' and return (min, max)."""
+    if raw is None or (isinstance(raw, float) and pd.isna(raw)):
+        return None, None
+    text = str(raw).strip()
+    if not text:
+        return None, None
+    normalized = text.lower().replace("to", "-").replace("–", "-").replace("—", "-")
+    parts = [p for p in normalized.split("-") if p.strip()]
+    values: list[float] = []
+    for part in parts:
+        val = coerce_price(part)
+        if val is not None:
+            values.append(val)
+    if not values:
+        return None, None
+    if len(values) == 1:
+        return values[0], None
+    return values[0], values[1]
+
+
 df = _load_vehicle_table()
 
 # Filters
@@ -123,8 +166,10 @@ timeframe_options: Dict[str, tuple[Optional[float], Optional[float]]] = {
 selected_timeframe = st.sidebar.selectbox("Time window", list(timeframe_options.keys()), index=1)
 min_hours, max_hours = timeframe_options[selected_timeframe]
 
+location_options = sorted({loc for loc in df["location_clean"].dropna().unique() if loc})
 unique_makes = sorted({m for m in df.get("make", pd.Series()).dropna().astype(str).str.title()})
 selected_makes = st.sidebar.multiselect("Filter by make", unique_makes)
+selected_locations = st.sidebar.multiselect("Filter by location", location_options)
 
 search_text = st.sidebar.text_input("Search model/variant/URL")
 
@@ -147,6 +192,9 @@ filtered = df[missing_manual_mask & status_mask & skip_mask & hours_mask].copy()
 
 if selected_makes:
     filtered = filtered[filtered["make"].astype(str).str.title().isin(selected_makes)]
+
+if selected_locations:
+    filtered = filtered[filtered["location_clean"].isin(selected_locations)]
 
 if search_text:
     needle = search_text.strip().lower()
@@ -172,81 +220,25 @@ filtered = filtered.sort_values(by="sort_key", kind="mergesort")
 filtered["carsales_search"] = filtered.apply(_carsales_search_url, axis=1)
 filtered["odometer_display"] = filtered["odometer_reading"].apply(_format_odometer)
 
-display_columns = [
-    "year",
-    "make",
-    "model",
-    "variant",
-    "transmission",
-    "fuel_type",
-    "odometer_display",
-    "manual_carsales_min",
-    "manual_instant_offer_estimate",
-    "carsales_search",
-    "url",
-]
-
-editor_df = filtered[display_columns].rename(
-    columns={
-        "year": "Year",
-        "make": "Make",
-        "model": "Model",
-        "variant": "Variant",
-        "transmission": "Transmission",
-        "fuel_type": "Fuel Type",
-        "odometer_display": "Odometer",
-        "manual_carsales_min": "manual_carsales_min",
-        "manual_instant_offer_estimate": "manual_instant_offer_estimate",
-        "carsales_search": "Carsales Search",
-        "url": "url",
-    }
-)
-
-st.markdown("Use the table to input Carsales resale and instant offer estimates, then submit each row.")
-
-edited_df = st.data_editor(
-    editor_df,
-    hide_index=True,
-    num_rows="fixed",
-    column_config={
-        "Year": st.column_config.NumberColumn("Year", disabled=True, width="small"),
-        "Make": st.column_config.TextColumn("Make", disabled=True, width="medium"),
-        "Model": st.column_config.TextColumn("Model", disabled=True, width="medium"),
-        "Variant": st.column_config.TextColumn("Variant", disabled=True, width="large"),
-        "Transmission": st.column_config.TextColumn("Transmission", disabled=True, width="small"),
-        "Fuel Type": st.column_config.TextColumn("Fuel Type", disabled=True, width="small"),
-        "Odometer": st.column_config.TextColumn("Odometer", disabled=True, width="medium"),
-        "manual_carsales_min": st.column_config.NumberColumn(
-            "Carsales Resale (Min)",
-            help="Enter the expected resale on Carsales.",
-            format="$%,.0f",
-        ),
-        "manual_instant_offer_estimate": st.column_config.NumberColumn(
-            "Instant Offer Estimate",
-            help="Instant buy/offer estimate.",
-            format="$%,.0f",
-        ),
-        "Carsales Search": st.column_config.LinkColumn("Carsales Search", display_text="Open search"),
-        "url": st.column_config.TextColumn("Listing URL", disabled=True),
-    },
-)
-
+st.markdown("Enter ranges and counts below, then click **Save** for each row.")
 st.divider()
 
 
-def _validate_row(row: pd.Series) -> tuple[bool, str, Optional[float], Optional[float]]:
-    manual_min = coerce_price(row.get("manual_carsales_min"))
-    manual_offer = coerce_price(row.get("manual_instant_offer_estimate"))
-    if manual_min is None or manual_min <= 0:
-        return False, "Carsales resale estimate is required and must be positive.", None, None
-    if manual_offer is None or manual_offer <= 0:
-        return False, "Instant offer estimate is required and must be positive.", None, None
-    return True, "", manual_min, manual_offer
+def _safe_int(value: Any) -> Optional[int]:
+    try:
+        if value is None or (isinstance(value, float) and pd.isna(value)):
+            return None
+        text = str(value).strip()
+        if not text:
+            return None
+        return int(float(text))
+    except Exception:
+        return None
 
 
-for _, row in edited_df.iterrows():
-    url = row["url"]
-    parts = [row.get("Year"), row.get("Make"), row.get("Model"), row.get("Variant")]
+for _, row in filtered.iterrows():
+    url = str(row.get("url", "")).strip()
+    parts = [row.get("year"), row.get("make"), row.get("model"), row.get("variant")]
     safe_parts = []
     for part in parts:
         if part is None:
@@ -260,24 +252,60 @@ for _, row in edited_df.iterrows():
             continue
         safe_parts.append(text)
     title = " ".join(safe_parts)
-    info_col, min_col, offer_col, submit_col, skip_col, export_col = st.columns([3, 1.2, 1.2, 0.8, 0.8, 1.2])
-    info_col.markdown(f"**{html.escape(title)}**")
-    min_col.write(f"Min: {row.get('manual_carsales_min') or '—'}")
-    offer_col.write(f"Instant: {row.get('manual_instant_offer_estimate') or '—'}")
 
-    submit_key = f"submit_{url}"
-    skip_key = f"skip_{url}"
-    export_key = f"export_{url}"
+    with st.form(key=f"manual_form_{url}"):
+        header_col, meta_col = st.columns([3, 2])
+        header_col.markdown(f"**{html.escape(title)}**")
+        header_col.caption(row.get("location_clean", "") or "Location: N/A")
+        meta_col.write(row.get("odometer_display", "N/A"))
+        meta_col.markdown(f"[Carsales search]({row.get('carsales_search','')})", unsafe_allow_html=False)
 
-    if submit_col.button("Submit", key=submit_key):
-        ok, message, manual_min_val, manual_offer_val = _validate_row(row)
-        if not ok:
-            st.error(message)
-        else:
+        resale_default = _format_range_text(row.get("manual_carsales_min"), row.get("manual_carsales_max"))
+        instant_default = _format_range_text(
+            row.get("manual_instant_offer_estimate"), row.get("manual_instant_offer_max")
+        )
+        sold_default = _safe_int(row.get("manual_carsales_sold_30d")) or 0
+
+        resale_col, instant_col, sold_col = st.columns([2, 2, 1])
+        resale_input = resale_col.text_input(
+            "Carsales resale (min - max)",
+            value=resale_default,
+            placeholder="$15,000 - $18,000",
+        )
+        instant_input = instant_col.text_input(
+            "Instant buy (min - max)",
+            value=instant_default,
+            placeholder="$12,500 - $14,000",
+        )
+        sold_input = sold_col.number_input(
+            "Sold last 30d",
+            min_value=0,
+            step=1,
+            value=sold_default,
+            help="Count of similar vehicles sold on Carsales in the last 30 days.",
+        )
+
+        action_col1, action_col2, _ = st.columns([1, 1, 3])
+        save_clicked = action_col1.form_submit_button("Save")
+        skip_clicked = action_col2.form_submit_button("Skip")
+
+        if save_clicked:
+            manual_min, manual_max = _parse_range_text(resale_input)
+            instant_min, instant_max = _parse_range_text(instant_input)
+            if manual_min is None:
+                st.error("Carsales resale range is required (min or min-max).")
+                continue
+            if instant_min is None:
+                st.error("Instant buy range is required (min or min-max).")
+                continue
+
             updated = update_vehicle_estimates(
                 url,
-                manual_min=manual_min_val,
-                manual_instant_offer=manual_offer_val,
+                manual_min=manual_min,
+                manual_max=manual_max,
+                manual_instant_offer=instant_min,
+                manual_instant_offer_max=instant_max,
+                sold_last_30d=int(sold_input) if sold_input is not None else None,
                 skipped=False,
             )
             if updated:
@@ -286,16 +314,10 @@ for _, row in edited_df.iterrows():
             else:
                 st.error("Unable to update this vehicle.")
 
-    if skip_col.button("Skip", key=skip_key):
-        updated = update_vehicle_estimates(url, skipped=True)
-        if updated:
-            st.info("Skipped. You can revisit later by clearing the flag in CSV.")
-            st.experimental_rerun()
-        else:
-            st.error("Unable to skip this vehicle.")
-
-    export_payload = f"{title} | {row.get('Transmission','')} | {row.get('Fuel Type','')} | {row.get('Odometer','')} | {row.get('Carsales Search','')}"
-    if export_col.button("Copy row text", key=export_key):
-        st.session_state["manual_clipboard_payload"] = export_payload
-        st.toast("Row text ready to copy (Ctrl+C).")
-    export_col.text_input("Copy", value=export_payload, label_visibility="collapsed", key=f"copy_input_{url}")
+        if skip_clicked:
+            updated = update_vehicle_estimates(url, skipped=True)
+            if updated:
+                st.info("Skipped. You can revisit later by clearing the flag in CSV.")
+                st.experimental_rerun()
+            else:
+                st.error("Unable to skip this vehicle.")

@@ -45,8 +45,14 @@ def _ensure_manual_columns(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
     if "manual_carsales_min" not in df.columns:
         df["manual_carsales_min"] = None
+    if "manual_carsales_max" not in df.columns:
+        df["manual_carsales_max"] = None
     if "manual_instant_offer_estimate" not in df.columns:
         df["manual_instant_offer_estimate"] = None
+    if "manual_instant_offer_max" not in df.columns:
+        df["manual_instant_offer_max"] = None
+    if "manual_carsales_sold_30d" not in df.columns:
+        df["manual_carsales_sold_30d"] = None
     if "carsales_skipped" not in df.columns:
         df["carsales_skipped"] = False
     return df
@@ -82,7 +88,10 @@ def _apply_updates_to_file(path: Path, url_key: str, updates: dict[str, Any]) ->
 def update_vehicle_estimates(
     url: str,
     manual_min: float | None = None,
+    manual_max: float | None = None,
     manual_instant_offer: float | None = None,
+    manual_instant_offer_max: float | None = None,
+    sold_last_30d: int | None = None,
     *,
     skipped: bool | None = None,
 ) -> bool:
@@ -95,8 +104,14 @@ def update_vehicle_estimates(
     updates: dict[str, Any] = {}
     if manual_min is not None:
         updates["manual_carsales_min"] = manual_min
+    if manual_max is not None:
+        updates["manual_carsales_max"] = manual_max
     if manual_instant_offer is not None:
         updates["manual_instant_offer_estimate"] = manual_instant_offer
+    if manual_instant_offer_max is not None:
+        updates["manual_instant_offer_max"] = manual_instant_offer_max
+    if sold_last_30d is not None:
+        updates["manual_carsales_sold_30d"] = sold_last_30d
     if skipped is not None:
         updates["carsales_skipped"] = bool(skipped)
 

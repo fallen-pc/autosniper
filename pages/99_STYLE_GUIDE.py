@@ -48,15 +48,15 @@ st.markdown(
         .palette-tile {
             border-radius: 16px;
             padding: 1.1rem;
-            box-shadow: 0 12px 24px rgba(13, 2, 45, 0.18);
-            border: 1px solid rgba(40, 71, 53, 0.24);
-            background: rgba(242, 236, 219, 0.96);
+            box-shadow: 0 18px 38px rgba(0, 0, 0, 0.28);
+            border: 1px solid var(--autosniper-border);
+            background: linear-gradient(135deg, rgba(26, 33, 48, 0.95) 0%, rgba(18, 23, 36, 0.92) 100%);
         }
         .palette-swatch {
             height: 52px;
             border-radius: 12px;
             margin-bottom: 0.7rem;
-            border: 1px solid rgba(40, 71, 53, 0.28);
+            border: 1px solid rgba(38, 50, 67, 0.7);
         }
         .palette-label {
             font-weight: 700;
@@ -124,21 +124,22 @@ st.markdown(
 
 section_heading(
     "Brand Palette",
-    "Banner navy and earthy camo tones ready for reuse anywhere custom HTML needs colour tokens.",
+    "Dark navy base with electric blue accents; reuse these tokens for any custom HTML blocks.",
 )
 
 palette = [
-    ("Background", "var(--autosniper-bg)", "#FFFFFF"),
-    ("Surface", "var(--autosniper-surface)", "#FFFFFF"),
-    ("Panel", "var(--autosniper-panel)", "#F2ECDB"),
-    ("Highlight", "var(--autosniper-highlight)", "#D8CAA3"),
-    ("Primary", "var(--autosniper-primary)", "#0D022D"),
-    ("Primary Dark", "var(--autosniper-primary-dark)", "#07031A"),
-    ("Accent", "var(--autosniper-accent)", "#284735"),
-    ("Muted", "var(--autosniper-muted)", "#403030"),
-    ("Success", "var(--autosniper-success)", "#284735"),
-    ("Warning", "var(--autosniper-warning)", "#B6A77C"),
-    ("Danger", "var(--autosniper-danger)", "#3C352F"),
+    ("Background", "var(--autosniper-bg)", "#0f1724"),
+    ("Surface", "var(--autosniper-surface)", "#121724"),
+    ("Panel", "var(--autosniper-panel)", "#1a2130"),
+    ("Highlight", "var(--autosniper-highlight)", "#1a2130"),
+    ("Primary", "var(--autosniper-primary)", "#e6edf6"),
+    ("Primary Dark", "var(--autosniper-primary-dark)", "#b9c8dc"),
+    ("Accent", "var(--autosniper-accent)", "#1fa6ff"),
+    ("Accent Strong", "var(--autosniper-accent-strong)", "#0c8beb"),
+    ("Muted", "var(--autosniper-muted)", "#9aa7b8"),
+    ("Success", "var(--autosniper-success)", "#5ee6a7"),
+    ("Warning", "var(--autosniper-warning)", "#ffa726"),
+    ("Danger", "var(--autosniper-danger)", "#ff5a5f"),
 ]
 
 palette_tiles = "".join(
