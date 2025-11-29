@@ -296,8 +296,6 @@ comparison_df["_manual_offer_numeric"] = comparison_df["manual_instant_offer_est
 comparison_df["_has_manual_carsales"] = (
     comparison_df["_manual_min_numeric"].notna()
     & (comparison_df["_manual_min_numeric"] > 0)
-    & comparison_df["_manual_offer_numeric"].notna()
-    & (comparison_df["_manual_offer_numeric"] > 0)
     & ~comparison_df["carsales_skipped"].fillna(False).astype(bool)
 )
 comparison_df = comparison_df[comparison_df["_has_manual_carsales"]].copy()
