@@ -4,24 +4,13 @@ import streamlit as st
 from scripts.ai_listing_valuation import load_cached_results
 from scripts.ai_price_analysis import load_historical_sales
 from shared.data_loader import ensure_datasets_available
-from shared.styling import clean_html, display_banner, inject_global_styles
+from shared.styling import clean_html, display_banner, inject_global_styles, page_intro
 
 
 st.set_page_config(page_title="MISSED OPPORTUNITIES", layout="wide")
 inject_global_styles()
 display_banner()
-st.markdown(
-    clean_html(
-        """
-        <h1 style="text-align:center;">MISSED OPPORTUNITIES</h1>
-        """
-    ),
-    unsafe_allow_html=True,
-)
-st.markdown(
-    "<p class='autosniper-tagline'>Spot the listings that got away so you can refine bidding rules and sourcing playbooks.</p>",
-    unsafe_allow_html=True,
-)
+page_intro("MISSED OPPORTUNITIES", "Spot the listings that got away so you can refine bidding rules and sourcing playbooks.")
 
 required_files = ["ai_listing_valuations.csv", "sold_cars.csv"]
 missing = ensure_datasets_available(required_files)

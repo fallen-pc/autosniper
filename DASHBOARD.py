@@ -10,31 +10,14 @@ import pandas as pd
 import streamlit as st
 
 from shared.data_loader import dataset_path, ensure_datasets_available
-from shared.styling import clean_html, display_banner, inject_global_styles, section_heading
+from shared.styling import clean_html, display_banner, inject_global_styles, page_intro, section_heading
 
 
 st.set_page_config(page_title="AutoSniper - Dashboard", layout="wide")
 inject_global_styles()
 display_banner()
 
-st.markdown(
-    clean_html(
-        """
-        <h1 style="text-align:center;">DASHBOARD</h1>
-        """
-    ),
-    unsafe_allow_html=True,
-)
-st.markdown(
-    clean_html(
-        """
-        <p style="color: var(--autosniper-muted); max-width: 720px; margin: 0 auto 1.5rem; text-align: center;">
-            Monitor live stock, track state changes, and review coverage across the intake feeds.
-        </p>
-        """
-    ),
-    unsafe_allow_html=True,
-)
+page_intro("DASHBOARD", "Monitor live stock, track state changes, and review coverage across the intake feeds.")
 
 missing = ensure_datasets_available(["vehicle_static_details.csv"])
 if missing:

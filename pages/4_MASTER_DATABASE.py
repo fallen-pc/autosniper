@@ -6,24 +6,13 @@ import pandas as pd
 import streamlit as st
 
 from shared.data_loader import dataset_path, ensure_datasets_available
-from shared.styling import clean_html, display_banner, inject_global_styles
+from shared.styling import clean_html, display_banner, inject_global_styles, page_intro
 
 
 st.set_page_config(page_title="MASTER DATABASE", layout="wide")
 inject_global_styles()
 display_banner()
-st.markdown(
-    clean_html(
-        """
-        <h1 style="text-align:center;">MASTER DATABASE OVERVIEW</h1>
-        """
-    ),
-    unsafe_allow_html=True,
-)
-st.markdown(
-    "<p class='autosniper-tagline'>Review every vehicle snapshot - active, sold, and referred - from one command center.</p>",
-    unsafe_allow_html=True,
-)
+page_intro("MASTER DATABASE OVERVIEW", "Review every vehicle snapshot - active, sold, and referred - from one command center.")
 
 required_files = [
     "vehicle_static_details.csv",

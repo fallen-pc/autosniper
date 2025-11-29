@@ -4,25 +4,14 @@ import streamlit as st
 
 from scripts.outcome_tracking import compute_outcome_metrics
 from shared.data_loader import ensure_datasets_available
-from shared.styling import clean_html, display_banner, inject_global_styles
+from shared.styling import clean_html, display_banner, inject_global_styles, page_intro
 
 
 st.set_page_config(page_title="OUTCOME ACCURACY", layout="wide")
 inject_global_styles()
 display_banner()
 
-st.markdown(
-    clean_html(
-        """
-        <h1 style="text-align:center;">OUTCOME ACCURACY TRACKER</h1>
-        """
-    ),
-    unsafe_allow_html=True,
-)
-st.markdown(
-    "<p class='autosniper-tagline'>See how well predictions lined up with real-world results so you can tighten bids and confidence bands.</p>",
-    unsafe_allow_html=True,
-)
+page_intro("OUTCOME ACCURACY TRACKER", "See how well predictions lined up with real-world results so you can tighten bids and confidence bands.")
 
 required_files = [
     "ai_listing_valuations.csv",

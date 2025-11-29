@@ -8,7 +8,7 @@ import streamlit as st
 from scripts.ai_price_analysis import _extract_hours_remaining
 from scripts.vehicle_updates import coerce_price, update_vehicle_estimates
 from shared.data_loader import dataset_path, ensure_datasets_available
-from shared.styling import clean_html, display_banner, inject_global_styles
+from shared.styling import clean_html, display_banner, inject_global_styles, page_intro
 
 
 st.set_page_config(
@@ -27,17 +27,9 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-st.markdown(
-    clean_html(
-        """
-        <h1 style="text-align:center;">MANUAL CARSALES ESTIMATES</h1>
-        """
-    ),
-    unsafe_allow_html=True,
-)
-st.markdown(
-    "<p class='autosniper-tagline'>Enter Carsales resale and instant-buy ranges plus recent sales counts. Saved rows disappear from the list because completed items are filtered out.</p>",
-    unsafe_allow_html=True,
+page_intro(
+    "MANUAL CARSALES ESTIMATES",
+    "Enter Carsales resale and instant-buy ranges plus recent sales counts. Saved rows disappear from the list because completed items are filtered out.",
 )
 st.markdown(
     clean_html(

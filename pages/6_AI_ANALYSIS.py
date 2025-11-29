@@ -49,7 +49,7 @@ from scripts.update_bids import update_bids
 
 from shared.data_loader import ensure_datasets_available
 
-from shared.styling import clean_html, display_banner, inject_global_styles
+from shared.styling import clean_html, display_banner, inject_global_styles, page_intro
 
 
 
@@ -67,29 +67,7 @@ inject_global_styles()
 
 display_banner()
 
-st.markdown(
-
-    clean_html(
-
-        """
-
-        <h1 style="text-align:center;">AI PRICING ANALYSIS</h1>
-
-        """
-
-    ),
-
-    unsafe_allow_html=True,
-
-)
-
-st.markdown(
-
-    "<p class='autosniper-tagline'>Blend AI valuations with live market data to rank the sharpest buying opportunities.</p>",
-
-    unsafe_allow_html=True,
-
-)
+page_intro("AI PRICING ANALYSIS", "Blend AI valuations with live market data to rank the sharpest buying opportunities.")
 
 
 

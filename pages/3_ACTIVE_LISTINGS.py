@@ -11,7 +11,7 @@ from openai import OpenAI
 
 from scripts.update_bids import update_bids
 from shared.data_loader import dataset_path, ensure_datasets_available
-from shared.styling import clean_html, display_banner, inject_global_styles
+from shared.styling import clean_html, display_banner, inject_global_styles, page_intro
 
 if os.name == "nt":
     asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
@@ -21,18 +21,7 @@ st.set_page_config(page_title="ACTIVE LISTINGS DASHBOARD", layout="wide")
 inject_global_styles()
 
 display_banner()
-st.markdown(
-    clean_html(
-        """
-        <h1 style="text-align:center;">ACTIVE LISTINGS DASHBOARD</h1>
-        """
-    ),
-    unsafe_allow_html=True,
-)
-st.markdown(
-    "<p class='autosniper-tagline'>Track live auctions, filter the noise, and act on the most promising stock.</p>",
-    unsafe_allow_html=True,
-)
+page_intro("ACTIVE LISTINGS DASHBOARD", "Track live auctions, filter the noise, and act on the most promising stock.")
 
 if os.path.exists(".env.local"):
     load_dotenv(".env.local")
