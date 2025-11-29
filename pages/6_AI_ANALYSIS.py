@@ -204,6 +204,14 @@ def build_comparison_dataframe(min_hours: float, max_hours: float) -> tuple[pd.D
 
 
 
+# Manual refresh to pick up latest CSV/manual entries immediately.
+if st.button("Refresh data"):
+
+    get_active_listings.clear()
+    get_historical_sales.clear()
+    build_comparison_dataframe.clear()
+    st.rerun()
+
 active_snapshot, comparison_df = build_comparison_dataframe(selected_min_hours, selected_max_hours)
 comparison_df = comparison_df.copy()
 
