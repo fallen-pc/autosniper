@@ -17,7 +17,11 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 inject_global_styles()
-display_banner()
+
+# Skip heavy banners by default to keep mobile loads light.
+show_banner = st.sidebar.checkbox("Show banner", value=False)
+if show_banner:
+    display_banner()
 st.markdown(
     "<style>[data-testid='stSidebar']{display:block !important;}</style>",
     unsafe_allow_html=True,
@@ -82,6 +86,7 @@ def _is_blank(value: Any) -> bool:
         return False
 
 
+@st.cache_data(ttl=300)
 def _load_vehicle_table() -> pd.DataFrame:
     missing = ensure_datasets_available(["vehicle_static_details.csv"])
     if missing:
@@ -230,6 +235,18 @@ filtered["odometer_display"] = filtered["odometer_reading"].apply(_format_odomet
 
 st.markdown("Enter ranges and counts below, then click **Save** for each row.")
 st.divider()
+
+# Pagination to avoid rendering hundreds of forms on mobile.
+page_size = st.sidebar.selectbox("Rows per page", options=[10, 20, 50], index=0)
+total_rows = len(filtered)
+total_pages = max(1, (total_rows + page_size - 1) // page_size)
+page_number = st.sidebar.number_input("Page", min_value=1, max_value=total_pages, value=1, step=1)
+
+start_idx = (page_number - 1) * page_size
+end_idx = start_idx + page_size
+filtered = filtered.iloc[start_idx:end_idx]
+
+st.caption(f"Showing {len(filtered)} of {total_rows} vehicles (page {page_number}/{total_pages}).")
 
 
 def _safe_int(value: Any) -> Optional[int]:
