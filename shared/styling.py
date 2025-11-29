@@ -463,11 +463,15 @@ _BASE_STYLES = textwrap.dedent(
         padding: 1.25rem 1.4rem;
         box-shadow: 0 18px 32px rgba(0, 0, 0, 0.26);
         margin-bottom: 1rem;
+        text-align: center;
+        max-width: 960px;
+        margin-left: auto;
+        margin-right: auto;
     }
     .page-intro h1 {
         margin: 0 0 0.35rem 0;
         font-size: clamp(2.1rem, 1.6vw + 1.6rem, 2.6rem);
-        text-align: left;
+        text-align: center;
     }
     .page-intro p {
         margin: 0;
