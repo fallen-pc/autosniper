@@ -26,6 +26,41 @@ st.markdown(
     "<style>[data-testid='stSidebar']{display:block !important;}</style>",
     unsafe_allow_html=True,
 )
+st.markdown(
+    clean_html(
+        """
+        <style>
+        .manual-card {
+            border: 1px solid var(--autosniper-border);
+            background: var(--autosniper-panel);
+            border-radius: 16px;
+            padding: 1.1rem 1.25rem;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.24);
+            margin-bottom: 1rem;
+        }
+        .manual-title {
+            display: block;
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--autosniper-primary);
+            letter-spacing: -0.01em;
+        }
+        .manual-meta {
+            color: var(--autosniper-muted);
+            font-size: 0.95rem;
+            margin-top: 0.15rem;
+            margin-bottom: 0.35rem;
+        }
+        [data-testid="stSidebar"] .stSelectbox,
+        [data-testid="stSidebar"] .stNumberInput,
+        [data-testid="stSidebar"] .stTextInput {
+            margin-bottom: 0.65rem;
+        }
+        </style>
+        """
+    ),
+    unsafe_allow_html=True,
+)
 
 page_intro(
     "MANUAL CARSALES ESTIMATES",
@@ -271,13 +306,15 @@ for _, row in filtered.iterrows():
     title = " ".join(safe_parts)
 
     with st.form(key=f"manual_form_{url}"):
+        st.markdown("<div class='manual-card'>", unsafe_allow_html=True)
         header_col, meta_col = st.columns([3, 2])
-        header_col.markdown(f"**{html.escape(title)}**")
-        header_col.caption(row.get("location_clean", "") or "Location: N/A")
-        meta_col.write(row.get("odometer_display", "N/A"))
-        meta_col.caption(
-            f"{row.get('transmission', 'N/A')} | {row.get('fuel_type', 'N/A')}"
+        header_col.markdown(f"<span class='manual-title'>{html.escape(title)}</span>", unsafe_allow_html=True)
+        header_col.markdown(
+            f"<div class='manual-meta'>{row.get('location_clean', 'Location: N/A') or 'Location: N/A'}</div>",
+            unsafe_allow_html=True,
         )
+        meta_col.write(row.get("odometer_display", "N/A"))
+        meta_col.caption(f"{row.get('transmission', 'N/A')} | {row.get('fuel_type', 'N/A')}")
         meta_col.markdown(f"[Carsales search]({row.get('carsales_search','')})", unsafe_allow_html=False)
 
         resale_default = _format_range_text(row.get("manual_carsales_min"), row.get("manual_carsales_max"))
@@ -341,3 +378,5 @@ for _, row in filtered.iterrows():
                 st.rerun()
             else:
                 st.error("Unable to skip this vehicle.")
+
+        st.markdown("</div>", unsafe_allow_html=True)
