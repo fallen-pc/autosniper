@@ -456,6 +456,25 @@ _BASE_STYLES = textwrap.dedent(
         background: var(--autosniper-panel);
         border: 1px solid var(--autosniper-border);
     }
+    .page-intro {
+        background: var(--autosniper-panel);
+        border: 1px solid var(--autosniper-border);
+        border-radius: 18px;
+        padding: 1.25rem 1.4rem;
+        box-shadow: 0 18px 32px rgba(0, 0, 0, 0.26);
+        margin-bottom: 1rem;
+    }
+    .page-intro h1 {
+        margin: 0 0 0.35rem 0;
+        font-size: clamp(2.1rem, 1.6vw + 1.6rem, 2.6rem);
+        text-align: left;
+    }
+    .page-intro p {
+        margin: 0;
+        color: var(--autosniper-muted);
+        font-size: 1rem;
+        line-height: 1.55;
+    }
     </style>
     """
 )
@@ -498,6 +517,23 @@ def info_chip(label: str) -> None:
     """Render a small pill-style chip."""
     inject_global_styles()
     st.markdown(f"<span class='autosniper-chip'>{label}</span>", unsafe_allow_html=True)
+
+
+def page_intro(title: str, subtitle: str | None = None) -> None:
+    """Render a standard page intro panel."""
+    inject_global_styles()
+    subtitle_html = f"<p>{subtitle}</p>" if subtitle else ""
+    st.markdown(
+        clean_html(
+            f"""
+            <div class="page-intro">
+                <h1>{title}</h1>
+                {subtitle_html}
+            </div>
+            """
+        ),
+        unsafe_allow_html=True,
+    )
 
 
 _LOGO_CACHE: dict[int, str] = {}
