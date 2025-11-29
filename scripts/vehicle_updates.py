@@ -8,7 +8,7 @@ from typing import Any
 
 import pandas as pd
 
-from shared.data_loader import dataset_path
+from shared.data_loader import dataset_path, upload_remote_data_bundle
 
 
 def _atomic_write(df: pd.DataFrame, path: Path) -> None:
@@ -125,4 +125,6 @@ def update_vehicle_estimates(
     changed = False
     for target in targets:
         changed = _apply_updates_to_file(target, url, updates) or changed
+    if changed:
+        upload_remote_data_bundle(["vehicle_static_details.csv", "active_vehicle_details.csv"])
     return changed

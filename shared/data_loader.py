@@ -2,7 +2,7 @@
 
 This module allows the app to pull a ZIP bundle of CSV files from a remote
 location defined by environment variables. It keeps the repository light while
-still supporting “live” data in hosted environments such as Streamlit Cloud.
+still supporting live data in hosted environments such as Streamlit Cloud.
 
 Environment variables:
 ----------------------
@@ -17,8 +17,11 @@ AUTOSNIPER_DATA_TOKEN
 
 AUTOSNIPER_DATA_CACHE_MINUTES
     Optional integer (default: 30). Controls how frequently the remote bundle
-    is re-downloaded. While the cache is “warm”, extraction is skipped unless
+    is re-downloaded. While the cache is "warm", extraction is skipped unless
     files are missing.
+AUTOSNIPER_DATA_UPLOAD_URL
+    Optional. If set, points to a writable endpoint (e.g., S3 presigned PUT)
+    that receives a ZIP of the current CSV_data directory whenever we sync.
 """
 
 from __future__ import annotations
@@ -124,6 +127,36 @@ def _download_remote_bundle() -> None:
     )
 
 
+def _build_zip_bytes(filenames: Iterable[str]) -> bytes:
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+        for name in filenames:
+            path = dataset_path(name)
+            if not path.exists():
+                continue
+            archive.write(path, arcname=Path("CSV_data") / Path(name).name)
+    return buffer.getvalue()
+
+
+def upload_remote_data_bundle(filenames: Iterable[str] | None = None) -> bool:
+    """Upload a ZIP of CSV_data to AUTOSNIPER_DATA_UPLOAD_URL, if configured."""
+    upload_url = os.getenv("AUTOSNIPER_DATA_UPLOAD_URL")
+    if not upload_url:
+        return False
+    token = os.getenv("AUTOSNIPER_DATA_TOKEN")
+    headers = {"Authorization": f"Bearer {token}"} if token else {}
+    timeout = int(os.getenv("AUTOSNIPER_DATA_TIMEOUT", "30"))
+    files_to_send = list(filenames) if filenames else REQUIRED_FILES
+    try:
+        payload = _build_zip_bytes(files_to_send)
+        response = requests.put(upload_url, headers=headers, data=payload, timeout=timeout)
+        response.raise_for_status()
+        return True
+    except Exception:
+        # Avoid crashing the UI if upload fails.
+        return False
+
+
 def sync_remote_data(force: bool = False) -> None:
     """Fetch the remote dataset bundle when configured."""
     if not os.getenv("AUTOSNIPER_DATA_URL"):
@@ -151,4 +184,3 @@ def ensure_datasets_available(required: Iterable[str] | None = None) -> list[str
         if not dataset_path(filename).exists():
             missing.append(filename)
     return missing
-
