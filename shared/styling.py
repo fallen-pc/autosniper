@@ -129,6 +129,23 @@ _BASE_STYLES = textwrap.dedent(
         color: rgba(230, 237, 246, 0.65);
         box-shadow: none;
     }
+    /* Ensure sidebar buttons match primary styling */
+    [data-testid="stSidebar"] .stButton>button {
+        background: linear-gradient(135deg, var(--autosniper-accent) 0%, var(--autosniper-accent-strong) 100%);
+        color: #f6f9ff;
+        border-radius: 12px;
+        border: none;
+        padding: 0.65rem 1.1rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        box-shadow: 0 10px 22px rgba(12, 139, 235, 0.28);
+        opacity: 1 !important;
+    }
+    [data-testid="stSidebar"] .stButton>button:hover {
+        background: linear-gradient(135deg, var(--autosniper-accent-strong) 0%, var(--autosniper-accent) 100%);
+        box-shadow: 0 12px 26px rgba(12, 139, 235, 0.35);
+        color: #f6f9ff;
+    }
     .autosniper-banner {
         display: flex;
         justify-content: center;
