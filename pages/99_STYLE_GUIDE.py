@@ -1,4 +1,5 @@
 import streamlit as st
+import pandas as pd
 
 from shared.styling import clean_html, display_banner, inject_global_styles, section_heading
 
@@ -159,6 +160,56 @@ st.markdown(
         f"""
         <div class="autosniper-section">
             <div class="palette-grid">{palette_tiles}</div>
+        </div>
+        """
+    ),
+    unsafe_allow_html=True,
+)
+
+section_heading("Component Cheatsheet", "Copy these references to keep buttons, tables, and headings consistent.")
+
+st.markdown(
+    clean_html(
+        """
+        <div class="autosniper-section">
+            <div class="section-title">Buttons</div>
+            <p class="autosniper-body">
+                Primary: gradient blue, 12px radius, bold white text. Disabled: muted blue gradient, still readable.
+            </p>
+        </div>
+        """
+    ),
+    unsafe_allow_html=True,
+)
+
+col1, col2 = st.columns(2)
+with col1:
+    st.button("Primary Action")
+with col2:
+    st.button("Disabled State", disabled=True)
+
+section_heading("Tables", "Use st.dataframe with the shared theme; keep columns tight and sortable.")
+
+sample_df = pd.DataFrame(
+    [
+        {"Year": 2021, "Make": "Toyota", "Model": "Hilux", "Price": "$42,000"},
+        {"Year": 2018, "Make": "Hyundai", "Model": "i30", "Price": "$14,500"},
+    ]
+)
+st.dataframe(sample_df, use_container_width=True)
+
+section_heading("Listing Heading", "Large, bold title with a subdued subline; use .ai-card-title and .ai-card-subtitle styles.")
+
+st.markdown(
+    clean_html(
+        """
+        <div class="ai-card" style="padding:1.4rem 1.6rem;">
+            <div class="ai-card-title">2024 Ford Everest Platinum</div>
+            <div class="ai-card-subtitle" style="margin-top:0.35rem;">
+                <span>10 auto</span>
+                <span>Diesel</span>
+                <span>VIC</span>
+            </div>
         </div>
         """
     ),
