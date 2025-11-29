@@ -214,9 +214,7 @@ selected_locations = st.sidebar.multiselect("Filter by location", location_optio
 search_text = st.sidebar.text_input("Search model/variant/URL")
 
 # Base filtering
-missing_manual_mask = (
-    df["manual_carsales_min"].apply(_is_blank) | df["manual_instant_offer_estimate"].apply(_is_blank)
-)
+missing_manual_mask = df["manual_carsales_min"].apply(_is_blank)
 status_mask = ~df["status"].isin(EXCLUDED_STATUSES)
 skip_mask = ~df["carsales_skipped"].fillna(False).astype(bool)
 hours_mask = pd.Series([True] * len(df))
@@ -351,9 +349,6 @@ for _, row in filtered.iterrows():
             instant_min, instant_max = _parse_range_text(instant_input)
             if manual_min is None:
                 st.error("Carsales resale range is required (min or min-max).")
-                continue
-            if instant_min is None:
-                st.error("Instant buy range is required (min or min-max).")
                 continue
 
             updated = update_vehicle_estimates(
