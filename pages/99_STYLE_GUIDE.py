@@ -32,15 +32,6 @@ st.markdown(
     clean_html(
         """
         <style>
-        .template-grid {
-            display: grid;
-            gap: 1.2rem;
-        }
-        @media (min-width: 992px) {
-            .template-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
         .palette-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -68,54 +59,6 @@ st.markdown(
         .palette-token {
             font-size: 0.8rem;
             color: var(--autosniper-muted);
-        }
-        .template-card {
-            background: var(--autosniper-panel);
-            border-radius: 18px;
-            padding: 1.5rem;
-            border: 1px solid var(--autosniper-border);
-            box-shadow: 0 18px 38px rgba(13, 2, 45, 0.18);
-        }
-        .template-card h3 {
-            margin: 0;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            font-size: 0.88rem;
-            color: var(--autosniper-muted);
-        }
-        .template-card .content {
-            margin-top: 0.9rem;
-        }
-        .example-button-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.75rem;
-        }
-        .ghost-button {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            padding: 0.55rem 1.1rem;
-            border-radius: 10px;
-            color: var(--autosniper-text);
-            border: 1.5px solid rgba(40, 71, 53, 0.4);
-            background: rgba(182, 167, 124, 0.24);
-            font-weight: 600;
-            transition: transform 0.15s ease, box-shadow 0.15s ease;
-        }
-        .ghost-button:hover {
-            text-decoration: none;
-            transform: translateY(-1px);
-            box-shadow: 0 10px 22px rgba(13, 2, 45, 0.18);
-        }
-        .template-layout {
-            display: grid;
-            gap: 1rem;
-        }
-        @media (min-width: 992px) {
-            .template-layout {
-                grid-template-columns: 2fr 1fr;
-            }
         }
         </style>
         """
@@ -187,6 +130,14 @@ with col1:
     st.button("Primary Action")
 with col2:
     st.button("Disabled State", disabled=True)
+st.code(
+    """# Primary button
+if st.button("Save"):
+    ...
+# Disabled example
+st.button("Save", disabled=True)""",
+    language="python",
+)
 
 section_heading("Tables", "Use st.dataframe with the shared theme; keep columns tight and sortable.")
 
@@ -197,6 +148,10 @@ sample_df = pd.DataFrame(
     ]
 )
 st.dataframe(sample_df, use_container_width=True)
+st.code(
+    """st.dataframe(df, use_container_width=True)""",
+    language="python",
+)
 
 section_heading("Listing Heading", "Large, bold title with a subdued subline; use .ai-card-title and .ai-card-subtitle styles.")
 
@@ -216,120 +171,20 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-section_heading("Layout Starter", "Drop your content into this split grid for balanced pages.")
-
-st.markdown(
-    clean_html(
-        """
-        <div class="template-layout autosniper-section">
-            <div>
-                <h2>Main Column</h2>
-                <p class="autosniper-body">
-                    Use this space for rich markdown, tables, or custom HTML blocks. Wrap complex sections inside
-                    <code>st.container()</code> or the <code>autosniper-section</code> class to reuse the frosted card.
-                </p>
-            </div>
-            <div>
-                <h3>Sidebar Actions</h3>
-                <p class="autosniper-body">
-                    Quick stats, filters, or secondary actions live here. Keep calls-to-action stacked vertically.
-                </p>
-            </div>
-        </div>
-        """
-    ),
-    unsafe_allow_html=True,
-)
-
-section_heading("Reusable Blocks", "Copy these cards for consistent headings, metrics, and CTAs.")
-
-st.markdown(
-    clean_html(
-        """
-        <div class="template-grid">
-            <div class="template-card">
-                <h3>Section Headings</h3>
-                <div class="content">
-                    <p class="autosniper-body">
-                        Use <code>section_heading("Title", "Optional subtitle")</code> at the top of each logical block.
-                        Pair with <code>info_chip()</code> when you need inline status tags.
-                    </p>
-                </div>
-            </div>
-            <div class="template-card">
-                <h3>Buttons</h3>
-                <div class="content">
-                    <p class="autosniper-body">
-                        Default Streamlit buttons pick up our primary colour. For link-style CTAs, wrap an anchor with
-                        the <code>ghost-button</code> class.
-                    </p>
-                    <div class="example-button-row">
-                        <a class="ghost-button" href="#" onclick="return false;">Secondary Action</a>
-                    </div>
-                </div>
-            </div>
-            <div class="template-card">
-                <h3>List Cards</h3>
-                <div class="content">
-                    <p class="autosniper-body">
-                        Wrap vehicles or insights inside a <code>div.autosniper-listing-card</code>. The listing
-                        dashboard demonstrates the full markup pattern.
-                    </p>
-                </div>
-            </div>
-            <div class="template-card">
-                <h3>Data Tables</h3>
-                <div class="content">
-                    <p class="autosniper-body">
-                        <code>st.dataframe(..., width=&quot;stretch&quot;)</code> automatically inherits rounded corners,
-                        borders, and shadows from the shared CSS. Keep tables dense and filterable where possible.
-                    </p>
-                </div>
-            </div>
-        </div>
-        """
-    ),
-    unsafe_allow_html=True,
-)
-
-section_heading("Copy Snippet", "Start new Streamlit pages with this boilerplate.")
-
-st.code(
-    clean_html(
-        """
-import streamlit as st
-from shared.styling import display_banner, inject_global_styles, section_heading
-
-st.set_page_config(page_title="New Page", layout="wide")
-inject_global_styles()
-display_banner()
-
-st.title("Page Heading")
-st.markdown("<p class='autosniper-tagline'>Short supporting statement.</p>", unsafe_allow_html=True)
-section_heading("Section Title", "Optional subtitle for context.")
-
-col1, col2 = st.columns((2, 1))
-with col1:
-    st.write("Primary content block goes here.")
-with col2:
-    if st.button("Primary Action"):
-        st.success("Action complete.")
-        """
-    ),
-    language="python",
-)
+section_heading("Info Banner", "Use a single banner style for page intros and notices.")
 
 st.markdown(
     clean_html(
         """
         <div class="autosniper-section">
-            <div class="section-title">Need more patterns?</div>
-            <p class="autosniper-body">
-                The listing dashboards contain more advanced cards (metrics, AI verdicts, filters). Use this page as a
-                quick reference while building new tools or onboarding collaborators.
-            </p>
+            <div class="section-title">Manual Carsales</div>
+            <div class="section-subtitle">Enter resale and instant-buy ranges, then save each row.</div>
         </div>
         """
     ),
     unsafe_allow_html=True,
+)
+st.code(
+    """section_heading("Manual Carsales", "Enter resale and instant-buy ranges, then save each row.")""",
+    language="python",
 )
