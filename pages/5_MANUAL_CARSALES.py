@@ -283,6 +283,9 @@ for _, row in filtered.iterrows():
         header_col.markdown(f"**{html.escape(title)}**")
         header_col.caption(row.get("location_clean", "") or "Location: N/A")
         meta_col.write(row.get("odometer_display", "N/A"))
+        meta_col.caption(
+            f"{row.get('transmission', 'N/A')} | {row.get('fuel_type', 'N/A')}"
+        )
         meta_col.markdown(f"[Carsales search]({row.get('carsales_search','')})", unsafe_allow_html=False)
 
         resale_default = _format_range_text(row.get("manual_carsales_min"), row.get("manual_carsales_max"))
