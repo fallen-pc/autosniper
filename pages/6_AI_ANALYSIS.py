@@ -10,6 +10,8 @@ import re
 
 import textwrap
 
+import time
+
 from typing import Any, Iterable, Optional
 
 from urllib.parse import quote_plus
@@ -47,10 +49,9 @@ from scripts.ai_listing_valuation import (
 from scripts.vehicle_updates import coerce_price
 from scripts.update_bids import update_bids
 
-from shared.data_loader import ensure_datasets_available
+from shared.data_loader import dataset_path, ensure_datasets_available
 
 from shared.styling import clean_html, display_banner, inject_global_styles, page_intro
-
 
 
 if os.name == "nt":
@@ -160,7 +161,7 @@ st.caption(
 
 @st.cache_data(ttl=300)
 
-def get_active_listings(min_hours: float, max_hours: float) -> pd.DataFrame:
+def get_active_listings(min_hours: float, max_hours: float, file_version: float) -> pd.DataFrame:
 
     return load_active_listings_within_hours(
 
@@ -192,7 +193,10 @@ def get_historical_sales() -> pd.DataFrame:
 
 def build_comparison_dataframe(min_hours: float, max_hours: float) -> tuple[pd.DataFrame, pd.DataFrame]:
 
-    active_df = get_active_listings(min_hours, max_hours)
+    active_path = dataset_path("active_vehicle_details.csv")
+    active_version = active_path.stat().st_mtime if active_path.exists() else time.time()
+
+    active_df = get_active_listings(min_hours, max_hours, active_version)
 
     sold_df = get_historical_sales()
 
@@ -206,7 +210,6 @@ def build_comparison_dataframe(min_hours: float, max_hours: float) -> tuple[pd.D
 
 # Manual refresh to pick up latest CSV/manual entries immediately.
 if st.button("Refresh data"):
-
     get_active_listings.clear()
     get_historical_sales.clear()
     build_comparison_dataframe.clear()
