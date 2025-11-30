@@ -879,6 +879,20 @@ def format_price_value(value: object) -> str:
         return str(value)
 
 
+def format_price_range(min_val: object, max_val: object) -> Optional[str]:
+
+    min_price = coerce_price(min_val)
+    max_price = coerce_price(max_val)
+
+    if min_price is None and (max_price is None or (isinstance(max_price, float) and pd.isna(max_price))):
+        return None
+
+    if max_price is None or (isinstance(max_price, float) and pd.isna(max_price)):
+        return format_price_value(min_price)
+
+    return f"{format_price_value(min_price)} - {format_price_value(max_price)}"
+
+
 
 
 
@@ -1975,6 +1989,8 @@ def render_ai_result(url: str, listing_row: Optional[pd.Series] = None) -> None:
 
     listing_manual_estimate = None
     listing_manual_avg = None
+    listing_manual_min = None
+    listing_manual_max = None
     listing_manual_avg_odo = None
     listing_manual_count = None
     listing_manual_instant = None
@@ -1983,6 +1999,8 @@ def render_ai_result(url: str, listing_row: Optional[pd.Series] = None) -> None:
     if listing_row is not None:
         listing_manual_estimate = listing_row.get("manual_carsales_estimate")
         listing_manual_avg = listing_row.get("manual_carsales_avg")
+        listing_manual_min = listing_row.get("manual_carsales_min")
+        listing_manual_max = listing_row.get("manual_carsales_max")
         listing_manual_avg_odo = listing_row.get("manual_carsales_avg_odometer")
         listing_manual_count = listing_row.get("manual_carsales_count")
         listing_manual_instant = listing_row.get("manual_instant_offer_estimate")
@@ -1994,6 +2012,7 @@ def render_ai_result(url: str, listing_row: Optional[pd.Series] = None) -> None:
         manual_override_record
         or listing_manual_estimate
         or listing_manual_avg
+        or format_price_range(listing_manual_min, listing_manual_max)
     )
 
     st.markdown("**AI Carsales Check**")
