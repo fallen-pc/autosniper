@@ -2007,11 +2007,7 @@ def render_ai_result(url: str, listing_row: Optional[pd.Series] = None) -> None:
 
         col1, col2, col3 = st.columns(3)
 
-        estimate_label = "Carsales Estimate"
-        if manual_override_record:
-            estimate_label += " (Manual)"
-
-        col1.metric(estimate_label, manual_override_display or record.get("carsales_price_estimate") or "N/A")
+        col1.metric("Carsales Estimate", manual_override_display or record.get("carsales_price_estimate") or "N/A")
         col2.metric("Recommended Max Bid", record.get("recommended_max_bid") or "N/A")
         col3.metric("Expected Profit", record.get("expected_profit") or "N/A")
 
