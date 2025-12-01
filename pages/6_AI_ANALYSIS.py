@@ -2020,51 +2020,7 @@ def render_ai_result(url: str, listing_row: Optional[pd.Series] = None) -> None:
         or record_data.get("carsales_price_estimate")
     )
 
-    st.markdown("**AI Carsales Check**")
-
-    if not has_record:
-        st.caption("No AI Carsales analysis yet.")
-    else:
-        timestamp = record.get("analysis_timestamp")
-        if pd.notna(timestamp):
-            st.caption(f"Last updated: {timestamp}")
-
-        col1, col2, col3 = st.columns(3)
-
-        col1.metric("Carsales Estimate", manual_override_display or record.get("carsales_price_estimate") or "N/A")
-        col2.metric("Recommended Max Bid", record.get("recommended_max_bid") or "N/A")
-        col3.metric("Expected Profit", record.get("expected_profit") or "N/A")
-
-        if manual_override_record:
-            st.caption("Manual Carsales override active. Clear the override to fall back to AI estimates.")
-
-        margin = record.get("profit_margin_percent")
-        score = record.get("score_out_of_10")
-        range_text = record.get("carsales_price_range")
-
-        info_line_parts = []
-        if margin and pd.notna(margin):
-            info_line_parts.append(f"Margin: {margin}")
-        if score and pd.notna(score):
-            info_line_parts.append(f"Score: {score}/10")
-        if range_text and pd.notna(range_text):
-            info_line_parts.append(f"Range: {range_text}")
-        if info_line_parts:
-            st.write(" | ".join(info_line_parts))
-
-        notes = record.get("confidence_notes")
-        if isinstance(notes, str) and notes.strip():
-            st.markdown("Confidence notes:")
-            for note in [n.strip() for n in notes.split(";") if n.strip()]:
-                st.markdown(f"- {note}")
-
-        instant_offer = record.get("manual_instant_offer_estimate")
-        if instant_offer:
-            st.caption(f"Instant offer estimate: {instant_offer}")
-
-        recent_sales = record.get("manual_recent_sales_30d")
-        if recent_sales not in (None, "", "nan"):
-            st.caption(f"Similar cars sold (30 days): {recent_sales}")
+    # Carsales/AI metrics box removed per request.
 
     def _parse_float_from_text(text: str | None) -> Optional[float]:
 
