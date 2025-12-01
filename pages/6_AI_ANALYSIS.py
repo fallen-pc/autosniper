@@ -862,6 +862,10 @@ def format_price_value(value: object) -> str:
 
             text = value.strip()
 
+            if text.lower() in {"nan", "none", "n/a"}:
+
+                return "—"
+
             if not text:
 
                 return "—"
@@ -2013,6 +2017,7 @@ def render_ai_result(url: str, listing_row: Optional[pd.Series] = None) -> None:
         or listing_manual_estimate
         or listing_manual_avg
         or format_price_range(listing_manual_min, listing_manual_max)
+        or record_data.get("carsales_price_estimate")
     )
 
     st.markdown("**AI Carsales Check**")
