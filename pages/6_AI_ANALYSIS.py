@@ -255,10 +255,15 @@ if not valuations_cache.empty:
         extras["status"] = "manual_only"
         extras["hours_remaining"] = pd.NA
         # Populate title fields from any available columns.
-        extras["year"] = extras["year"].where(extras["year"].notna(), extras.get("Year"))
-        extras["make"] = extras["make"].where(extras["make"].notna(), extras.get("Make"))
-        extras["model"] = extras["model"].where(extras["model"].notna(), extras.get("Model"))
-        extras["variant"] = extras["variant"].where(extras["variant"].notna(), extras.get("Variant"))
+        extras_year = extras["year"] if "year" in extras else extras.get("Year")
+        extras_make = extras["make"] if "make" in extras else extras.get("Make")
+        extras_model = extras["model"] if "model" in extras else extras.get("Model")
+        extras_variant = extras["variant"] if "variant" in extras else extras.get("Variant")
+
+        extras["year"] = extras_year if extras_year is not None else pd.Series([pd.NA] * len(extras))
+        extras["make"] = extras_make if extras_make is not None else pd.Series([pd.NA] * len(extras))
+        extras["model"] = extras_model if extras_model is not None else pd.Series([pd.NA] * len(extras))
+        extras["variant"] = extras_variant if extras_variant is not None else pd.Series([pd.NA] * len(extras))
         # Drop entries without basic identity fields.
         extras = extras[extras["make"].notna() & extras["model"].notna()]
         extras["make_norm"] = extras["make"].astype(str).str.lower().str.strip()
