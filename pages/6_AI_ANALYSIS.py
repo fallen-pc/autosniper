@@ -326,7 +326,7 @@ comparison_df["_has_manual_carsales"] = (
 )
 
 # Allow toggling between all listings and only those with manual Carsales data.
-show_only_manual = st.sidebar.checkbox("Show only listings with manual Carsales", value=False)
+show_only_manual = st.sidebar.checkbox("Show only listings with manual Carsales", value=True)
 if show_only_manual:
     comparison_df = comparison_df[comparison_df["_has_manual_carsales"]].copy()
 
