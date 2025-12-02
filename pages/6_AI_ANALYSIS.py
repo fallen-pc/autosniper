@@ -2048,64 +2048,15 @@ def render_ai_result(url: str, listing_row: Optional[pd.Series] = None) -> None:
 
         return int(value) if value is not None else None
 
-    safe_key = re.sub(r"\W+", "_", url or "manual")
-    manual_default_value = _first_non_empty(
+    # Display Carsales estimate sourced from manual inputs (or AI fallback).
+    carsales_value = _first_non_empty(
         manual_override_display,
-        record_data.get("carsales_price_estimate"),
         listing_manual_estimate,
         listing_manual_avg,
+        format_price_range(listing_manual_min, listing_manual_max),
+        record_data.get("carsales_price_estimate"),
     )
-    existing_avg_odometer_text = _first_non_empty(listing_manual_avg_odo, record_data.get("manual_carsales_avg_odometer"))
-    existing_count_text = _first_non_empty(listing_manual_count, record_data.get("manual_carsales_count"))
-    existing_instant_text = _first_non_empty(listing_manual_instant, record_data.get("manual_instant_offer_estimate"))
-    existing_recent_text = _first_non_empty(listing_manual_recent, record_data.get("manual_recent_sales_30d"))
-    existing_table_text = _first_non_empty(listing_manual_table, record_data.get("manual_carsales_table"))
-
-    manual_range_input = st.text_input(
-        "Carsales estimate ($)",
-        value=manual_default_value,
-        key=f"manual-estimate-{safe_key}",
-        help="Enter the Carsales valuation or a range such as $12,000-$14,000.",
-    )
-    save_manual = st.button("Save Carsales estimate", key=f"save-manual-{safe_key}")
-
-    if save_manual:
-        if not url:
-            st.error("Listing URL missing; unable to save manual data.")
-        else:
-            avg_value = _parse_float_from_text(existing_avg_odometer_text)
-            comparable_count_val = _parse_int_from_text(existing_count_text)
-            recent_sales_val = _parse_int_from_text(existing_recent_text)
-            try:
-                update_manual_carsales_data(
-                    url=url,
-                    price_estimate=manual_range_input.strip() or None,
-                    avg_odometer=avg_value,
-                    table_raw=existing_table_text or "",
-                    instant_offer_estimate=existing_instant_text or None,
-                    recent_sales_30d=recent_sales_val,
-                    comparable_count=comparable_count_val,
-                )
-            except Exception as exc:
-                st.error(f"Failed to save manual Carsales data: {exc}")
-            else:
-                refresh_ai_cache()
-                st.success("Manual Carsales override saved.")
-                st.rerun()
-
-    if listing_row is not None:
-
-        snapshot_data = build_ai_input_snapshot(listing_row)
-
-        if snapshot_data:
-
-            with st.expander("AI input snapshot"):
-
-                st.caption("Data that fed the Carsales AI valuation prompt.")
-
-                pretty_snapshot = json.loads(json.dumps(snapshot_data, default=str))
-
-                st.json(pretty_snapshot)
+    st.markdown(f"**Carsales estimate:** {format_price_value(carsales_value) if carsales_value not in (None, 'None') else '—'}")
 
 comparison_df["_match_count_numeric"] = comparison_df["historical_match_count"].apply(coerce_positive_int)
 
