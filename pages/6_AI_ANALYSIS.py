@@ -34,6 +34,8 @@ from scripts.ai_price_analysis import (
 
     load_historical_sales,
 
+    _to_int_or_none,
+
 )
 
 from scripts.ai_listing_valuation import (
