@@ -27,7 +27,11 @@ if os.path.exists(".env.local"):
     load_dotenv(".env.local")
 else:
     load_dotenv()
-client = OpenAI()
+
+api_key = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=api_key) if api_key else None
+if client is None:
+    st.warning("OpenAI API key not set; AI verdicts will be unavailable.")
 
 missing = ensure_datasets_available(["vehicle_static_details.csv"])
 if missing:
@@ -319,6 +323,8 @@ if CSV_FILE.exists():
         }}
         """
 
+        if client is None:
+            return {"error": "OpenAI API key not configured.", "raw": ""}
         response = client.chat.completions.create(
             model="gpt-4",
             messages=[{"role": "user", "content": prompt}],
