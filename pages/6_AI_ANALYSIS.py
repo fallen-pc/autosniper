@@ -254,9 +254,17 @@ if not valuations_cache.empty:
         # Minimal fields to display; fill placeholders for absent active data.
         extras["status"] = "manual_only"
         extras["hours_remaining"] = pd.NA
-        extras["make_norm"] = extras.get("make", extras.get("Make", pd.NA))
-        extras["model_norm"] = extras.get("model", extras.get("Model", pd.NA))
-        extras["year_int"] = extras.get("year", extras.get("Year", pd.NA))
+        # Populate title fields from any available columns.
+        extras["year"] = extras["year"].where(extras["year"].notna(), extras.get("Year"))
+        extras["make"] = extras["make"].where(extras["make"].notna(), extras.get("Make"))
+        extras["model"] = extras["model"].where(extras["model"].notna(), extras.get("Model"))
+        extras["variant"] = extras["variant"].where(extras["variant"].notna(), extras.get("Variant"))
+        # Drop entries without basic identity fields.
+        extras = extras[extras["make"].notna() & extras["model"].notna()]
+        extras["make_norm"] = extras["make"].astype(str).str.lower().str.strip()
+        extras["model_norm"] = extras["model"].astype(str).str.lower().str.strip()
+        extras["variant_norm"] = extras["variant"].astype(str).str.lower().str.strip() if "variant" in extras else pd.NA
+        extras["year_int"] = extras["year"].apply(_to_int_or_none) if "year" in extras else pd.NA
         comparison_df = pd.concat([comparison_df, extras], ignore_index=True, sort=False)
 unknown_count = 0
 if not active_snapshot.empty and "hours_remaining" in active_snapshot.columns:
