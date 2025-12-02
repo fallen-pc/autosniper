@@ -273,6 +273,26 @@ if not valuations_cache.empty:
         extras["variant_norm"] = extras["variant"].astype(str).str.lower().str.strip() if "variant" in extras else pd.NA
         extras["year_int"] = extras["year"].apply(_to_int_or_none) if "year" in extras else pd.NA
         comparison_df = pd.concat([comparison_df, extras], ignore_index=True, sort=False)
+
+# Enforce presence of manual Carsales fields and filter out rows missing them.
+for manual_column in ("manual_carsales_min", "manual_instant_offer_estimate"):
+    if manual_column not in comparison_df.columns:
+        comparison_df[manual_column] = None
+if "carsales_skipped" not in comparison_df.columns:
+    comparison_df["carsales_skipped"] = False
+
+comparison_df["_manual_min_numeric"] = comparison_df["manual_carsales_min"].apply(coerce_price)
+comparison_df["_manual_offer_numeric"] = comparison_df["manual_instant_offer_estimate"].apply(coerce_price)
+comparison_df["_has_manual_carsales"] = (
+    comparison_df["_manual_min_numeric"].notna()
+    & (comparison_df["_manual_min_numeric"] > 0)
+    & ~comparison_df["carsales_skipped"].fillna(False).astype(bool)
+)
+
+# Allow toggling between all listings and only those with manual Carsales data.
+show_only_manual = st.sidebar.checkbox("Show only listings with manual Carsales", value=True)
+if show_only_manual:
+    comparison_df = comparison_df[comparison_df["_has_manual_carsales"]].copy()
 unknown_count = 0
 if not active_snapshot.empty and "hours_remaining" in active_snapshot.columns:
     unknown_count = int(active_snapshot["hours_remaining"].isna().sum())
@@ -325,13 +345,7 @@ elif "manual_carsales_sold_30d" in comparison_df.columns:
         comparison_df["manual_carsales_sold_30d"]
     )
 
-# Enforce presence of manual Carsales fields and filter out rows missing them.
-for manual_column in ("manual_carsales_min", "manual_instant_offer_estimate"):
-    if manual_column not in comparison_df.columns:
-        comparison_df[manual_column] = None
-if "carsales_skipped" not in comparison_df.columns:
-    comparison_df["carsales_skipped"] = False
-
+# Recompute manual flags and optionally filter to manual-only.
 comparison_df["_manual_min_numeric"] = comparison_df["manual_carsales_min"].apply(coerce_price)
 comparison_df["_manual_offer_numeric"] = comparison_df["manual_instant_offer_estimate"].apply(coerce_price)
 comparison_df["_has_manual_carsales"] = (
@@ -339,12 +353,26 @@ comparison_df["_has_manual_carsales"] = (
     & (comparison_df["_manual_min_numeric"] > 0)
     & ~comparison_df["carsales_skipped"].fillna(False).astype(bool)
 )
-
-# Allow toggling between all listings and only those with manual Carsales data.
 show_only_manual = st.sidebar.checkbox("Show only listings with manual Carsales", value=True)
 if show_only_manual:
     comparison_df = comparison_df[comparison_df["_has_manual_carsales"]].copy()
 
+if st.button("Run full AI analysis"):
+    if client is None:
+        st.error("OpenAI API key not set; cannot run AI analysis.")
+    else:
+        errors: list[str] = []
+        with st.spinner("Running AI pricing across listings..."):
+            for _, row in comparison_df.iterrows():
+                result = run_ai_listing_analysis(row)
+                if result.get("error"):
+                    errors.append(str(row.get("url", "unknown")))
+        refresh_ai_cache()
+        if errors:
+            st.warning(f"AI analysis completed with {len(errors)} errors.")
+        else:
+            st.success("AI analysis refreshed for all listings.")
+        st.rerun()
 
 focus_url = st.session_state.pop("ai_focus_url", None)
 
@@ -2054,7 +2082,16 @@ def render_ai_result(url: str, listing_row: Optional[pd.Series] = None) -> None:
         or record_data.get("carsales_price_estimate")
     )
 
-    # Carsales/AI metrics box removed per request.
+    carsales_value = format_price_value(
+        _first_non_empty(
+            manual_override_display,
+            record_data.get("carsales_price_estimate"),
+            listing_manual_estimate,
+            listing_manual_avg,
+            format_price_range(listing_manual_min, listing_manual_max),
+        )
+    )
+    st.text_input("Carsales estimate", value=carsales_value, disabled=True)
 
     def _parse_float_from_text(text: str | None) -> Optional[float]:
 
