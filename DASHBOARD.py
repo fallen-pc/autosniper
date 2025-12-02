@@ -616,7 +616,7 @@ workflow_cards = [
         "page": "pages/4_MASTER_DATABASE.py",
     },
     {
-        "title": "Page 5 - AI Analysis",
+        "title": "Page 6 - AI Analysis",
         "meta": ai_last_text,
         "summary": (
             f"{len(valuations_df):,} valuations scored."
@@ -632,10 +632,10 @@ workflow_cards = [
                 else "N/A",
             ),
         ],
-        "page": "pages/5_AI_ANALYSIS.py",
+        "page": "pages/6_AI_ANALYSIS.py",
     },
     {
-        "title": "Page 6 - Missed Opportunities",
+        "title": "Page 7 - Missed Opportunities",
         "meta": describe_latest_run(SOLD_FILE, VALUATIONS_FILE),
         "summary": (
             f"{positive_count:,} profitable misses flagged."
@@ -646,10 +646,10 @@ workflow_cards = [
             ("Manual tables", f"{len(manual_df):,}"),
             ("Avg upside", format_currency_value(avg_positive_gap)),
         ],
-        "page": "pages/6_MISSED_OPPORTUNITIES.py",
+        "page": "pages/7_MISSED_OPPORTUNITIES.py",
     },
     {
-        "title": "Page 7 - Model Accuracy",
+        "title": "Page 8 - Model Accuracy",
         "meta": model_last_text,
         "summary": (
             f"{settled_count:,} settled deals logged."
@@ -660,7 +660,7 @@ workflow_cards = [
             ("Scored", f"{len(scored_df):,}"),
             ("Accuracy", accuracy_display),
         ],
-        "page": "pages/7_MODEL_ACCURACY.py",
+        "page": "pages/8_MODEL_ACCURACY.py",
     },
 ]
 
