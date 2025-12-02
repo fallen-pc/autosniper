@@ -243,6 +243,21 @@ available_columns = [column for column in valuation_columns if column in valuati
 if available_columns:
     valuations_subset = valuations_cache[["url", *available_columns]].copy()
     comparison_df = comparison_df.merge(valuations_subset, on="url", how="left", suffixes=("", "_ai"))
+
+# Bring in valuations that aren't in the active comparison (e.g., cached/manual entries only).
+if not valuations_cache.empty:
+    comparison_urls = set(comparison_df["url"].astype(str).str.strip())
+    valuation_urls = set(valuations_cache["url"].astype(str).str.strip())
+    missing_urls = valuation_urls - comparison_urls
+    if missing_urls:
+        extras = valuations_cache[valuations_cache["url"].astype(str).str.strip().isin(missing_urls)].copy()
+        # Minimal fields to display; fill placeholders for absent active data.
+        extras["status"] = "manual_only"
+        extras["hours_remaining"] = pd.NA
+        extras["make_norm"] = extras.get("make", extras.get("Make", pd.NA))
+        extras["model_norm"] = extras.get("model", extras.get("Model", pd.NA))
+        extras["year_int"] = extras.get("year", extras.get("Year", pd.NA))
+        comparison_df = pd.concat([comparison_df, extras], ignore_index=True, sort=False)
 unknown_count = 0
 if not active_snapshot.empty and "hours_remaining" in active_snapshot.columns:
     unknown_count = int(active_snapshot["hours_remaining"].isna().sum())
@@ -309,7 +324,11 @@ comparison_df["_has_manual_carsales"] = (
     & (comparison_df["_manual_min_numeric"] > 0)
     & ~comparison_df["carsales_skipped"].fillna(False).astype(bool)
 )
-comparison_df = comparison_df[comparison_df["_has_manual_carsales"]].copy()
+
+# Allow toggling between all listings and only those with manual Carsales data.
+show_only_manual = st.sidebar.checkbox("Show only listings with manual Carsales", value=False)
+if show_only_manual:
+    comparison_df = comparison_df[comparison_df["_has_manual_carsales"]].copy()
 
 
 focus_url = st.session_state.pop("ai_focus_url", None)
@@ -2296,7 +2315,7 @@ with tabs[0]:
 
                 st.markdown("### Verdict")
 
-                action_col, rerun_col = st.columns([1, 1])
+                action_col, rerun_col, full_col = st.columns([1, 1, 1])
 
                 rendered = False
 
