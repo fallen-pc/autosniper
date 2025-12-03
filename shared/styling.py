@@ -496,6 +496,113 @@ _BASE_STYLES = textwrap.dedent(
         font-size: 1rem;
         line-height: 1.55;
     }
+    /* New dark/blue theme overrides */
+    .stApp {
+        background-color: #0A0A0C !important;
+    }
+    .main .block-container {
+        padding-top: 1.5rem;
+        padding-bottom: 1.5rem;
+        max-width: 1200px;
+    }
+    section[data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #0A0A0C 0%, #1A1A1C 60%, #0A0A0C 100%);
+        border-right: 1px solid #111319;
+    }
+    section[data-testid="stSidebar"] * {
+        color: #E5E5E5 !important;
+    }
+    section[data-testid="stSidebar"] h1,
+    section[data-testid="stSidebar"] h2,
+    section[data-testid="stSidebar"] h3 {
+        font-weight: 700;
+        color: #E5E5E5 !important;
+    }
+    section[data-testid="stSidebar"] .stSelectbox,
+    section[data-testid="stSidebar"] .stCheckbox,
+    section[data-testid="stSidebar"] .stSlider {
+        background-color: #1A1A1C !important;
+        border-radius: 10px;
+        padding: 6px 8px;
+    }
+    div[data-testid="stDataFrame"] {
+        background: #1A1A1C;
+        border-radius: 12px;
+        padding: 10px;
+        border: 1px solid #0066CC;
+        box-shadow: 0 0 18px rgba(0, 175, 255, 0.18);
+    }
+    div[data-testid="stDataFrame"] table {
+        color: #E5E5E5;
+    }
+    div[data-testid="stDataFrame"] thead tr {
+        background-color: #111319 !important;
+    }
+    div[data-testid="stDataFrame"] tbody tr:nth-child(even) {
+        background-color: #15171C !important;
+    }
+    div[data-testid="stDataFrame"] tbody tr:nth-child(odd) {
+        background-color: #101218 !important;
+    }
+    [data-testid="stMetric"] {
+        background: radial-gradient(circle at top, #1A1A1C 0%, #0A0A0C 65%);
+        border-radius: 16px;
+        padding: 16px 18px;
+        border: 1px solid #0066CC;
+        box-shadow: 0 0 18px rgba(0, 175, 255, 0.18);
+    }
+    [data-testid="stMetricLabel"] {
+        color: #B6B6B6 !important;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-size: 11px;
+    }
+    [data-testid="stMetricValue"] {
+        font-size: 26px;
+        font-weight: 800;
+        background: linear-gradient(180deg, #E5E5E5, #7A7A7A);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    h1, h2, h3 {
+        color: #E5E5E5 !important;
+    }
+    h1 {
+        font-size: 32px !important;
+        font-weight: 900 !important;
+    }
+    .stButton > button {
+        border-radius: 999px;
+        border: 1px solid #00AFFF;
+        background: radial-gradient(circle at top, #00AFFF 0%, #0066CC 70%);
+        color: #E5E5E5 !important;
+        font-weight: 600;
+        font-size: 14px;
+        padding: 8px 26px;
+        box-shadow: 0 0 12px rgba(0, 175, 255, 0.35);
+        transition: all 0.15s ease-out;
+    }
+    .stButton > button:hover {
+        border-color: #00F6FF;
+        box-shadow: 0 0 20px rgba(0, 246, 255, 0.55);
+        transform: translateY(-1px);
+    }
+    [data-testid="stTextInput"] input {
+        background-color: #1A1A1C !important;
+        color: #E5E5E5 !important;
+        border-radius: 10px !important;
+        border: 1px solid #2A2D30 !important;
+    }
+    [data-testid="stTextInput"] input:focus {
+        border-color: #00AFFF !important;
+        box-shadow: 0 0 12px rgba(0, 175, 255, 0.5);
+    }
+    button[aria-expanded="true"],
+    button[aria-expanded="false"] {
+        background-color: #14161C !important;
+        color: #E5E5E5 !important;
+        border-radius: 10px !important;
+    }
     </style>
     """
 )

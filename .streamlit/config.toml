@@ -1,8 +1,9 @@
 [theme]
-base = "light"
-primaryColor = "#3B95B6"
-backgroundColor = "#FFFFFF"
-secondaryBackgroundColor = "#E4EFF5"
-textColor = "#0B1014"
+primaryColor = "#00AFFF"
+backgroundColor = "#0A0A0C"
+secondaryBackgroundColor = "#1A1A1C"
+textColor = "#E5E5E5"
+font = "sans serif"
+
 [server]
 fileWatcherType = "poll"
