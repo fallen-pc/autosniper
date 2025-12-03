@@ -2077,16 +2077,19 @@ def render_ai_result(url: str, listing_row: Optional[pd.Series] = None) -> None:
         or record_data.get("carsales_price_estimate")
     )
 
-    carsales_value = format_price_value(
-        _first_non_empty(
-            manual_override_display,
-            record_data.get("carsales_price_estimate"),
-            listing_manual_estimate,
-            listing_manual_avg,
-            format_price_range(listing_manual_min, listing_manual_max),
-        )
+    carsales_value_raw = _first_non_empty(
+        manual_override_display,
+        record_data.get("carsales_price_estimate"),
+        listing_manual_estimate,
+        listing_manual_avg,
+        format_price_range(listing_manual_min, listing_manual_max),
     )
-    st.text_input("Carsales estimate", value=carsales_value, disabled=True)
+    carsales_value = format_price_value(carsales_value_raw)
+
+    metrics = st.columns(3)
+    metrics[0].metric("Carsales Estimate", carsales_value)
+    metrics[1].metric("Instant Buy", format_price_value(listing_manual_instant))
+    metrics[2].metric("Sold last 30d", listing_manual_recent or "—")
 
     def _parse_float_from_text(text: str | None) -> Optional[float]:
 
