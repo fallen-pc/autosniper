@@ -25,6 +25,12 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 
+# Configure OpenAI client (optional; required for running AI analysis).
+api_key = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=api_key) if api_key else None
+if client is None:
+    st.warning("OpenAI API key not set; AI analysis actions will be disabled.")
+
 
 from scripts.ai_price_analysis import (
 
