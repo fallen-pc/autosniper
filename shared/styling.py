@@ -671,6 +671,7 @@ def info_chip(label: str) -> None:
 def page_intro(title: str, subtitle: str | None = None) -> None:
     """Render a standard page intro panel."""
     inject_global_styles()
+    render_logo_centered()
     chrome_title()
     subtitle_html = f"<p>{subtitle}</p>" if subtitle else ""
     st.markdown(
