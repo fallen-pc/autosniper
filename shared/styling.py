@@ -668,6 +668,22 @@ def info_chip(label: str) -> None:
     st.markdown(f"<span class='autosniper-chip'>{label}</span>", unsafe_allow_html=True)
 
 
+def render_logo_centered(width: int = 340) -> None:
+    """Render the autosniper logo centered if available."""
+    encoded = _load_logo_base64(width)
+    if not encoded:
+        return
+    inject_global_styles()
+    st.markdown(
+        f"""
+        <div style='text-align:center; margin-top:10px; margin-bottom:20px;'>
+            <img src="data:image/png;base64,{encoded}" style='width:{width}px; max-width:85%;' />
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
 def page_intro(title: str, subtitle: str | None = None) -> None:
     """Render a standard page intro panel."""
     inject_global_styles()
