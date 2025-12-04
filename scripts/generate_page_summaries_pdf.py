@@ -24,6 +24,7 @@ TITLE_FONT_SIZE = 18
 BODY_FONT_SIZE = 12
 TITLE_LEADING = 20
 BODY_LEADING = 15
+PDF_ENCODING = "cp1252"
 
 
 PAGE_SUMMARIES: tuple[PageSummary, ...] = (
@@ -244,7 +245,7 @@ def build_page_lines(summary: PageSummary) -> list[str]:
     if summary.data_flows:
         lines.append("")
         lines.append("Data flow")
-        lines.extend(wrap_list(summary.data_flows, "→ "))
+        lines.extend(wrap_list(summary.data_flows, "-> "))
     if summary.notes:
         lines.append("")
         lines.append("Notes")
@@ -285,7 +286,10 @@ def write_pdf(output_path: Path, summaries: Iterable[PageSummary]) -> None:
     catalog_id = reserve_object()
     pages_id = reserve_object()
     font_id = reserve_object()
-    set_object(font_id, "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>")
+    set_object(
+        font_id,
+        "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>",
+    )
 
     page_ids: list[int] = []
     content_ids: list[int] = []
@@ -297,7 +301,7 @@ def write_pdf(output_path: Path, summaries: Iterable[PageSummary]) -> None:
         stream = page_stream(summary)
         set_object(
             content_id,
-            f"<< /Length {len(stream.encode('utf-8'))} >>\nstream\n{stream}\nendstream",
+            f"<< /Length {len(stream.encode(PDF_ENCODING))} >>\nstream\n{stream}\nendstream",
         )
         set_object(
             page_id,
@@ -321,14 +325,14 @@ def write_pdf(output_path: Path, summaries: Iterable[PageSummary]) -> None:
         offsets: list[int] = []
         for object_id, body in enumerate(objects, start=1):
             offsets.append(pdf_file.tell())
-            pdf_file.write(f"{object_id} 0 obj\n".encode("utf-8"))
-            pdf_file.write(body.encode("utf-8"))
+            pdf_file.write(f"{object_id} 0 obj\n".encode(PDF_ENCODING))
+            pdf_file.write(body.encode(PDF_ENCODING))
             pdf_file.write(b"\nendobj\n")
         xref_position = pdf_file.tell()
-        pdf_file.write(f"xref\n0 {len(objects) + 1}\n".encode("utf-8"))
+        pdf_file.write(f"xref\n0 {len(objects) + 1}\n".encode(PDF_ENCODING))
         pdf_file.write(b"0000000000 65535 f \n")
         for offset in offsets:
-            pdf_file.write(f"{offset:010d} 00000 n \n".encode("utf-8"))
+            pdf_file.write(f"{offset:010d} 00000 n \n".encode(PDF_ENCODING))
         pdf_file.write(
             (
                 "trailer\n"
@@ -336,7 +340,7 @@ def write_pdf(output_path: Path, summaries: Iterable[PageSummary]) -> None:
                 "startxref\n"
                 f"{xref_position}\n"
                 "%%EOF"
-            ).encode("utf-8")
+            ).encode(PDF_ENCODING)
         )
 
 
