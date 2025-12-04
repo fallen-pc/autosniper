@@ -227,8 +227,9 @@ def wrap_list(entries: Iterable[str], prefix: str) -> list[str]:
 
 
 def escape_pdf_text(value: str) -> str:
+    sanitized = value.encode(PDF_ENCODING, errors="replace").decode(PDF_ENCODING)
     return (
-        value.replace("\\", "\\\\")
+        sanitized.replace("\\", "\\\\")
         .replace("(", "\\(")
         .replace(")", "\\)")
         .replace("\r", "")
