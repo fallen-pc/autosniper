@@ -603,6 +603,27 @@ _BASE_STYLES = textwrap.dedent(
         color: #E5E5E5 !important;
         border-radius: 10px !important;
     }
+    /* Chrome gradient title */
+    .autosniper-title {
+        font-size: 48px;
+        font-weight: 900;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        text-align: center;
+        margin-top: 10px;
+        margin-bottom: 30px;
+        background: linear-gradient(180deg, #E5E5E5 0%, #B6B6B6 40%, #7A7A7A 80%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 0 0 12px rgba(0,175,255,0.35);
+    }
+    /* Highlight active sidebar item */
+    section[data-testid="stSidebar"] a[aria-current="page"] {
+        background: radial-gradient(circle at left, rgba(0,175,255,0.35) 0%, rgba(0,175,255,0.05) 65%);
+        border-radius: 8px;
+        font-weight: 700 !important;
+        color: #00F6FF !important;
+    }
     </style>
     """
 )
@@ -662,6 +683,12 @@ def page_intro(title: str, subtitle: str | None = None) -> None:
         ),
         unsafe_allow_html=True,
     )
+
+
+def chrome_title(text: str = "AUTOSNIPER") -> None:
+    """Render the chrome gradient Autosniper title."""
+    inject_global_styles()
+    st.markdown(f"<div class='autosniper-title'>{text}</div>", unsafe_allow_html=True)
 
 
 _LOGO_CACHE: dict[int, str] = {}
