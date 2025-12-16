@@ -86,8 +86,6 @@ required_files = [
 
     "active_vehicle_details.csv",
 
-    "ai_verdicts.csv",
-
     "ai_listing_valuations.csv",
 
     "sold_cars.csv",
@@ -241,9 +239,7 @@ valuation_columns = [
     "confidence_notes",
     "manual_carsales_count",
     "manual_carsales_avg",
-    "manual_carsales_avg_odometer",
     "manual_carsales_estimate",
-    "manual_instant_offer_estimate",
     "manual_recent_sales_30d",
     "manual_carsales_table",
 ]
@@ -281,14 +277,13 @@ if not valuations_cache.empty:
         comparison_df = pd.concat([comparison_df, extras], ignore_index=True, sort=False)
 
 # Enforce presence of manual Carsales fields and filter out rows missing them.
-for manual_column in ("manual_carsales_min", "manual_instant_offer_estimate"):
+for manual_column in ("manual_carsales_min",):
     if manual_column not in comparison_df.columns:
         comparison_df[manual_column] = None
 if "carsales_skipped" not in comparison_df.columns:
     comparison_df["carsales_skipped"] = False
 
 comparison_df["_manual_min_numeric"] = comparison_df["manual_carsales_min"].apply(coerce_price)
-comparison_df["_manual_offer_numeric"] = comparison_df["manual_instant_offer_estimate"].apply(coerce_price)
 comparison_df["_has_manual_carsales"] = (
     comparison_df["_manual_min_numeric"].notna()
     & (comparison_df["_manual_min_numeric"] > 0)
@@ -323,9 +318,10 @@ for column in CONDITION_COLUMNS:
 manual_columns = [
     "manual_carsales_min",
     "manual_carsales_max",
-    "manual_instant_offer_estimate",
-    "manual_instant_offer_max",
+    "manual_carsales_avg",
     "manual_carsales_sold_30d",
+    "manual_recent_sales_30d",
+    "manual_carsales_count",
     "carsales_skipped",
 ]
 available_manual_columns = [col for col in manual_columns if col in active_snapshot.columns]
@@ -348,7 +344,6 @@ elif "manual_carsales_sold_30d" in comparison_df.columns:
 
 # Recompute manual flags and optionally filter to manual-only.
 comparison_df["_manual_min_numeric"] = comparison_df["manual_carsales_min"].apply(coerce_price)
-comparison_df["_manual_offer_numeric"] = comparison_df["manual_instant_offer_estimate"].apply(coerce_price)
 comparison_df["_has_manual_carsales"] = (
     comparison_df["_manual_min_numeric"].notna()
     & (comparison_df["_manual_min_numeric"] > 0)
@@ -1204,7 +1199,7 @@ def render_listing_header(
         subtitle_badges.append(f"<span>{html.escape(label)}: {html.escape(text_value)}</span>")
 
     manual_min = coerce_price(row.get("manual_carsales_min"))
-    manual_offer = coerce_price(row.get("manual_instant_offer_estimate"))
+    manual_max = coerce_price(row.get("manual_carsales_max"))
     manual_skipped_value = row.get("carsales_skipped")
     manual_skipped = False
     if isinstance(manual_skipped_value, str):
@@ -1216,7 +1211,7 @@ def render_listing_header(
             manual_skipped = bool(manual_skipped_value)
         except Exception:
             manual_skipped = False
-    if manual_min and manual_offer and not manual_skipped:
+    if manual_min and manual_max and not manual_skipped:
         subtitle_badges.append(
             "<span class='ai-card-condition-badge' style='background: rgba(94,230,167,.18);"
             "border: 1px solid rgba(94,230,167,.45); color: #5EE6A7;'>"
@@ -2036,8 +2031,6 @@ def build_ai_input_snapshot(listing_row: Optional[pd.Series]) -> dict[str, Any]:
         "comparable_count": listing_row.get("manual_carsales_count"),
         "carsales_manual_estimate": listing_row.get("manual_carsales_estimate")
         or listing_row.get("manual_carsales_avg"),
-        "carsales_average_odometer": listing_row.get("manual_carsales_avg_odometer"),
-        "instant_offer_estimate": listing_row.get("manual_instant_offer_estimate"),
         "recent_sales_30d": listing_row.get("manual_recent_sales_30d"),
     }
     manual_clean = {key: value for key, value in manual_snapshot.items() if _value_has_data(value)}
@@ -2058,9 +2051,7 @@ def render_ai_result(url: str, listing_row: Optional[pd.Series] = None) -> None:
     listing_manual_avg = None
     listing_manual_min = None
     listing_manual_max = None
-    listing_manual_avg_odo = None
     listing_manual_count = None
-    listing_manual_instant = None
     listing_manual_recent = None
     listing_manual_table = None
     if listing_row is not None:
@@ -2068,9 +2059,7 @@ def render_ai_result(url: str, listing_row: Optional[pd.Series] = None) -> None:
         listing_manual_avg = listing_row.get("manual_carsales_avg")
         listing_manual_min = listing_row.get("manual_carsales_min")
         listing_manual_max = listing_row.get("manual_carsales_max")
-        listing_manual_avg_odo = listing_row.get("manual_carsales_avg_odometer")
         listing_manual_count = listing_row.get("manual_carsales_count")
-        listing_manual_instant = listing_row.get("manual_instant_offer_estimate")
         listing_manual_recent = listing_row.get("manual_recent_sales_30d")
         listing_manual_table = listing_row.get("manual_carsales_table")
 
@@ -2092,9 +2081,10 @@ def render_ai_result(url: str, listing_row: Optional[pd.Series] = None) -> None:
     )
     carsales_value = format_price_value(carsales_value_raw)
 
+    manual_range_display = format_price_range(listing_manual_min, listing_manual_max)
     metrics = st.columns(3)
     metrics[0].metric("Carsales Estimate", carsales_value)
-    metrics[1].metric("Instant Buy", format_price_value(listing_manual_instant))
+    metrics[1].metric("Manual Range", manual_range_display or "—")
     metrics[2].metric("Sold last 30d", listing_manual_recent or "—")
 
     def _parse_float_from_text(text: str | None) -> Optional[float]:
@@ -2594,4 +2584,3 @@ with tabs[1]:
                 )
 
                 focus_url = None
-

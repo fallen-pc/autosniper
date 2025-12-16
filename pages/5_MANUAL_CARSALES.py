@@ -8,7 +8,7 @@ import streamlit as st
 from scripts.ai_price_analysis import _extract_hours_remaining
 from scripts.vehicle_updates import coerce_price, update_vehicle_estimates
 from shared.data_loader import dataset_path, ensure_datasets_available
-from shared.styling import clean_html, display_banner, inject_global_styles, page_intro
+from shared.styling import clean_html, inject_global_styles, page_intro
 
 
 st.set_page_config(
@@ -18,10 +18,6 @@ st.set_page_config(
 )
 inject_global_styles()
 
-# Skip heavy banners by default to keep mobile loads light.
-show_banner = st.sidebar.checkbox("Show banner", value=False)
-if show_banner:
-    display_banner()
 st.markdown(
     "<style>[data-testid='stSidebar']{display:block !important;}</style>",
     unsafe_allow_html=True,
@@ -64,7 +60,7 @@ st.markdown(
 
 page_intro(
     "MANUAL CARSALES ESTIMATES",
-    "Enter Carsales resale and instant-buy ranges plus recent sales counts. Saved rows disappear from the list because completed items are filtered out.",
+    "Enter Carsales resale ranges and recent sales counts. Saved rows disappear from the list because completed items are filtered out.",
 )
 st.markdown(
     clean_html(
@@ -73,7 +69,7 @@ st.markdown(
             <div class="section-title">Entry format</div>
             <div class="section-subtitle">
                 Use <strong>min - max</strong> for price ranges (e.g. <code>$15,000 - $18,000</code>).
-                Instant buy uses the same format. Enter the <strong>sold last 30 days</strong> count as a whole number.
+                The dashboard automatically sets the average to the midpoint. Enter the <strong>sold last 30 days</strong> count as a whole number.
             </div>
         </div>
         """
@@ -90,8 +86,6 @@ def _ensure_columns(df: pd.DataFrame) -> pd.DataFrame:
     for col in (
         "manual_carsales_min",
         "manual_carsales_max",
-        "manual_instant_offer_estimate",
-        "manual_instant_offer_max",
         "manual_carsales_sold_30d",
         "carsales_skipped",
     ):
@@ -316,21 +310,13 @@ for _, row in filtered.iterrows():
         meta_col.markdown(f"[Carsales search]({row.get('carsales_search','')})", unsafe_allow_html=False)
 
         resale_default = _format_range_text(row.get("manual_carsales_min"), row.get("manual_carsales_max"))
-        instant_default = _format_range_text(
-            row.get("manual_instant_offer_estimate"), row.get("manual_instant_offer_max")
-        )
         sold_default = _safe_int(row.get("manual_carsales_sold_30d")) or 0
 
-        resale_col, instant_col, sold_col = st.columns([2, 2, 1])
+        resale_col, sold_col = st.columns([3, 1])
         resale_input = resale_col.text_input(
             "Carsales resale (min - max)",
             value=resale_default,
             placeholder="$15,000 - $18,000",
-        )
-        instant_input = instant_col.text_input(
-            "Instant buy (min - max)",
-            value=instant_default,
-            placeholder="$12,500 - $14,000",
         )
         sold_input = sold_col.number_input(
             "Sold last 30d",
@@ -346,7 +332,6 @@ for _, row in filtered.iterrows():
 
         if save_clicked:
             manual_min, manual_max = _parse_range_text(resale_input)
-            instant_min, instant_max = _parse_range_text(instant_input)
             if manual_min is None:
                 st.error("Carsales resale range is required (min or min-max).")
                 continue
@@ -355,8 +340,6 @@ for _, row in filtered.iterrows():
                 url,
                 manual_min=manual_min,
                 manual_max=manual_max,
-                manual_instant_offer=instant_min,
-                manual_instant_offer_max=instant_max,
                 sold_last_30d=int(sold_input) if sold_input is not None else None,
                 skipped=False,
             )

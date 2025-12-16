@@ -517,7 +517,8 @@ if not active_df.empty:
 manual_columns = [
     "manual_carsales_estimate",
     "manual_carsales_avg",
-    "manual_instant_offer_estimate",
+    "manual_carsales_min",
+    "manual_carsales_max",
 ]
 manual_df = pd.DataFrame()
 if not valuations_df.empty:
@@ -525,13 +526,23 @@ if not valuations_df.empty:
     if available_manual_cols:
         mask = valuations_df[available_manual_cols].notna().any(axis=1)
         manual_df = valuations_df[mask].copy()
-        manual_price = None
-        for col in manual_columns:
-            if col in manual_df.columns:
-                parsed = manual_df[col].apply(parse_currency_value)
-                manual_price = parsed if manual_price is None else manual_price.combine_first(parsed)
-        if manual_price is not None:
-            manual_df["manual_avg_price"] = manual_price
+        if not manual_df.empty:
+            def _manual_price(row: pd.Series) -> float | None:
+                for candidate in ("manual_carsales_avg", "manual_carsales_estimate"):
+                    value = parse_currency_value(row.get(candidate))
+                    if value is not None:
+                        return value
+                min_val = parse_currency_value(row.get("manual_carsales_min"))
+                max_val = parse_currency_value(row.get("manual_carsales_max"))
+                if min_val is None and max_val is None:
+                    return None
+                if min_val is None:
+                    return max_val
+                if max_val is None:
+                    return min_val
+                return (min_val + max_val) / 2.0
+
+            manual_df["manual_avg_price"] = manual_df.apply(_manual_price, axis=1)
             manual_df = manual_df.dropna(subset=["manual_avg_price"])
 
 positive_count = 0

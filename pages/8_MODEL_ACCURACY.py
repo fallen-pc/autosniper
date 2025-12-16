@@ -16,7 +16,6 @@ page_intro("OUTCOME ACCURACY TRACKER", "See how well predictions lined up with r
 required_files = [
     "ai_listing_valuations.csv",
     "sold_cars.csv",
-    "ai_verdicts.csv",
 ]
 missing = ensure_datasets_available(required_files)
 if missing:

@@ -1,13 +1,10 @@
 import asyncio
-import json
 import os
 import re
 import textwrap
 
 import pandas as pd
 import streamlit as st
-from dotenv import load_dotenv
-from openai import OpenAI
 
 from scripts.update_bids import update_bids
 from shared.data_loader import dataset_path, ensure_datasets_available
@@ -23,16 +20,6 @@ inject_global_styles()
 display_banner()
 page_intro("ACTIVE LISTINGS DASHBOARD", "Track live auctions, filter the noise, and act on the most promising stock.")
 
-if os.path.exists(".env.local"):
-    load_dotenv(".env.local")
-else:
-    load_dotenv()
-
-api_key = os.getenv("OPENAI_API_KEY")
-client = OpenAI(api_key=api_key) if api_key else None
-if client is None:
-    st.warning("OpenAI API key not set; AI verdicts will be unavailable.")
-
 missing = ensure_datasets_available(["vehicle_static_details.csv"])
 if missing:
     st.error(
@@ -42,7 +29,6 @@ if missing:
     st.stop()
 
 CSV_FILE = dataset_path("vehicle_static_details.csv")
-VERDICT_FILE = dataset_path("ai_verdicts.csv")
 
 if "skipped_urls" not in st.session_state:
     st.session_state.skipped_urls = []
@@ -69,17 +55,7 @@ def combine_odometer(row: pd.Series) -> str:
     return combined if combined else "N/A"
 
 
-def parse_profit_percent(value: object) -> float | None:
-    if value is None:
-        return None
-    try:
-        cleaned = str(value).replace("%", "").strip()
-        return float(cleaned)
-    except (TypeError, ValueError):
-        return None
-
-
-def render_listing_card(row: pd.Series, verdict_info: dict[str, str] | None = None) -> None:
+def render_listing_card(row: pd.Series) -> None:
     parts = [
         safe_text(row.get("year"), ""),
         safe_text(row.get("make"), ""),
@@ -113,40 +89,7 @@ def render_listing_card(row: pd.Series, verdict_info: dict[str, str] | None = No
         if value:
             stats.append((label, safe_text(value)))
 
-    extra_stats: list[tuple[str, str]] = []
-    profit_html = ""
-    if verdict_info:
-        resale_value = safe_text(verdict_info.get("resale_estimate"), "N/A")
-        max_bid = safe_text(verdict_info.get("max_bid"), "N/A")
-        profit_text = safe_text(verdict_info.get("profit_margin_percent"), "N/A")
-        verdict_text = safe_text(verdict_info.get("verdict"), "")
-        profit_percent = parse_profit_percent(verdict_info.get("profit_margin_percent"))
-
-        extra_stats.extend(
-            [
-                ("Resale Estimate", resale_value),
-                ("Max Bid", max_bid),
-            ]
-        )
-
-        bar_width = min(abs(profit_percent or 0), 100)
-        profit_class = "autosniper-profit"
-        if profit_percent is not None and profit_percent < 0:
-            profit_class += " negative"
-
-        profit_html = clean_html(
-            f"""
-            <div class="{profit_class}">
-                <span class="metric">Margin: {profit_text}</span>
-                <div class="bar">
-                    <div class="bar-fill" style="width: {bar_width}%;"></div>
-                </div>
-                <span class="verdict">{verdict_text}</span>
-            </div>
-            """
-        )
-
-    all_stats = stats + extra_stats
+    all_stats = stats
     stats_html = "\n".join(
         clean_html(
             f"""
@@ -182,7 +125,6 @@ def render_listing_card(row: pd.Series, verdict_info: dict[str, str] | None = No
                 {stats_html}
             </div>
             {condition_html}
-            {profit_html}
         </div>
         """
     )
@@ -307,43 +249,7 @@ if CSV_FILE.exists():
 
     grouped = df.groupby("time_group", sort=False)
 
-    def run_ai_analysis(vehicle_row: pd.Series) -> dict[str, str]:
-        prompt = f"""
-        You are an automotive resale expert. Given the following car details, estimate the resale value in Victoria, calculate the profit margin, and determine the maximum bid to stay profitable.
-
-        Details:
-        {vehicle_row.to_dict()}
-
-        Return a JSON like this:
-        {{
-        "resale_estimate": "$12,000",
-        "max_bid": "$9,000",
-        "profit_margin_percent": "25%",
-        "verdict": "Good"
-        }}
-        """
-
-        if client is None:
-            return {"error": "OpenAI API key not configured.", "raw": ""}
-        response = client.chat.completions.create(
-            model="gpt-4",
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.4,
-        )
-
-        raw = response.choices[0].message.content.strip()
-        match = re.search(r"\{.*\}", raw, re.DOTALL)
-        if match:
-            try:
-                parsed = json.loads(match.group())
-                return parsed
-            except Exception as exc:  # noqa: BLE001
-                return {"error": f"JSON parse failed: {exc}", "raw": raw}
-        return {"error": "No JSON found in response", "raw": raw}
-
     st.markdown(f"### {len(df)} Active Listings")
-
-    verdicts_df = pd.read_csv(VERDICT_FILE) if VERDICT_FILE.exists() else pd.DataFrame()
 
     if df.empty:
         st.info("No active listings match the current filters.")
@@ -351,31 +257,4 @@ if CSV_FILE.exists():
         for group, group_df in grouped:
             st.markdown(f"## {group} ({len(group_df)})")
             for idx, row in group_df.iterrows():
-                vehicle_url = row.get("url", "")
-                verdict_row = None
-                if not verdicts_df.empty and vehicle_url:
-                    match_df = verdicts_df[verdicts_df["url"] == vehicle_url]
-                    if not match_df.empty:
-                        verdict_row = match_df.iloc[0].to_dict()
-
-                render_listing_card(row, verdict_row)
-
-                if verdict_row is None:
-                    if st.button("Run AI Analysis", key=f"ai-{idx}"):
-                        result = run_ai_analysis(row)
-                        if "error" not in result:
-                            new_row = row.copy()
-                            new_row["resale_estimate"] = result["resale_estimate"]
-                            new_row["max_bid"] = result["max_bid"]
-                            new_row["profit_margin_percent"] = result["profit_margin_percent"]
-                            new_row["verdict"] = result["verdict"]
-
-                            verdicts_to_save = pd.concat([verdicts_df, pd.DataFrame([new_row])], ignore_index=True)
-                            verdicts_to_save.to_csv(VERDICT_FILE, index=False)
-
-                            st.success("AI analysis saved.")
-                            st.cache_data.clear()
-                            st.rerun()
-                        else:
-                            st.error("Failed to parse AI response.")
-                            st.code(result["raw"])
+                render_listing_card(row)

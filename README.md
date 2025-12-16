@@ -54,7 +54,6 @@ vehicle_static_details.csv
 active_vehicle_details.csv
 all_vehicle_links.csv
 ai_listing_valuations.csv
-ai_verdicts.csv
 sold_cars.csv
 referred_cars.csv
 ```

@@ -73,24 +73,21 @@ PAGE_SUMMARIES: tuple[PageSummary, ...] = (
         title="3. Active Listings Dashboard",
         purpose=(
             "Serve as the mission control for live auctions: filter noisy stock, refresh bid data, and"
-            " optionally trigger GPT-powered profit checks per vehicle."
+            " surface the highest-confidence opportunities in seconds."
         ),
         capabilities=(
             "Loads `vehicle_static_details.csv`, enforces that only `status == 'active'` records remain,"
-            " and displays listing cards grouped by time-to-close buckets (""<24h", "1-2d", "2-3d", "3+d"").",
+            ' and displays listing cards grouped by time-to-close buckets ("<24h", "1-2d", "2-3d", "3+d").',
             "Sidebar filters hide engine defect notes, unregistered vehicles, and/or anything outside"
             " Victoria so buyers can focus on viable stock.",
             "Provides **Refresh Active Listings** and **Refresh Visible Listings** actions that call"
             " `scripts.update_bids.update_bids` (optionally limited to the filtered URLs).",
-            "Each card exposes a ""Run AI Analysis"" button. The handler sends the row through the OpenAI"
-            " chat API, parses a JSON resale verdict, and persists the result in"
-            " `CSV_data/ai_verdicts.csv` for future sessions.",
+            "Cards focus purely on the live CSV data so ops teams can react instantly without juggling"
+            " cached AI verdicts inside the dashboard.",
         ),
         data_flows=(
-            "Inputs: `vehicle_static_details.csv` plus optional `ai_verdicts.csv` for overlaying prior"
-            " AI recommendations.",
-            "Outputs: updated `vehicle_static_details.csv` (bid/time refreshes) and appended"
-            " `ai_verdicts.csv` rows when new analyses run.",
+            "Inputs: `vehicle_static_details.csv`.",
+            "Outputs: updated `vehicle_static_details.csv` (bid/time refreshes).",
         ),
         notes=(
             "Skipped URLs from bid refreshes are cached in-session so you can retry only the failures.",
@@ -126,7 +123,7 @@ PAGE_SUMMARIES: tuple[PageSummary, ...] = (
         ),
         capabilities=(
             "Requires a rich data stack (`vehicle_static_details.csv`, `active_vehicle_details.csv`,"
-            " `ai_verdicts.csv`, `ai_listing_valuations.csv`, and `sold_cars.csv`) so comparisons always"
+            " `ai_listing_valuations.csv`, and `sold_cars.csv`) so comparisons always"
             " combine the latest auction context with historical baselines.",
             "Lets you focus on a time window (24/48/72h) plus reuse the Active Listings filters to hide"
             " engine issues, unregistered stock, or non-VIC locations.",
@@ -175,15 +172,16 @@ PAGE_SUMMARIES: tuple[PageSummary, ...] = (
             "Measure how well AI predictions performed once vehicles settled, broken down by time,"
             " verdict tier, and individual misses."),
         capabilities=(
-            "Requires `ai_listing_valuations.csv`, `sold_cars.csv`, and `ai_verdicts.csv`, then calls"
-            " `scripts.outcome_tracking.compute_outcome_metrics()` to assemble joined datasets.",
+            "Requires `ai_listing_valuations.csv` and `sold_cars.csv`, then calls"
+            " `scripts.outcome_tracking.compute_outcome_metrics()` to assemble joined datasets"
+            " (optionally folding in legacy AI verdict tiers when available).",
             "Displays aggregate KPIs (scored listings, accuracy, MAE, MAPE, profit calibration) plus"
             " Altair charts for weekly hit rates and accuracy by verdict tier.",
-            "Provides a detailed ""Worst Misses"" table and download buttons for the scored listings,"
+            "Provides a detailed \"Worst Misses\" table and download buttons for the scored listings,"
             " weekly metrics, and verdict metrics CSVs so analysts can dig deeper offline.",
         ),
         data_flows=(
-            "Inputs: joined AI verdicts, pricing analyses, and sold outcomes.",
+            "Inputs: merged pricing analyses and sold outcomes (plus verdict tiers when provided).",
             "Outputs: exported CSVs for accuracy tracking and on-screen diagnostics.",
         ),
         notes=(

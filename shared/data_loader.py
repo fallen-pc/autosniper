@@ -43,7 +43,6 @@ REQUIRED_FILES: List[str] = [
     "vehicle_static_details.csv",
     "active_vehicle_details.csv",
     "all_vehicle_links.csv",
-    "ai_verdicts.csv",
     "ai_listing_valuations.csv",
     "sold_cars.csv",
     "referred_cars.csv",

@@ -43,30 +43,25 @@ def parse_currency(value) -> float | None:
         return None
 
 
-def parse_odometer(value) -> float | None:
-    if value is None:
-        return None
-    if isinstance(value, (int, float)):
-        return float(value)
-    text = str(value).lower().replace("km", "").replace(",", "").strip()
-    if not text:
-        return None
-    try:
-        return float(text)
-    except ValueError:
-        return None
-
-
 def format_currency(value: float | None) -> str:
     if value is None:
         return "—"
     return f"${value:,.0f}"
 
 
-def format_odometer(value: float | None) -> str:
-    if value is None:
-        return "—"
-    return f"{int(round(value)):,} km"
+def compute_manual_average(row: pd.Series) -> float | None:
+    estimate = parse_currency(row.get("manual_carsales_estimate"))
+    manual_min = parse_currency(row.get("manual_carsales_min"))
+    manual_max = parse_currency(row.get("manual_carsales_max"))
+    if estimate is not None:
+        return estimate
+    if manual_min is not None and manual_max is not None:
+        return (manual_min + manual_max) / 2.0
+    if manual_min is not None:
+        return manual_min
+    if manual_max is not None:
+        return manual_max
+    return None
 
 
 manual_df = load_manual().copy()
@@ -85,12 +80,7 @@ if "status" in sold_df.columns:
     if has_sold_status.any():
         sold_df = sold_df[has_sold_status].copy()
 
-manual_df["manual_avg_price"] = (
-    manual_df["manual_carsales_estimate"]
-    .fillna(manual_df["manual_carsales_avg"])
-    .apply(parse_currency)
-)
-manual_df["manual_avg_odometer"] = manual_df["manual_carsales_avg_odometer"].apply(parse_odometer)
+manual_df["manual_avg_price"] = manual_df.apply(compute_manual_average, axis=1)
 manual_df = manual_df.dropna(subset=["manual_avg_price"])
 if manual_df.empty:
     st.info("No Carsales tables saved with an average price yet.")
@@ -109,33 +99,43 @@ if opportunities.empty:
 opportunities["potential_profit"] = (
     opportunities["manual_avg_price"] - opportunities["final_sale_price"]
 )
-opportunities = opportunities[opportunities["potential_profit"] > 0].copy()
-
-if opportunities.empty:
-    st.info("No positive missed opportunities detected.")
-    st.stop()
-
 opportunities.sort_values(by="potential_profit", ascending=False, inplace=True)
 opportunities.reset_index(drop=True, inplace=True)
 
-st.subheader("Top Missed Opportunities")
-cols = st.columns(3)
-for idx, (_, row) in enumerate(opportunities.head(3).iterrows()):
-    col = cols[idx]
-    title = f"{int(row['year']) if pd.notna(row['year']) else ''} {row['make']} {row['model']}"
-    col.markdown(f"**{title}**")
-    col.write(row.get("variant", ""))
-    col.metric(
-        label="Potential Profit",
-        value=format_currency(row["potential_profit"]),
-        delta=f"Sold for {format_currency(row['final_sale_price'])}",
-    )
-    col.write(f"Carsales estimate: {format_currency(row['manual_avg_price'])}")
-    if pd.notna(row.get("date_sold")):
-        col.caption(f"Date sold: {row['date_sold']}")
-    col.markdown(f"[View Listing]({row['url']})")
+st.sidebar.markdown("### Display Options")
+show_all_overlaps = st.sidebar.checkbox(
+    "Show all overlaps (include zero or negative profit)", value=False
+)
 
-st.subheader("All Positive Opportunities")
+positive_opportunities = opportunities[opportunities["potential_profit"] > 0].copy()
+display_opportunities = opportunities.copy() if show_all_overlaps else positive_opportunities.copy()
+
+if positive_opportunities.empty and not show_all_overlaps:
+    st.info(
+        "No positive missed opportunities detected. Enable 'Show all overlaps' to review every match."
+    )
+
+st.subheader("Top Missed Opportunities")
+if positive_opportunities.empty:
+    st.info("Positive overlaps will appear here once Carsales estimates outpace sale prices.")
+else:
+    cols = st.columns(3)
+    for idx, (_, row) in enumerate(positive_opportunities.head(3).iterrows()):
+        col = cols[idx]
+        title = f"{int(row['year']) if pd.notna(row['year']) else ''} {row['make']} {row['model']}"
+        col.markdown(f"**{title}**")
+        col.write(row.get("variant", ""))
+        col.metric(
+            label="Potential Profit",
+            value=format_currency(row["potential_profit"]),
+            delta=f"Sold for {format_currency(row['final_sale_price'])}",
+        )
+        col.write(f"Carsales estimate: {format_currency(row['manual_avg_price'])}")
+        if pd.notna(row.get("date_sold")):
+            col.caption(f"Date sold: {row['date_sold']}")
+        col.markdown(f"[View Listing]({row['url']})")
+
+st.subheader("Overlap Details")
 display_cols = [
     "year",
     "make",
@@ -144,18 +144,17 @@ display_cols = [
     "final_sale_price",
     "manual_avg_price",
     "potential_profit",
-    "manual_avg_odometer",
     "date_sold",
     "url",
 ]
-existing_cols = [col for col in display_cols if col in opportunities.columns]
-display_df = opportunities[existing_cols].copy()
-display_df["final_sale_price"] = display_df["final_sale_price"].apply(format_currency)
-display_df["manual_avg_price"] = display_df["manual_avg_price"].apply(format_currency)
-display_df["potential_profit"] = display_df["potential_profit"].apply(format_currency)
-if "manual_avg_odometer" in display_df.columns:
-    display_df["manual_avg_odometer"] = display_df["manual_avg_odometer"].apply(
-        format_odometer
-    )
+existing_cols = [col for col in display_cols if col in display_opportunities.columns]
+display_df = display_opportunities[existing_cols].copy()
+
+if display_df.empty:
+    st.info("No overlaps match the current filter.")
+else:
+    display_df["final_sale_price"] = display_df["final_sale_price"].apply(format_currency)
+    display_df["manual_avg_price"] = display_df["manual_avg_price"].apply(format_currency)
+    display_df["potential_profit"] = display_df["potential_profit"].apply(format_currency)
 
 st.dataframe(display_df, width="stretch")

@@ -72,7 +72,10 @@ def extract_links_from_content(content: str) -> list[str]:
     return sorted({ _clean_url(url) for url in results if "/lot/" in url })
 
 
-def fetch_page(session: requests.Session, url: str) -> tuple[str | None, bool]:
+def fetch_page(session: requests.Session, url: str, *, force_proxy: bool = False) -> tuple[str | None, bool]:
+    if force_proxy:
+        return _fetch_via_proxy(session, url)
+
     try:
         response = session.get(url, timeout=30)
         if response.status_code == 200 and "Request blocked." not in response.text:
@@ -81,6 +84,10 @@ def fetch_page(session: requests.Session, url: str) -> tuple[str | None, bool]:
     except requests.RequestException as exc:
         print(f"Direct fetch error: {exc}; trying proxy.")
 
+    return _fetch_via_proxy(session, url)
+
+
+def _fetch_via_proxy(session: requests.Session, url: str) -> tuple[str | None, bool]:
     proxied_url = f"{PROXY_BASE}{url}"
     try:
         response = session.get(proxied_url, timeout=30)
@@ -103,7 +110,7 @@ def extract_all_vehicle_links() -> None:
     while page <= MAX_PAGES:
         url = f"{BASE_URL}?tab=items&isdesktop=1&page={page}"
         print(f"Fetching: {url}")
-        content, _ = fetch_page(session, url)
+        content, used_proxy = fetch_page(session, url)
         if not content:
             empty_streak += 1
             if empty_streak >= MAX_EMPTY_PAGES:
@@ -113,6 +120,13 @@ def extract_all_vehicle_links() -> None:
             continue
 
         links = extract_links_from_content(content)
+        if not links and not used_proxy:
+            proxy_content, proxy_used = fetch_page(session, url, force_proxy=True)
+            if proxy_content:
+                content = proxy_content
+                used_proxy = proxy_used
+                links = extract_links_from_content(content)
+
         new_links = [link for link in links if link not in all_links]
         if new_links:
             all_links.update(new_links)

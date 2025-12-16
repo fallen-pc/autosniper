@@ -47,10 +47,8 @@ def _ensure_manual_columns(df: pd.DataFrame) -> pd.DataFrame:
         df["manual_carsales_min"] = None
     if "manual_carsales_max" not in df.columns:
         df["manual_carsales_max"] = None
-    if "manual_instant_offer_estimate" not in df.columns:
-        df["manual_instant_offer_estimate"] = None
-    if "manual_instant_offer_max" not in df.columns:
-        df["manual_instant_offer_max"] = None
+    if "manual_carsales_avg" not in df.columns:
+        df["manual_carsales_avg"] = None
     if "manual_carsales_sold_30d" not in df.columns:
         df["manual_carsales_sold_30d"] = None
     if "carsales_skipped" not in df.columns:
@@ -80,6 +78,19 @@ def _apply_updates_to_file(path: Path, url_key: str, updates: dict[str, Any]) ->
         if column not in df.columns:
             df[column] = None
         df.loc[mask, column] = value
+    if "manual_carsales_avg" in df.columns:
+        def _row_avg(row: pd.Series) -> float | None:
+            min_val = coerce_price(row.get("manual_carsales_min"))
+            max_val = coerce_price(row.get("manual_carsales_max"))
+            if min_val is None and max_val is None:
+                return None
+            if min_val is None:
+                return max_val
+            if max_val is None:
+                return min_val
+            return (min_val + max_val) / 2.0
+
+        df.loc[mask, "manual_carsales_avg"] = df.loc[mask].apply(_row_avg, axis=1)
 
     _atomic_write(df, path)
     return True
@@ -89,8 +100,6 @@ def update_vehicle_estimates(
     url: str,
     manual_min: float | None = None,
     manual_max: float | None = None,
-    manual_instant_offer: float | None = None,
-    manual_instant_offer_max: float | None = None,
     sold_last_30d: int | None = None,
     *,
     skipped: bool | None = None,
@@ -106,10 +115,6 @@ def update_vehicle_estimates(
         updates["manual_carsales_min"] = manual_min
     if manual_max is not None:
         updates["manual_carsales_max"] = manual_max
-    if manual_instant_offer is not None:
-        updates["manual_instant_offer_estimate"] = manual_instant_offer
-    if manual_instant_offer_max is not None:
-        updates["manual_instant_offer_max"] = manual_instant_offer_max
     if sold_last_30d is not None:
         updates["manual_carsales_sold_30d"] = sold_last_30d
     if skipped is not None:
