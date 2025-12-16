@@ -496,6 +496,56 @@ _BASE_STYLES = textwrap.dedent(
         font-size: 1rem;
         line-height: 1.55;
     }
+    .hero-card {
+        background: linear-gradient(145deg, rgba(26, 33, 48, 0.98), rgba(10, 16, 28, 0.98));
+        border: 1px solid rgba(44, 58, 79, 0.9);
+        border-radius: 24px;
+        box-shadow: 0 25px 55px rgba(0, 0, 0, 0.45);
+        padding: clamp(1.5rem, 2vw, 2.35rem) clamp(1.25rem, 2vw, 2.4rem) clamp(1.85rem, 2.2vw, 2.8rem);
+        text-align: center;
+        margin: 0 auto 1.6rem;
+        max-width: 980px;
+        position: relative;
+        overflow: hidden;
+    }
+    .hero-card::after {
+        content: "";
+        position: absolute;
+        top: -20%;
+        right: -15%;
+        width: 320px;
+        height: 320px;
+        background: radial-gradient(circle, rgba(31, 166, 255, 0.18) 0%, transparent 70%);
+        z-index: 0;
+    }
+    .hero-card > * {
+        position: relative;
+        z-index: 1;
+    }
+    .hero-card h1 {
+        margin-bottom: 0.9rem;
+        text-transform: uppercase;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+    }
+    .hero-card .hero-card-description {
+        color: var(--autosniper-muted);
+        margin: 0;
+        font-size: 1.05rem;
+        line-height: 1.6;
+    }
+    .hero-card .hero-card-actions {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 1rem;
+    }
+    .hero-card .hero-card-actions .stButton>button {
+        min-width: 220px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.35);
+        background: linear-gradient(135deg, #00aaff 0%, #0066cc 100%);
+        box-shadow: 0 18px 36px rgba(0, 0, 0, 0.45);
+    }
     /* New dark/blue theme overrides */
     .stApp {
         background-color: #0A0A0C !important;
@@ -706,6 +756,21 @@ def chrome_title(text: str = "AUTOSNIPER") -> None:
     """Render the chrome gradient Autosniper title."""
     inject_global_styles()
     st.markdown(f"<div class='autosniper-title'>{text}</div>", unsafe_allow_html=True)
+
+
+def hero_action_card(title: str, subtitle: str, button_label: str, *, button_key: str) -> bool:
+    """Render a hero card with heading, CTA button, and subtitle. Returns button click state."""
+    inject_global_styles()
+    container = st.container()
+    with container:
+        st.markdown("<div class='hero-card'>", unsafe_allow_html=True)
+        st.markdown(f"<h1>{title}</h1>", unsafe_allow_html=True)
+        st.markdown("<div class='hero-card-actions'>", unsafe_allow_html=True)
+        clicked = st.button(button_label, key=button_key)
+        st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown(f"<p class='hero-card-description'>{subtitle}</p>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+    return clicked
 
 
 _LOGO_CACHE: dict[int, str] = {}

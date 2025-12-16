@@ -4,23 +4,35 @@ import pandas as pd
 import streamlit as st
 
 from shared.data_loader import dataset_path
-from shared.styling import clean_html, display_banner, inject_global_styles, page_intro
+from shared.styling import (
+    clean_html,
+    display_banner,
+    hero_action_card,
+    inject_global_styles,
+    render_logo_centered,
+)
 
 
 st.set_page_config(page_title="EXTRACT VEHICLE DETAILS", layout="wide")
 inject_global_styles()
 
 display_banner()
-page_intro("EXTRACT VEHICLE DETAILS", "Compile the latest specs, condition notes, and pricing signals for every tracked vehicle.")
+render_logo_centered()
+run_details_clicked = hero_action_card(
+    "EXTRACT VEHICLE DETAILS",
+    "Compile the latest specs, condition notes, and pricing signals for every tracked vehicle.",
+    "Run detail scraper",
+    button_key="detail_scraper_btn",
+)
 
 LINKS_FILE = dataset_path("all_vehicle_links.csv")
 OUTPUT_FILE = dataset_path("vehicle_static_details.csv")
 
-if st.button("Run detail scraper"):
+if run_details_clicked:
     if not LINKS_FILE.exists():
         st.error("The links CSV is missing. Collect links before running the detail scraper.")
     else:
-        with st.spinner("Extracting vehicle details from Grays listings…"):
+        with st.spinner("Extracting vehicle details from Grays listings..."):
             exit_code = os.system("python scripts/extract_vehicle_details.py")
             if exit_code == 0:
                 st.success("Vehicle details successfully extracted.")
