@@ -8,6 +8,11 @@ import streamlit as st
 from scripts.ai_price_analysis import _extract_hours_remaining
 from scripts.vehicle_updates import coerce_price, update_vehicle_estimates
 from shared.data_loader import dataset_path, ensure_datasets_available
+from shared.filter_controls import (
+    apply_vehicle_filters,
+    render_time_filter,
+    render_vehicle_filter_toggles,
+)
 from shared.styling import clean_html, inject_global_styles, page_intro
 
 
@@ -191,50 +196,30 @@ def _parse_range_text(raw: Any) -> tuple[Optional[float], Optional[float]]:
 df = _load_vehicle_table()
 
 # Filters
-timeframe_options: Dict[str, tuple[Optional[float], Optional[float]]] = {
-    "All": (None, None),
-    "Next 24h": (0.0, 24.0),
-    "Next 48h": (0.0, 48.0),
-    "Next 72h": (0.0, 72.0),
-}
-selected_timeframe = st.sidebar.selectbox("Time window", list(timeframe_options.keys()), index=1)
-min_hours, max_hours = timeframe_options[selected_timeframe]
-
-location_options = sorted({loc for loc in df["location_clean"].dropna().unique() if loc})
-unique_makes = sorted({m for m in df.get("make", pd.Series()).dropna().astype(str).str.title()})
-selected_makes = st.sidebar.multiselect("Filter by make", unique_makes)
-selected_locations = st.sidebar.multiselect("Filter by location", location_options)
-
-search_text = st.sidebar.text_input("Search model/variant/URL")
+st.sidebar.markdown("### Filters")
+time_label, time_bounds = render_time_filter(
+    container=st.sidebar,
+    label="Time remaining",
+    default_option="< 24h",
+)
+vehicle_toggles = render_vehicle_filter_toggles(container=st.sidebar)
+df = apply_vehicle_filters(df, vehicle_toggles)
 
 # Base filtering
 missing_manual_mask = df["manual_carsales_min"].apply(_is_blank)
 status_mask = ~df["status"].isin(EXCLUDED_STATUSES)
 skip_mask = ~df["carsales_skipped"].fillna(False).astype(bool)
 hours_mask = pd.Series([True] * len(df))
-if min_hours is not None or max_hours is not None:
+lower_bound, upper_bound = time_bounds
+if lower_bound is not None or upper_bound is not None:
     hours_mask = df["hours_remaining"].apply(
         lambda val: (
-            (min_hours is None or (val is not None and val >= min_hours))
-            and (max_hours is None or (val is not None and val < max_hours))
+            (lower_bound is None or (val is not None and val >= lower_bound))
+            and (upper_bound is None or (val is not None and val < upper_bound))
         )
     )
 
 filtered = df[missing_manual_mask & status_mask & skip_mask & hours_mask].copy()
-
-if selected_makes:
-    filtered = filtered[filtered["make"].astype(str).str.title().isin(selected_makes)]
-
-if selected_locations:
-    filtered = filtered[filtered["location_clean"].isin(selected_locations)]
-
-if search_text:
-    needle = search_text.strip().lower()
-    filtered = filtered[
-        filtered["model"].astype(str).str.lower().str.contains(needle)
-        | filtered["variant"].astype(str).str.lower().str.contains(needle)
-        | filtered["url"].astype(str).str.lower().str.contains(needle)
-    ]
 
 if filtered.empty:
     st.info("No vehicles need manual Carsales estimates right now.")
@@ -255,17 +240,7 @@ filtered["odometer_display"] = filtered["odometer_reading"].apply(_format_odomet
 st.markdown("Enter ranges and counts below, then click **Save** for each row.")
 st.divider()
 
-# Pagination to avoid rendering hundreds of forms on mobile.
-page_size = st.sidebar.selectbox("Rows per page", options=[10, 20, 50], index=0)
-total_rows = len(filtered)
-total_pages = max(1, (total_rows + page_size - 1) // page_size)
-page_number = st.sidebar.number_input("Page", min_value=1, max_value=total_pages, value=1, step=1)
-
-start_idx = (page_number - 1) * page_size
-end_idx = start_idx + page_size
-filtered = filtered.iloc[start_idx:end_idx]
-
-st.caption(f"Showing {len(filtered)} of {total_rows} vehicles (page {page_number}/{total_pages}).")
+st.caption(f"Showing {len(filtered)} vehicles needing manual entries.")
 
 
 def _safe_int(value: Any) -> Optional[int]:

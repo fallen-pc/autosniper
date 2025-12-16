@@ -4,6 +4,11 @@ import streamlit as st
 from scripts.ai_listing_valuation import load_cached_results
 from scripts.ai_price_analysis import load_historical_sales
 from shared.data_loader import ensure_datasets_available
+from shared.filter_controls import (
+    apply_vehicle_filters,
+    render_time_filter,
+    render_vehicle_filter_toggles,
+)
 from shared.styling import clean_html, display_banner, inject_global_styles, page_intro
 
 
@@ -102,13 +107,39 @@ opportunities["potential_profit"] = (
 opportunities.sort_values(by="potential_profit", ascending=False, inplace=True)
 opportunities.reset_index(drop=True, inplace=True)
 
+opportunities["date_sold_ts"] = pd.to_datetime(opportunities.get("date_sold"), errors="coerce")
+now_utc = pd.Timestamp.utcnow()
+opportunities["hours_since_sold"] = (
+    (now_utc - opportunities["date_sold_ts"]).dt.total_seconds() / 3600
+)
+
+st.sidebar.markdown("### Filters")
+time_label, time_bounds = render_time_filter(
+    container=st.sidebar,
+    label="Sale recency (hours ago)",
+    default_option="All",
+)
+lower_bound, upper_bound = time_bounds
+scoped_opportunities = opportunities.copy()
+if lower_bound is not None or upper_bound is not None:
+    scoped_opportunities = scoped_opportunities[scoped_opportunities["hours_since_sold"].notna()]
+    if lower_bound is not None:
+        scoped_opportunities = scoped_opportunities[scoped_opportunities["hours_since_sold"] >= lower_bound]
+    if upper_bound is not None:
+        scoped_opportunities = scoped_opportunities[scoped_opportunities["hours_since_sold"] < upper_bound]
+
+vehicle_toggles = render_vehicle_filter_toggles(container=st.sidebar, key_prefix="missed_")
+scoped_opportunities = apply_vehicle_filters(scoped_opportunities, vehicle_toggles)
+
 st.sidebar.markdown("### Display Options")
 show_all_overlaps = st.sidebar.checkbox(
     "Show all overlaps (include zero or negative profit)", value=False
 )
 
-positive_opportunities = opportunities[opportunities["potential_profit"] > 0].copy()
-display_opportunities = opportunities.copy() if show_all_overlaps else positive_opportunities.copy()
+positive_opportunities = scoped_opportunities[scoped_opportunities["potential_profit"] > 0].copy()
+display_opportunities = (
+    scoped_opportunities.copy() if show_all_overlaps else positive_opportunities.copy()
+)
 
 if positive_opportunities.empty and not show_all_overlaps:
     st.info(

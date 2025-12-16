@@ -58,7 +58,12 @@ from scripts.vehicle_updates import coerce_price
 from scripts.update_bids import update_bids
 
 from shared.data_loader import dataset_path, ensure_datasets_available
-
+from shared.filter_controls import (
+    apply_vehicle_filters,
+    describe_time_selection,
+    render_time_filter,
+    render_vehicle_filter_toggles,
+)
 from shared.styling import clean_html, display_banner, inject_global_styles, page_intro
 
 
@@ -111,54 +116,22 @@ CONDITION_COLUMNS = [
 ]
 
 
-TIMEFRAME_OPTIONS: dict[str, tuple[float, float]] = {
-
-    "Next 24 hours": (0.0, 24.0),
-
-    "Next 48 hours": (0.0, 48.0),
-
-    "Next 72 hours": (0.0, 72.0),
-
-}
-
-DEFAULT_TIMEFRAME = "Next 24 hours"
-
-timeframe_labels = list(TIMEFRAME_OPTIONS.keys())
-
-default_timeframe_index = timeframe_labels.index(DEFAULT_TIMEFRAME)
-
 st.sidebar.header("Time Window")
 
-selected_timeframe_label = st.sidebar.selectbox(
-
-    "Show listings finishing within",
-
-    timeframe_labels,
-
-    index=default_timeframe_index,
-
+time_label, time_bounds = render_time_filter(
+    container=st.sidebar,
+    label="Show listings finishing within",
+    default_option="< 24h",
 )
+lower_bound, upper_bound = time_bounds
+selected_min_hours = 0.0 if lower_bound is None else lower_bound
+selected_max_hours = upper_bound
 
-selected_min_hours, selected_max_hours = TIMEFRAME_OPTIONS[selected_timeframe_label]
-
-if selected_min_hours <= 0:
-
-    time_window_text = f"the next {int(selected_max_hours)} hours"
-
-else:
-
-    time_window_text = (
-
-        f"between {int(selected_min_hours)} and {int(selected_max_hours)} hours from now"
-
-    )
-
+time_window_text = describe_time_selection(time_label)
 time_window_refresh_text = f"listings finishing within {time_window_text}"
 
 st.caption(
-
     f"Active listings finishing within {time_window_text} compared with historical sales data."
-
 )
 
 
@@ -375,84 +348,8 @@ focus_url = st.session_state.pop("ai_focus_url", None)
 # Vehicle-level sidebar filters aligned with Active Listings view.
 
 st.sidebar.markdown("### Vehicle Filters")
-
-hide_engine_issues = st.sidebar.checkbox("Hide vehicles with engine defects", value=True)
-
-hide_unregistered = st.sidebar.checkbox("Hide unregistered vehicles", value=False)
-
-filter_vic_only = st.sidebar.checkbox("Show only VIC listings", value=False)
-
-
-
-def _has_engine_issue(text: object) -> bool:
-
-    keywords = [
-
-        "engine light",
-
-        "rough idle",
-
-        "engine oil leak",
-
-        "smoke",
-
-        "seized",
-
-        "blown",
-
-        "won't start",
-
-        "does not start",
-
-        "engine does not turn",
-
-        "no compression",
-
-    ]
-
-    value = str(text or "").lower()
-
-    return any(keyword in value for keyword in keywords)
-
-
-
-
-
-def _is_unregistered(value: object) -> bool:
-
-    if value is None or (isinstance(value, float) and pd.isna(value)):
-
-        return False
-
-    try:
-
-        return int(float(str(value).strip())) == 0
-
-    except (TypeError, ValueError):
-
-        return False
-
-
-
-
-
-if hide_engine_issues and "general_condition" in comparison_df.columns:
-
-    engine_mask = ~comparison_df["general_condition"].apply(_has_engine_issue)
-
-    comparison_df = comparison_df[engine_mask].copy()
-
-if hide_unregistered and "no_of_plates" in comparison_df.columns:
-
-    rego_mask = ~comparison_df["no_of_plates"].apply(_is_unregistered)
-
-    comparison_df = comparison_df[rego_mask].copy()
-
-if filter_vic_only and "location" in comparison_df.columns:
-
-    vic_mask = comparison_df["location"].astype(str).str.contains("vic", case=False, na=False)
-
-    comparison_df = comparison_df[vic_mask].copy()
+vehicle_toggles = render_vehicle_filter_toggles(container=st.sidebar, key_prefix="ai_")
+comparison_df = apply_vehicle_filters(comparison_df, vehicle_toggles)
 
 
 
@@ -1951,42 +1848,6 @@ if "ai_refresh_status" in st.session_state:
 
 
 
-st.sidebar.header("AI Pricing Filters")
-
-min_matches = st.sidebar.slider("Minimum historical matches", 0, 20, 1)
-
-min_discount = st.sidebar.number_input(
-
-    "Highlight underpriced listings ($ discount)",
-
-    min_value=0.0,
-
-    value=0.0,
-
-    step=100.0,
-
-)
-
-min_variant_quality = st.sidebar.slider(
-
-    "Minimum variant similarity",
-
-    0.0,
-
-    1.0,
-
-    0.0,
-
-    0.05,
-
-)
-
-
-
-
-
-
-
 def _value_has_data(value: Any) -> bool:
     if value is None:
         return False
@@ -2175,13 +2036,7 @@ with refresh_cols[1]:
 
 
 
-matched_df = comparison_df[
-
-    comparison_df["_has_displayable_history"]
-
-    & (comparison_df["_effective_match_count"] >= min_matches)
-
-].copy()
+matched_df = comparison_df[comparison_df["_has_displayable_history"]].copy()
 
 matched_df = ensure_columns(matched_df, [
 
@@ -2235,16 +2090,6 @@ matched_df = ensure_columns(matched_df, [
 
 ] )
 
-if min_variant_quality > 0:
-
-    matched_df = matched_df[
-
-        matched_df["variant_match_quality"].fillna(0) >= min_variant_quality
-
-    ].copy()
-
-
-
 underpriced_df = matched_df[matched_df["priced_below_history"].isin([True])].copy()
 
 underpriced_df = ensure_columns(underpriced_df, [
@@ -2281,22 +2126,10 @@ underpriced_df = ensure_columns(underpriced_df, [
 
 ] )
 
-if min_discount > 0:
-
-    underpriced_df = underpriced_df[
-
-        underpriced_df["median_discount"].fillna(0) >= min_discount
-
-    ].copy()
-
 if "median_discount" in underpriced_df.columns:
-
     underpriced_df = underpriced_df.sort_values(
-
         by=["median_discount", "historical_match_count"],
-
         ascending=[False, False],
-
     )
 
 
