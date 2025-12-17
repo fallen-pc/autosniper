@@ -474,11 +474,11 @@ _BASE_STYLES = textwrap.dedent(
         border: 1px solid var(--autosniper-border);
     }
     .page-intro {
-        background: var(--autosniper-panel);
+        background: linear-gradient(180deg, #050608 0%, #0c0f17 70%);
         border: 1px solid var(--autosniper-border);
         border-radius: 18px;
         padding: 1.25rem 1.4rem;
-        box-shadow: 0 18px 32px rgba(0, 0, 0, 0.26);
+        box-shadow: 0 18px 32px rgba(0, 0, 0, 0.35);
         margin-bottom: 1rem;
         text-align: center;
         max-width: 960px;
