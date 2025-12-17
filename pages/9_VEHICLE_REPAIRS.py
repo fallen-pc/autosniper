@@ -296,25 +296,63 @@ min_count = st.sidebar.slider(
     max_value=int(repairs_df["occurrences"].max()),
     value=1,
 )
+search_text = st.sidebar.text_input("Search within selection")
+
 base_df = repairs_df[repairs_df["occurrences"] >= min_count].copy()
 if base_df.empty:
     st.info("No repairs match the current occurrence threshold. Lower the slider to see results.")
     st.stop()
 
-search_text = st.sidebar.text_input("Search within selection")
+if "repair_path" not in st.session_state:
+    st.session_state.repair_path = {
+        "category": sorted(base_df["category"].unique())[0],
+        "sub_category": None,
+        "repair_item": "All repairs",
+    }
 
 category_options = sorted(base_df["category"].unique())
-category_choice = st.sidebar.selectbox("Category", category_options, index=0)
+default_category = st.session_state.repair_path.get("category", category_options[0])
+if default_category not in category_options:
+    default_category = category_options[0]
+
+with st.expander("1. Choose Category", expanded=True):
+    category_choice = st.radio(
+        "Category",
+        options=category_options,
+        index=category_options.index(default_category),
+        horizontal=True,
+    )
 
 subcat_options = sorted(base_df[base_df["category"] == category_choice]["sub_category"].unique())
-subcat_choice = st.sidebar.selectbox("Sub-category", subcat_options, index=0)
+default_subcat = st.session_state.repair_path.get("sub_category") or subcat_options[0]
+if default_subcat not in subcat_options:
+    default_subcat = subcat_options[0]
+
+with st.expander("2. Choose Sub-category", expanded=True):
+    subcat_choice = st.radio(
+        "Sub-category",
+        options=subcat_options,
+        index=subcat_options.index(default_subcat),
+        horizontal=True,
+    )
 
 scoped_df = base_df[
     (base_df["category"] == category_choice) & (base_df["sub_category"] == subcat_choice)
 ].copy()
 
 repair_options = ["All repairs"] + sorted(scoped_df["repair_item"].unique())
-repair_choice = st.sidebar.selectbox("Repair detail", repair_options, index=0)
+default_repair = st.session_state.repair_path.get("repair_item", "All repairs")
+if default_repair not in repair_options:
+    default_repair = "All repairs"
+
+with st.expander("3. Choose Repair Detail", expanded=True):
+    repair_choice = st.radio(
+        "Repair detail",
+        options=repair_options,
+        index=repair_options.index(default_repair),
+        horizontal=True,
+    )
+
 if repair_choice != "All repairs":
     scoped_df = scoped_df[scoped_df["repair_item"] == repair_choice].copy()
 
@@ -324,6 +362,12 @@ if search_text:
         scoped_df["repair_item"].str.lower().str.contains(needle)
         | scoped_df["repair_key"].str.contains(needle)
     ].copy()
+
+st.session_state.repair_path = {
+    "category": category_choice,
+    "sub_category": subcat_choice,
+    "repair_item": repair_choice,
+}
 
 if scoped_df.empty:
     st.info("No repairs found for the selected path. Try relaxing the filters.")

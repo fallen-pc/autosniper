@@ -107,8 +107,8 @@ opportunities["potential_profit"] = (
 opportunities.sort_values(by="potential_profit", ascending=False, inplace=True)
 opportunities.reset_index(drop=True, inplace=True)
 
-opportunities["date_sold_ts"] = pd.to_datetime(opportunities.get("date_sold"), errors="coerce")
-now_utc = pd.Timestamp.utcnow()
+opportunities["date_sold_ts"] = pd.to_datetime(opportunities.get("date_sold"), errors="coerce", utc=True)
+now_utc = pd.Timestamp.utcnow().tz_localize("UTC")
 opportunities["hours_since_sold"] = (
     (now_utc - opportunities["date_sold_ts"]).dt.total_seconds() / 3600
 )
