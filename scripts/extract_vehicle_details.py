@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import ast
-import json
 import os
 import re
 import shutil
@@ -109,8 +107,6 @@ REQUEST_HEADERS = {
 
 YEAR_RE = re.compile(r"^(\d{4})$")
 STATE_RE = re.compile(r"\b(NSW|VIC|QLD|SA|WA|TAS|NT|ACT)\b", re.IGNORECASE)
-PRICE_RE = re.compile(r"-?\d[\d,\.]*")
-JS_LITERAL_RE = re.compile(r"\b(true|false|null)\b", re.IGNORECASE)
 
 
 def clean_joined_fields(text: str) -> str:
@@ -182,145 +178,6 @@ def extract_title_parts(soup: BeautifulSoup) -> tuple[str, str, str, str]:
     return year, make, model, variant
 
 
-def parse_money(value: Any) -> str:
-    if value is None or (isinstance(value, float) and pd.isna(value)):
-        return ""
-    text = str(value)
-    match = PRICE_RE.search(text)
-    if not match:
-        return ""
-    cleaned = match.group(0).replace(",", "")
-    try:
-        return f"{float(cleaned):.2f}"
-    except ValueError:
-        return ""
-
-
-def parse_int(value: Any) -> str:
-    if value is None or (isinstance(value, float) and pd.isna(value)):
-        return ""
-    text = re.sub(r"[^\d-]", "", str(value))
-    if not text:
-        return ""
-    try:
-        return str(int(text))
-    except ValueError:
-        return ""
-
-
-def _normalize_js_literals(raw: str) -> str:
-    def _replace(match: re.Match[str]) -> str:
-        text = match.group(1).lower()
-        if text == "true":
-            return "True"
-        if text == "false":
-            return "False"
-        if text == "null":
-            return "None"
-        return match.group(0)
-
-    return JS_LITERAL_RE.sub(_replace, raw)
-
-
-def _parse_literal(raw: str) -> Any:
-    normalized = _normalize_js_literals(raw)
-    try:
-        return ast.literal_eval(normalized)
-    except Exception:
-        try:
-            return json.loads(raw)
-        except Exception:
-            return None
-
-
-def _extract_data_layer_arrays(html: str) -> list[dict[str, Any]]:
-    payloads: list[dict[str, Any]] = []
-    for match in re.finditer(r"(?:window\.)?dataLayer\s*=\s*\[", html, re.IGNORECASE):
-        start = match.end() - 1  # position at '['
-        depth = 0
-        end = start
-        while end < len(html):
-            char = html[end]
-            if char == "[":
-                depth += 1
-            elif char == "]":
-                depth -= 1
-                if depth == 0:
-                    end += 1
-                    break
-            end += 1
-        snippet = html[start:end]
-        parsed = _parse_literal(snippet)
-        if isinstance(parsed, list):
-            payloads.extend(entry for entry in parsed if isinstance(entry, dict))
-    return payloads
-
-
-def _extract_data_layer_pushes(html: str) -> list[dict[str, Any]]:
-    payloads: list[dict[str, Any]] = []
-    for match in re.finditer(r"dataLayer\.push\(\s*(\{.*?\})\s*\);", html, re.S | re.IGNORECASE):
-        snippet = match.group(1)
-        parsed = _parse_literal(snippet)
-        if isinstance(parsed, dict):
-            payloads.append(parsed)
-    return payloads
-
-
-def parse_data_layer(html: str) -> dict[str, Any]:
-    payloads = _extract_data_layer_arrays(html) + _extract_data_layer_pushes(html)
-    if not payloads:
-        return {}
-    for entry in reversed(payloads):
-        if isinstance(entry, dict) and (
-            "Analytics_CurrentBid" in entry
-            or "Analytics_LotStatus" in entry
-            or "lotStatus" in entry
-        ):
-            return entry
-    return payloads[-1]
-
-
-def extract_dynamic_metrics(html: str) -> dict[str, str]:
-    data = parse_data_layer(html)
-    metrics = {
-        "price": "",
-        "bids": "",
-        "time_remaining_or_date_sold": "",
-        "status": "",
-    }
-    if not data:
-        return metrics
-
-    metrics["price"] = parse_money(
-        data.get("Analytics_CurrentBid")
-        or data.get("currentBid")
-        or data.get("LotCurrentPrice")
-        or data.get("LotPrice")
-    )
-    metrics["bids"] = parse_int(
-        data.get("Analytics_TotalBids")
-        or data.get("totalBids")
-        or data.get("LotBidCount")
-    )
-
-    time_remaining = data.get("Analytics_AuctionEnds") or data.get("lotCountdownText") or data.get("LotEndsOn")
-    if isinstance(time_remaining, (int, float)):
-        metrics["time_remaining_or_date_sold"] = str(time_remaining)
-    elif isinstance(time_remaining, str):
-        metrics["time_remaining_or_date_sold"] = time_remaining.strip()
-
-    status = (
-        data.get("Analytics_LotStatus")
-        or data.get("LotStatus")
-        or data.get("lotStatus")
-        or data.get("status")
-    )
-    if isinstance(status, str):
-        metrics["status"] = status.strip()
-
-    return metrics
-
-
 def read_general_condition(soup: BeautifulSoup) -> str:
     section = soup.find(attrs={"id": re.compile("ConditionAssessment", re.IGNORECASE)})
     if section:
@@ -345,7 +202,7 @@ def read_features_list(soup: BeautifulSoup) -> str:
     return ""
 
 
-def assemble_details(soup: BeautifulSoup, url: str, html: str) -> dict[str, Any]:
+def assemble_details(soup: BeautifulSoup, url: str) -> dict[str, Any]:
     year, make, model, variant = extract_title_parts(soup)
 
     details: dict[str, Any] = {
@@ -369,26 +226,13 @@ def assemble_details(soup: BeautifulSoup, url: str, html: str) -> dict[str, Any]
     details["general_condition"] = read_general_condition(soup)
     details["features_list"] = read_features_list(soup)
     details["location"] = normalize_state(details.get("location", "") or extract_location(soup))
-
-    metrics = extract_dynamic_metrics(html)
-    details.update(metrics)
-    raw_status = (details.get("status") or "").strip().lower()
-    details["status"] = normalize_status(raw_status)
+    details["bids"] = details.get("bids", "")
+    details["price"] = details.get("price", "")
+    details["time_remaining_or_date_sold"] = details.get("time_remaining_or_date_sold", "")
+    status_value = str(details.get("status", "")).strip().lower()
+    details["status"] = status_value or "active"
 
     return details
-
-
-def normalize_status(value: str) -> str:
-    mapping = {
-        "open": "active",
-        "new": "active",
-        "active": "active",
-        "sold": "sold",
-        "closed": "sold",
-        "referred": "referred",
-        "refer": "referred",
-    }
-    return mapping.get(value, "active" if not value else value)
 
 
 def fetch_html(session: requests.Session, url: str) -> str:
@@ -423,7 +267,7 @@ def process_links(links: Iterable[str]) -> tuple[list[dict[str, Any]], list[str]
             skipped.append(url)
             continue
         soup = BeautifulSoup(html, "html.parser")
-        details = assemble_details(soup, url, html)
+        details = assemble_details(soup, url)
         results.append(details)
         time.sleep(REQUEST_DELAY)
     return results, skipped
