@@ -1387,34 +1387,31 @@ def extract_best_match_entry(row: pd.Series) -> tuple[dict[str, object] | None, 
 def render_vehicle_summary(row: pd.Series) -> None:
     st.markdown("### Vehicle Snapshot")
     spec_fields = [
-        ("Body", "body_type"),
-        ("Transmission", "transmission"),
-        ("Fuel", "fuel_type"),
-        ("Seats", "no_of_seats"),
-        ("Engine", "engine_capacity"),
-        ("Cylinders", "no_of_cylinders"),
-        ("Odometer", "odometer_reading", lambda value, current_row: format_listing_odometer(value, current_row.get("odometer_unit"))),
-        ("VIN", "vin"),
-        ("Rego", "rego_no"),
-        ("Rego State", "rego_state"),
-        ("Rego Expiry", "rego_expiry"),
+        ("Current Price", "current_price", lambda _value, current_row: _format_price_or_dash(current_row)),
+        ("Time Remaining", "time_remaining_or_date_sold", lambda _value, current_row: _format_time_remaining(current_row)),
+        ("Bids", "bids"),
         ("Location", "location"),
+        ("Odometer", "odometer_reading", lambda value, current_row: format_listing_odometer(value, current_row.get("odometer_unit"))),
+        ("Transmission", "transmission"),
     ]
 
     spec_html = render_spec_list(row, spec_fields)
-    condition_html = render_condition_column(row)
+    summary, badges, _ = format_condition_entries(row)
 
-    spec_col, condition_col = st.columns([1.1, 0.9])
-    with spec_col:
-        if spec_html:
-            st.markdown(spec_html, unsafe_allow_html=True)
-        else:
-            st.caption("No static specifications captured yet.")
-    with condition_col:
-        if condition_html:
-            st.markdown(condition_html, unsafe_allow_html=True)
-        else:
-            st.caption("No condition or feature notes found for this listing.")
+    if spec_html:
+        st.markdown(spec_html, unsafe_allow_html=True)
+    else:
+        st.caption("No auction metrics captured yet.")
+
+    if summary:
+        st.markdown(f"<div class='ai-condition-summary'>{html.escape(summary)}</div>", unsafe_allow_html=True)
+
+    if badges:
+        badge_html = "".join(
+            f"<span class='ai-card-condition-badge'><strong>{html.escape(label)}:</strong> {html.escape(value)}</span>"
+            for label, value in badges
+        )
+        st.markdown(f"<div class='ai-card-condition-badges'>{badge_html}</div>", unsafe_allow_html=True)
 
 
 def _format_time_remaining(row: pd.Series) -> str:
