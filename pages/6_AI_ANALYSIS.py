@@ -25,11 +25,21 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 
+try:
+    from openai import OpenAI
+except Exception:  # pragma: no cover - optional dependency
+    OpenAI = None  # type: ignore[assignment]
+
+
 # Configure OpenAI client (optional; required for running AI analysis).
 api_key = os.getenv("OPENAI_API_KEY")
-client = OpenAI(api_key=api_key) if api_key else None
-if client is None:
+client = None
+if api_key and OpenAI is not None:
+    client = OpenAI(api_key=api_key)
+elif not api_key:
     st.warning("OpenAI API key not set; AI analysis actions will be disabled.")
+else:
+    st.warning("OpenAI client unavailable; install the openai package to unlock AI analysis.")
 
 
 from scripts.ai_price_analysis import (
