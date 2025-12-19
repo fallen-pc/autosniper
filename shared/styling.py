@@ -401,12 +401,90 @@ _BASE_STYLES = textwrap.dedent(
         grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
         gap: 0.85rem;
     }
+    .ai-spec-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+    .ai-spec-item {
+        background: rgba(26, 33, 48, 0.9);
+        border: 1px solid var(--autosniper-border);
+        border-radius: 16px;
+        padding: 0.7rem 0.9rem;
+    }
+    .ai-spec-label {
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: var(--autosniper-muted);
+        margin-bottom: 0.2rem;
+        display: block;
+    }
+    .ai-spec-value {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--autosniper-primary);
+    }
+    .ai-condition-column {
+        background: rgba(26, 33, 48, 0.92);
+        border: 1px solid var(--autosniper-border);
+        border-radius: 16px;
+        padding: 0.9rem 1rem;
+        min-height: 100%;
+    }
+    .ai-condition-summary {
+        margin-bottom: 0.6rem;
+    }
+    .ai-condition-list {
+        list-style: disc;
+        padding-left: 1.25rem;
+        color: var(--autosniper-text);
+        margin: 0.4rem 0 0;
+    }
+    .ai-condition-list li {
+        margin-bottom: 0.25rem;
+    }
     .ai-card-stat {
         background: rgba(26, 33, 48, 0.85);
         border: 1px solid var(--autosniper-border);
         border-radius: 18px;
         padding: 0.85rem 1rem;
         box-shadow: 0 18px 32px rgba(0, 0, 0, 0.16);
+    }
+    .ai-comparison-card {
+        border: 1px solid var(--autosniper-border);
+        border-radius: 20px;
+        padding: 1.1rem 1.2rem;
+        background: rgba(15, 23, 36, 0.95);
+        min-height: 100%;
+    }
+    .ai-comparison-title {
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.15em;
+        color: var(--autosniper-muted);
+        margin-bottom: 0.75rem;
+    }
+    .ai-comparison-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.6rem;
+        font-size: 0.95rem;
+        padding: 0.25rem 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+    .ai-comparison-row:last-child {
+        border-bottom: none;
+    }
+    .ai-comparison-row span {
+        color: var(--autosniper-muted);
+        font-size: 0.85rem;
+    }
+    .ai-comparison-row strong {
+        color: var(--autosniper-primary);
+        font-weight: 600;
     }
     .ai-card-stat-label {
         font-size: 0.78rem;

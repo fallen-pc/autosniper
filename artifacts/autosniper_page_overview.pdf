@@ -103,7 +103,7 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 6 0 R >>
 endobj
 8 0 obj
-<< /Length 1535 >>
+<< /Length 1286 >>
 stream
 BT
 /F1 18 Tf
@@ -117,20 +117,16 @@ T*
 T*
 (Serve as the mission control for live auctions: filter noisy stock, refresh bid data, and) Tj
 T*
-(optionally trigger GPT-powered profit checks per vehicle.) Tj
+(surface the highest-confidence opportunities in seconds.) Tj
 T*
 T*
 (Key capabilities) Tj
 T*
 (• Loads `vehicle_static_details.csv`, enforces that only `status == 'active'` records) Tj
 T*
-(  remain, and displays listing cards grouped by time-to-close buckets \(<24h) Tj
+(  remain, and displays listing cards grouped by time-to-close buckets \("<24h", "1-2d",) Tj
 T*
-(• 1-2d) Tj
-T*
-(• 2-3d) Tj
-T*
-(• 3+d\).) Tj
+(  "2-3d", "3+d"\).) Tj
 T*
 (• Sidebar filters hide engine defect notes, unregistered vehicles, and/or anything outside) Tj
 T*
@@ -140,22 +136,16 @@ T*
 T*
 (  `scripts.update_bids.update_bids` \(optionally limited to the filtered URLs\).) Tj
 T*
-(• Each card exposes a Run AI Analysis button. The handler sends the row through the OpenAI) Tj
+(• Cards focus purely on the live CSV data so ops teams can react instantly without juggling) Tj
 T*
-(  chat API, parses a JSON resale verdict, and persists the result in) Tj
-T*
-(  `CSV_data/ai_verdicts.csv` for future sessions.) Tj
+(  cached AI verdicts inside the dashboard.) Tj
 T*
 T*
 (Data flow) Tj
 T*
-(→ Inputs: `vehicle_static_details.csv` plus optional `ai_verdicts.csv` for overlaying prior) Tj
+(→ Inputs: `vehicle_static_details.csv`.) Tj
 T*
-(  AI recommendations.) Tj
-T*
-(→ Outputs: updated `vehicle_static_details.csv` \(bid/time refreshes\) and appended) Tj
-T*
-(  `ai_verdicts.csv` rows when new analyses run.) Tj
+(→ Outputs: updated `vehicle_static_details.csv` \(bid/time refreshes\).) Tj
 T*
 T*
 (Notes) Tj
@@ -217,7 +207,7 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 10 0 R >>
 endobj
 12 0 obj
-<< /Length 1837 >>
+<< /Length 1818 >>
 stream
 BT
 /F1 18 Tf
@@ -238,9 +228,9 @@ T*
 T*
 (• Requires a rich data stack \(`vehicle_static_details.csv`, `active_vehicle_details.csv`,) Tj
 T*
-(  `ai_verdicts.csv`, `ai_listing_valuations.csv`, and `sold_cars.csv`\) so comparisons always) Tj
+(  `ai_listing_valuations.csv`, and `sold_cars.csv`\) so comparisons always combine the latest) Tj
 T*
-(  combine the latest auction context with historical baselines.) Tj
+(  auction context with historical baselines.) Tj
 T*
 (• Lets you focus on a time window \(24/48/72h\) plus reuse the Active Listings filters to hide) Tj
 T*
@@ -331,7 +321,7 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 14 0 R >>
 endobj
 16 0 obj
-<< /Length 1178 >>
+<< /Length 1258 >>
 stream
 BT
 /F1 18 Tf
@@ -350,22 +340,24 @@ T*
 T*
 (Key capabilities) Tj
 T*
-(• Requires `ai_listing_valuations.csv`, `sold_cars.csv`, and `ai_verdicts.csv`, then calls) Tj
+(• Requires `ai_listing_valuations.csv` and `sold_cars.csv`, then calls) Tj
 T*
-(  `scripts.outcome_tracking.compute_outcome_metrics\(\)` to assemble joined datasets.) Tj
+(  `scripts.outcome_tracking.compute_outcome_metrics\(\)` to assemble joined datasets) Tj
+T*
+(  \(optionally folding in legacy AI verdict tiers when available\).) Tj
 T*
 (• Displays aggregate KPIs \(scored listings, accuracy, MAE, MAPE, profit calibration\) plus) Tj
 T*
 (  Altair charts for weekly hit rates and accuracy by verdict tier.) Tj
 T*
-(• Provides a detailed Worst Misses table and download buttons for the scored listings,) Tj
+(• Provides a detailed "Worst Misses" table and download buttons for the scored listings,) Tj
 T*
 (  weekly metrics, and verdict metrics CSVs so analysts can dig deeper offline.) Tj
 T*
 T*
 (Data flow) Tj
 T*
-(→ Inputs: joined AI verdicts, pricing analyses, and sold outcomes.) Tj
+(→ Inputs: merged pricing analyses and sold outcomes \(plus verdict tiers when provided\).) Tj
 T*
 (→ Outputs: exported CSVs for accuracy tracking and on-screen diagnostics.) Tj
 T*
@@ -428,19 +420,19 @@ xref
 0000001327 00000 n 
 0000002392 00000 n 
 0000002518 00000 n 
-0000004105 00000 n 
-0000004231 00000 n 
-0000005355 00000 n 
-0000005483 00000 n 
-0000007373 00000 n 
-0000007501 00000 n 
-0000008545 00000 n 
-0000008673 00000 n 
-0000009904 00000 n 
-0000010032 00000 n 
-0000010755 00000 n 
+0000003856 00000 n 
+0000003982 00000 n 
+0000005106 00000 n 
+0000005234 00000 n 
+0000007105 00000 n 
+0000007233 00000 n 
+0000008277 00000 n 
+0000008405 00000 n 
+0000009716 00000 n 
+0000009844 00000 n 
+0000010567 00000 n 
 trailer
 << /Size 20 /Root 1 0 R >>
 startxref
-10883
+10695
 %%EOF

@@ -12,7 +12,7 @@ import textwrap
 
 import time
 
-from typing import Any, Iterable, Optional
+from typing import Any, Callable, Iterable, Optional
 
 from urllib.parse import quote_plus
 
@@ -1268,6 +1268,306 @@ def render_listing_header(
     return rendered_html
 
 
+def safe_display(value: object, default: str = "--") -> str:
+    if value is None:
+        return default
+    if isinstance(value, float) and pd.isna(value):
+        return default
+    text = str(value).strip()
+    return text or default
+
+
+def render_spec_list(
+    row: pd.Series,
+    fields: Iterable[tuple[str, str] | tuple[str, str, Callable[..., str]]],
+) -> str:
+    entries: list[tuple[str, str]] = []
+
+    for field in fields:
+        if len(field) == 2:
+            label, key = field
+            formatter = None
+        else:
+            label, key, formatter = field  # type: ignore[misc]
+
+        raw_value = row.get(key)
+        display_value = safe_display(raw_value)
+
+        if formatter:
+            try:
+                display_value = formatter(raw_value, row)  # type: ignore[arg-type]
+            except TypeError:
+                display_value = formatter(raw_value)  # type: ignore[misc]
+            except Exception:
+                display_value = safe_display(raw_value)
+
+        if display_value in ("--", "N/A", ""):
+            continue
+
+        entries.append((label, str(display_value)))
+
+    if not entries:
+        return ""
+
+    items_html = "".join(
+        f"<div class='ai-spec-item'><div class='ai-spec-label'>{html.escape(label)}</div>"
+        f"<div class='ai-spec-value'>{html.escape(value)}</div></div>"
+        for label, value in entries
+    )
+    return f"<div class='ai-spec-list'>{items_html}</div>"
+
+
+def format_condition_entries(row: pd.Series) -> tuple[str | None, list[tuple[str, str]], list[str]]:
+    summary = safe_display(row.get("general_condition"), "").strip()
+    if not summary or summary == "--":
+        summary = None
+
+    feature_entries: list[str] = []
+    features_raw = row.get("features_list")
+    if isinstance(features_raw, str):
+        for chunk in re.split(r"[\n;,•]+", features_raw):
+            cleaned = chunk.strip(" -")
+            if cleaned:
+                feature_entries.append(cleaned)
+
+    badges: list[tuple[str, str]] = []
+    for column in CONDITION_COLUMNS:
+        if column == "general_condition":
+            continue
+        value = safe_display(row.get(column)).strip()
+        if not value or value == "--":
+            continue
+        label = column.replace("_", " ").title()
+        badges.append((label, value))
+
+    return summary, badges, feature_entries
+
+
+def render_condition_column(row: pd.Series) -> str:
+    summary, badges, features = format_condition_entries(row)
+    segments: list[str] = []
+
+    if summary:
+        segments.append(f"<p class='ai-condition-summary'>{html.escape(summary)}</p>")
+
+    if badges:
+        badges_html = "".join(
+            f"<span class='ai-card-condition-badge'><strong>{html.escape(label)}:</strong> {html.escape(value)}</span>"
+            for label, value in badges
+        )
+        segments.append(f"<div class='ai-card-condition-badges'>{badges_html}</div>")
+
+    if features:
+        items = "".join(f"<li>{html.escape(item)}</li>" for item in features)
+        segments.append(f"<ul class='ai-condition-list'>{items}</ul>")
+
+    if not segments:
+        return ""
+
+    return "<div class='ai-condition-column'>" + "".join(segments) + "</div>"
+
+
+def extract_best_match_entry(row: pd.Series) -> tuple[dict[str, object] | None, dict[str, float] | None]:
+    try:
+        matches, summaries, _ = get_closest_matches(row)
+    except Exception:
+        return None, None
+
+    best_match = matches[0] if matches else None
+    summary_entry = summaries[0] if summaries else None
+    return best_match, summary_entry
+
+
+def render_vehicle_summary(row: pd.Series) -> None:
+    st.markdown("### Vehicle Snapshot")
+    spec_fields = [
+        ("Body", "body_type"),
+        ("Transmission", "transmission"),
+        ("Fuel", "fuel_type"),
+        ("Seats", "no_of_seats"),
+        ("Engine", "engine_capacity"),
+        ("Cylinders", "no_of_cylinders"),
+        ("Odometer", "odometer_reading", lambda value, current_row: format_listing_odometer(value, current_row.get("odometer_unit"))),
+        ("VIN", "vin"),
+        ("Rego", "rego_no"),
+        ("Rego State", "rego_state"),
+        ("Rego Expiry", "rego_expiry"),
+        ("Location", "location"),
+    ]
+
+    spec_html = render_spec_list(row, spec_fields)
+    condition_html = render_condition_column(row)
+
+    spec_col, condition_col = st.columns([1.1, 0.9])
+    with spec_col:
+        if spec_html:
+            st.markdown(spec_html, unsafe_allow_html=True)
+        else:
+            st.caption("No static specifications captured yet.")
+    with condition_col:
+        if condition_html:
+            st.markdown(condition_html, unsafe_allow_html=True)
+        else:
+            st.caption("No condition or feature notes found for this listing.")
+
+
+def _format_time_remaining(row: pd.Series) -> str:
+    value = row.get("time_remaining_or_date_sold")
+    if value not in (None, "") and not (isinstance(value, float) and pd.isna(value)):
+        text = str(value).strip()
+        if text:
+            return text
+    hours_remaining = row.get("hours_remaining")
+    if hours_remaining not in (None, "") and not (isinstance(hours_remaining, float) and pd.isna(hours_remaining)):
+        try:
+            return f"{float(hours_remaining):.1f}h"
+        except Exception:
+            return safe_display(hours_remaining)
+    return "--"
+
+
+def _format_price_or_dash(row: pd.Series) -> str:
+    raw_price = _first_non_empty(row.get("current_price"), row.get("price"))
+    if raw_price in (None, "", "None") or (isinstance(raw_price, float) and pd.isna(raw_price)):
+        return "--"
+    return format_price_value(raw_price)
+
+
+def render_comparison_section(row: pd.Series) -> None:
+    st.markdown("### Auction vs History")
+
+    stats_cols = st.columns(4)
+    stats_cols[0].metric("Current Price", _format_price_or_dash(row))
+    stats_cols[1].metric("Bids", safe_display(row.get("bids")))
+    stats_cols[2].metric("Time Remaining", _format_time_remaining(row))
+    stats_cols[3].metric("Historical Matches", safe_display(row.get("historical_match_count"), "0"))
+
+    best_match, summary_entry = extract_best_match_entry(row)
+
+    def _render_card(title: str, entries: list[tuple[str, str]]) -> str:
+        items = "".join(
+            f"<div class='ai-comparison-row'><span>{html.escape(label)}</span><strong>{html.escape(value)}</strong></div>"
+            for label, value in entries
+        )
+        return f"<div class='ai-comparison-card'><div class='ai-comparison-title'>{html.escape(title)}</div>{items}</div>"
+
+    active_entries = [
+        ("Median vs Current", safe_display(row.get("price_vs_median"))),
+        ("Hours Remaining", _format_time_remaining(row)),
+        ("Match Quality", safe_display(row.get("variant_match_quality"))),
+    ]
+    active_card = _render_card("Active Listing", [(label, value) for label, value in active_entries if value not in ("--", "", "N/A")])
+
+    historical_entries: list[tuple[str, str]] = []
+    if best_match:
+        historical_entries.append(("Sold Price", format_price_value(best_match.get("final_price_numeric"))))
+        historical_entries.append(("Date Sold", safe_display(best_match.get("date_sold"))))
+        historical_entries.append(("Location", safe_display(best_match.get("location"))))
+        historical_entries.append(("Odometer", safe_display(best_match.get("odometer_reading"))))
+        diff_value = best_match.get("odometer_diff")
+        if diff_value not in (None, "") and not (isinstance(diff_value, float) and pd.isna(diff_value)):
+            try:
+                diff_num = float(diff_value)
+                direction = "higher" if diff_num > 0 else "lower"
+                historical_entries.append(("Odo Difference", f"{abs(diff_num):,.0f} km {direction}"))
+            except Exception:
+                historical_entries.append(("Odo Difference", safe_display(diff_value)))
+    historical_card = (
+        _render_card("Closest Historical Sale", historical_entries)
+        if historical_entries
+        else "<div class='ai-comparison-card'><div class='ai-comparison-title'>Closest Historical Sale</div><p>No comparable sale recorded yet.</p></div>"
+    )
+
+    comparison_cols = st.columns(2)
+    with comparison_cols[0]:
+        st.markdown(active_card, unsafe_allow_html=True)
+    with comparison_cols[1]:
+        st.markdown(historical_card, unsafe_allow_html=True)
+
+    median_price = row.get("historical_price_median")
+    median_display = format_price_value(median_price) if median_price not in (None, "") and not pd.isna(median_price) else "--"
+    avg_diff = row.get("historical_close_avg_odometer_diff")
+    avg_diff_display = safe_display(avg_diff)
+    summary_cols = st.columns(3)
+    summary_cols[0].metric("Median Historical Price", median_display)
+    summary_cols[1].metric("Close Match Median", format_price_value(row.get("historical_close_price_median")) if row.get("historical_close_price_median") not in (None, "") else "--")
+    summary_cols[2].metric("Avg Odo Δ (close)", avg_diff_display)
+
+    with st.expander("Show detailed historical table", expanded=False):
+        render_closest_matches_section(row)
+
+
+def render_carsales_section(row: pd.Series) -> None:
+    st.markdown("### Carsales & Manual Research")
+    manual_estimate = _first_non_empty(
+        row.get("manual_carsales_estimate"),
+        row.get("manual_carsales_avg"),
+        format_price_range(row.get("manual_carsales_min"), row.get("manual_carsales_max")),
+    )
+    manual_range = format_price_range(row.get("manual_carsales_min"), row.get("manual_carsales_max"))
+    manual_count = row.get("manual_carsales_count")
+    manual_recent = row.get("manual_recent_sales_30d")
+
+    stats = st.columns(4)
+    stats[0].metric("Manual Estimate", format_price_value(manual_estimate) if manual_estimate else "--")
+    stats[1].metric("Manual Range", manual_range or "--")
+    stats[2].metric("Comparable Count", safe_display(manual_count))
+    stats[3].metric("Sold last 30d", safe_display(manual_recent))
+
+    manual_table = row.get("manual_carsales_table")
+    parsed_table = parse_markdown_table(manual_table) if isinstance(manual_table, str) else None
+    if parsed_table is not None and not parsed_table.empty:
+        st.dataframe(parsed_table, use_container_width=True, hide_index=True)
+    else:
+        st.caption("Add manual Carsales comparisons to see them here.")
+
+
+def format_confidence_notes(notes: object) -> list[str]:
+    if notes is None:
+        return []
+    if isinstance(notes, float) and pd.isna(notes):
+        return []
+    text = str(notes).strip()
+    if not text:
+        return []
+    parts = [part.strip(" -") for part in re.split(r"[;\n•]+", text) if part.strip(" -")]
+    return parts
+
+
+def render_ai_summary_section(row: pd.Series) -> None:
+    st.markdown("### AI Valuation Snapshot")
+    max_bid = row.get("recommended_max_bid")
+    expected_profit = row.get("expected_profit")
+    margin_pct = row.get("profit_margin_percent")
+    score = row.get("score_out_of_10")
+    timestamp = safe_display(row.get("analysis_timestamp"))
+
+    has_metrics = any(
+        value not in (None, "", "None")
+        and not (isinstance(value, float) and pd.isna(value))
+        for value in (max_bid, expected_profit, margin_pct, score)
+    )
+
+    if not has_metrics:
+        st.caption("Run the AI Carsales check to populate valuation metrics.")
+        return
+
+    metrics = st.columns(4)
+    metrics[0].metric("Recommended Max Bid", format_price_value(max_bid) if max_bid not in (None, "") else "--")
+    metrics[1].metric("Expected Profit", format_price_value(expected_profit) if expected_profit not in (None, "") else "--")
+    metrics[2].metric("Profit Margin", safe_display(margin_pct))
+    metrics[3].metric("Score /10", safe_display(score))
+
+    note_entries = format_confidence_notes(row.get("confidence_notes"))
+    if note_entries:
+        st.markdown("**AI Notes**")
+        for entry in note_entries:
+            st.markdown(f"- {entry}")
+
+    if timestamp and timestamp != "--":
+        st.caption(f"Last analysed: {timestamp}")
+
+
 def _normalise_text(value: object) -> str:
 
     if value is None or (isinstance(value, float) and pd.isna(value)):
@@ -2187,10 +2487,10 @@ with tabs[0]:
                 header_html = render_listing_header(row, wrap_card=False, render=False)
                 st.markdown(header_html, unsafe_allow_html=True)
 
-                st.markdown("### Auction Data")
-                render_closest_matches_section(row)
-
-
+                render_vehicle_summary(row)
+                render_comparison_section(row)
+                render_carsales_section(row)
+                render_ai_summary_section(row)
 
                 st.markdown("### Verdict")
 
@@ -2313,10 +2613,10 @@ with tabs[1]:
                 header_html = render_listing_header(row, wrap_card=False, render=False)
                 st.markdown(header_html, unsafe_allow_html=True)
 
-                st.markdown("### Auction Data")
-                render_closest_matches_section(row)
-
-
+                render_vehicle_summary(row)
+                render_comparison_section(row)
+                render_carsales_section(row)
+                render_ai_summary_section(row)
 
                 st.markdown("### Verdict")
 

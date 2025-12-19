@@ -108,6 +108,15 @@ REQUEST_HEADERS = {
 YEAR_RE = re.compile(r"^(\d{4})$")
 STATE_RE = re.compile(r"\b(NSW|VIC|QLD|SA|WA|TAS|NT|ACT)\b", re.IGNORECASE)
 
+CONDITION_METADATA_FIELDS = {
+    "key",
+    "spare key",
+    "owners manual",
+    "owner's manual",
+    "service history",
+    "engine turns over",
+}
+
 
 def clean_joined_fields(text: str) -> str:
     return re.sub(r"([a-z])([A-Z])", r"\1, \2", text)
@@ -142,6 +151,20 @@ def extract_bullets(soup: BeautifulSoup, title_pattern: str) -> str:
         return ""
     items = [safe_get_text(li) for li in ul.find_all("li") if safe_get_text(li)]
     return "\n".join(items)
+
+
+def filter_condition_entries(entries: Iterable[str]) -> list[str]:
+    filtered: list[str] = []
+    for entry in entries:
+        cleaned = entry.strip()
+        if not cleaned:
+            continue
+        normalized = cleaned.lstrip("\u2022-* \t").strip().lower()
+        prefix = normalized.split(":", 1)[0].strip()
+        if prefix in CONDITION_METADATA_FIELDS:
+            continue
+        filtered.append(cleaned)
+    return filtered
 
 
 def normalize_state(text: str) -> str:
@@ -181,18 +204,20 @@ def extract_title_parts(soup: BeautifulSoup) -> tuple[str, str, str, str]:
 def read_general_condition(soup: BeautifulSoup) -> str:
     section = soup.find(attrs={"id": re.compile("ConditionAssessment", re.IGNORECASE)})
     if section:
-        bullet_items = [safe_get_text(li) for li in section.find_all("li")]
-        bullet_items = [item for item in bullet_items if item]
+        bullet_items = filter_condition_entries(safe_get_text(li) for li in section.find_all("li"))
         if bullet_items:
             return "\n".join(bullet_items)
 
-        paragraphs = [safe_get_text(p) for p in section.find_all("p")]
-        paragraphs = [p for p in paragraphs if p]
+        paragraphs = filter_condition_entries(safe_get_text(p) for p in section.find_all("p"))
         if paragraphs:
             return "\n".join(paragraphs)
 
     condition = extract_bullets(soup, "condition")
-    return condition or ""
+    if condition:
+        filtered_condition = filter_condition_entries(condition.splitlines())
+        if filtered_condition:
+            return "\n".join(filtered_condition)
+    return ""
 
 
 def read_features_list(soup: BeautifulSoup) -> str:
