@@ -1140,13 +1140,6 @@ def render_listing_header(
         else ""
     )
 
-    url = row.get("url")
-    link_html = (
-        f'<a class="ai-card-link-button" href="{html.escape(url)}" target="_blank" rel="noopener noreferrer">View Listing</a>'
-        if isinstance(url, str) and url.strip()
-        else ""
-    )
-
     card_body = ""
 
     inner_html = f"""
@@ -1155,7 +1148,6 @@ def render_listing_header(
             <div class="ai-card-title">{title_text}</div>
             {subtitle_html}
         </div>
-        {f"<div class='ai-card-actions'>{link_html}</div>" if link_html else ""}
     </div>
     {card_body}
     """
@@ -1276,6 +1268,13 @@ def extract_best_match_entry(row: pd.Series) -> tuple[dict[str, object] | None, 
 
 def render_vehicle_summary(row: pd.Series) -> None:
     st.markdown("### Vehicle Snapshot")
+    url = row.get("url")
+    view_link = ""
+    if isinstance(url, str) and url.strip():
+        view_link = (
+            f'<a class="ai-card-link-button ai-snapshot-link" href="{html.escape(url)}" '
+            'target="_blank" rel="noopener noreferrer">View Listing</a>'
+        )
     spec_fields = [
         ("Current Price", "current_price", lambda _value, current_row: _format_price_or_dash(current_row)),
         ("Time Remaining", "time_remaining_or_date_sold", lambda _value, current_row: _format_time_remaining(current_row)),
@@ -1289,8 +1288,11 @@ def render_vehicle_summary(row: pd.Series) -> None:
     summary, badges, _ = format_condition_entries(row)
 
     if spec_html:
-        st.markdown(spec_html, unsafe_allow_html=True)
+        actions_html = f"<div class='ai-spec-actions'>{view_link}</div>" if view_link else ""
+        st.markdown(f"<div class='ai-spec-wrapper'>{actions_html}{spec_html}</div>", unsafe_allow_html=True)
     else:
+        if view_link:
+            st.markdown(f"<div class='ai-spec-actions'>{view_link}</div>", unsafe_allow_html=True)
         st.caption("No auction metrics captured yet.")
 
     if summary:

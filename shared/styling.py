@@ -413,6 +413,14 @@ _BASE_STYLES = textwrap.dedent(
         border-radius: 16px;
         padding: 0.7rem 0.9rem;
     }
+    .ai-spec-wrapper {
+        position: relative;
+    }
+    .ai-spec-actions {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 0.35rem;
+    }
     .ai-spec-label {
         font-size: 0.72rem;
         text-transform: uppercase;
