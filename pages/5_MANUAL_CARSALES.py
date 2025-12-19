@@ -315,7 +315,9 @@ for _, row in filtered.iterrows():
         )
         meta_col.write(row.get("odometer_display", "N/A"))
         meta_col.caption(f"{row.get('transmission', 'N/A')} | {row.get('fuel_type', 'N/A')}")
-        meta_col.markdown(f"[Carsales search]({row.get('carsales_search','')})", unsafe_allow_html=False)
+        listing_link = row.get("url") or row.get("carsales_search", "")
+        link_label = "Open listing" if row.get("url") else "Carsales search"
+        meta_col.markdown(f"[{link_label}]({listing_link})", unsafe_allow_html=False)
 
         resale_default = _format_range_text(row.get("manual_carsales_min"), row.get("manual_carsales_max"))
         sold_default = _safe_int(row.get("manual_carsales_sold_30d")) or 0
