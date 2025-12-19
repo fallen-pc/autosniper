@@ -1091,19 +1091,7 @@ def render_listing_header(
         cleaned = _clean_text(value)
         return cleaned if cleaned else default
 
-    subtitle_components: list[str] = []
     subtitle_badges: list[str] = []
-    meta_fields = [
-        ("Transmission", row.get("transmission")),
-        ("Fuel", row.get("fuel_type")),
-        ("Body", row.get("body_type")),
-    ]
-    for label, raw_value in meta_fields:
-        text_value = _clean_text(raw_value)
-        if not text_value:
-            continue
-        subtitle_components.append(text_value)
-        subtitle_badges.append(f"<span>{html.escape(label)}: {html.escape(text_value)}</span>")
 
     manual_min = coerce_price(row.get("manual_carsales_min"))
     manual_max = coerce_price(row.get("manual_carsales_max"))
@@ -1125,18 +1113,7 @@ def render_listing_header(
             "✅ Carsales Estimate Complete</span>"
         )
 
-    variant_value = row.get("variant")
-    variant_text: str | None = None
-    if variant_value not in (None, "") and not (isinstance(variant_value, float) and pd.isna(variant_value)):
-        variant_text = str(variant_value).strip()
-        for component in subtitle_components:
-            if not component:
-                continue
-            pattern = re.compile(rf"\b{re.escape(component)}\b", re.IGNORECASE)
-            variant_text = pattern.sub("", variant_text)
-        variant_text = re.sub(r"\s+", " ", variant_text).strip(" ,-/")
-        if not variant_text:
-            variant_text = None
+    variant_text = _clean_text(row.get("variant"))
 
     title_components: list[str] = []
     year_value = row.get("year")
@@ -1170,88 +1147,7 @@ def render_listing_header(
         else ""
     )
 
-    odo_display = format_listing_odometer(row.get("odometer_reading"), row.get("odometer_unit"))
-
-    condition_summary = _clean_text(row.get("general_condition"))
-    if condition_summary:
-        condition_summary = textwrap.shorten(condition_summary, width=280, placeholder="...")
-
-    condition_fields = [
-        ("Key", "key"),
-        ("Spare Key", "spare_key"),
-        ("Owner's Manual", "owners_manual"),
-        ("Service History", "service_history"),
-        ("Engine Turns Over", "engine_turns_over"),
-    ]
-    condition_badges: list[str] = []
-    for label, field in condition_fields:
-        value = _clean_text(row.get(field))
-        if value:
-            condition_badges.append(
-                f"<span class='ai-card-condition-badge'><strong>{html.escape(label)}:</strong> {html.escape(value)}</span>"
-            )
-
-    condition_section = ""
-    if condition_summary or condition_badges:
-        summary_html = (
-            f"<div class='ai-card-condition-summary'>{html.escape(condition_summary)}</div>"
-            if condition_summary
-            else ""
-        )
-        badges_html = (
-            "<div class='ai-card-condition-badges'>" + "".join(condition_badges) + "</div>"
-            if condition_badges
-            else ""
-        )
-        condition_section = f"<div class='ai-card-conditions'>{summary_html}{badges_html}</div>"
-
-    price_value = row.get("current_price")
-    price_text = "--"
-    if price_value not in (None, "") and not (isinstance(price_value, float) and pd.isna(price_value)):
-        price_text = format_price_value(price_value)
-    elif row.get("price"):
-        price_text = format_price_value(row.get("price"))
-
-    time_text = "--"
-    time_value = row.get("time_remaining_or_date_sold")
-    if time_value not in (None, "") and not (isinstance(time_value, float) and pd.isna(time_value)):
-        time_str = str(time_value).strip()
-        if time_str:
-            time_text = time_str
-    if time_text == "--":
-        hours_remaining = row.get("hours_remaining")
-        if hours_remaining not in (None, "") and not (isinstance(hours_remaining, float) and pd.isna(hours_remaining)):
-            try:
-                time_text = f"{float(hours_remaining):.1f}h"
-            except Exception:
-                time_text = str(hours_remaining)
-
-    bids_text = "--"
-    bids_value = row.get("bids")
-    if bids_value not in (None, "") and not (isinstance(bids_value, float) and pd.isna(bids_value)):
-        try:
-            bids_text = f"{int(float(str(bids_value).replace(',', '').strip())):,}"
-        except Exception:
-            bids_text = str(bids_value)
-
-    stats = [
-        ("Current Price", price_text),
-        ("Time Remaining", time_text),
-        ("Bids", bids_text),
-        ("Location", _safe_label(row.get("location"))),
-    ]
-    stats_html = "".join(
-        f"<div class='ai-card-stat'><div class='ai-card-stat-label'>{html.escape(label)}</div>"
-        f"<div class='ai-card-stat-value'>{html.escape(str(value))}</div></div>"
-        for label, value in stats
-        if value not in (None, "")
-    )
-    stats_section = f"<div class='ai-card-stats'>{stats_html}</div>" if stats_html else ""
-
     card_body = ""
-    body_parts = [part for part in (condition_section, stats_section) if part]
-    if body_parts:
-        card_body = f"<div class='ai-card-body'>{''.join(body_parts)}</div>"
 
     inner_html = f"""
     <div class="ai-card-header">
@@ -1259,13 +1155,7 @@ def render_listing_header(
             <div class="ai-card-title">{title_text}</div>
             {subtitle_html}
         </div>
-        <div class="ai-card-actions">
-            <div class="ai-card-odometer">
-                <div class="ai-card-odometer-label">Odometer</div>
-                <div class="ai-card-odometer-value">{odo_display}</div>
-            </div>
-            {link_html}
-        </div>
+        {f"<div class='ai-card-actions'>{link_html}</div>" if link_html else ""}
     </div>
     {card_body}
     """
