@@ -458,6 +458,37 @@ _BASE_STYLES = textwrap.dedent(
         background: rgba(15, 23, 36, 0.95);
         min-height: 100%;
     }
+    .ai-comparison-table {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-bottom: 1.2rem;
+    }
+    .ai-comparison-table-row {
+        display: grid;
+        grid-template-columns: 0.8fr 1fr 1fr;
+        gap: 0.9rem;
+        background: rgba(13, 19, 31, 0.9);
+        border: 1px solid var(--autosniper-border);
+        border-radius: 18px;
+        padding: 0.85rem 1rem;
+    }
+    .ai-comparison-table-header {
+        display: grid;
+        grid-template-columns: 0.8fr 1fr 1fr;
+        gap: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        font-size: 0.78rem;
+        color: var(--autosniper-muted);
+        background: transparent;
+        border: none;
+        padding: 0;
+    }
+    .ai-comparison-label {
+        font-weight: 600;
+        color: var(--autosniper-muted);
+    }
     .ai-comparison-title {
         font-size: 0.9rem;
         text-transform: uppercase;

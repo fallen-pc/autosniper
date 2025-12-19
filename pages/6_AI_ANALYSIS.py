@@ -12,7 +12,7 @@ import textwrap
 
 import time
 
-from typing import Any, Callable, Iterable, Optional
+from typing import Any, Callable, Iterable, Mapping, Optional
 
 from urllib.parse import quote_plus
 
@@ -1331,53 +1331,101 @@ def _format_price_or_dash(row: pd.Series) -> str:
 def render_comparison_section(row: pd.Series) -> None:
     st.markdown("### Auction vs History")
 
-    stats_cols = st.columns(4)
-    stats_cols[0].metric("Current Price", _format_price_or_dash(row))
-    stats_cols[1].metric("Bids", safe_display(row.get("bids")))
-    stats_cols[2].metric("Time Remaining", _format_time_remaining(row))
-    stats_cols[3].metric("Historical Matches", safe_display(row.get("historical_match_count"), "0"))
-
     best_match, summary_entry = extract_best_match_entry(row)
 
-    def _render_card(title: str, entries: list[tuple[str, str]]) -> str:
-        items = "".join(
-            f"<div class='ai-comparison-row'><span>{html.escape(label)}</span><strong>{html.escape(value)}</strong></div>"
-            for label, value in entries
+    def _match_value(entry: dict[str, Any] | None, *keys: str) -> Any:
+        if not entry:
+            return None
+        for key in keys:
+            if key in entry and entry[key] not in (None, "", " "):
+                value = entry[key]
+                if isinstance(value, float) and pd.isna(value):
+                    continue
+                return value
+        return None
+
+    def _pull_value(data: Mapping[str, Any] | pd.Series | None, key: str) -> Any:
+        if data is None:
+            return None
+        if isinstance(data, Mapping):
+            return data.get(key)
+        if isinstance(data, pd.Series):
+            return data.get(key)
+        return None
+
+    def _format_registration(data: Mapping[str, Any] | pd.Series | None) -> str:
+        if data is None:
+            return "Unregistered"
+        state = _first_non_empty(
+            _pull_value(data, "rego_state"),
+            _pull_value(data, "Registration State"),
+            _pull_value(data, "rego_state_clean"),
         )
-        return f"<div class='ai-comparison-card'><div class='ai-comparison-title'>{html.escape(title)}</div>{items}</div>"
+        expiry = _first_non_empty(
+            _pull_value(data, "rego_expiry"),
+            _pull_value(data, "Registration Expiry Date"),
+        )
+        if state and expiry:
+            return f"{state} (exp {expiry})"
+        if state:
+            return str(state)
+        return "Unregistered"
 
-    active_entries = [
-        ("Median vs Current", safe_display(row.get("price_vs_median"))),
-        ("Hours Remaining", _format_time_remaining(row)),
-        ("Match Quality", safe_display(row.get("variant_match_quality"))),
-    ]
-    active_card = _render_card("Active Listing", [(label, value) for label, value in active_entries if value not in ("--", "", "N/A")])
+    def _format_condition_text(value: object) -> str:
+        text = safe_display(value)
+        if text in ("--", "", "N/A"):
+            return "—"
+        return textwrap.shorten(text, width=140, placeholder="…")
 
-    historical_entries: list[tuple[str, str]] = []
-    if best_match:
-        historical_entries.append(("Sold Price", format_price_value(best_match.get("final_price_numeric"))))
-        historical_entries.append(("Date Sold", safe_display(best_match.get("date_sold"))))
-        historical_entries.append(("Location", safe_display(best_match.get("location"))))
-        historical_entries.append(("Odometer", safe_display(best_match.get("odometer_reading"))))
-        diff_value = best_match.get("odometer_diff")
-        if diff_value not in (None, "") and not (isinstance(diff_value, float) and pd.isna(diff_value)):
-            try:
-                diff_num = float(diff_value)
-                direction = "higher" if diff_num > 0 else "lower"
-                historical_entries.append(("Odo Difference", f"{abs(diff_num):,.0f} km {direction}"))
-            except Exception:
-                historical_entries.append(("Odo Difference", safe_display(diff_value)))
-    historical_card = (
-        _render_card("Closest Historical Sale", historical_entries)
-        if historical_entries
-        else "<div class='ai-comparison-card'><div class='ai-comparison-title'>Closest Historical Sale</div><p>No comparable sale recorded yet.</p></div>"
+    current_odometer = format_listing_odometer(row.get("odometer_reading"), row.get("odometer_unit"))
+    match_odometer = format_listing_odometer(
+        _match_value(best_match, "odometer_reading", "Odometer"),
+        _match_value(best_match, "odometer_unit", "Odometer Unit"),
+    )
+    current_location = safe_display(row.get("location"))
+    match_location = safe_display(_match_value(best_match, "location", "Location"))
+    current_registered = _format_registration(row)
+    match_registered = _format_registration(best_match)
+    current_condition = _format_condition_text(row.get("general_condition"))
+    summary_condition_value = None
+    if summary_entry:
+        summary_condition_value = summary_entry.get("Condition") or summary_entry.get("condition")
+    match_condition = _format_condition_text(
+        _match_value(
+            best_match,
+            "general_condition",
+            "General Condition",
+            "condition",
+            "Condition",
+        )
+        or summary_condition_value
     )
 
-    comparison_cols = st.columns(2)
-    with comparison_cols[0]:
-        st.markdown(active_card, unsafe_allow_html=True)
-    with comparison_cols[1]:
-        st.markdown(historical_card, unsafe_allow_html=True)
+    if best_match:
+        comparison_rows = [
+            ("Odometer", current_odometer, match_odometer),
+            ("Location", current_location, match_location),
+            ("Registered", current_registered, match_registered),
+            ("Condition Notes", current_condition, match_condition),
+        ]
+        table_rows = [
+            "<div class='ai-comparison-table-row ai-comparison-table-header'>"
+            "<div></div><div>Current Auction</div><div>Closest Historical Sale</div></div>"
+        ]
+        for label, current_value, match_value in comparison_rows:
+            table_rows.append(
+                "<div class='ai-comparison-table-row'>"
+                f"<div class='ai-comparison-label'>{html.escape(label)}</div>"
+                f"<div>{html.escape(current_value)}</div>"
+                f"<div>{html.escape(match_value)}</div>"
+                "</div>"
+            )
+        st.markdown(
+            "<div class='ai-comparison-table'>" + "".join(table_rows) + "</div>",
+            unsafe_allow_html=True,
+        )
+    else:
+        st.caption("No comparable sale recorded yet.")
 
     median_price = row.get("historical_price_median")
     median_display = format_price_value(median_price) if median_price not in (None, "") and not pd.isna(median_price) else "--"
