@@ -1367,10 +1367,6 @@ def render_condition_column(row: pd.Series) -> str:
         )
         segments.append(f"<div class='ai-card-condition-badges'>{badges_html}</div>")
 
-    if features:
-        items = "".join(f"<li>{html.escape(item)}</li>" for item in features)
-        segments.append(f"<ul class='ai-condition-list'>{items}</ul>")
-
     if not segments:
         return ""
 
@@ -1542,40 +1538,6 @@ def format_confidence_notes(notes: object) -> list[str]:
         return []
     parts = [part.strip(" -") for part in re.split(r"[;\n•]+", text) if part.strip(" -")]
     return parts
-
-
-def render_ai_summary_section(row: pd.Series) -> None:
-    st.markdown("### AI Valuation Snapshot")
-    max_bid = row.get("recommended_max_bid")
-    expected_profit = row.get("expected_profit")
-    margin_pct = row.get("profit_margin_percent")
-    score = row.get("score_out_of_10")
-    timestamp = safe_display(row.get("analysis_timestamp"))
-
-    has_metrics = any(
-        value not in (None, "", "None")
-        and not (isinstance(value, float) and pd.isna(value))
-        for value in (max_bid, expected_profit, margin_pct, score)
-    )
-
-    if not has_metrics:
-        st.caption("Run the AI Carsales check to populate valuation metrics.")
-        return
-
-    metrics = st.columns(4)
-    metrics[0].metric("Recommended Max Bid", format_price_value(max_bid) if max_bid not in (None, "") else "--")
-    metrics[1].metric("Expected Profit", format_price_value(expected_profit) if expected_profit not in (None, "") else "--")
-    metrics[2].metric("Profit Margin", safe_display(margin_pct))
-    metrics[3].metric("Score /10", safe_display(score))
-
-    note_entries = format_confidence_notes(row.get("confidence_notes"))
-    if note_entries:
-        st.markdown("**AI Notes**")
-        for entry in note_entries:
-            st.markdown(f"- {entry}")
-
-    if timestamp and timestamp != "--":
-        st.caption(f"Last analysed: {timestamp}")
 
 
 def _normalise_text(value: object) -> str:
@@ -2211,88 +2173,37 @@ def build_ai_input_snapshot(listing_row: Optional[pd.Series]) -> dict[str, Any]:
 
 
 def render_ai_result(url: str, listing_row: Optional[pd.Series] = None) -> None:
-
     cache_df = st.session_state.ai_listing_cache
-
     has_record = not cache_df.empty and url in cache_df["url"].values
-    record = cache_df[cache_df["url"] == url].iloc[0] if has_record else None
-    record_data = record.to_dict() if record is not None else {}
+    if not has_record:
+        st.caption("Run the AI Carsales check to populate the verdict.")
+        return
 
-    listing_manual_estimate = None
-    listing_manual_avg = None
-    listing_manual_min = None
-    listing_manual_max = None
-    listing_manual_count = None
-    listing_manual_recent = None
-    listing_manual_table = None
-    if listing_row is not None:
-        listing_manual_estimate = listing_row.get("manual_carsales_estimate")
-        listing_manual_avg = listing_row.get("manual_carsales_avg")
-        listing_manual_min = listing_row.get("manual_carsales_min")
-        listing_manual_max = listing_row.get("manual_carsales_max")
-        listing_manual_count = listing_row.get("manual_carsales_count")
-        listing_manual_recent = listing_row.get("manual_recent_sales_30d")
-        listing_manual_table = listing_row.get("manual_carsales_table")
+    record = cache_df[cache_df["url"] == url].iloc[0]
+    record_data = record.to_dict()
 
-    manual_override_record = record_data.get("manual_carsales_estimate") or record_data.get("manual_carsales_avg")
-    manual_override_display = (
-        manual_override_record
-        or listing_manual_estimate
-        or listing_manual_avg
-        or format_price_range(listing_manual_min, listing_manual_max)
-        or record_data.get("carsales_price_estimate")
+    ai_estimate = format_price_value(record_data.get("carsales_price_estimate"))
+    max_bid = format_price_value(record_data.get("recommended_max_bid"))
+    expected_profit = format_price_value(record_data.get("expected_profit"))
+    score = safe_display(record_data.get("score_out_of_10"))
+    margin = safe_display(record_data.get("profit_margin_percent"))
+    timestamp = safe_display(record_data.get("analysis_timestamp"))
+
+    metrics = st.columns(4)
+    metrics[0].metric("AI Carsales Estimate", ai_estimate)
+    metrics[1].metric("Recommended Max Bid", max_bid)
+    metrics[2].metric("Expected Profit", expected_profit)
+    metrics[3].metric("Score /10", score or "--")
+
+    st.caption(
+        f"Profit margin: {margin or '--'} | Last analysed: {timestamp or '—'}"
     )
 
-    carsales_value_raw = _first_non_empty(
-        manual_override_display,
-        record_data.get("carsales_price_estimate"),
-        listing_manual_estimate,
-        listing_manual_avg,
-        format_price_range(listing_manual_min, listing_manual_max),
-    )
-    carsales_value = format_price_value(carsales_value_raw)
-
-    manual_range_display = format_price_range(listing_manual_min, listing_manual_max)
-    metrics = st.columns(3)
-    metrics[0].metric("Carsales Estimate", carsales_value)
-    metrics[1].metric("Manual Range", manual_range_display or "—")
-    metrics[2].metric("Sold last 30d", listing_manual_recent or "—")
-
-    def _parse_float_from_text(text: str | None) -> Optional[float]:
-
-        if not text:
-
-            return None
-
-        cleaned = re.findall(r"-?\d+(?:\.\d+)?", text.replace(",", ""))
-
-        if not cleaned:
-
-            return None
-
-        try:
-
-            return float(cleaned[0])
-
-        except ValueError:
-
-            return None
-
-    def _parse_int_from_text(text: str | None) -> Optional[int]:
-
-        value = _parse_float_from_text(text)
-
-        return int(value) if value is not None else None
-
-    # Display Carsales estimate sourced from manual inputs (or AI fallback).
-    carsales_value = _first_non_empty(
-        manual_override_display,
-        listing_manual_estimate,
-        listing_manual_avg,
-        format_price_range(listing_manual_min, listing_manual_max),
-        record_data.get("carsales_price_estimate"),
-    )
-    st.markdown(f"**Carsales estimate:** {format_price_value(carsales_value) if carsales_value not in (None, 'None') else '—'}")
+    note_entries = format_confidence_notes(record_data.get("confidence_notes"))
+    if note_entries:
+        st.markdown("**AI Notes**")
+        for entry in note_entries:
+            st.markdown(f"- {entry}")
 
 comparison_df["_match_count_numeric"] = comparison_df["historical_match_count"].apply(coerce_positive_int)
 
@@ -2500,8 +2411,6 @@ with tabs[0]:
                 render_vehicle_summary(row)
                 render_comparison_section(row)
                 render_carsales_section(row)
-                render_ai_summary_section(row)
-
                 st.markdown("### Verdict")
 
                 action_col, rerun_col, full_col = st.columns([1, 1, 1])
@@ -2626,8 +2535,6 @@ with tabs[1]:
                 render_vehicle_summary(row)
                 render_comparison_section(row)
                 render_carsales_section(row)
-                render_ai_summary_section(row)
-
                 st.markdown("### Verdict")
 
                 action_col, rerun_col = st.columns([1, 1])

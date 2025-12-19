@@ -436,15 +436,6 @@ _BASE_STYLES = textwrap.dedent(
     .ai-condition-summary {
         margin-bottom: 0.6rem;
     }
-    .ai-condition-list {
-        list-style: disc;
-        padding-left: 1.25rem;
-        color: var(--autosniper-text);
-        margin: 0.4rem 0 0;
-    }
-    .ai-condition-list li {
-        margin-bottom: 0.25rem;
-    }
     .ai-card-stat {
         background: rgba(26, 33, 48, 0.85);
         border: 1px solid var(--autosniper-border);
