@@ -226,6 +226,13 @@ def _parse_range_text(raw: Any) -> tuple[Optional[float], Optional[float]]:
     return values[0], values[1]
 
 
+def _format_price(value: Any) -> str:
+    parsed = coerce_price(value)
+    if parsed is None:
+        return "N/A"
+    return f"${parsed:,.0f}"
+
+
 df = _load_vehicle_table()
 
 # Filters
@@ -315,6 +322,8 @@ for _, row in filtered.iterrows():
         )
         meta_col.write(row.get("odometer_display", "N/A"))
         meta_col.caption(f"{row.get('transmission', 'N/A')} | {row.get('fuel_type', 'N/A')}")
+        price_display = _format_price(row.get("price") or row.get("current_price"))
+        meta_col.caption(f"Current price: {price_display}")
         listing_link = row.get("url") or row.get("carsales_search", "")
         link_label = "Open listing" if row.get("url") else "Carsales search"
         meta_col.markdown(f"[{link_label}]({listing_link})", unsafe_allow_html=False)
