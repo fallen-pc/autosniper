@@ -92,6 +92,11 @@ def _ensure_columns(df: pd.DataFrame) -> pd.DataFrame:
         "manual_carsales_min",
         "manual_carsales_max",
         "manual_carsales_sold_30d",
+        "manual_carsales_avg",
+        "manual_recent_sales_30d",
+        "manual_carsales_count",
+        "manual_carsales_table",
+        "manual_carsales_estimate",
         "carsales_skipped",
     ):
         if col not in df.columns:
@@ -122,6 +127,34 @@ def _load_vehicle_table() -> pd.DataFrame:
     path = dataset_path("vehicle_static_details.csv")
     df = pd.read_csv(path)
     df = _ensure_columns(df)
+
+    ai_cache_path = dataset_path("ai_listing_valuations.csv")
+    manual_sync_columns = [
+        "manual_carsales_min",
+        "manual_carsales_max",
+        "manual_carsales_avg",
+        "manual_carsales_sold_30d",
+        "manual_recent_sales_30d",
+        "manual_carsales_count",
+        "manual_carsales_estimate",
+        "manual_carsales_table",
+    ]
+    if ai_cache_path.exists():
+        ai_df = pd.read_csv(ai_cache_path)
+        if "url" in ai_df.columns:
+            subset_cols = ["url"] + [col for col in manual_sync_columns + ["carsales_skipped"] if col in ai_df.columns]
+            ai_subset = ai_df[subset_cols].copy()
+            df = df.merge(ai_subset, on="url", how="left", suffixes=("", "_ai"))
+            for column in manual_sync_columns:
+                ai_column = f"{column}_ai"
+                if ai_column in df.columns:
+                    mask = df[column].apply(_is_blank)
+                    df.loc[mask, column] = df.loc[mask, ai_column]
+                    df.drop(columns=[ai_column], inplace=True)
+            ai_skip = "carsales_skipped_ai"
+            if ai_skip in df.columns:
+                df["carsales_skipped"] = df["carsales_skipped"].fillna(df[ai_skip])
+                df.drop(columns=[ai_skip], inplace=True)
 
     df["status"] = df.get("status", "").astype(str).str.strip().str.lower()
 
