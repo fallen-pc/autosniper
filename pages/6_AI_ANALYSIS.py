@@ -1427,17 +1427,7 @@ def render_comparison_section(row: pd.Series) -> None:
     else:
         st.caption("No comparable sale recorded yet.")
 
-    median_price = row.get("historical_price_median")
-    median_display = format_price_value(median_price) if median_price not in (None, "") and not pd.isna(median_price) else "--"
-    avg_diff = row.get("historical_close_avg_odometer_diff")
-    avg_diff_display = safe_display(avg_diff)
-    summary_cols = st.columns(3)
-    summary_cols[0].metric("Median Historical Price", median_display)
-    summary_cols[1].metric("Close Match Median", format_price_value(row.get("historical_close_price_median")) if row.get("historical_close_price_median") not in (None, "") else "--")
-    summary_cols[2].metric("Avg Odo Δ (close)", avg_diff_display)
-
-    with st.expander("Show detailed historical table", expanded=False):
-        render_closest_matches_section(row)
+    render_closest_matches_section(row)
 
 
 def render_carsales_section(row: pd.Series) -> None:
