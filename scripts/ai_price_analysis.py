@@ -516,7 +516,6 @@ def compare_active_to_history(
 
         base_candidates = _apply_attribute_filters(active_row, base_candidates)
         active_odometer = active_row.get("odometer_numeric")
-        fallback_year_used = False
 
         def _build_match_summary(candidate_df: pd.DataFrame) -> tuple[PriceStats, pd.DataFrame, pd.DataFrame]:
             scored = _score_matches(active_row, candidate_df)
@@ -535,39 +534,17 @@ def compare_active_to_history(
 
         stats, selected_matches, close_matches = _build_match_summary(candidates)
 
-        if stats.count == 0 and year is not None:
-            near_year_candidates = base_candidates
-            if "year_int" in near_year_candidates.columns:
-                near_year_candidates = near_year_candidates[near_year_candidates["year_int"].notna()]
-                near_year_candidates = near_year_candidates[
-                    (near_year_candidates["year_int"] - year).abs() <= 1
-                ]
-            stats, selected_matches, close_matches = _build_match_summary(near_year_candidates)
-            fallback_year_used = stats.count > 0
-
-            if fallback_year_used:
-                def _delta(val):
-                    if val is None or (isinstance(val, float) and pd.isna(val)):
-                        return None
-                    try:
-                        return float(val) - float(year)
-                    except Exception:
-                        return None
-
-                selected_matches["year_delta"] = selected_matches["year_int"].apply(_delta)
-                close_matches["year_delta"] = close_matches["year_int"].apply(_delta)
-
         historical_rows = _prepare_match_rows(
             selected_matches,
             include_diff=False,
             limit=15,
-            include_year_delta=fallback_year_used,
+            include_year_delta=False,
         )
         close_rows = _prepare_match_rows(
             close_matches,
             include_diff=True,
             limit=10,
-            include_year_delta=fallback_year_used,
+            include_year_delta=False,
         )
 
         price_numeric = active_row.get("price_numeric")
@@ -630,7 +607,7 @@ def compare_active_to_history(
             "historical_data_status": (
                 "No historical data available"
                 if stats.count == 0
-                else ("Matched (+/-1 year comps)" if fallback_year_used else "Matched")
+                else "Matched"
             ),
         })
 
