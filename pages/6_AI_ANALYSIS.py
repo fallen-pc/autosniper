@@ -207,6 +207,18 @@ if st.button("Refresh data"):
 active_snapshot, comparison_df = build_comparison_dataframe(selected_min_hours, selected_max_hours)
 comparison_df = comparison_df.copy()
 
+manual_columns = [
+    "manual_carsales_min",
+    "manual_carsales_max",
+    "manual_carsales_avg",
+    "manual_carsales_sold_30d",
+    "manual_recent_sales_30d",
+    "manual_carsales_count",
+    "manual_carsales_table",
+    "manual_carsales_estimate",
+    "carsales_skipped",
+]
+
 if "ai_listing_cache" not in st.session_state:
     st.session_state.ai_listing_cache = load_ai_cached_results()
 
@@ -1691,27 +1703,22 @@ def get_closest_matches(
 
 
         mapped_entry = {
-
             "year": entry.get("Year") or entry.get("year"),
-
             "make": entry.get("Make") or entry.get("make"),
-
             "model": entry.get("Model") or entry.get("model"),
-
             "variant": entry.get("Variant") or entry.get("variant"),
-
             "transmission": entry.get("Transmission") or entry.get("transmission"),
-
             "odometer_reading": entry_odo_text,
-
             "final_price_numeric": price_val,
-
             "date_sold": entry.get("Date Sold") or entry.get("date_sold"),
-
             "location": entry.get("Location") or entry.get("location"),
-
+            "general_condition": (
+                entry.get("general_condition")
+                or entry.get("General Condition")
+                or entry.get("condition")
+                or entry.get("Condition")
+            ),
             "odometer_diff": odo_diff,
-
         }
 
 
@@ -2011,42 +2018,6 @@ def render_closest_matches_section(row: pd.Series) -> None:
     styled_df = display_df.style.apply(highlight_row, axis=1)
 
     st.dataframe(styled_df, width="stretch")
-
-
-
-    price_values = [
-
-        entry.get("final_price_numeric")
-
-        for entry in all_matches
-
-        if entry.get("final_price_numeric") is not None and not pd.isna(entry.get("final_price_numeric"))
-
-    ]
-
-    if price_values:
-
-        min_price = min(price_values)
-
-        max_price = max(price_values)
-
-        best_price = highlight_entry.get("final_price_numeric") if highlight_entry else None
-
-
-
-        summary_cols = st.columns(3)
-
-        summary_cols[0].metric("Lowest auction price", format_price_value(min_price))
-
-        summary_cols[1].metric("Highest auction price", format_price_value(max_price))
-
-        summary_cols[2].metric(
-
-            "Closest match price",
-
-            format_price_value(best_price) if best_price is not None else "—",
-
-        )
 
 
 
