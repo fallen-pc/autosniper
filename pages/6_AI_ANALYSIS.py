@@ -2249,46 +2249,10 @@ matched_df = ensure_columns(matched_df, [
 
 ] )
 
-underpriced_df = matched_df[matched_df["priced_below_history"].isin([True])].copy()
-
-underpriced_df = ensure_columns(underpriced_df, [
-
-    "historical_match_count",
-
-    "median_discount",
-
-    "historical_price_median",
-
-    "historical_close_match_count",
-
-    "historical_close_price_median",
-
-    "historical_close_avg_odometer_diff",
-
-    "hours_remaining",
-
-    "current_price",
-
-    "variant_match_quality",
-
-    "time_remaining_or_date_sold",
-
-    "price_vs_close_median",
-
-    "close_median_discount",
-
-    "priced_below_close_history",
-
-    "historical_matches_rows",
-
-    "historical_close_matches_rows",
-
-] )
-
-if "median_discount" in underpriced_df.columns:
-    underpriced_df = underpriced_df.sort_values(
-        by=["median_discount", "historical_match_count"],
-        ascending=[False, False],
+if "median_discount" in matched_df.columns:
+    matched_df = matched_df.sort_values(
+        by=["priced_below_history", "median_discount", "historical_match_count"],
+        ascending=[False, False, False],
     )
 
 
@@ -2321,19 +2285,19 @@ no_history_df = ensure_columns(no_history_df, [
 
 
 
-tabs = st.tabs(["Under Historical Pricing", "No Historical Data"])
+tabs = st.tabs(["Historical Matches", "No Historical Data"])
 
 
 
 with tabs[0]:
 
-    if underpriced_df.empty:
+    if matched_df.empty:
 
         st.info("No listings meet the current filters.")
 
     else:
 
-        for _, row in underpriced_df.iterrows():
+        for _, row in matched_df.iterrows():
 
             anchor_id = build_anchor_id(row.get("url"))
 
@@ -2345,6 +2309,12 @@ with tabs[0]:
 
                 header_html = render_listing_header(row, wrap_card=False, render=False)
                 st.markdown(header_html, unsafe_allow_html=True)
+
+                status_note = ""
+                if row.get("priced_below_history") in (False, 0, None):
+                    status_note = "Currently above historical medians."
+                if status_note:
+                    st.caption(status_note)
 
                 render_vehicle_summary(row)
                 render_comparison_section(row)
