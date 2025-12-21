@@ -202,6 +202,8 @@ if st.button("Refresh data"):
     get_active_listings.clear()
     get_historical_sales.clear()
     build_comparison_dataframe.clear()
+    st.session_state.pop("ai_listing_cache", None)
+    st.session_state.pop("ai_listing_cache_version", None)
     st.rerun()
 
 active_snapshot, comparison_df = build_comparison_dataframe(selected_min_hours, selected_max_hours)
@@ -219,10 +221,19 @@ manual_columns = [
     "carsales_skipped",
 ]
 
-if "ai_listing_cache" not in st.session_state:
-    st.session_state.ai_listing_cache = load_ai_cached_results()
+def _load_ai_cache() -> pd.DataFrame:
+    cache_path = dataset_path("ai_listing_valuations.csv")
+    cache_version = cache_path.stat().st_mtime if cache_path.exists() else None
+    needs_refresh = "ai_listing_cache" not in st.session_state
+    if not needs_refresh:
+        needs_refresh = st.session_state.get("ai_listing_cache_version") != cache_version
+    if needs_refresh:
+        st.session_state.ai_listing_cache = load_ai_cached_results()
+        st.session_state.ai_listing_cache_version = cache_version
+    return st.session_state.ai_listing_cache
 
-valuations_cache = st.session_state.ai_listing_cache
+
+valuations_cache = _load_ai_cache()
 valuation_columns = [
     "analysis_timestamp",
     "carsales_price_estimate",
@@ -2028,8 +2039,10 @@ def render_closest_matches_section(row: pd.Series) -> None:
 
 
 def refresh_ai_cache() -> None:
-
     st.session_state.ai_listing_cache = load_ai_cached_results()
+    cache_path = dataset_path("ai_listing_valuations.csv")
+    cache_version = cache_path.stat().st_mtime if cache_path.exists() else None
+    st.session_state.ai_listing_cache_version = cache_version
 
 
 
