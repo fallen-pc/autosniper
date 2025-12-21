@@ -1401,31 +1401,49 @@ def render_comparison_section(row: pd.Series) -> None:
         or summary_condition_value
     )
 
-    if best_match:
-        comparison_rows = [
-            ("Odometer", current_odometer, match_odometer),
-            ("Location", current_location, match_location),
-            ("Registered", current_registered, match_registered),
-            ("Condition Notes", current_condition, match_condition),
-        ]
-        table_rows = [
-            "<div class='ai-comparison-table-row ai-comparison-table-header'>"
-            "<div></div><div>Current Auction</div><div>Closest Historical Sale</div></div>"
-        ]
-        for label, current_value, match_value in comparison_rows:
-            table_rows.append(
-                "<div class='ai-comparison-table-row'>"
-                f"<div class='ai-comparison-label'>{html.escape(label)}</div>"
-                f"<div>{html.escape(current_value)}</div>"
-                f"<div>{html.escape(match_value)}</div>"
-                "</div>"
-            )
-        st.markdown(
-            "<div class='ai-comparison-table'>" + "".join(table_rows) + "</div>",
-            unsafe_allow_html=True,
-        )
-    else:
+    if not best_match:
         st.caption("No comparable sale recorded yet.")
+        render_closest_matches_section(row)
+        return
+
+    comparison_rows = [
+        ("Odometer", current_odometer, match_odometer),
+        ("Location", current_location, match_location),
+        ("Registered", current_registered, match_registered),
+        ("Condition Notes", current_condition, match_condition),
+    ]
+    table_rows = [
+        "<div class='ai-comparison-table-row ai-comparison-table-header'>"
+        "<div></div><div>Current Auction</div><div>Closest Historical Sale</div></div>"
+    ]
+    for label, current_value, match_value in comparison_rows:
+        table_rows.append(
+            "<div class='ai-comparison-table-row'>"
+            f"<div class='ai-comparison-label'>{html.escape(label)}</div>"
+            f"<div>{html.escape(current_value)}</div>"
+            f"<div>{html.escape(match_value)}</div>"
+            "</div>"
+        )
+    st.markdown(
+        "<div class='ai-comparison-table'>" + "".join(table_rows) + "</div>",
+        unsafe_allow_html=True,
+    )
+
+    current_price_metric = _format_price_or_dash(row)
+    previous_price_metric = format_price_value(best_match.get("final_price_numeric"))
+    current_odo_numeric = parse_odometer_value(row.get("odometer_numeric")) or parse_odometer_value(row.get("odometer_reading"))
+    match_odo_numeric = parse_odometer_value(_match_value(best_match, "odometer_numeric", "Odometer", "odometer_reading"))
+    odo_delta = "—"
+    if current_odo_numeric is not None and match_odo_numeric is not None:
+        diff_val = match_odo_numeric - current_odo_numeric
+        direction = "higher" if diff_val > 0 else "lower"
+        if diff_val == 0:
+            direction = "same"
+        odo_delta = f"{abs(diff_val):,.0f} km {direction}"
+    stats_cols = st.columns(3)
+    stats_cols[0].metric("Current Price", current_price_metric)
+    stats_cols[1].metric("Previous Auction Price", previous_price_metric or "--")
+    stats_cols[2].metric("Odometer Δ", odo_delta)
 
     render_closest_matches_section(row)
 
@@ -1441,11 +1459,10 @@ def render_carsales_section(row: pd.Series) -> None:
     manual_count = row.get("manual_carsales_count")
     manual_recent = row.get("manual_recent_sales_30d")
 
-    stats = st.columns(4)
-    stats[0].metric("Manual Estimate", format_price_value(manual_estimate) if manual_estimate else "--")
-    stats[1].metric("Manual Range", manual_range or "--")
-    stats[2].metric("Comparable Count", safe_display(manual_count))
-    stats[3].metric("Sold last 30d", safe_display(manual_recent))
+    stats = st.columns(3)
+    stats[0].metric("Carsales Range", manual_range or "--")
+    stats[1].metric("Carsales Estimate", format_price_value(manual_estimate) if manual_estimate else "--")
+    stats[2].metric("Sold last 30d", safe_display(manual_recent))
 
     manual_table = row.get("manual_carsales_table")
     parsed_table = parse_markdown_table(manual_table) if isinstance(manual_table, str) else None
