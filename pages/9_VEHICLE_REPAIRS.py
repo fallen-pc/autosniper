@@ -290,12 +290,17 @@ else:
     repairs_df["price_estimate"] = pd.NA
 
 st.sidebar.markdown("### Repair Navigator")
-min_count = st.sidebar.slider(
-    "Minimum occurrences to display",
-    min_value=1,
-    max_value=int(repairs_df["occurrences"].max()),
-    value=1,
-)
+occ_max = int(repairs_df["occurrences"].max())
+if occ_max <= 1:
+    min_count = 1
+    st.sidebar.caption("Showing all items (each repair only appears once).")
+else:
+    min_count = st.sidebar.slider(
+        "Minimum occurrences to display",
+        min_value=1,
+        max_value=occ_max,
+        value=1,
+    )
 search_text = st.sidebar.text_input("Search within selection")
 
 base_df = repairs_df[repairs_df["occurrences"] >= min_count].copy()
