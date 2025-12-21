@@ -208,7 +208,7 @@ active_snapshot, comparison_df = build_comparison_dataframe(selected_min_hours, 
 comparison_df = comparison_df.copy()
 
 if "ai_listing_cache" not in st.session_state:
-st.session_state.ai_listing_cache = load_ai_cached_results()
+    st.session_state.ai_listing_cache = load_ai_cached_results()
 
 valuations_cache = st.session_state.ai_listing_cache
 valuation_columns = [
