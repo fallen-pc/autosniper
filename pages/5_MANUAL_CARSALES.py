@@ -119,12 +119,17 @@ def _is_blank(value: Any) -> bool:
 
 @st.cache_data(ttl=300)
 def _load_vehicle_table() -> pd.DataFrame:
-    missing = ensure_datasets_available(["vehicle_static_details.csv"])
-    if missing:
-        st.error("Missing dataset: vehicle_static_details.csv")
+    source_files = ["active_vehicle_details.csv", "vehicle_static_details.csv"]
+    missing = ensure_datasets_available(source_files)
+    if len(missing) == len(source_files):
+        st.error("Missing dataset: active_vehicle_details.csv")
         st.stop()
 
-    path = dataset_path("vehicle_static_details.csv")
+    using_active = "active_vehicle_details.csv" not in missing
+    source_path = dataset_path("active_vehicle_details.csv") if using_active else dataset_path("vehicle_static_details.csv")
+    if not using_active:
+        st.info("Active listings dataset missing; falling back to vehicle_static_details.csv.")
+    path = source_path
     df = pd.read_csv(path)
     df = _ensure_columns(df)
 
