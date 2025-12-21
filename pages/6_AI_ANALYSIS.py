@@ -208,7 +208,7 @@ active_snapshot, comparison_df = build_comparison_dataframe(selected_min_hours, 
 comparison_df = comparison_df.copy()
 
 if "ai_listing_cache" not in st.session_state:
-    st.session_state.ai_listing_cache = load_ai_cached_results()
+st.session_state.ai_listing_cache = load_ai_cached_results()
 
 valuations_cache = st.session_state.ai_listing_cache
 valuation_columns = [
@@ -220,16 +220,26 @@ valuation_columns = [
     "profit_margin_percent",
     "score_out_of_10",
     "confidence_notes",
-    "manual_carsales_count",
-    "manual_carsales_avg",
-    "manual_carsales_estimate",
-    "manual_recent_sales_30d",
-    "manual_carsales_table",
+    *manual_columns,
 ]
 available_columns = [column for column in valuation_columns if column in valuations_cache.columns]
 if available_columns:
     valuations_subset = valuations_cache[["url", *available_columns]].copy()
     comparison_df = comparison_df.merge(valuations_subset, on="url", how="left", suffixes=("", "_ai"))
+    for column in manual_columns + [
+        "analysis_timestamp",
+        "carsales_price_estimate",
+        "carsales_price_range",
+        "recommended_max_bid",
+        "expected_profit",
+        "profit_margin_percent",
+        "score_out_of_10",
+        "confidence_notes",
+    ]:
+        ai_column = f"{column}_ai"
+        if ai_column in comparison_df.columns:
+            comparison_df[column] = comparison_df[column].fillna(comparison_df[ai_column])
+            comparison_df.drop(columns=[ai_column], inplace=True)
 
 # Bring in valuations that aren't in the active comparison (e.g., cached/manual entries only).
 if not valuations_cache.empty:
