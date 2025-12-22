@@ -949,27 +949,17 @@ def render_historical_table(rows: object, title: str, include_diff: bool = False
 
 
     rename_map = {
-
         "year": "Year",
-
         "make": "Make",
-
         "model": "Model",
-
         "variant": "Variant",
-
         "transmission": "Transmission",
-
         "odometer_reading": "Odometer",
-
         "final_price_numeric": "Price",
-
         "date_sold": "Date Sold",
-
         "location": "Location",
-
+        "general_condition": "Condition",
         "odometer_diff": "Odo Diff",
-
     }
 
     df = df.rename(columns=rename_map)
@@ -1993,6 +1983,8 @@ def render_closest_matches_section(row: pd.Series) -> None:
             "Variant",
 
             "Transmission",
+
+            "Condition",
 
             "Odometer",
 
