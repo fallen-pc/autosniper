@@ -221,6 +221,33 @@ manual_columns = [
     "carsales_skipped",
 ]
 
+static_lookup = pd.DataFrame()
+static_lookup_columns: list[str] = []
+static_columns = [
+    "current_price",
+    "price",
+    "time_remaining_or_date_sold",
+    "hours_remaining",
+    "location",
+    "odometer_reading",
+    "odometer_unit",
+    "transmission",
+    "bids",
+]
+static_path = dataset_path("vehicle_static_details.csv")
+if static_path.exists():
+    try:
+        static_df = pd.read_csv(static_path)
+        if "url" in static_df.columns:
+            available_static = [column for column in static_columns if column in static_df.columns]
+            if available_static:
+                static_df["_url_norm"] = static_df["url"].astype(str).str.strip().str.casefold()
+                static_lookup = static_df.set_index("_url_norm")[available_static]
+                static_lookup_columns = available_static
+    except Exception:  # noqa: BLE001
+        static_lookup = pd.DataFrame()
+        static_lookup_columns = []
+
 def _load_ai_cache() -> pd.DataFrame:
     cache_path = dataset_path("ai_listing_valuations.csv")
     cache_version = cache_path.stat().st_mtime if cache_path.exists() else None
@@ -290,6 +317,14 @@ if not valuations_cache.empty:
         extras["model_norm"] = extras["model"].astype(str).str.lower().str.strip()
         extras["variant_norm"] = extras["variant"].astype(str).str.lower().str.strip() if "variant" in extras else pd.NA
         extras["year_int"] = extras["year"].apply(_to_int_or_none) if "year" in extras else pd.NA
+        if not static_lookup.empty and static_lookup_columns:
+            extras["_url_norm"] = extras["url"].astype(str).str.strip().str.casefold()
+            for column in static_lookup_columns:
+                if column in extras.columns:
+                    extras[column] = extras[column].fillna(extras["_url_norm"].map(static_lookup[column]))
+                else:
+                    extras[column] = extras["_url_norm"].map(static_lookup[column])
+            extras.drop(columns=["_url_norm"], inplace=True, errors="ignore")
         comparison_df = pd.concat([comparison_df, extras], ignore_index=True, sort=False)
 
 # Enforce presence of manual Carsales fields and filter out rows missing them.
