@@ -43,15 +43,11 @@ else:
 
 
 from scripts.ai_price_analysis import (
-
     compare_active_to_history,
-
     load_active_listings_within_hours,
-
     load_historical_sales,
-
+    _extract_hours_remaining,
     _to_int_or_none,
-
 )
 
 from scripts.ai_listing_valuation import (
@@ -221,9 +217,7 @@ manual_columns = [
     "carsales_skipped",
 ]
 
-static_lookup = pd.DataFrame()
-static_lookup_columns: list[str] = []
-static_columns = [
+SNAPSHOT_COLUMNS = [
     "current_price",
     "price",
     "time_remaining_or_date_sold",
@@ -234,19 +228,49 @@ static_columns = [
     "transmission",
     "bids",
 ]
-static_path = dataset_path("vehicle_static_details.csv")
-if static_path.exists():
+
+
+def _load_snapshot_lookup(filename: str) -> pd.DataFrame:
+    path = dataset_path(filename)
+    if not path.exists():
+        return pd.DataFrame()
     try:
-        static_df = pd.read_csv(static_path)
-        if "url" in static_df.columns:
-            available_static = [column for column in static_columns if column in static_df.columns]
-            if available_static:
-                static_df["_url_norm"] = static_df["url"].astype(str).str.strip().str.casefold()
-                static_lookup = static_df.set_index("_url_norm")[available_static]
-                static_lookup_columns = available_static
+        df = pd.read_csv(path)
     except Exception:  # noqa: BLE001
-        static_lookup = pd.DataFrame()
-        static_lookup_columns = []
+        return pd.DataFrame()
+    if "url" not in df.columns:
+        return pd.DataFrame()
+    available = [column for column in SNAPSHOT_COLUMNS if column in df.columns]
+    if not available:
+        return pd.DataFrame()
+    df["_url_norm"] = df["url"].astype(str).str.strip().str.casefold()
+    lookup = df.set_index("_url_norm")[available]
+    return lookup
+
+
+snapshot_sources: list[pd.DataFrame] = []
+for source_name in ("active_vehicle_details.csv", "vehicle_static_details.csv"):
+    lookup_df = _load_snapshot_lookup(source_name)
+    if not lookup_df.empty:
+        snapshot_sources.append(lookup_df)
+
+
+def backfill_snapshot_fields(df: pd.DataFrame) -> None:
+    if "url" not in df.columns or not snapshot_sources:
+        return
+    url_norm = df["url"].astype(str).str.strip().str.casefold()
+    for lookup_df in snapshot_sources:
+        for column in lookup_df.columns:
+            if column not in df.columns:
+                df[column] = pd.NA
+            df[column] = df[column].fillna(url_norm.map(lookup_df[column]))
+    if "hours_remaining" not in df.columns:
+        df["hours_remaining"] = pd.NA
+    missing_hours = df["hours_remaining"].isna()
+    if "time_remaining_or_date_sold" in df.columns and missing_hours.any():
+        df.loc[missing_hours, "hours_remaining"] = df.loc[missing_hours, "time_remaining_or_date_sold"].apply(
+            _extract_hours_remaining
+        )
 
 def _load_ai_cache() -> pd.DataFrame:
     cache_path = dataset_path("ai_listing_valuations.csv")
@@ -317,15 +341,9 @@ if not valuations_cache.empty:
         extras["model_norm"] = extras["model"].astype(str).str.lower().str.strip()
         extras["variant_norm"] = extras["variant"].astype(str).str.lower().str.strip() if "variant" in extras else pd.NA
         extras["year_int"] = extras["year"].apply(_to_int_or_none) if "year" in extras else pd.NA
-        if not static_lookup.empty and static_lookup_columns:
-            extras["_url_norm"] = extras["url"].astype(str).str.strip().str.casefold()
-            for column in static_lookup_columns:
-                if column in extras.columns:
-                    extras[column] = extras[column].fillna(extras["_url_norm"].map(static_lookup[column]))
-                else:
-                    extras[column] = extras["_url_norm"].map(static_lookup[column])
-            extras.drop(columns=["_url_norm"], inplace=True, errors="ignore")
         comparison_df = pd.concat([comparison_df, extras], ignore_index=True, sort=False)
+
+backfill_snapshot_fields(comparison_df)
 
 # Enforce presence of manual Carsales fields and filter out rows missing them.
 for manual_column in ("manual_carsales_min",):
