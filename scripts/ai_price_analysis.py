@@ -630,6 +630,7 @@ def _prepare_match_rows(
         "final_price_numeric",
         "date_sold",
         "location",
+        "general_condition",
     ]
     if include_diff and "odometer_diff" in df.columns:
         display_columns.append("odometer_diff")

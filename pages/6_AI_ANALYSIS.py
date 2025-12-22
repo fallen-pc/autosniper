@@ -1199,7 +1199,9 @@ def safe_display(value: object, default: str = "--") -> str:
     if isinstance(value, float) and pd.isna(value):
         return default
     text = str(value).strip()
-    return text or default
+    if text.lower() in {"", "nan", "none", "null"}:
+        return default
+    return text
 
 
 def render_spec_list(
