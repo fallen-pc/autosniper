@@ -1357,9 +1357,6 @@ def render_vehicle_summary(row: pd.Series) -> None:
         ("Current Price", "current_price", lambda _value, current_row: _format_price_or_dash(current_row)),
         ("Time Remaining", "time_remaining_or_date_sold", lambda _value, current_row: _format_time_remaining(current_row)),
         ("Bids", "bids"),
-        ("Location", "location"),
-        ("Odometer", "odometer_reading", lambda value, current_row: format_listing_odometer(value, current_row.get("odometer_unit"))),
-        ("Transmission", "transmission"),
     ]
 
     spec_html = render_spec_list(row, spec_fields)
