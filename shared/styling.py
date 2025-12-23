@@ -303,8 +303,14 @@ _BASE_STYLES = textwrap.dedent(
     .ai-card-title-group {
         display: flex;
         flex-direction: column;
-        gap: 0.55rem;
+        gap: 0.45rem;
         min-width: 260px;
+    }
+    .ai-card-meta {
+        font-size: 0.9rem;
+        color: var(--autosniper-muted);
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
     }
     .ai-card-title {
         font-size: clamp(2.1rem, 2vw + 1.3rem, 2.7rem);
@@ -408,10 +414,11 @@ _BASE_STYLES = textwrap.dedent(
         margin-bottom: 1rem;
     }
     .ai-spec-item {
-        background: rgba(26, 33, 48, 0.9);
+        background: rgba(26, 33, 48, 0.85);
         border: 1px solid var(--autosniper-border);
         border-radius: 16px;
         padding: 0.7rem 0.9rem;
+        box-shadow: 0 18px 32px rgba(0, 0, 0, 0.16);
     }
     .ai-spec-wrapper {
         position: relative;
