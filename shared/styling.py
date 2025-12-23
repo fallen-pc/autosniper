@@ -439,7 +439,7 @@ _BASE_STYLES = textwrap.dedent(
     .ai-spec-value {
         font-size: 1rem;
         font-weight: 600;
-        color: var(--autosniper-primary);
+        color: var(--autosniper-text);
     }
     .ai-condition-column {
         background: rgba(26, 33, 48, 0.92);
