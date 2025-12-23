@@ -1260,7 +1260,7 @@ def safe_display(value: object, default: str = "--") -> str:
 def render_spec_list(
     row: pd.Series,
     fields: Iterable[tuple[str, str] | tuple[str, str, Callable[..., str]]],
-) -> str:
+) -> bool:
     entries: list[tuple[str, str]] = []
 
     for field in fields:
@@ -1287,16 +1287,12 @@ def render_spec_list(
         entries.append((label, str(display_value)))
 
     if not entries:
-        return ""
+        return False
 
-    items_html = "".join(
-        f"<div class='ai-spec-item ai-card-stat'>"
-        f"<div class='ai-spec-label ai-card-stat-label'>{html.escape(label)}</div>"
-        f"<div class='ai-spec-value ai-card-stat-value'>{html.escape(value)}</div>"
-        "</div>"
-        for label, value in entries
-    )
-    return f"<div class='ai-spec-list'>{items_html}</div>"
+    metric_cols = st.columns(len(entries))
+    for column, (label, value) in zip(metric_cols, entries):
+        column.metric(label, value)
+    return True
 
 
 def format_condition_entries(row: pd.Series) -> tuple[str | None, list[tuple[str, str]], list[str]]:
@@ -1371,12 +1367,12 @@ def render_vehicle_summary(row: pd.Series) -> None:
         ("Bids", "bids"),
     ]
 
-    spec_html = render_spec_list(row, spec_fields)
+    has_metrics = render_spec_list(row, spec_fields)
     summary, badges, _ = format_condition_entries(row)
 
-    if spec_html:
-        actions_html = f"<div class='ai-spec-actions'>{view_link}</div>" if view_link else ""
-        st.markdown(f"<div class='ai-spec-wrapper'>{actions_html}{spec_html}</div>", unsafe_allow_html=True)
+    if has_metrics:
+        if view_link:
+            st.markdown(f"<div class='ai-spec-actions'>{view_link}</div>", unsafe_allow_html=True)
     else:
         if view_link:
             st.markdown(f"<div class='ai-spec-actions'>{view_link}</div>", unsafe_allow_html=True)
