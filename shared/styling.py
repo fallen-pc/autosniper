@@ -414,11 +414,9 @@ _BASE_STYLES = textwrap.dedent(
         margin-bottom: 1rem;
     }
     .ai-spec-item {
-        background: rgba(26, 33, 48, 0.85);
-        border: 1px solid var(--autosniper-border);
-        border-radius: 16px;
-        padding: 0.7rem 0.9rem;
-        box-shadow: 0 18px 32px rgba(0, 0, 0, 0.16);
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
     }
     .ai-spec-wrapper {
         position: relative;
@@ -428,18 +426,9 @@ _BASE_STYLES = textwrap.dedent(
         justify-content: flex-end;
         margin-bottom: 0.35rem;
     }
-    .ai-spec-label {
-        font-size: 0.72rem;
-        text-transform: uppercase;
-        letter-spacing: 0.12em;
-        color: var(--autosniper-muted);
-        margin-bottom: 0.2rem;
-        display: block;
-    }
+    .ai-spec-label,
     .ai-spec-value {
-        font-size: 1rem;
-        font-weight: 600;
-        color: var(--autosniper-text);
+        color: inherit;
     }
     .ai-condition-column {
         background: rgba(26, 33, 48, 0.92);

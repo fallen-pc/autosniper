@@ -1216,7 +1216,17 @@ def render_listing_header(
         else ""
     )
 
-    card_body = ""
+    meta_entries: list[str] = []
+    transmission_text = _safe_label(row.get("transmission"))
+    if transmission_text != "N/A":
+        meta_entries.append(html.escape(transmission_text))
+    fuel_text = _safe_label(row.get("fuel_type"))
+    if fuel_text != "N/A":
+        meta_entries.append(html.escape(fuel_text))
+    meta_html = ""
+    if meta_entries:
+        meta_html = f"<div class='ai-card-meta'>{' • '.join(meta_entries)}</div>"
+    card_body = meta_html
 
     inner_html = f"""
     <div class="ai-card-header">
@@ -1280,8 +1290,10 @@ def render_spec_list(
         return ""
 
     items_html = "".join(
-        f"<div class='ai-spec-item'><div class='ai-spec-label'>{html.escape(label)}</div>"
-        f"<div class='ai-spec-value'>{html.escape(value)}</div></div>"
+        f"<div class='ai-spec-item ai-card-stat'>"
+        f"<div class='ai-spec-label ai-card-stat-label'>{html.escape(label)}</div>"
+        f"<div class='ai-spec-value ai-card-stat-value'>{html.escape(value)}</div>"
+        "</div>"
         for label, value in entries
     )
     return f"<div class='ai-spec-list'>{items_html}</div>"
@@ -1474,6 +1486,7 @@ def render_comparison_section(row: pd.Series) -> None:
         render_closest_matches_section(row)
         return
 
+    match_url = _match_value(best_match, "url", "URL", "_source_url", "source_url")
     comparison_rows = [
         ("Odometer", current_odometer, match_odometer),
         ("Location", current_location, match_location),
@@ -1509,6 +1522,9 @@ def render_comparison_section(row: pd.Series) -> None:
         "<div class='ai-comparison-table'>" + "".join(table_rows) + "</div>",
         unsafe_allow_html=True,
     )
+    if isinstance(match_url, str) and match_url.strip():
+        safe_link = html.escape(match_url.strip())
+        st.markdown(f"<a class='ai-card-link-button' href='{safe_link}' target='_blank' rel='noopener noreferrer'>View closest auction match</a>", unsafe_allow_html=True)
 
     current_price_metric = _format_price_or_dash(row)
     previous_price_metric = format_price_value(best_match.get("final_price_numeric"))
