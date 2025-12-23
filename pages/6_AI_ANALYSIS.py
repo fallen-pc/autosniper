@@ -2371,12 +2371,6 @@ with tabs[0]:
                 header_html = render_listing_header(row, wrap_card=False, render=False)
                 st.markdown(header_html, unsafe_allow_html=True)
 
-                status_note = ""
-                if row.get("priced_below_history") in (False, 0, None):
-                    status_note = "Currently above historical medians."
-                if status_note:
-                    st.caption(status_note)
-
                 render_vehicle_summary(row)
                 render_comparison_section(row)
                 render_carsales_section(row)
@@ -2448,7 +2442,7 @@ with tabs[0]:
 
                         rendered = True
 
-                st.markdown("</div>", unsafe_allow_html=True)
+                st.markdown("<div style='display:none'></div></div>", unsafe_allow_html=True)
 
 
 
@@ -2578,7 +2572,7 @@ with tabs[1]:
 
                     render_ai_result(row["url"], row)
 
-                st.markdown("</div>", unsafe_allow_html=True)
+                st.markdown("<div style='display:none'></div></div>", unsafe_allow_html=True)
 
 
 
