@@ -212,6 +212,16 @@ def read_general_condition(soup: BeautifulSoup) -> str:
         if paragraphs:
             return "\n".join(paragraphs)
 
+    legacy_note = soup.find("strong", string=re.compile("condition assessment", re.IGNORECASE))
+    if legacy_note:
+        parent = legacy_note.find_parent("p")
+        if parent:
+            next_list = parent.find_next_sibling("ul")
+            if next_list:
+                bullet_items = filter_condition_entries(safe_get_text(li) for li in next_list.find_all("li"))
+                if bullet_items:
+                    return "\n".join(bullet_items)
+
     condition = extract_bullets(soup, "condition")
     if condition:
         filtered_condition = filter_condition_entries(condition.splitlines())

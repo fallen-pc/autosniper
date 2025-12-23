@@ -1376,13 +1376,6 @@ def render_vehicle_summary(row: pd.Series) -> None:
     if summary:
         st.markdown(f"<div class='ai-condition-summary'>{html.escape(summary)}</div>", unsafe_allow_html=True)
 
-    if badges:
-        badge_html = "".join(
-            f"<span class='ai-card-condition-badge'><strong>{html.escape(label)}:</strong> {html.escape(value)}</span>"
-            for label, value in badges
-        )
-        st.markdown(f"<div class='ai-card-condition-badges'>{badge_html}</div>", unsafe_allow_html=True)
-
 
 def _format_time_remaining(row: pd.Series) -> str:
     value = row.get("time_remaining_or_date_sold")
@@ -1488,8 +1481,21 @@ def render_comparison_section(row: pd.Series) -> None:
         ("Odometer", current_odometer, match_odometer),
         ("Location", current_location, match_location),
         ("Registered", current_registered, match_registered),
-        ("Condition Notes", current_condition, match_condition),
     ]
+
+    yes_no_fields = [
+        ("Key", "key", ("Key", "key")),
+        ("Spare Key", "spare_key", ("Spare Key", "spare_key")),
+        ("Owner's Manual", "owners_manual", ("Owner's Manual", "owners_manual")),
+        ("Service History", "service_history", ("Service History", "service_history")),
+        ("Engine Turns Over", "engine_turns_over", ("Engine Turns Over", "engine_turns_over")),
+    ]
+    for label, column, match_keys in yes_no_fields:
+        current_value = safe_display(row.get(column))
+        match_value = safe_display(_match_value(best_match, *match_keys))
+        comparison_rows.append((label, current_value, match_value))
+
+    comparison_rows.append(("Condition Notes", current_condition, match_condition))
     table_rows = [
         "<div class='ai-comparison-table-row ai-comparison-table-header'>"
         "<div></div><div>Current Auction</div><div>Closest Historical Sale</div></div>"
@@ -1776,6 +1782,12 @@ def get_closest_matches(
             ),
             "odometer_diff": odo_diff,
         }
+        for field in ("key", "spare_key", "owners_manual", "service_history", "engine_turns_over"):
+            mapped_entry[field] = (
+                entry.get(field)
+                or entry.get(field.replace("_", " ").title())
+                or entry.get(field.replace("_", " "))
+            )
 
 
 
