@@ -1353,7 +1353,6 @@ def extract_best_match_entry(row: pd.Series) -> tuple[dict[str, object] | None, 
 
 
 def render_vehicle_summary(row: pd.Series) -> None:
-    st.markdown("### Vehicle Snapshot")
     url = row.get("url")
     view_link = ""
     if isinstance(url, str) and url.strip():
@@ -1368,8 +1367,6 @@ def render_vehicle_summary(row: pd.Series) -> None:
     ]
 
     has_metrics = render_spec_list(row, spec_fields)
-    summary, badges, _ = format_condition_entries(row)
-
     if has_metrics:
         if view_link:
             st.markdown(f"<div class='ai-spec-actions'>{view_link}</div>", unsafe_allow_html=True)
@@ -1377,10 +1374,6 @@ def render_vehicle_summary(row: pd.Series) -> None:
         if view_link:
             st.markdown(f"<div class='ai-spec-actions'>{view_link}</div>", unsafe_allow_html=True)
         st.caption("No auction metrics captured yet.")
-
-    if summary:
-        st.markdown(f"<div class='ai-condition-summary'>{html.escape(summary)}</div>", unsafe_allow_html=True)
-
 
 def _format_time_remaining(row: pd.Series) -> str:
     value = row.get("time_remaining_or_date_sold")
