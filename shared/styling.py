@@ -283,13 +283,13 @@ _BASE_STYLES = textwrap.dedent(
         padding: 1.9rem 2.2rem;
         margin-bottom: 1.7rem;
     }
-    .ai-listing-wrapper {
-        margin: 1.75rem 0;
-        padding-bottom: 1.5rem;
-    }
-    .ai-listing-wrapper h3 {
-        margin-top: 1.6rem;
-        margin-bottom: 0.85rem;
+    div[data-testid="stVerticalBlock"].ai-card-wrapper {
+        background: var(--autosniper-surface);
+        border: 1px solid var(--autosniper-border);
+        border-radius: 26px;
+        box-shadow: none;
+        padding: 1.9rem 2.2rem;
+        margin: 1.75rem 0 1.7rem;
     }
     .ai-card-header {
         display: flex;

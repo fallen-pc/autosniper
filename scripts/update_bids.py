@@ -205,13 +205,7 @@ async def fetch_listing_data(url, page, browser, playwright):
             price, bids, time_remaining, date_sold, is_referred, is_active = extract_bid_info(soup)
             return price, bids, time_remaining, date_sold, is_referred, is_active, browser, page
         else:
-            try:
-                content = await page.content()
-                with open(f"error_{url.split('/')[-1]}.html", "w", encoding="utf-8") as f:
-                    f.write(content)
-                print(f"  Saved HTML to error_{url.split('/')[-1]}.html")
-            except:
-                print(f"  No content available to save for {url}")
+            print(f"  Failed to load {url}; marking as skipped.")
             return "N/A", "0", None, None, False, False, browser, page
     except Exception as e:
         print(f"Critical fetch error for {url}: {e}. Restarting browser.")

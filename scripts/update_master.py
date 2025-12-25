@@ -24,6 +24,8 @@ ACTIVE_FILE = DATA_DIR / "active_vehicle_details.csv"
 
 DEDUP_KEYS: Sequence[str] = ("url", "vin")
 REFERRED_STATUSES = {"referred", "canceled", "cancelled", "closed"}
+EXCLUDED_VARIANT_KEYWORDS = ("motorcycle",)
+SOLD_REDUNDANT_COLUMNS = ("time_remaining_or_date_sold", "final_price", "final_bids", "status")
 
 
 def _load_dataframe(path: Path) -> pd.DataFrame:
@@ -83,6 +85,10 @@ def _prepare_sold_rows(frame: pd.DataFrame) -> pd.DataFrame:
             if not mask.any():
                 break
     prepared["sale_price"] = prepared["sale_price"].fillna("")
+    drop_cols = [column for column in SOLD_REDUNDANT_COLUMNS if column in prepared.columns]
+    if drop_cols:
+        prepared = prepared.drop(columns=drop_cols)
+        print(f"Pruned redundant sold columns: {drop_cols}")
     return prepared
 
 
@@ -150,6 +156,18 @@ def _merge_preserving_history(
     print(f"{label.title()} listings saved to {path} (total {len(combined)}, +{added}).")
 
 
+def _remove_excluded_variants(frame: pd.DataFrame) -> pd.DataFrame:
+    if frame.empty or "variant" not in frame.columns:
+        return frame
+    variant_series = frame["variant"].astype(str)
+    mask = variant_series.str.contains("|".join(EXCLUDED_VARIANT_KEYWORDS), case=False, na=False)
+    removed = int(mask.sum())
+    if removed:
+        frame = frame.loc[~mask].copy()
+        print(f"Filtered out {removed} listing(s) based on variant keywords: {EXCLUDED_VARIANT_KEYWORDS}.")
+    return frame
+
+
 def update_master_database() -> None:
     if not DETAILS_FILE.exists():
         print(f"Missing source file: {DETAILS_FILE}")
@@ -160,6 +178,7 @@ def update_master_database() -> None:
         print(f"{DETAILS_FILE} is empty; nothing to process.")
         return
 
+    df = _remove_excluded_variants(df)
     df["status"] = df["status"].astype(str).str.strip().str.lower()
 
     sold_df = df[df["status"] == "sold"].copy()

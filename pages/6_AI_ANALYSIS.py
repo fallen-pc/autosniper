@@ -1,7 +1,6 @@
 import asyncio
 
 import html
-
 import json
 
 import os
@@ -192,15 +191,6 @@ def build_comparison_dataframe(min_hours: float, max_hours: float) -> tuple[pd.D
 
 
 
-
-# Manual refresh to pick up latest CSV/manual entries immediately.
-if st.button("Refresh data"):
-    get_active_listings.clear()
-    get_historical_sales.clear()
-    build_comparison_dataframe.clear()
-    st.session_state.pop("ai_listing_cache", None)
-    st.session_state.pop("ai_listing_cache_version", None)
-    st.rerun()
 
 active_snapshot, comparison_df = build_comparison_dataframe(selected_min_hours, selected_max_hours)
 comparison_df = comparison_df.copy()
@@ -421,23 +411,6 @@ comparison_df["_has_manual_carsales"] = (
 show_only_manual = st.sidebar.checkbox("Show only listings with manual Carsales", value=True)
 if show_only_manual:
     comparison_df = comparison_df[comparison_df["_has_manual_carsales"]].copy()
-
-if st.button("Run full AI analysis"):
-    if client is None:
-        st.error("OpenAI API key not set; cannot run AI analysis.")
-    else:
-        errors: list[str] = []
-        with st.spinner("Running AI pricing across listings..."):
-            for _, row in comparison_df.iterrows():
-                result = run_ai_listing_analysis(row)
-                if result.get("error"):
-                    errors.append(str(row.get("url", "unknown")))
-        refresh_ai_cache()
-        if errors:
-            st.warning(f"AI analysis completed with {len(errors)} errors.")
-        else:
-            st.success("AI analysis refreshed for all listings.")
-        st.rerun()
 
 focus_url = st.session_state.pop("ai_focus_url", None)
 
@@ -1151,6 +1124,56 @@ def format_listing_odometer(value: object, unit: object) -> str:
 
 
 
+def _run_dom_cleanup_script(script_body: str) -> None:
+    components.html(
+        f"<script>(function(){{{script_body}}})()</script>",
+        height=0,
+    )
+
+
+def mark_listing_container(anchor_id: str) -> None:
+    """Add the AI card styling class to the container that holds the anchor."""
+    if not anchor_id:
+        return
+    anchor_js = json.dumps(anchor_id)
+    script = f"""
+        const anchorId = {anchor_js};
+        const anchor = window.parent.document.getElementById(anchorId);
+        if (!anchor) return;
+        let node = anchor;
+        while (node && !(node.getAttribute && node.getAttribute('data-testid') === 'stVerticalBlock')) {{
+            node = node.parentElement;
+        }}
+        if (node && node.classList && !node.classList.contains('ai-card-wrapper')) {{
+            node.classList.add('ai-card-wrapper');
+        }}
+    """
+    _run_dom_cleanup_script(script)
+
+
+def hide_stray_div_code_blocks() -> None:
+    """Hide any literal '</div>' code blocks Streamlit may render."""
+    script = """
+        const doc = window.parent.document;
+        function sweep() {
+            const blocks = doc.querySelectorAll("div[data-testid='stCodeBlock']");
+            blocks.forEach(block => {
+                const text = block.textContent.trim();
+                if (text === "</div>" || text === "<div>" || text === "</style></div>") {
+                    block.style.display = "none";
+                }
+            });
+        }
+        sweep();
+        const observer = new MutationObserver(() => sweep());
+        observer.observe(doc.body, { childList: true, subtree: true });
+    """
+    _run_dom_cleanup_script(script)
+
+
+hide_stray_div_code_blocks()
+
+
 def render_listing_header(
     row: pd.Series,
     *,
@@ -1225,18 +1248,19 @@ def render_listing_header(
         meta_entries.append(html.escape(fuel_text))
     meta_html = ""
     if meta_entries:
-        meta_html = f"<div class='ai-card-meta'>{' • '.join(meta_entries)}</div>"
+        meta_html = f"<div class='ai-card-meta'>{' | '.join(meta_entries)}</div>"
     card_body = meta_html
 
     inner_html = f"""
     <div class="ai-card-header">
         <div class="ai-card-title-group">
-            <div class="ai-card-title">{title_text}</div>
             {subtitle_html}
+            <div class="ai-card-title">{title_text}</div>
         </div>
     </div>
     {card_body}
     """
+    inner_html = textwrap.dedent(inner_html).strip()
     if wrap_card:
         rendered_html = f"<div class='ai-card'>{inner_html}</div>"
     else:
@@ -1395,6 +1419,20 @@ def _format_price_or_dash(row: pd.Series) -> str:
     if raw_price in (None, "", "None") or (isinstance(raw_price, float) and pd.isna(raw_price)):
         return "--"
     return format_price_value(raw_price)
+
+
+def format_percentage_value(value: object) -> str:
+    if value in (None, "", "None") or (isinstance(value, float) and pd.isna(value)):
+        return "--"
+    text = str(value).strip()
+    if not text:
+        return "--"
+    if text.endswith("%"):
+        return text
+    try:
+        return f"{float(text):.1f}%"
+    except Exception:  # noqa: BLE001
+        return text
 
 
 def render_comparison_section(row: pd.Series) -> None:
@@ -1556,6 +1594,28 @@ def render_carsales_section(row: pd.Series) -> None:
         st.dataframe(parsed_table, use_container_width=True, hide_index=True)
     else:
         st.caption("Add manual Carsales comparisons to see them here.")
+
+
+def _build_action_key(row: pd.Series, prefix: str) -> str:
+    anchor = build_anchor_id(row.get("url"))
+    fallback = row.get("lot_number") or row.get("id") or row.name or "idx"
+    fallback_safe = re.sub(r"[^a-z0-9]+", "-", str(fallback).lower()).strip("-")
+    return f"{prefix}-{anchor}-{fallback_safe}"
+
+
+def render_ai_analysis_button(row: pd.Series, prefix: str) -> bool:
+    """Render a per-listing AI analysis trigger button."""
+    button_key = _build_action_key(row, prefix)
+    if st.button("Run AI Analysis", key=button_key):
+        with st.spinner("Running AI analysis for this listing..."):
+            result = run_ai_listing_analysis(row, force_refresh=True)
+        if result.get("error"):
+            st.error(result["error"])
+            return False
+        refresh_ai_cache()
+        st.success("AI pricing analysis refreshed.")
+        return True
+    return False
 
 
 def format_confidence_notes(notes: object) -> list[str]:
@@ -2185,24 +2245,26 @@ def render_ai_result(url: str, listing_row: Optional[pd.Series] = None) -> None:
     max_bid = format_price_value(record_data.get("recommended_max_bid"))
     expected_profit = format_price_value(record_data.get("expected_profit"))
     score = safe_display(record_data.get("score_out_of_10"))
-    margin = safe_display(record_data.get("profit_margin_percent"))
+    margin = format_percentage_value(record_data.get("profit_margin_percent"))
     timestamp = safe_display(record_data.get("analysis_timestamp"))
 
     metrics = st.columns(4)
-    metrics[0].metric("AI Carsales Estimate", ai_estimate)
-    metrics[1].metric("Recommended Max Bid", max_bid)
-    metrics[2].metric("Expected Profit", expected_profit)
+    metrics[0].metric("Recommended Max Bid", max_bid or "--")
+    metrics[1].metric("Expected Profit", expected_profit or "--")
+    metrics[2].metric("Profit %", margin or "--")
     metrics[3].metric("Score /10", score or "--")
 
     st.caption(
-        f"Profit margin: {margin or '--'} | Last analysed: {timestamp or '—'}"
+        f"AI estimate: {ai_estimate or '--'} | Recommended max bid: {max_bid or '--'} | Last analysed: {timestamp or '—'}"
     )
 
     note_entries = format_confidence_notes(record_data.get("confidence_notes"))
+    st.markdown("**Relevant Notes**")
     if note_entries:
-        st.markdown("**AI Notes**")
         for entry in note_entries:
             st.markdown(f"- {entry}")
+    else:
+        st.markdown("- No AI notes yet.")
 
 comparison_df["_match_count_numeric"] = comparison_df["historical_match_count"].apply(coerce_positive_int)
 
@@ -2231,28 +2293,6 @@ st.markdown(
 
 
 current_urls = comparison_df["url"].dropna().tolist()
-
-refresh_cols = st.columns(2)
-
-with refresh_cols[0]:
-
-    if st.button("Refresh listings in current window"):
-
-        if not current_urls:
-
-            st.info("No URLs to refresh.")
-
-        else:
-
-            with st.spinner(f"Refreshing {time_window_refresh_text}..."):
-
-                trigger_bid_refresh(current_urls, "ai_refresh_status")
-
-            st.rerun()
-
-with refresh_cols[1]:
-
-    st.caption("Use the dashboard refresh for a full update.")
 
 
 
@@ -2362,95 +2402,20 @@ with tabs[0]:
 
             anchor_id = build_anchor_id(row.get("url"))
 
-            st.markdown(f"<div id='{anchor_id}'></div>", unsafe_allow_html=True)
-
             with st.container():
 
-                st.markdown("<div class='ai-card ai-listing-wrapper'>", unsafe_allow_html=True)
-
+                st.markdown(f"<div id='{anchor_id}'></div>", unsafe_allow_html=True)
                 header_html = render_listing_header(row, wrap_card=False, render=False)
                 st.markdown(header_html, unsafe_allow_html=True)
 
                 render_vehicle_summary(row)
                 render_comparison_section(row)
                 render_carsales_section(row)
+                render_ai_analysis_button(row, prefix="hist")
                 st.markdown("### Verdict")
+                render_ai_result(row["url"], row)
 
-                action_col, rerun_col, full_col = st.columns([1, 1, 1])
-
-                rendered = False
-
-                if action_col.button(
-
-                    "Run AI Carsales Check",
-
-                    key=f"ai_run_{row['url']}"
-
-                ):
-
-                    with st.spinner("Consulting AI for Carsales pricing..."):
-
-                        result = run_ai_listing_analysis(row)
-
-                    if result.get("error"):
-
-                        st.error(result["error"])
-
-                    else:
-
-                        refresh_ai_cache()
-
-                        st.success(
-
-                            "AI pricing analysis completed."
-
-                            if not result.get("cached")
-
-                            else "Loaded cached AI pricing analysis."
-
-                        )
-
-                        render_ai_result(row["url"], row)
-
-                        rendered = True
-
-
-
-                if rerun_col.button(
-
-                    "Re-run AI Analysis",
-
-                    key=f"ai_rerun_{row['url']}"
-
-                ):
-
-                    with st.spinner("Refreshing AI valuation..."):
-
-                        result = run_ai_listing_analysis(row, force_refresh=True)
-
-                    if result.get("error"):
-
-                        st.error(result["error"])
-
-                    else:
-
-                        refresh_ai_cache()
-
-                        st.success("AI pricing analysis refreshed.")
-
-                        render_ai_result(row["url"], row)
-
-                        rendered = True
-
-                st.markdown("<div style='display:none'></div></div>", unsafe_allow_html=True)
-
-
-
-                if not rendered:
-
-                    render_ai_result(row["url"], row)
-
-
+            mark_listing_container(anchor_id)
 
             if focus_url and isinstance(row.get("url"), str) and row["url"] == focus_url:
 
@@ -2486,95 +2451,19 @@ with tabs[1]:
 
             anchor_id = build_anchor_id(row.get("url"))
 
-            st.markdown(f"<div id='{anchor_id}'></div>", unsafe_allow_html=True)
-
             with st.container():
 
-                st.markdown("<div class='ai-card ai-listing-wrapper'>", unsafe_allow_html=True)
-
+                st.markdown(f"<div id='{anchor_id}'></div>", unsafe_allow_html=True)
                 header_html = render_listing_header(row, wrap_card=False, render=False)
                 st.markdown(header_html, unsafe_allow_html=True)
 
                 render_vehicle_summary(row)
                 render_comparison_section(row)
                 render_carsales_section(row)
+                render_ai_analysis_button(row, prefix="nohist")
                 st.markdown("### Verdict")
-
-                action_col, rerun_col = st.columns([1, 1])
-
-                rendered = False
-
-                if action_col.button(
-
-                    "Run AI Carsales Check",
-
-                    key=f"ai_run_nohist_{row['url']}",
-
-                ):
-
-                    with st.spinner("Consulting AI for Carsales pricing..."):
-
-                        result = run_ai_listing_analysis(row)
-
-                    if result.get("error"):
-
-                        st.error(result["error"])
-
-                    else:
-
-                        refresh_ai_cache()
-
-                        st.success(
-
-                            "AI pricing analysis completed."
-
-                            if not result.get("cached")
-
-                            else "Loaded cached AI pricing analysis."
-
-                        )
-
-                        render_ai_result(row["url"], row)
-
-                        rendered = True
-
-
-
-                if rerun_col.button(
-
-                    "Re-run AI Analysis",
-
-                    key=f"ai_rerun_nohist_{row['url']}",
-
-                ):
-
-                    with st.spinner("Refreshing AI valuation..."):
-
-                        result = run_ai_listing_analysis(row, force_refresh=True)
-
-                    if result.get("error"):
-
-                        st.error(result["error"])
-
-                    else:
-
-                        refresh_ai_cache()
-
-                        st.success("AI pricing analysis refreshed.")
-
-                        render_ai_result(row["url"], row)
-
-                        rendered = True
-
-
-
-                if not rendered:
-
-                    render_ai_result(row["url"], row)
-
-                st.markdown("<div style='display:none'></div></div>", unsafe_allow_html=True)
-
-
+                render_ai_result(row["url"], row)
+            mark_listing_container(anchor_id)
 
             if focus_url and isinstance(row.get("url"), str) and row["url"] == focus_url:
 
