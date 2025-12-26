@@ -273,7 +273,7 @@ def load_historical_sales(
 
     price_columns = [
         column
-        for column in ("final_price", "price", "sold_price", "hammer_price")
+        for column in ("final_price", "price", "sold_price", "hammer_price", "sale_price")
         if column in sold_df.columns
     ]
 
@@ -493,13 +493,57 @@ def compare_active_to_history(
             active_transmission = _norm(active_row.get("transmission"))
             if active_transmission:
                 trans_series = filtered["transmission"].astype(str).str.lower().str.strip()
-                filtered = filtered[trans_series == active_transmission]
+
+                def _trans_keyword(text: str) -> str | None:
+                    keywords = [
+                        "manual",
+                        "auto",
+                        "automatic",
+                        "cvt",
+                        "dual clutch",
+                        "dsg",
+                        "tiptronic",
+                    ]
+                    for keyword in keywords:
+                        if keyword in text:
+                            return keyword
+                    return None
+
+                keyword = _trans_keyword(active_transmission)
+                candidate = (
+                    filtered[trans_series == active_transmission]
+                    if keyword is None
+                    else filtered[trans_series.str.contains(keyword, regex=False)]
+                )
+                if not candidate.empty:
+                    filtered = candidate
 
         if "fuel_type" in filtered.columns:
             active_fuel = _norm(active_row.get("fuel_type"))
             if active_fuel:
                 fuel_series = filtered["fuel_type"].astype(str).str.lower().str.strip()
-                filtered = filtered[fuel_series == active_fuel]
+
+                def _fuel_keyword(text: str) -> str | None:
+                    keywords = [
+                        "diesel",
+                        "petrol",
+                        "gasoline",
+                        "electric",
+                        "hybrid",
+                    ]
+                    for keyword in keywords:
+                        if keyword in text:
+                            return keyword
+                    return None
+
+                keyword = _fuel_keyword(active_fuel)
+                candidate = (
+                    filtered[fuel_series == active_fuel]
+                    if keyword is None
+                    else filtered[fuel_series.str.contains(keyword, regex=False)]
+                )
+                if not candidate.empty:
+                    filtered = candidate
 
         return filtered
     summaries = []
