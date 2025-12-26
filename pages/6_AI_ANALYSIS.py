@@ -277,6 +277,20 @@ def _load_ai_cache() -> pd.DataFrame:
 valuations_cache = _load_ai_cache()
 valuation_columns = [
     "analysis_timestamp",
+    # Risk-banded outputs
+    "resale_low",
+    "resale_mid",
+    "resale_high",
+    "net_profit_mid",
+    "net_profit_worst",
+    "fees_estimate",
+    "transport_estimate",
+    "rego_estimate",
+    "prep_estimate",
+    "confidence",
+    "risk_flags",
+    "verdict",
+    # Legacy fields
     "carsales_price_estimate",
     "carsales_price_range",
     "recommended_max_bid",
@@ -412,6 +426,18 @@ show_only_manual = st.sidebar.checkbox("Show only listings with manual Carsales"
 if show_only_manual:
     comparison_df = comparison_df[comparison_df["_has_manual_carsales"]].copy()
 
+st.sidebar.markdown("### Verdict Filters")
+sniper_only = st.sidebar.checkbox("Sniper-only (hide Avoid/Trap)", value=False)
+
+if sniper_only and "verdict" in comparison_df.columns:
+    comparison_df = comparison_df[~comparison_df["verdict"].isin(["Avoid", "Trap"])].copy()
+
+if "net_profit_worst" in comparison_df.columns and "confidence" in comparison_df.columns:
+    net_worst_numeric = comparison_df["net_profit_worst"].apply(coerce_price).fillna(0)
+    confidence_numeric = pd.to_numeric(comparison_df["confidence"], errors="coerce").fillna(0)
+    comparison_df["_edge_score"] = net_worst_numeric * confidence_numeric
+    comparison_df = comparison_df.sort_values("_edge_score", ascending=False).copy()
+
 focus_url = st.session_state.pop("ai_focus_url", None)
 
 # Vehicle-level sidebar filters aligned with Active Listings view.
@@ -419,8 +445,6 @@ focus_url = st.session_state.pop("ai_focus_url", None)
 st.sidebar.markdown("### Vehicle Filters")
 vehicle_toggles = render_vehicle_filter_toggles(container=st.sidebar, key_prefix="ai_")
 comparison_df = apply_vehicle_filters(comparison_df, vehicle_toggles)
-
-
 
 if comparison_df.empty:
 
@@ -799,6 +823,75 @@ def build_anchor_id(url: object) -> str:
     safe = re.sub(r"[^a-z0-9]+", "-", url.lower()).strip("-")
 
     return f"listing-{safe}" if safe else "listing-top"
+
+
+def _match_selection_key(url: object) -> str:
+
+    anchor = build_anchor_id(url)
+
+    return f"match-selection-{anchor}"
+
+
+def _get_selected_match_index(row: pd.Series, total_matches: int) -> int:
+
+    if total_matches <= 0:
+
+        return 0
+
+    key = _match_selection_key(row.get("url"))
+
+    raw_value = st.session_state.get(key, 0)
+
+    try:
+
+        index = int(raw_value)
+
+    except (TypeError, ValueError):
+
+        index = 0
+
+    if index < 0 or index >= total_matches:
+
+        index = 0
+
+    st.session_state[key] = index
+
+    return index
+
+
+def _format_match_label(entry: Mapping[str, object], idx: int) -> str:
+
+    year = entry.get("year") or entry.get("Year") or ""
+
+    make = entry.get("make") or entry.get("Make") or ""
+
+    model = entry.get("model") or entry.get("Model") or ""
+
+    variant = entry.get("variant") or entry.get("Variant") or ""
+
+    title = " ".join(str(part).strip() for part in (year, make, model, variant) if str(part).strip())
+
+    price_text = format_price_value(entry.get("final_price_numeric") or entry.get("Price"))
+
+    odo_diff_val = entry.get("odometer_diff")
+
+    diff_text = ""
+
+    if odo_diff_val not in (None, "") and not (isinstance(odo_diff_val, float) and pd.isna(odo_diff_val)):
+
+        diff_text = f"Δ {format_odometer_diff(odo_diff_val)}"
+
+    location = entry.get("location") or entry.get("Location") or ""
+
+    detail_parts = [part for part in (price_text, diff_text, location) if part]
+
+    detail_text = " | ".join(detail_parts)
+
+    base_label = title or "Historical match"
+
+    suffix = f" ({detail_text})" if detail_text else ""
+
+    return f"{idx + 1}. {base_label}{suffix}"
 
 
 
@@ -1367,12 +1460,19 @@ def render_condition_column(row: pd.Series) -> str:
 
 def extract_best_match_entry(row: pd.Series) -> tuple[dict[str, object] | None, dict[str, float] | None]:
     try:
-        matches, summaries, _ = get_closest_matches(row)
+        matches, summaries, all_matches = get_closest_matches(row)
     except Exception:
         return None, None
 
-    best_match = matches[0] if matches else None
-    summary_entry = summaries[0] if summaries else None
+    selectable_entries = all_matches if all_matches else matches
+    if not selectable_entries:
+        return None, None
+
+    selected_index = _get_selected_match_index(row, len(selectable_entries))
+    best_match = selectable_entries[selected_index]
+    summary_entry = None
+    if summaries:
+        summary_entry = summaries[min(selected_index, len(summaries) - 1)]
     return best_match, summary_entry
 
 
@@ -1646,7 +1746,7 @@ def get_closest_matches(
 
     row: pd.Series,
 
-    max_odo_diff: float = 20000.0,
+    max_odo_diff: float = float("inf"),
 
 ) -> tuple[list[dict[str, object]], list[dict[str, float]], list[dict[str, object]]]:
 
@@ -1810,12 +1910,6 @@ def get_closest_matches(
 
             odo_diff = diff_value if diff_value is not None else None
 
-        if base_odo is not None and odo_diff is None:
-
-            continue
-
-
-
         price_input = entry.get("Price") or entry.get("final_price_numeric")
 
         price_val = parse_currency(price_input)
@@ -1975,31 +2069,39 @@ def render_closest_matches_section(row: pd.Series) -> None:
 
 
 
+    selection_labels = [_format_match_label(entry, idx) for idx, entry in enumerate(all_matches)]
+
+    selection_key = _match_selection_key(row.get("url"))
+
+    default_index = _get_selected_match_index(row, len(all_matches))
+
+    widget_key = f"{selection_key}-widget"
+
+    selected_index = st.radio(
+
+        "Choose a historical match to compare",
+
+        list(range(len(all_matches))),
+
+        index=default_index,
+
+        format_func=lambda idx: selection_labels[idx],
+
+        key=widget_key,
+
+    )
+
+    st.session_state[selection_key] = selected_index
+
+
+
     closest_keys = {make_key(entry) for entry in matches}
 
 
 
-    def diff_value(entry: dict[str, object]) -> float:
+    selected_entry = all_matches[selected_index]
 
-        diff = entry.get("odometer_diff")
-
-        if diff is None or (isinstance(diff, float) and pd.isna(diff)):
-
-            return float("inf")
-
-        try:
-
-            return abs(float(diff))
-
-        except (TypeError, ValueError):
-
-            return float("inf")
-
-
-
-    highlight_entry = min(all_matches, key=diff_value) if all_matches else None
-
-    highlight_key = make_key(highlight_entry) if highlight_entry else None
+    selected_key = make_key(selected_entry)
 
 
 
@@ -2015,7 +2117,7 @@ def render_closest_matches_section(row: pd.Series) -> None:
 
         entry_copy["_match_type"] = "Closest" if row_key in closest_keys else "Similar"
 
-        entry_copy["_highlight"] = row_key == highlight_key
+        entry_copy["_highlight"] = row_key == selected_key
 
         table_rows.append(entry_copy)
 
@@ -2085,7 +2187,7 @@ def render_closest_matches_section(row: pd.Series) -> None:
 
 
 
-    df["Best Match"] = df["_highlight"].apply(lambda val: "Yes" if val else "")
+    df["Selected"] = df["_highlight"].apply(lambda val: "Yes" if val else "")
 
     df["Match Type"] = df["_match_type"]
 
@@ -2097,7 +2199,7 @@ def render_closest_matches_section(row: pd.Series) -> None:
 
         for col in [
 
-            "Best Match",
+            "Selected",
 
             "Match Type",
 
@@ -2135,7 +2237,7 @@ def render_closest_matches_section(row: pd.Series) -> None:
 
     def highlight_row(row: pd.Series) -> list[str]:
 
-        if row.get("Best Match") == "Yes":
+        if row.get("Selected") == "Yes":
 
             return ["background-color: rgba(72, 72, 88, 0.22);"] * len(row)
 
@@ -2248,15 +2350,51 @@ def render_ai_result(url: str, listing_row: Optional[pd.Series] = None) -> None:
     margin = format_percentage_value(record_data.get("profit_margin_percent"))
     timestamp = safe_display(record_data.get("analysis_timestamp"))
 
+    resale_low = format_price_value(record_data.get("resale_low"))
+    resale_mid = format_price_value(record_data.get("resale_mid")) or ai_estimate
+    resale_high = format_price_value(record_data.get("resale_high"))
+    net_profit_mid = format_price_value(record_data.get("net_profit_mid"))
+    net_profit_worst = format_price_value(record_data.get("net_profit_worst"))
+    confidence_raw = record_data.get("confidence")
+    try:
+        confidence_value = float(confidence_raw) if confidence_raw not in (None, "", "nan") else None
+    except (TypeError, ValueError):
+        confidence_value = None
+    risk_flags_raw = record_data.get("risk_flags")
+    verdict = safe_display(record_data.get("verdict"))
+
     metrics = st.columns(4)
-    metrics[0].metric("Recommended Max Bid", max_bid or "--")
-    metrics[1].metric("Expected Profit", expected_profit or "--")
-    metrics[2].metric("Profit %", margin or "--")
-    metrics[3].metric("Score /10", score or "--")
+    metrics[0].metric("Max Bid", max_bid or "--")
+    metrics[1].metric("Net Profit (Mid)", net_profit_mid or expected_profit or "--")
+    metrics[2].metric("Net Profit (Worst)", net_profit_worst or "--")
+    metrics[3].metric(
+        "Confidence",
+        f"{confidence_value * 100:,.0f}%" if confidence_value is not None else "--",
+    )
+
+    if resale_low or resale_high:
+        st.caption(
+            f"Resale range: {resale_low or '--'} – {resale_high or '--'} (mid {resale_mid or '--'})"
+        )
 
     st.caption(
-        f"AI estimate: {ai_estimate or '--'} | Recommended max bid: {max_bid or '--'} | Last analysed: {timestamp or '—'}"
+        f"AI estimate: {ai_estimate or resale_mid or '--'} | Profit %: {margin or '--'} | Last analysed: {timestamp or '—'}"
     )
+
+    if verdict and verdict != "--":
+        st.markdown(f"### Verdict: **{verdict}**")
+
+    if risk_flags_raw:
+        flags = [flag.strip() for flag in str(risk_flags_raw).split("|") if flag.strip()]
+        if flags:
+            st.markdown("**Risk flags:**")
+            st.markdown(
+                " ".join(
+                    f"<span class='ai-card-condition-badge'>{html.escape(flag)}</span>"
+                    for flag in flags
+                ),
+                unsafe_allow_html=True,
+            )
 
     note_entries = format_confidence_notes(record_data.get("confidence_notes"))
     st.markdown("**Relevant Notes**")
