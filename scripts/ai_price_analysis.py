@@ -769,6 +769,11 @@ def _prepare_match_rows(
         "date_sold": "Date Sold",
         "location": "Location",
         "general_condition": "Condition",
+        "key": "Key",
+        "spare_key": "Spare Key",
+        "owners_manual": "Owner's Manual",
+        "service_history": "Service History",
+        "engine_turns_over": "Engine Turns Over",
         "odometer_diff": "Odo Diff",
     }
     subset = subset.rename(columns=rename_map)
@@ -780,6 +785,11 @@ def _prepare_match_rows(
         "Variant",
         "Transmission",
         "Condition",
+        "Key",
+        "Spare Key",
+        "Owner's Manual",
+        "Service History",
+        "Engine Turns Over",
         "Odometer",
         "Price",
         "Date Sold",
