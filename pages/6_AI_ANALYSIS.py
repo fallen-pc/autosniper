@@ -1078,6 +1078,11 @@ def render_historical_table(rows: object, title: str, include_diff: bool = False
         "date_sold": "Date Sold",
         "location": "Location",
         "general_condition": "Condition",
+        "key": "Key",
+        "spare_key": "Spare Key",
+        "owners_manual": "Owner's Manual",
+        "service_history": "Service History",
+        "engine_turns_over": "Engine Turns Over",
         "odometer_diff": "Odo Diff",
     }
 
@@ -1132,25 +1137,21 @@ def render_historical_table(rows: object, title: str, include_diff: bool = False
 
 
     preferred_order = [
-
         "Year",
-
         "Make",
-
         "Model",
-
         "Variant",
-
         "Transmission",
-
         "Odometer",
-
         "Price",
-
         "Date Sold",
-
         "Location",
-
+        "Condition",
+        "Key",
+        "Spare Key",
+        "Owner's Manual",
+        "Service History",
+        "Engine Turns Over",
     ]
 
     if include_diff and "Odo Diff" in df.columns:
@@ -2128,27 +2129,22 @@ def render_closest_matches_section(row: pd.Series) -> None:
 
 
     rename_map = {
-
         "year": "Year",
-
         "make": "Make",
-
         "model": "Model",
-
         "variant": "Variant",
-
         "transmission": "Transmission",
-
         "odometer_reading": "Odometer",
-
         "final_price_numeric": "Price",
-
         "date_sold": "Date Sold",
-
         "location": "Location",
-
+        "general_condition": "Condition",
+        "key": "Key",
+        "spare_key": "Spare Key",
+        "owners_manual": "Owner's Manual",
+        "service_history": "Service History",
+        "engine_turns_over": "Engine Turns Over",
         "odometer_diff": "Odo Diff",
-
     }
 
     df = df.rename(columns=rename_map)
@@ -2194,41 +2190,28 @@ def render_closest_matches_section(row: pd.Series) -> None:
 
 
     display_columns = [
-
         col
-
         for col in [
-
             "Selected",
-
             "Match Type",
-
             "Year",
-
             "Make",
-
             "Model",
-
             "Variant",
-
             "Transmission",
-
             "Condition",
-
+            "Key",
+            "Spare Key",
+            "Owner's Manual",
+            "Service History",
+            "Engine Turns Over",
             "Odometer",
-
             "Odo Diff",
-
             "Price",
-
             "Date Sold",
-
             "Location",
-
         ]
-
         if col in df.columns
-
     ]
 
     display_df = df[display_columns]
