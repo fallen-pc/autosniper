@@ -768,6 +768,7 @@ def _prepare_match_rows(
         "final_price_numeric": "Price",
         "date_sold": "Date Sold",
         "location": "Location",
+        "general_condition": "Condition",
         "odometer_diff": "Odo Diff",
     }
     subset = subset.rename(columns=rename_map)
@@ -778,6 +779,7 @@ def _prepare_match_rows(
         "Model",
         "Variant",
         "Transmission",
+        "Condition",
         "Odometer",
         "Price",
         "Date Sold",
