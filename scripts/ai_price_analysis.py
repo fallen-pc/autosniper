@@ -675,6 +675,11 @@ def _prepare_match_rows(
         "date_sold",
         "location",
         "general_condition",
+        "key",
+        "spare_key",
+        "owners_manual",
+        "service_history",
+        "engine_turns_over",
     ]
     if include_diff and "odometer_diff" in df.columns:
         display_columns.append("odometer_diff")
