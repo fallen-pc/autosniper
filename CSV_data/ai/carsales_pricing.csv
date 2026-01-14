@@ -1,4 +1,0 @@
-year,make,model,variant,body_type,transmission,fuel_type,odometer_reading,no_of_seats,no_of_cylinders,engine_capacity,location,carsales_min,carsales_max,carsales_median,sold_last_30_days
-2014,AUDI,Q3,2.0 TDI Quattro 8U,Wagon,Automatic,Diesel,175000,5.0,4,2.0,VIC,10900.0,13100.0,12000.0,53
-2005,MERCEDES-BENZ,Clk,350,Coupe,Automatic,Petrol,138000,4.0,6,3.5,VIC,9900.0,11300.0,10600.0,10
-2014,RENAULT,Captur,Dynamique,Wagon,Automatic,Petrol,125000,5.0,4,1.2,VIC,9600.0,10300.0,9950.0,0

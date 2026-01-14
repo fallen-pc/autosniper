@@ -16,12 +16,12 @@ from shared.grouping import GROUP_IDS
 from shared.styling import clean_html, display_banner, inject_global_styles, page_intro
 
 
-st.set_page_config(page_title="AI Pricing Analysis", layout="wide")
+st.set_page_config(page_title="Curve Pricing Analysis", layout="wide")
 inject_global_styles()
 display_banner()
 page_intro(
-    "AI PRICING ANALYSIS",
-    "Curve-based pricing for the restricted VIC Top-12 universe.",
+    "CURVE PRICING ANALYSIS",
+    "Deterministic curve + rules pricing for the restricted VIC Top-12 universe (no GPT).",
 )
 
 
