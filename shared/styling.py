@@ -9,6 +9,10 @@ from typing import Optional
 
 import streamlit as st
 
+from shared.logging_utils import suppress_tornado_websocket_errors
+
+suppress_tornado_websocket_errors()
+
 
 _BASE_STYLES = textwrap.dedent(
     """
@@ -402,6 +406,16 @@ _BASE_STYLES = textwrap.dedent(
         color: var(--autosniper-muted);
         font-weight: 500;
     }
+    .ai-edge-warning {
+        margin-top: 0.6rem;
+        padding: 0.55rem 0.85rem;
+        border-radius: 14px;
+        border: 1px solid rgba(255, 167, 38, 0.35);
+        background: rgba(255, 167, 38, 0.12);
+        color: rgba(255, 220, 170, 0.95);
+        font-weight: 600;
+        letter-spacing: 0.01em;
+    }
     .ai-card-stats {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -777,6 +791,97 @@ _BASE_STYLES = textwrap.dedent(
         border-radius: 8px;
         font-weight: 700 !important;
         color: #00F6FF !important;
+    }
+    /* Listing container separation + verdict styling */
+    div[data-testid="stVerticalBlock"].ai-card-wrapper {
+        margin: 24px 0 18px;
+        padding: 22px 22px 12px 22px;
+        border: 1px solid rgba(140, 180, 255, 0.2);
+        border-radius: 24px;
+        background: rgba(10, 16, 26, 0.42);
+        box-shadow: 0 14px 32px rgba(0, 0, 0, 0.38);
+    }
+    .verdict-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        padding: 0.7rem 0.85rem;
+        border-radius: 16px;
+        border: 1px solid rgba(38, 50, 67, 0.8);
+        background: rgba(26, 33, 48, 0.55);
+        margin-top: 0.75rem;
+    }
+    .verdict-pill {
+        font-size: 0.95rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        color: var(--autosniper-primary);
+    }
+    .verdict-meta {
+        font-size: 0.85rem;
+        color: rgba(154, 167, 184, 0.9);
+    }
+    .verdict-strong {
+        border-color: rgba(94, 230, 167, 0.55);
+        background: rgba(94, 230, 167, 0.08);
+    }
+    .verdict-conditional {
+        border-color: rgba(31, 166, 255, 0.55);
+        background: rgba(31, 166, 255, 0.08);
+    }
+    .verdict-trap {
+        border-color: rgba(255, 167, 38, 0.55);
+        background: rgba(255, 167, 38, 0.08);
+    }
+    .verdict-avoid {
+        border-color: rgba(255, 90, 95, 0.60);
+        background: rgba(255, 90, 95, 0.08);
+    }
+    .risk-chip-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+        margin-top: 0.6rem;
+        margin-bottom: 0.25rem;
+    }
+    .risk-chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.18rem 0.65rem;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        border: 1px solid rgba(38, 50, 67, 0.8);
+        background: rgba(31, 166, 255, 0.08);
+        color: rgba(230, 237, 246, 0.78);
+    }
+    .risk-chip.more-chip {
+        background: transparent;
+        border-style: dashed;
+        color: rgba(230, 237, 246, 0.6);
+    }
+    .ai-action-links {
+        margin-top: 0.35rem;
+        font-size: 0.85rem;
+    }
+    .ai-action-links a {
+        color: var(--autosniper-accent);
+        opacity: 0.8;
+        text-decoration: none;
+    }
+    .ai-action-links a:hover {
+        opacity: 1;
+        text-decoration: underline;
+    }
+    @media (max-width: 768px) {
+        .page-intro {
+            padding: 0.9rem 1rem;
+            margin-bottom: 0.8rem;
+        }
+        .page-intro h1 {
+            font-size: clamp(1.8rem, 5vw, 2.2rem);
+        }
     }
     </style>
     """

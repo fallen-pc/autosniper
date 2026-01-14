@@ -1,0 +1,16 @@
+group_id | make | model | body | fuel | transmission | drivetrain | trim | notes
+toyota_hilux_dualcab_ute_diesel_auto_sr5_4x4 | TOYOTA | HILUX | dual cab ute | diesel | auto | 4x4 | SR5 | Applies to KUN26R and GUN126R; exclude hi-rider/4x2/extra cab/single cab/cab chassis
+volkswagen_golf_hatch_petrol_auto_base | VOLKSWAGEN | GOLF | hatch | petrol | auto | FWD | base | Exclude GTI/R/wagon/diesel
+holden_commodore_sedan_petrol_auto_v6 | HOLDEN | COMMODORE | sedan | petrol | auto | RWD | SV6/Equiv | Exclude V8/HSV/ute/manual
+holden_commodore_wagon_petrol_auto_v6 | HOLDEN | COMMODORE | wagon | petrol | auto | RWD | SV6/Equiv | Exclude V8/HSV/ute/manual
+holden_cruze_hatch_petrol_auto_4cyl | HOLDEN | CRUZE | hatch | petrol | auto | FWD |  | Exclude diesel/wagon/sedan/manual; 4cyl only
+ford_territory_suv_diesel_auto_4cyl | FORD | TERRITORY | suv | diesel | auto | RWD/AWD |  | Exclude petrol/manual; 4cyl only
+hyundai_i30_hatch_petrol_auto_na_active_elite | HYUNDAI | I30 | hatch | petrol | auto | FWD | Active/Elite | Exclude N/N-Line/turbo/diesel/manual
+toyota_corolla_hatch_petrol_auto | TOYOTA | COROLLA | hatch | petrol | auto | FWD | Ascent/Ascent Sport | Exclude hybrid/manual; E170/E180/E210
+toyota_corolla_sedan_petrol_auto | TOYOTA | COROLLA | sedan | petrol | auto | FWD | Ascent/Ascent Sport | Exclude hybrid/manual; E170/E180/E210
+bmw_3series_sedan_petrol_auto_4cyl_20 | BMW | 3 SERIES | sedan | petrol | auto | RWD/AWD | 318i/320i/328i | Exclude wagon/6cyl/M/diesel; 2.0L/4cyl
+holden_captiva_suv_diesel_auto_4cyl | HOLDEN | CAPTIVA | suv | diesel | auto | FWD/AWD |  | Exclude V6/petrol/manual; 4cyl only
+ford_ranger_dualcab_ute_diesel_auto | FORD | RANGER | dual cab ute | diesel | auto | 4x2/4x4 |  | Exclude cab chassis/single/super/extra cab/petrol/manual
+mazda_cx5_suv_petrol_auto_20 | MAZDA | CX-5 | suv | petrol | auto | FWD/AWD |  | Exclude diesel/turbo/manual; 2.0L only
+mazda_cx5_suv_petrol_auto_25 | MAZDA | CX-5 | suv | petrol | auto | FWD/AWD |  | Exclude diesel/turbo/manual; 2.5L only
+nissan_navara_dualcab_ute_diesel_auto | NISSAN | NAVARA | dual cab ute | diesel | auto | 4x2/4x4 |  | Exclude cab chassis/single/extra/king cab/petrol/manual

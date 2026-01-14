@@ -14,18 +14,32 @@ import pandas as pd
 if __package__ in (None, ""):
     sys.path.append(str(Path(__file__).resolve().parent.parent))
     from shared.data_loader import DATA_DIR
+    from shared.sold_cleaning import normalize_listing_fields
+    from scripts.build_restricted_datasets import build_restricted_datasets
 else:
     from shared.data_loader import DATA_DIR
-
-DETAILS_FILE = DATA_DIR / "vehicle_static_details.csv"
+    from shared.sold_cleaning import normalize_listing_fields
+    from scripts.build_restricted_datasets import build_restricted_datasets
 SOLD_FILE = DATA_DIR / "sold_cars.csv"
 REFERRED_FILE = DATA_DIR / "referred_cars.csv"
 ACTIVE_FILE = DATA_DIR / "active_vehicle_details.csv"
+STATIC_FILE = DATA_DIR / "vehicle_static_details.csv"
 
 DEDUP_KEYS: Sequence[str] = ("url", "vin")
 REFERRED_STATUSES = {"referred", "canceled", "cancelled", "closed"}
 EXCLUDED_VARIANT_KEYWORDS = ("motorcycle",)
 SOLD_REDUNDANT_COLUMNS = ("time_remaining_or_date_sold", "final_price", "final_bids", "status")
+MANUAL_CARSALES_COLUMNS = (
+    "manual_carsales_min",
+    "manual_carsales_max",
+    "manual_carsales_avg",
+    "manual_carsales_sold_30d",
+    "manual_recent_sales_30d",
+    "manual_carsales_count",
+    "manual_carsales_table",
+    "manual_carsales_estimate",
+    "carsales_skipped",
+)
 
 
 def _load_dataframe(path: Path) -> pd.DataFrame:
@@ -75,20 +89,25 @@ def _prepare_sold_rows(frame: pd.DataFrame) -> pd.DataFrame:
     if frame is None:
         return pd.DataFrame()
     prepared = frame.copy()
-    if "sale_price" not in prepared.columns:
-        prepared["sale_price"] = ""
-    mask = _blank_mask(prepared["sale_price"])
-    for column in ("final_price", "final_price_numeric", "price"):
+    if "price" not in prepared.columns:
+        prepared["price"] = ""
+    mask = _blank_mask(prepared["price"])
+    for column in ("final_price", "final_price_numeric", "sale_price"):
         if column in prepared.columns:
-            prepared.loc[mask, "sale_price"] = prepared.loc[mask, column]
-            mask = _blank_mask(prepared["sale_price"])
+            prepared.loc[mask, "price"] = prepared.loc[mask, column]
+            mask = _blank_mask(prepared["price"])
             if not mask.any():
                 break
-    prepared["sale_price"] = prepared["sale_price"].fillna("")
+    prepared["price"] = prepared["price"].fillna("")
     drop_cols = [column for column in SOLD_REDUNDANT_COLUMNS if column in prepared.columns]
     if drop_cols:
         prepared = prepared.drop(columns=drop_cols)
         print(f"Pruned redundant sold columns: {drop_cols}")
+    manual_cols = [column for column in MANUAL_CARSALES_COLUMNS if column in prepared.columns]
+    if manual_cols:
+        prepared = prepared.drop(columns=manual_cols)
+    if "sale_price" in prepared.columns:
+        prepared = prepared.drop(columns=["sale_price"])
     return prepared
 
 
@@ -99,13 +118,13 @@ def _prepare_referred_rows(frame: pd.DataFrame) -> pd.DataFrame:
     if "referral_reason" not in prepared.columns:
         prepared["referral_reason"] = ""
     mask = _blank_mask(prepared["referral_reason"])
-    for column in ("general_condition", "features_list"):
-        if column in prepared.columns:
-            prepared.loc[mask, "referral_reason"] = prepared.loc[mask, column]
-            mask = _blank_mask(prepared["referral_reason"])
-            if not mask.any():
-                break
+    if "general_condition" in prepared.columns:
+        prepared.loc[mask, "referral_reason"] = prepared.loc[mask, "general_condition"]
+        mask = _blank_mask(prepared["referral_reason"])
     prepared["referral_reason"] = prepared["referral_reason"].fillna("")
+    manual_cols = [column for column in MANUAL_CARSALES_COLUMNS if column in prepared.columns]
+    if manual_cols:
+        prepared = prepared.drop(columns=manual_cols)
     return prepared
 
 
@@ -168,22 +187,97 @@ def _remove_excluded_variants(frame: pd.DataFrame) -> pd.DataFrame:
     return frame
 
 
-def update_master_database() -> None:
-    if not DETAILS_FILE.exists():
-        print(f"Missing source file: {DETAILS_FILE}")
-        return
+def _project_columns(frame: pd.DataFrame, columns: Sequence[str]) -> pd.DataFrame:
+    if frame is None:
+        return pd.DataFrame(columns=columns)
+    return frame.reindex(columns=columns)
 
-    df = pd.read_csv(DETAILS_FILE)
-    if df.empty:
-        print(f"{DETAILS_FILE} is empty; nothing to process.")
+
+def _normalize_url(series: pd.Series) -> pd.Series:
+    return series.astype(str).str.strip().str.casefold()
+
+
+def _restore_active_columns(active_target: pd.DataFrame, existing_active: pd.DataFrame) -> pd.DataFrame:
+    """Bring forward dynamic auction columns (price/bids/time/status) from the existing active snapshot."""
+    if active_target.empty:
+        return active_target
+    if existing_active.empty or "url" not in active_target.columns or "url" not in existing_active.columns:
+        return active_target
+
+    enriched = active_target.copy()
+    enriched["_url_norm"] = _normalize_url(enriched["url"])
+    existing = existing_active.copy()
+    existing["_url_norm"] = _normalize_url(existing["url"])
+    lookup = existing.set_index("_url_norm")
+
+    for column in lookup.columns:
+        if column in ("_url_norm",):
+            continue
+        if column not in enriched.columns:
+            enriched[column] = pd.NA
+        right_values = enriched["_url_norm"].map(lookup[column])
+        blank_mask = _blank_mask(enriched[column])
+        enriched.loc[blank_mask, column] = right_values[blank_mask]
+
+    enriched.drop(columns=["_url_norm"], inplace=True)
+    return enriched
+
+
+def _prune_static_dataset(urls_to_remove: set[str]) -> None:
+    """Drop completed listings (sold/referred) from the static vehicle dataset."""
+    if not urls_to_remove:
         return
+    static_df = _load_dataframe(STATIC_FILE)
+    if static_df.empty or "url" not in static_df.columns:
+        return
+    mask = static_df["url"].isin(urls_to_remove)
+    removed = int(mask.sum())
+    if not removed:
+        return
+    pruned = static_df.loc[~mask].copy()
+    _atomic_write(pruned, STATIC_FILE)
+    print(f"Pruned {removed} completed listing(s) from {STATIC_FILE.name}.")
+
+
+def update_master_database() -> None:
+    df = _load_dataframe(ACTIVE_FILE)
+    if df.empty:
+        print("No active listings available; ensure you've promoted the latest scrape into active listings.")
+        return
+    if "status" not in df.columns:
+        df["status"] = "active"
+
+    df = normalize_listing_fields(df)
+    optional_dynamic_columns = ("time_remaining_or_date_sold", "price", "bids")
+    for column in optional_dynamic_columns:
+        if column not in df.columns:
+            df[column] = pd.NA
 
     df = _remove_excluded_variants(df)
     df["status"] = df["status"].astype(str).str.strip().str.lower()
 
+    for column in optional_dynamic_columns:
+        if column in df.columns and df[column].dtype == object:
+            df[column] = df[column].replace({"": pd.NA, "nan": pd.NA})
+
     sold_df = df[df["status"] == "sold"].copy()
     referred_df = df[df["status"].isin(REFERRED_STATUSES)].copy()
     active_df = df[df["status"] == "active"].copy()
+    existing_active = _load_dataframe(ACTIVE_FILE)
+
+    if not sold_df.empty:
+        prepared_snapshot = _prepare_sold_rows(sold_df)
+        sale_series = prepared_snapshot["price"] if "price" in prepared_snapshot.columns else pd.Series(
+            dtype=object, index=prepared_snapshot.index
+        )
+        blank_sale_mask = _blank_mask(sale_series)
+        if blank_sale_mask.any():
+            moved_rows = sold_df.loc[blank_sale_mask].copy()
+            if not moved_rows.empty:
+                moved_rows["status"] = "referred"
+                referred_df = pd.concat([referred_df, moved_rows], ignore_index=True, sort=False)
+                sold_df = sold_df.loc[~blank_sale_mask].copy()
+                print(f"Moved {len(moved_rows)} sold listing(s) without sale price into referred dataset.")
 
     _merge_preserving_history(
         SOLD_FILE,
@@ -201,12 +295,19 @@ def update_master_database() -> None:
     )
 
     active_target = active_df if not active_df.empty else pd.DataFrame(columns=df.columns)
+    active_target = _restore_active_columns(active_target, existing_active)
     _atomic_write(active_target, ACTIVE_FILE)
-    print(f"Active listings saved to {ACTIVE_FILE} ({len(active_df)} rows).")
-
-    # Keep vehicle_static_details.csv scoped to active inventory for the front-end.
-    _atomic_write(active_target, DETAILS_FILE)
-    print(f"{DETAILS_FILE} refreshed with {len(active_df)} active listings.")
+    print(f"Active listings saved to {ACTIVE_FILE} ({len(active_target)} rows).")
+    completed_urls: set[str] = set()
+    if "url" in sold_df.columns:
+        completed_urls.update(sold_df["url"].dropna().tolist())
+    if "url" in referred_df.columns:
+        completed_urls.update(referred_df["url"].dropna().tolist())
+    _prune_static_dataset({url.strip() for url in completed_urls if url})
+    try:
+        build_restricted_datasets()
+    except Exception as exc:
+        print(f"Restricted dataset build failed: {exc}")
 
 
 if __name__ == "__main__":

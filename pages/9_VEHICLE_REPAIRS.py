@@ -421,7 +421,7 @@ edited_df = st.data_editor(
     hide_index=True,
     column_config=column_config,
     disabled=["repair_key", "repair_item", "category", "sub_category", "occurrences", "example_preview"],
-    use_container_width=True,
+    width="stretch",
     num_rows="dynamic",
     key="repairs_editor",
 )

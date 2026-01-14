@@ -384,7 +384,7 @@ else:
                     unsafe_allow_html=True,
                 )
                 if ai_url:
-                    if st.button("Open in AI Analysis", key=f"ai-link-{row_index}", use_container_width=True):
+                    if st.button("Open in AI Analysis", key=f"ai-link-{row_index}", width="stretch"):
                         st.session_state["ai_focus_url"] = ai_url
                         try:
                             st.switch_page("pages/5_AI_ANALYSIS.py")

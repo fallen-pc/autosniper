@@ -78,36 +78,86 @@ def load_csv(file_path: Path | str) -> pd.DataFrame:
     return pd.read_csv(path) if path.exists() else pd.DataFrame()
 
 
-render_dataset(
-    "Active Listings",
-    DETAILS_FILE,
-    columns=[
-        "year",
-        "make",
-        "model",
-        "variant",
-        "price",
-        "bids",
-        "time_remaining_or_date_sold",
-        "status",
-        "url",
-    ],
-)
+def render_sold_inventory() -> None:
+    df = load_csv(SOLD_FILE)
+    if df.empty:
+        st.info("No records found for sold vehicles.")
+        return
 
-render_dataset(
-    "Sold Vehicles",
-    SOLD_FILE,
-    columns=[
+    desired_columns = [
         "year",
         "make",
         "model",
         "variant",
         "price",
-        "sale_price",
         "date_sold",
         "url",
-    ],
-)
+    ]
+    available_columns = [col for col in desired_columns if col in df.columns]
+    missing_columns = [col for col in desired_columns if col not in df.columns]
+    if missing_columns:
+        st.warning(
+            "Sold Vehicles: Missing columns in data source "
+            f"({', '.join(missing_columns)}). Showing available fields."
+        )
+    working_df = df[available_columns].copy()
+    working_df["year_numeric"] = pd.to_numeric(working_df.get("year"), errors="coerce")
+
+    summary_html = clean_html(
+        f"""
+        <div class="autosniper-section">
+            <div class="section-title">Sold Vehicles</div>
+            <div class="section-subtitle">Total records: {len(working_df):,}</div>
+        </div>
+        """
+    )
+    st.markdown(summary_html, unsafe_allow_html=True)
+
+    working_df.sort_values(
+        by=["make", "model", "year_numeric"],
+        ascending=[True, True, False],
+        inplace=True,
+        kind="mergesort",
+    )
+
+    for make_value, make_df in working_df.groupby("make", dropna=False):
+        make_label = str(make_value).strip() if pd.notna(make_value) and str(make_value).strip() else "Unknown Make"
+        with st.expander(f"{make_label} ({len(make_df)} vehicles)", expanded=False):
+            make_models = make_df.groupby("model", dropna=False)
+            for model_value, model_df in make_models:
+                model_label = str(model_value).strip() if pd.notna(model_value) and str(model_value).strip() else "Unknown Model"
+                model_html = clean_html(
+                    f"""
+                    <div class="section-subtitle" style="margin-top:0;">{model_label} · {len(model_df)} records</div>
+                    """
+                )
+                st.markdown(model_html, unsafe_allow_html=True)
+                variant_groups = model_df.groupby("variant", dropna=False)
+                for variant_value, variant_df in variant_groups:
+                    variant_label = (
+                        str(variant_value).strip()
+                        if pd.notna(variant_value) and str(variant_value).strip()
+                        else "Unknown Variant"
+                    )
+                    variant_html = clean_html(
+                        f"""
+                        <div style="font-weight:600;margin-top:0.25rem;">{variant_label} · {len(variant_df)} records</div>
+                        """
+                    )
+                    st.markdown(variant_html, unsafe_allow_html=True)
+                    display_df = variant_df.drop(columns=["year_numeric"]).sort_values(
+                        by=["year"],
+                        ascending=False,
+                        kind="mergesort",
+                    )
+                    st.dataframe(
+                        display_df.reset_index(drop=True),
+                        width="stretch",
+                        hide_index=True,
+                    )
+
+
+render_sold_inventory()
 
 render_dataset(
     "Referred Vehicles",

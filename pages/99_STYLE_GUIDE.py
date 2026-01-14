@@ -147,9 +147,9 @@ sample_df = pd.DataFrame(
         {"Year": 2018, "Make": "Hyundai", "Model": "i30", "Price": "$14,500"},
     ]
 )
-st.dataframe(sample_df, use_container_width=True)
+st.dataframe(sample_df, width="stretch")
 st.code(
-    """st.dataframe(df, use_container_width=True)""",
+    """st.dataframe(df, width="stretch")""",
     language="python",
 )
 

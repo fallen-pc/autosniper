@@ -181,8 +181,8 @@ def update_vehicle_estimates(
     """
     Update manual Carsales estimates for a vehicle identified by URL.
 
-    Writes to vehicle_static_details.csv and active_vehicle_details.csv (when present)
-    using an atomic write to avoid corruption.
+    Writes to active_vehicle_details.csv (when present) using an atomic write to
+    avoid corruption.
     """
     updates: dict[str, Any] = {}
     if manual_min is not None:
@@ -198,14 +198,9 @@ def update_vehicle_estimates(
     if not updates:
         return False
 
-    targets = [
-        dataset_path("vehicle_static_details.csv"),
-        dataset_path("active_vehicle_details.csv"),
-    ]
-    changed = False
-    for target in targets:
-        changed = _apply_updates_to_file(target, url, updates) or changed
+    active_path = dataset_path("active_vehicle_details.csv")
+    changed = _apply_updates_to_file(active_path, url, updates)
     _update_ai_manual_cache(url, manual_min, manual_max, sold_last_30d, skipped)
     if changed:
-        upload_remote_data_bundle(["vehicle_static_details.csv", "active_vehicle_details.csv"])
+        upload_remote_data_bundle(["active_vehicle_details.csv"])
     return changed

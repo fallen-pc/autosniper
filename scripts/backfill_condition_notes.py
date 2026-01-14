@@ -26,7 +26,6 @@ DEFAULT_DATASETS = [
 LEGACY_DIR = DATA_DIR / "ai_analysis_ready"
 SNAPSHOT_COLUMNS = [
     "general_condition",
-    "features_list",
 ]
 RENAMED_COLUMNS = {
     "Body Type": "body_type",
@@ -68,8 +67,6 @@ def normalize_legacy_frame(df: pd.DataFrame, reference_columns: list[str]) -> pd
     df = df.rename(columns=RENAMED_COLUMNS)
     if "general_condition" not in df.columns:
         df["general_condition"] = pd.NA
-    if "features_list" not in df.columns:
-        df["features_list"] = pd.NA
     for column in reference_columns:
         if column not in df.columns:
             df[column] = pd.NA

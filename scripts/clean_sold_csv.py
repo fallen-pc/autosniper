@@ -11,12 +11,25 @@ import pandas as pd
 if __package__ in (None, ""):
     sys.path.append(str(Path(__file__).resolve().parent.parent))
     from shared.data_loader import DATA_DIR
+    from shared.sold_cleaning import normalize_listing_fields
 else:  # pragma: no cover
     from shared.data_loader import DATA_DIR
+    from shared.sold_cleaning import normalize_listing_fields
 
 
 CSV_PATH = DATA_DIR / "sold_cars.csv"
 DEDUP_BACKUP_PATH = CSV_PATH.with_suffix(".csv.bak")
+MANUAL_CARSALES_COLUMNS = (
+    "manual_carsales_min",
+    "manual_carsales_max",
+    "manual_carsales_avg",
+    "manual_carsales_sold_30d",
+    "manual_recent_sales_30d",
+    "manual_carsales_count",
+    "manual_carsales_table",
+    "manual_carsales_estimate",
+    "carsales_skipped",
+)
 
 
 def parse_price(value: object) -> float | None:
@@ -49,6 +62,9 @@ def build_candidate_date(frame: pd.DataFrame) -> pd.Series:
 def deduplicate_sold(df: pd.DataFrame) -> pd.DataFrame:
     """Return dataframe without duplicate VIN rows, keeping latest entries."""
     df = df.copy()
+    drop_cols = [column for column in MANUAL_CARSALES_COLUMNS if column in df.columns]
+    if drop_cols:
+        df = df.drop(columns=drop_cols)
     df["__candidate_date"] = build_candidate_date(df)
     df["__price_numeric"] = df.apply(lambda row: parse_price(row.get("final_price", row.get("price"))), axis=1)
 
@@ -71,11 +87,14 @@ def main() -> None:
     if "vin" not in df.columns:
         raise SystemExit("VIN column missing; cannot deduplicate.")
 
+    df = normalize_listing_fields(df)
+
     # Backup original file once.
     if not DEDUP_BACKUP_PATH.exists():
         CSV_PATH.replace(DEDUP_BACKUP_PATH)
         # Reload dataframe from backup to avoid reading from moved file.
         df = pd.read_csv(DEDUP_BACKUP_PATH)
+        df = normalize_listing_fields(df)
 
     deduped = deduplicate_sold(df)
     after_count = len(deduped)

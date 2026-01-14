@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import asyncio
+import csv
 import json
 import logging
 import os
@@ -25,7 +28,21 @@ else:  # pragma: no cover
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-CSV_FILE = str(DATA_DIR / "vehicle_static_details.csv")
+CSV_FILE = str(DATA_DIR / "active_vehicle_details.csv")
+SNAPSHOT_FILE = DATA_DIR / "active_snapshots.csv"
+SNAPSHOT_COLUMNS = [
+    "snapshot_ts",
+    "url",
+    "price_text",
+    "price_numeric",
+    "bids_numeric",
+    "time_remaining_text",
+    "time_remaining_hours",
+    "status",
+    "location",
+    "location_state",
+    "auction_site",
+]
 SKIPPED_LOG = "logs/skipped_links.txt"
 PROGRESS_FILE = "logs/update_progress.txt"
 RESUME_FILE = "logs/update_resume.json"
@@ -38,6 +55,111 @@ USER_AGENTS = [
 ]
 
 BATCH_SAVE_INTERVAL = max(1, int(os.getenv("ACTIVE_LISTING_BATCH_SIZE", "50")))
+
+TIME_PATTERN = re.compile(
+    r"(\d+)\s*(d|day|days|h|hour|hours|m|min|minute|minutes|s|sec|second|seconds)",
+    re.IGNORECASE,
+)
+
+
+def parse_currency_value(value: str | None) -> float | None:
+    if not value:
+        return None
+    text = str(value)
+    digits = re.sub(r"[^0-9.]", "", text)
+    if not digits:
+        return None
+    try:
+        return float(digits)
+    except ValueError:
+        return None
+
+
+def parse_time_remaining_to_hours(value: str | None) -> float | None:
+    if not value:
+        return None
+    lowered = value.strip().lower()
+    if not lowered or lowered in {"n/a", "na", "closed"}:
+        return None
+    total_hours = 0.0
+    for amount, unit in TIME_PATTERN.findall(lowered):
+        try:
+            qty = float(amount)
+        except ValueError:
+            continue
+        unit_lower = unit.lower()
+        if unit_lower.startswith("d"):
+            total_hours += qty * 24
+        elif unit_lower.startswith("h"):
+            total_hours += qty
+        elif unit_lower.startswith("m"):
+            total_hours += qty / 60.0
+        elif unit_lower.startswith("s"):
+            total_hours += qty / 3600.0
+    return round(total_hours, 3) if total_hours > 0 else None
+
+
+def derive_location_state(location: str | None) -> str:
+    if not location:
+        return ""
+    tokens = [token.strip().upper() for token in re.split(r"[,/]", str(location)) if token.strip()]
+    for token in reversed(tokens):
+        if len(token) == 3 and token.isalpha():
+            return token
+    return tokens[-1] if tokens else ""
+
+
+def derive_auction_site(url: str | None) -> str:
+    if not url:
+        return ""
+    try:
+        parts = url.split("/")
+        return parts[3] if len(parts) > 3 else ""
+    except Exception:
+        return ""
+
+
+def append_snapshot_row(record: dict[str, object]) -> None:
+    SNAPSHOT_FILE.parent.mkdir(parents=True, exist_ok=True)
+    file_exists = SNAPSHOT_FILE.exists()
+    with SNAPSHOT_FILE.open("a", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=SNAPSHOT_COLUMNS)
+        if not file_exists:
+            writer.writeheader()
+        writer.writerow(record)
+
+
+def record_snapshot(
+    df: pd.DataFrame,
+    url: str,
+    price_text: str | None,
+    bids_text: str | None,
+    time_remaining_text: str | None,
+) -> None:
+    try:
+        row = df.loc[df["url"] == url].iloc[0].to_dict()
+    except Exception:
+        row = {}
+    price_numeric = parse_currency_value(price_text)
+    try:
+        bids_numeric = int(bids_text)
+    except Exception:
+        bids_numeric = None
+    time_hours = parse_time_remaining_to_hours(time_remaining_text)
+    record = {
+        "snapshot_ts": datetime.utcnow().isoformat(),
+        "url": url,
+        "price_text": price_text or "",
+        "price_numeric": price_numeric,
+        "bids_numeric": bids_numeric,
+        "time_remaining_text": time_remaining_text or "",
+        "time_remaining_hours": time_hours,
+        "status": row.get("status", ""),
+        "location": row.get("location", ""),
+        "location_state": derive_location_state(row.get("location", "")),
+        "auction_site": derive_auction_site(url),
+    }
+    append_snapshot_row(record)
 
 
 def load_resume_queue(all_urls: list[str]) -> list[str]:
@@ -222,7 +344,11 @@ async def fetch_listing_data(url, page, browser, playwright):
         return "N/A", "0", None, None, False, False, browser, page
 
 # ─── Main update loop ──────────────────────────────────────────
-async def update_bids(input_links=None):
+async def update_bids(
+    input_links: list[str] | None = None,
+    limit: int | None = None,
+    batch_interval: int | None = None,
+):
     skipped_urls = []
     try:
         if not os.path.exists(CSV_FILE):
@@ -238,6 +364,9 @@ async def update_bids(input_links=None):
         # Use input_links if provided, else use URLs from CSV
         if input_links:
             urls = [clean_url(url) for url in input_links if url and url.startswith("http")]
+            if limit is not None and limit > 0:
+                urls = urls[:limit]
+                print(f"Limiting run to {len(urls)} provided listing(s) based on batch size {limit}.")
         else:
             urls = [
                 url
@@ -264,16 +393,24 @@ async def update_bids(input_links=None):
             print(f"Resuming: Skipping {len(processed)} processed URLs.")
             urls = [u for u in urls if u not in processed]
 
-        urls = load_resume_queue(urls)
-        if not urls:
-            print("No URLs left to process.")
-            if os.path.exists(PROGRESS_FILE):
-                os.remove(PROGRESS_FILE)
-            clear_resume_queue()
-            return df, skipped_urls
+        use_resume_queue = limit is None or limit <= 0
+        if limit is not None and limit > 0 and not input_links:
+            urls = urls[:limit]
+            print(f"Limiting run to {len(urls)} listings based on batch size {limit}.")
 
+        if use_resume_queue:
+            urls = load_resume_queue(urls)
+            if not urls:
+                print("No URLs left to process.")
+                if os.path.exists(PROGRESS_FILE):
+                    os.remove(PROGRESS_FILE)
+                clear_resume_queue()
+                return df, skipped_urls
+
+        save_interval = max(1, batch_interval or BATCH_SAVE_INTERVAL)
         remaining_urls = list(urls)
-        save_resume_queue(remaining_urls)
+        if use_resume_queue:
+            save_resume_queue(remaining_urls)
         processed_since_last_save = 0
 
         async with async_playwright() as playwright:
@@ -286,7 +423,8 @@ async def update_bids(input_links=None):
                     skipped_urls.append(url)
                     if remaining_urls:
                         remaining_urls.pop(0)
-                        save_resume_queue(remaining_urls)
+                        if use_resume_queue:
+                            save_resume_queue(remaining_urls)
                     continue
 
                 print(f"Updating [{idx+1}/{len(urls)}]: {url}")
@@ -339,11 +477,13 @@ async def update_bids(input_links=None):
                         df.loc[df["url"] == url, "time_remaining_or_date_sold"] = "N/A"
                         df.loc[df["url"] == url, "status"] = "Referred"
 
+                    record_snapshot(df, url, price, bids, time_remaining)
+
                     # Mark as processed
                     with open(PROGRESS_FILE, 'a') as f:
                         f.write(url + '\n')
                     processed_since_last_save += 1
-                    if processed_since_last_save >= BATCH_SAVE_INTERVAL:
+                    if processed_since_last_save >= save_interval:
                         persist_dataframe(df, f"Checkpoint after {idx + 1} listings")
                         processed_since_last_save = 0
                 finally:
@@ -356,7 +496,7 @@ async def update_bids(input_links=None):
         # Save updated DataFrame
         persist_dataframe(df, "Final save")
         touched_count = len(urls) if input_links else len(df)
-        print(f"vehicle_static_details.csv refreshed ({touched_count} listings touched, {len(df)} total records).")
+        print(f"active_vehicle_details.csv refreshed ({touched_count} listings touched, {len(df)} total records).")
 
         # Save skipped URLs to file
         if skipped_urls:

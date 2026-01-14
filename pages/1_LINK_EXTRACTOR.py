@@ -1,4 +1,6 @@
+import json
 import os
+from pathlib import Path
 
 import pandas as pd
 import streamlit as st
@@ -27,6 +29,7 @@ run_clicked = hero_action_card(
 )
 
 CSV_PATH = dataset_path("all_vehicle_links.csv")
+SUMMARY_PATH = Path("logs") / "link_scrape_summary.json"
 
 if run_clicked:
     with st.spinner("Scraping vehicle links from Grays..."):
@@ -38,18 +41,33 @@ if run_clicked:
 
 if CSV_PATH.exists():
     df = pd.read_csv(CSV_PATH)
-    display_df = df.head(20).copy()
-    if not display_df.empty:
-        summary_html = clean_html(
-            f"""
-            <div class="autosniper-section">
-                <div class="section-title">Latest Extracted Links</div>
-                <div class="section-subtitle">Total links collected: {len(df):,}</div>
-            </div>
-            """
-        )
-        st.markdown(summary_html, unsafe_allow_html=True)
-        st.dataframe(display_df, width="stretch")
+    total_links = len(df)
+    summary = {}
+    if SUMMARY_PATH.exists():
+        try:
+            summary = json.loads(SUMMARY_PATH.read_text(encoding="utf-8"))
+        except Exception:
+            summary = {}
+    total_found = summary.get("total_links_found", total_links)
+    skipped_existing = summary.get("skipped_existing", 0)
+    filtered_new = summary.get("filtered_new_links", total_links)
+
+    summary_html = clean_html(
+        """
+        <div class="autosniper-section">
+            <div class="section-title">Link scraper summary</div>
+            <div class="section-subtitle">Latest snapshot of Grays listings.</div>
+        </div>
+        """
+    )
+    st.markdown(summary_html, unsafe_allow_html=True)
+    col_total, col_new, col_skipped = st.columns(3)
+    col_total.metric("Total links found", f"{total_found:,}")
+    col_new.metric("New links saved", f"{filtered_new:,}")
+    col_skipped.metric("Skipped (already tracked)", f"{skipped_existing:,}")
+
+    if total_links:
+        st.success(f"{total_links:,} new links ready in all_vehicle_links.csv.")
     else:
         st.info("Link file is present but contains no rows.")
 else:

@@ -27,7 +27,6 @@ SOLD_PATH = DATA_DIR / "sold_cars.csv"
 DEFAULT_PATTERN = "soldcars*.csv"
 BACKFILL_FIELDS = [
     "general_condition",
-    "features_list",
     "body_type",
     "no_of_seats",
     "build_date",
@@ -182,7 +181,6 @@ def update_sold_records(
                 price_text = _format_currency(legacy.get("legacy_price_value"))
                 if price_text:
                     sold_df.at[idx, "price"] = price_text
-                    sold_df.at[idx, "sale_price"] = price_text
             if _is_missing(sold_df.at[idx, "time_remaining_or_date_sold"]):
                 sold_df.at[idx, "time_remaining_or_date_sold"] = legacy.get("time_remaining_or_date_sold")
             if _is_missing(sold_df.at[idx, "bids"]):
@@ -199,13 +197,14 @@ def update_sold_records(
             price_text = _format_currency(legacy.get("legacy_price_value"))
             if price_text:
                 new_row["price"] = price_text
-                new_row["sale_price"] = price_text
             new_row["time_remaining_or_date_sold"] = legacy.get("time_remaining_or_date_sold")
             bid_value = legacy.get("legacy_bid_value")
             if bid_value:
                 new_row["bids"] = str(bid_value)
             sold_df = pd.concat([sold_df, pd.DataFrame([new_row])], ignore_index=True)
             appended += 1
+    if "sale_price" in sold_df.columns:
+        sold_df = sold_df.drop(columns=["sale_price"])
     return sold_df, updated, appended
 
 

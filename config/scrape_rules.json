@@ -1,0 +1,31 @@
+{
+  "drop_slug_keywords": [
+    "motorcycle",
+    "motor-cycle",
+    "comp-",
+    "complied"
+  ],
+  "require_fields": [
+    "odometer_reading",
+    "year"
+  ],
+  "body_keywords": [
+    "coupe",
+    "sedan",
+    "hatch",
+    "hatchback",
+    "wagon",
+    "suv",
+    "ute",
+    "pickup",
+    "van",
+    "convertible",
+    "cab",
+    "cab chassis",
+    "truck",
+    "dual cab",
+    "people mover",
+    "crew cab chassis",
+    "bus"
+  ]
+}

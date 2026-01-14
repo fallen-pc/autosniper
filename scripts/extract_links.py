@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import json
 import re
 import sys
+from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
@@ -11,14 +13,20 @@ from bs4 import BeautifulSoup
 if __package__ in (None, ""):
     sys.path.append(str(Path(__file__).resolve().parent.parent))
     from shared.data_loader import DATA_DIR
+    from shared.sold_cleaning import is_compliance_slug
 else:
     from shared.data_loader import DATA_DIR
+    from shared.sold_cleaning import is_compliance_slug
 
 BASE_URL = (
     "https://www.grays.com/search/automotive-trucks-and-marine/"
     "motor-vehiclesmotor-cycles/motor-vehicles"
 )
 OUTPUT_FILE = DATA_DIR / "all_vehicle_links.csv"
+SUMMARY_FILE = Path("logs") / "link_scrape_summary.json"
+ACTIVE_FILE = DATA_DIR / "active_vehicle_details.csv"
+SOLD_FILE = DATA_DIR / "sold_cars.csv"
+REFERRED_FILE = DATA_DIR / "referred_cars.csv"
 
 PROXY_BASE = "https://r.jina.ai/"
 MAX_PAGES = 60
@@ -44,6 +52,26 @@ RELATIVE_LOT_PATTERN = re.compile(r"/lot/[^\s)\"'>]+", re.IGNORECASE)
 def _clean_url(url: str) -> str:
     cleaned = url.strip().rstrip(").,")
     return cleaned.split("?")[0] if cleaned.startswith("https://www.grays.com/lot/") else cleaned
+
+
+def _normalize_url(url: str) -> str:
+    return _clean_url(url).strip().lower()
+
+
+def _load_existing_urls(paths: tuple[Path, ...]) -> set[str]:
+    known: set[str] = set()
+    for path in paths:
+        if not path.exists():
+            continue
+        try:
+            df = pd.read_csv(path, usecols=["url"])
+        except (ValueError, pd.errors.EmptyDataError):
+            df = pd.read_csv(path) if path.exists() else pd.DataFrame()
+        if "url" not in df.columns:
+            continue
+        urls = df["url"].dropna().astype(str).map(_normalize_url)
+        known.update(url for url in urls if url)
+    return known
 
 
 def extract_links_from_content(content: str) -> list[str]:
@@ -142,9 +170,30 @@ def extract_all_vehicle_links() -> None:
         page += 1
 
     DATA_DIR.mkdir(parents=True, exist_ok=True)
-    df = pd.DataFrame(sorted(all_links), columns=["url"])
+    existing_urls = _load_existing_urls((ACTIVE_FILE, SOLD_FILE, REFERRED_FILE))
+    filtered_links = [
+        link for link in all_links if _normalize_url(link) not in existing_urls
+    ]
+    compliance_dropped = [link for link in filtered_links if is_compliance_slug(link)]
+    if compliance_dropped:
+        print(f"Dropped {len(compliance_dropped)} compliance-tagged link(s).")
+    filtered_links = [link for link in filtered_links if link not in compliance_dropped]
+    filtered_links = sorted(filtered_links)
+    pruned_count = len(all_links) - len(filtered_links) - len(compliance_dropped)
+    if pruned_count:
+        print(f"Skipped {pruned_count} link(s) already tracked in active/sold/referred datasets.")
+    df = pd.DataFrame(filtered_links, columns=["url"])
     df.to_csv(OUTPUT_FILE, index=False)
     print(f"Saved {len(df)} vehicle links to {OUTPUT_FILE}")
+
+    summary = {
+        "generated_at": datetime.utcnow().isoformat(),
+        "total_links_found": len(all_links),
+        "filtered_new_links": len(filtered_links),
+        "skipped_existing": pruned_count,
+    }
+    SUMMARY_FILE.parent.mkdir(parents=True, exist_ok=True)
+    SUMMARY_FILE.write_text(json.dumps(summary, indent=2), encoding="utf-8")
 
 
 def main() -> None:

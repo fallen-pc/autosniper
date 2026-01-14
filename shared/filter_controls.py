@@ -105,17 +105,32 @@ def apply_vehicle_filters(
     toggles: VehicleFilterToggles,
     *,
     condition_column: str = "general_condition",
+    engine_column: str = "engine_turns_over",
     plates_column: str = "no_of_plates",
     location_column: str = "location",
 ) -> pd.DataFrame:
     """Apply shared vehicle filters to a dataframe."""
     filtered = df.copy()
 
-    if toggles.hide_engine_defects and condition_column in filtered.columns:
-        condition_series = filtered[condition_column].astype(str).str.lower()
-        mask = condition_series.apply(
-            lambda text: any(keyword in text for keyword in ENGINE_ISSUE_KEYWORDS)
-        )
+    if toggles.hide_engine_defects:
+        mask = pd.Series(False, index=filtered.index)
+        if condition_column in filtered.columns:
+            condition_series = filtered[condition_column].astype(str).str.lower()
+            condition_mask = condition_series.apply(
+                lambda text: any(keyword in text for keyword in ENGINE_ISSUE_KEYWORDS)
+            )
+            mask = mask | condition_mask
+
+        if engine_column in filtered.columns:
+            def _engine_not_running(value: object) -> bool:
+                text = str(value).strip().lower()
+                if not text or text in {"nan", "none"}:
+                    return False
+                return text in {"no", "0", "false", "won't start", "wont start"}
+
+            engine_mask = filtered[engine_column].apply(_engine_not_running)
+            mask = mask | engine_mask
+
         filtered = filtered[~mask]
 
     if toggles.hide_unregistered and plates_column in filtered.columns:

@@ -1,0 +1,19 @@
+{
+  "validation_days": 60,
+  "rows_train": 10914,
+  "rows_valid": 1925,
+  "clip_low": 0.2,
+  "clip_high": 6.0,
+  "price_metrics_q50": {
+    "mae": 866.500307375722,
+    "rmse": 3754.931241698953,
+    "wape": 0.14803743149424284
+  },
+  "coverage_p90": 0.8176623376623376,
+  "columns": {
+    "id_col": "url",
+    "date_col": "date_sold",
+    "price_col": "price",
+    "baseline_col": "comps_p50"
+  }
+}

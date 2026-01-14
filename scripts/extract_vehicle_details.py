@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import os
 import re
 import shutil
@@ -17,51 +18,33 @@ if __package__ in (None, ""):
 
     sys.path.append(str(Path(__file__).resolve().parent.parent))
     from shared.data_loader import DATA_DIR
+    from shared.schema import SOLD_RAW_SCRAPE_COLUMNS, STATIC_VEHICLE_SCHEMA
+    from shared.sold_cleaning import (
+        drop_invalid_odometer_rows,
+        drop_invalid_years,
+        drop_sparse_rows,
+        normalize_listing_fields,
+        remove_compliance_markers,
+    )
 else:
     from shared.data_loader import DATA_DIR
+    from shared.schema import SOLD_RAW_SCRAPE_COLUMNS, STATIC_VEHICLE_SCHEMA
+    from shared.sold_cleaning import (
+        drop_invalid_odometer_rows,
+        drop_invalid_years,
+        drop_sparse_rows,
+        normalize_listing_fields,
+        remove_compliance_markers,
+    )
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 ROOT_DIR = SCRIPT_DIR.parent
 INPUT_FILE = DATA_DIR / "all_vehicle_links.csv"
 OUTPUT_FILE = DATA_DIR / "vehicle_static_details.csv"
+ACTIVE_OUTPUT_FILE = DATA_DIR / "active_vehicle_details.csv"
 SKIPPED_LOG = ROOT_DIR / "logs" / "skipped_links.txt"
 
-SCHEMA_FIELDS = [
-    "year",
-    "make",
-    "model",
-    "variant",
-    "body_type",
-    "no_of_seats",
-    "build_date",
-    "compliance_date",
-    "vin",
-    "rego_no",
-    "rego_state",
-    "rego_expiry",
-    "no_of_plates",
-    "no_of_cylinders",
-    "engine_capacity",
-    "fuel_type",
-    "transmission",
-    "odometer_reading",
-    "odometer_unit",
-    "exterior_colour",
-    "interior_colour",
-    "key",
-    "spare_key",
-    "owners_manual",
-    "service_history",
-    "engine_turns_over",
-    "location",
-    "url",
-    "general_condition",
-    "features_list",
-    "bids",
-    "price",
-    "time_remaining_or_date_sold",
-    "status",
-]
+SCHEMA_FIELDS = SOLD_RAW_SCRAPE_COLUMNS.copy()
 
 FIELD_MAP = {
     "body_type": "Body Type",
@@ -93,7 +76,9 @@ STATE_CODES = {"NSW", "VIC", "QLD", "SA", "WA", "TAS", "NT", "ACT"}
 REQUEST_TIMEOUT = float(os.getenv("AUTOSNIPER_REQUEST_TIMEOUT", "25"))
 REQUEST_DELAY = float(os.getenv("AUTOSNIPER_REQUEST_DELAY", "1.1"))
 MAX_FETCH_RETRIES = int(os.getenv("AUTOSNIPER_FETCH_RETRIES", "3"))
-PROXY_PREFIX = "https://r.jina.ai/https://"
+PROXY_PREFIX_HTTPS = "https://r.jina.ai/https://"
+PROXY_PREFIX_HTTP = "https://r.jina.ai/http://"
+PROXY_ROTATION = ("", PROXY_PREFIX_HTTPS, PROXY_PREFIX_HTTP)
 
 REQUEST_HEADERS = {
     "User-Agent": (
@@ -187,13 +172,65 @@ def extract_location(soup: BeautifulSoup) -> str:
     return ""
 
 
+PRICE_RE = re.compile(r"\$[\d,]+(?:\.\d+)?")
+BIDS_RE = re.compile(r"(\d+)\s*bids?", re.IGNORECASE)
+
+
+def extract_sale_meta(soup: BeautifulSoup) -> tuple[str | None, str | None, str | None, str | None]:
+    price_text: str | None = None
+    bids_value: str | None = None
+    closing_text: str | None = None
+    derived_status: str | None = None
+
+    price_block = soup.find("div", class_=lambda classes: classes and "currentbid_price" in classes)
+    if price_block:
+        block_text = price_block.get_text(" ", strip=True)
+        match = PRICE_RE.search(block_text)
+        if match:
+            price_text = match.group(0)
+        if "sold" in block_text.lower():
+            derived_status = "sold"
+
+    bids_anchor = soup.find("a", attrs={"data-target": "#dvBidHistoryPop"})
+    if bids_anchor:
+        anchor_text = bids_anchor.get_text(" ", strip=True)
+        match = BIDS_RE.search(anchor_text)
+        if match:
+            bids_value = match.group(1)
+    if bids_value is None:
+        bids_node = soup.find(string=re.compile(r"Bids\s*\(\d+", re.IGNORECASE))
+        if bids_node:
+            node_text = bids_node.parent.get_text(" ", strip=True)
+            match = BIDS_RE.search(node_text)
+            if match:
+                bids_value = match.group(1)
+
+    if bids_value is None:
+        page_text = soup.get_text(" ", strip=True)
+        match = BIDS_RE.search(page_text)
+        if match:
+            bids_value = match.group(1)
+
+    for label in ("Closed:", "Closes:"):
+        closing_node = soup.find(string=re.compile(label, re.IGNORECASE))
+        if closing_node:
+            container = closing_node.parent
+            closing_text = container.get_text(" ", strip=True)
+            if label.lower().startswith("closed"):
+                derived_status = "sold"
+            break
+
+    return price_text, bids_value, closing_text, derived_status
+
+
 def extract_title_parts(soup: BeautifulSoup) -> tuple[str, str, str, str]:
     title_elem = soup.find("h1", class_="dls-heading-3")
     title = safe_get_text(title_elem)
     if not title:
         return ("", "", "", "")
 
-    parts = title.split()
+    cleaned_title = remove_compliance_markers(title)
+    parts = cleaned_title.split()
     year = parts[0] if parts and YEAR_RE.match(parts[0]) else ""
     make = parts[1] if len(parts) > 1 else ""
     model = parts[2] if len(parts) > 2 else ""
@@ -230,13 +267,6 @@ def read_general_condition(soup: BeautifulSoup) -> str:
     return ""
 
 
-def read_features_list(soup: BeautifulSoup) -> str:
-    features = extract_bullets(soup, "^features")
-    if features:
-        return features.replace("\n", ", ")
-    return ""
-
-
 def assemble_details(soup: BeautifulSoup, url: str) -> dict[str, Any]:
     year, make, model, variant = extract_title_parts(soup)
 
@@ -259,7 +289,6 @@ def assemble_details(soup: BeautifulSoup, url: str) -> dict[str, Any]:
             details["year"] = match.group(1)
 
     details["general_condition"] = read_general_condition(soup)
-    details["features_list"] = read_features_list(soup)
     details["location"] = normalize_state(details.get("location", "") or extract_location(soup))
     details["bids"] = details.get("bids", "")
     details["price"] = details.get("price", "")
@@ -267,19 +296,38 @@ def assemble_details(soup: BeautifulSoup, url: str) -> dict[str, Any]:
     status_value = str(details.get("status", "")).strip().lower()
     details["status"] = status_value or "active"
 
+    price_text, bids_value, closing_text, derived_status = extract_sale_meta(soup)
+    if price_text:
+        details["price"] = price_text
+    if bids_value:
+        details["bids"] = bids_value
+    if closing_text:
+        details["time_remaining_or_date_sold"] = closing_text
+    if derived_status:
+        details["status"] = derived_status
+
     return details
 
 
 def fetch_html(session: requests.Session, url: str) -> str:
     last_error: str | None = None
     for attempt in range(1, MAX_FETCH_RETRIES + 1):
+        prefix = PROXY_ROTATION[min(attempt - 1, len(PROXY_ROTATION) - 1)]
+        use_proxy = bool(prefix) or url.startswith(prefix)
+        if prefix:
+            suffix = url.replace("https://", "").replace("http://", "")
+            target_url = f"{prefix}{suffix}"
+        else:
+            target_url = url
         try:
-            response = session.get(url, timeout=REQUEST_TIMEOUT)
-            if response.status_code == 403 and not url.startswith(PROXY_PREFIX):
-                proxy_url = f"{PROXY_PREFIX}{url.replace('https://', '')}"
-                response = session.get(proxy_url, timeout=REQUEST_TIMEOUT)
-            if response.status_code == 200 and len(response.text) > 2000:
+            response = session.get(target_url, timeout=REQUEST_TIMEOUT)
+            body_lower = response.text.lower()
+            blocked_body = "request could not be satisfied" in body_lower or "generated by cloudfront" in body_lower
+            if response.status_code == 200 and len(response.text) > 2000 and not blocked_body:
                 return response.text
+            if response.status_code == 403 or blocked_body:
+                last_error = "CloudFront 403"
+                continue
             last_error = f"HTTP {response.status_code}"
         except requests.RequestException as exc:
             last_error = str(exc)
@@ -329,7 +377,59 @@ def atomic_write(df: pd.DataFrame, path: Path) -> None:
             os.unlink(temp_path)
 
 
-def main() -> None:
+def seed_active_dataset(static_df: pd.DataFrame) -> None:
+    """Create the active listings CSV from the static scrape output."""
+    if static_df is None:
+        return
+    active_df = static_df.copy()
+    base_columns = list(static_df.columns)
+    existing_active = pd.read_csv(ACTIVE_OUTPUT_FILE) if ACTIVE_OUTPUT_FILE.exists() else pd.DataFrame()
+
+    def _normalize_url(series: pd.Series) -> pd.Series:
+        return series.astype(str).str.strip().str.lower()
+
+    def _is_blank(series: pd.Series) -> pd.Series:
+        lowered = series.astype(str).str.strip().str.lower()
+        return lowered.isin({"", "nan", "none"})
+
+    if active_df.empty:
+        active_df = pd.DataFrame(columns=base_columns)
+    # Ensure required dynamic columns exist.
+    for column in ("status", "time_remaining_or_date_sold", "price", "bids"):
+        if column not in active_df.columns:
+            active_df[column] = ""
+
+    # Default every row to active; downstream scripts will refine.
+    active_df["status"] = (
+        active_df["status"]
+        .fillna("")
+        .astype(str)
+        .str.strip()
+        .replace({"": "active"})
+        .str.lower()
+    )
+
+    if not existing_active.empty and "url" in active_df.columns and "url" in existing_active.columns:
+        active_df["_url_norm"] = _normalize_url(active_df["url"])
+        existing_active = existing_active.copy()
+        existing_active["_url_norm"] = _normalize_url(existing_active["url"])
+        lookup = existing_active.set_index("_url_norm")
+        for column in ("status", "time_remaining_or_date_sold", "price", "bids"):
+            if column not in active_df.columns:
+                active_df[column] = ""
+            if column not in lookup.columns:
+                continue
+            blank_mask = _is_blank(active_df[column])
+            active_df.loc[blank_mask, column] = active_df.loc[blank_mask, "_url_norm"].map(lookup[column])
+        active_df.drop(columns=["_url_norm"], inplace=True, errors="ignore")
+
+    dynamic_columns = [col for col in ("status", "time_remaining_or_date_sold", "price", "bids") if col not in base_columns]
+    ordered_columns = base_columns + dynamic_columns
+    active_df = active_df.reindex(columns=ordered_columns, fill_value="")
+    atomic_write(active_df, ACTIVE_OUTPUT_FILE)
+
+
+def main(batch_size: int | None = None, *, force_all: bool = False) -> None:
     if not INPUT_FILE.exists():
         print(f"Missing input file: {INPUT_FILE}")
         return
@@ -344,8 +444,15 @@ def main() -> None:
     processed_urls = set(existing_df.get("url", pd.Series(dtype=str)).dropna().tolist())
     pending_links = [url for url in all_links if url not in processed_urls]
 
-    target_links = pending_links or all_links
-    print(f"Processing {len(target_links)} listings (pending: {len(pending_links)}).")
+    target_links = all_links if force_all else (pending_links or all_links)
+    if batch_size is not None and batch_size > 0:
+        target_links = target_links[:batch_size]
+        print(
+            f"Limiting run to {len(target_links)} listing(s) based on batch size {batch_size}. "
+            f"(Pending queue length: {len(pending_links)}.)"
+        )
+    else:
+        print(f"Processing {len(target_links)} listings (pending: {len(pending_links)}).")
 
     data, skipped = process_links(target_links)
     new_df = pd.DataFrame(data)
@@ -356,9 +463,18 @@ def main() -> None:
     combined = pd.concat([existing_df, new_df], ignore_index=True, sort=False)
     combined.drop_duplicates(subset=["url"], keep="last", inplace=True)
     combined = combined.reindex(columns=SCHEMA_FIELDS)
+    combined = combined.reset_index(drop=True)
 
-    atomic_write(combined, OUTPUT_FILE)
-    print(f"Saved {len(new_df)} rows (total {len(combined)}). Output: {OUTPUT_FILE}")
+    cleaned = normalize_listing_fields(combined)
+    cleaned = drop_sparse_rows(cleaned)
+    cleaned = drop_invalid_years(cleaned)
+    cleaned = drop_invalid_odometer_rows(cleaned)
+    static_export = cleaned.drop_duplicates(subset=["url"], keep="last")
+    static_export = static_export.reindex(columns=STATIC_VEHICLE_SCHEMA, fill_value="")
+
+    atomic_write(static_export, OUTPUT_FILE)
+    seed_active_dataset(static_export)
+    print(f"Saved {len(new_df)} rows (total {len(static_export)}). Output: {OUTPUT_FILE}")
 
     write_skipped(skipped)
     if skipped:
@@ -366,4 +482,17 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description="Scrape vehicle details from stored links.")
+    parser.add_argument(
+        "--batch-size",
+        type=int,
+        default=None,
+        help="Limit the number of listings processed in this run. Omit to scrape the entire queue.",
+    )
+    parser.add_argument(
+        "--all",
+        action="store_true",
+        help="Force a full re-scrape of every stored link (not just pending ones).",
+    )
+    args = parser.parse_args()
+    main(batch_size=args.batch_size, force_all=args.all)

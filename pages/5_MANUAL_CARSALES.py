@@ -1,80 +1,96 @@
-import html
-import urllib.parse
-from typing import Any, Dict, Optional
+from __future__ import annotations
+
+from datetime import datetime
 
 import pandas as pd
 import streamlit as st
 
-from scripts.ai_price_analysis import _extract_hours_remaining
-from scripts.vehicle_updates import coerce_price, update_vehicle_estimates
-from shared.data_loader import dataset_path, ensure_datasets_available
-from shared.filter_controls import (
-    apply_vehicle_filters,
-    render_time_filter,
-    render_vehicle_filter_toggles,
-)
-from shared.styling import clean_html, inject_global_styles, page_intro
+from shared.curves import CURVE_COLUMNS, load_curves, save_curves
+from shared.grouping import GROUP_IDS
+from shared.styling import clean_html, display_banner, inject_global_styles, page_intro
 
 
-st.set_page_config(
-    page_title="Manual Carsales Estimate Input",
-    layout="wide",
-    initial_sidebar_state="expanded",
-)
+st.set_page_config(page_title="Curve Builder", layout="wide")
 inject_global_styles()
-
-st.markdown(
-    "<style>[data-testid='stSidebar']{display:block !important;}</style>",
-    unsafe_allow_html=True,
-)
-st.markdown(
-    clean_html(
-        """
-        <style>
-        .manual-card {
-            border: 1px solid var(--autosniper-border);
-            background: var(--autosniper-panel);
-            border-radius: 16px;
-            padding: 1.1rem 1.25rem;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.24);
-            margin-bottom: 1rem;
-        }
-        .manual-title {
-            display: block;
-            font-size: 1.25rem;
-            font-weight: 800;
-            color: var(--autosniper-primary);
-            letter-spacing: -0.01em;
-        }
-        .manual-meta {
-            color: var(--autosniper-muted);
-            font-size: 0.95rem;
-            margin-top: 0.15rem;
-            margin-bottom: 0.35rem;
-        }
-        [data-testid="stSidebar"] .stSelectbox,
-        [data-testid="stSidebar"] .stNumberInput,
-        [data-testid="stSidebar"] .stTextInput {
-            margin-bottom: 0.65rem;
-        }
-        </style>
-        """
-    ),
-    unsafe_allow_html=True,
-)
-
+display_banner()
 page_intro(
-    "MANUAL CARSALES ESTIMATES",
-    "Enter Carsales resale ranges and recent sales counts. Saved rows disappear from the list because completed items are filtered out.",
+    "CURVE BUILDER",
+    "Maintain the anchor curves used for restricted-market pricing. Add or edit anchor points for each group.",
 )
+
+
+def _coerce_int(value: object) -> int | None:
+    if value is None:
+        return None
+    try:
+        return int(float(str(value).replace(",", "").strip()))
+    except (TypeError, ValueError):
+        return None
+
+
+def _fill_medians(df: pd.DataFrame) -> pd.DataFrame:
+    working = df.copy()
+    for index, row in working.iterrows():
+        median = _coerce_int(row.get("price_median"))
+        if median is not None:
+            continue
+        low = _coerce_int(row.get("price_low"))
+        high = _coerce_int(row.get("price_high"))
+        if low is not None and high is not None:
+            working.at[index, "price_median"] = int(round((low + high) / 2.0))
+    return working
+
+
+def _ensure_columns(df: pd.DataFrame) -> pd.DataFrame:
+    working = df.copy()
+    for column in CURVE_COLUMNS:
+        if column not in working.columns:
+            working[column] = None
+    return working[list(CURVE_COLUMNS)]
+
+
+def _norm_key(value: object) -> str:
+    if value is None:
+        return ""
+    text = str(value).strip().lower()
+    return "".join(ch for ch in text if ch.isalnum())
+
+
+RAW_GROUP_KEY_MAP = {
+    ("hilux", "dualcab_ute_sr5"): "toyota_hilux_dualcab_ute_diesel_auto_sr5_4x4",
+    ("golf", "hatch_petrol_auto"): "volkswagen_golf_hatch_petrol_auto_base",
+    ("golf", "hatch_petrol_auto_base"): "volkswagen_golf_hatch_petrol_auto_base",
+    ("commodore", "sedan_petrol_auto_v6"): "holden_commodore_sedan_petrol_auto_v6",
+    ("commodore", "wagon_petrol_auto_v6"): "holden_commodore_wagon_petrol_auto_v6",
+    ("cruze", "hatch_petrol_auto"): "holden_cruze_hatch_petrol_auto_4cyl",
+    ("territory", "suv_diesel_auto"): "ford_territory_suv_diesel_auto_4cyl",
+    ("i30", "hatch_petrol_auto"): "hyundai_i30_hatch_petrol_auto_na_active_elite",
+    ("corolla", "hatch_petrol_auto"): "toyota_corolla_hatch_petrol_auto",
+    ("corolla", "sedan_petrol_auto"): "toyota_corolla_sedan_petrol_auto",
+    ("3series", "sedan_petrol_auto_4cyl"): "bmw_3series_sedan_petrol_auto_4cyl_20",
+    ("3series", "sedan_petrol_auto_4cyl_20"): "bmw_3series_sedan_petrol_auto_4cyl_20",
+    ("captiva", "suv_diesel_auto"): "holden_captiva_suv_diesel_auto_4cyl",
+    ("ranger", "dualcab_ute_diesel_auto"): "ford_ranger_dualcab_ute_diesel_auto",
+    ("cx5", "suv_petrol_auto_20"): "mazda_cx5_suv_petrol_auto_20",
+    ("cx5", "suv_petrol_auto_25"): "mazda_cx5_suv_petrol_auto_25",
+    ("navara", "dualcab_ute_diesel_auto"): "nissan_navara_dualcab_ute_diesel_auto",
+}
+GROUP_KEY_MAP = {
+    (_norm_key(model), _norm_key(group_key)): group_id
+    for (model, group_key), group_id in RAW_GROUP_KEY_MAP.items()
+}
+
+
+curves_df = _ensure_columns(load_curves())
+
 st.markdown(
     clean_html(
         """
         <div class="autosniper-section">
-            <div class="section-title">Entry format</div>
+            <div class="section-title">Curve data</div>
             <div class="section-subtitle">
-                Use <strong>min - max</strong> for price ranges (e.g. <code>$15,000 - $18,000</code>).
-                The dashboard automatically sets the average to the midpoint. Enter the <strong>sold last 30 days</strong> count as a whole number.
+                Curves are keyed by <strong>group_id</strong> and <strong>anchor_year</strong>. Each anchor year can
+                have multiple km points.
             </div>
         </div>
         """
@@ -82,305 +98,141 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-
-EXCLUDED_STATUSES = {"sold", "closed", "canceled", "cancelled", "referred"}
-
-
-def _ensure_columns(df: pd.DataFrame) -> pd.DataFrame:
-    df = df.copy()
-    for col in (
-        "manual_carsales_min",
-        "manual_carsales_max",
-        "manual_carsales_sold_30d",
-        "manual_carsales_avg",
-        "manual_recent_sales_30d",
-        "manual_carsales_count",
-        "manual_carsales_table",
-        "manual_carsales_estimate",
-        "carsales_skipped",
-    ):
-        if col not in df.columns:
-            df[col] = None
-    df["carsales_skipped"] = df["carsales_skipped"].fillna(False)
-    return df
-
-
-def _is_blank(value: Any) -> bool:
-    if value is None or (isinstance(value, float) and pd.isna(value)):
-        return True
-    text = str(value).strip()
-    if not text:
-        return True
-    try:
-        return float(text.replace("$", "").replace(",", "")) == 0
-    except Exception:
-        return False
-
-
-@st.cache_data(ttl=300)
-def _load_vehicle_table() -> pd.DataFrame:
-    source_files = ["active_vehicle_details.csv", "vehicle_static_details.csv"]
-    missing = ensure_datasets_available(source_files)
-    if len(missing) == len(source_files):
-        st.error("Missing dataset: active_vehicle_details.csv")
-        st.stop()
-
-    using_active = "active_vehicle_details.csv" not in missing
-    source_path = dataset_path("active_vehicle_details.csv") if using_active else dataset_path("vehicle_static_details.csv")
-    if not using_active:
-        st.info("Active listings dataset missing; falling back to vehicle_static_details.csv.")
-    path = source_path
-    df = pd.read_csv(path)
-    df = _ensure_columns(df)
-
-    ai_cache_path = dataset_path("ai_listing_valuations.csv")
-    manual_sync_columns = [
-        "manual_carsales_min",
-        "manual_carsales_max",
-        "manual_carsales_avg",
-        "manual_carsales_sold_30d",
-        "manual_recent_sales_30d",
-        "manual_carsales_count",
-        "manual_carsales_estimate",
-        "manual_carsales_table",
-    ]
-    if ai_cache_path.exists():
-        ai_df = pd.read_csv(ai_cache_path)
-        if "url" in ai_df.columns:
-            subset_cols = ["url"] + [col for col in manual_sync_columns + ["carsales_skipped"] if col in ai_df.columns]
-            ai_subset = ai_df[subset_cols].copy()
-            df = df.merge(ai_subset, on="url", how="left", suffixes=("", "_ai"))
-            for column in manual_sync_columns:
-                ai_column = f"{column}_ai"
-                if ai_column in df.columns:
-                    mask = df[column].apply(_is_blank)
-                    df.loc[mask, column] = df.loc[mask, ai_column]
-                    df.drop(columns=[ai_column], inplace=True)
-            ai_skip = "carsales_skipped_ai"
-            if ai_skip in df.columns:
-                df["carsales_skipped"] = df["carsales_skipped"].fillna(df[ai_skip])
-                df.drop(columns=[ai_skip], inplace=True)
-
-    df["status"] = df.get("status", "").astype(str).str.strip().str.lower()
-
-    if "hours_remaining" not in df.columns:
-        df["hours_remaining"] = df.get("time_remaining_or_date_sold", "").apply(_extract_hours_remaining)
-
-    if "auction_end_time" in df.columns:
-        df["auction_end_time_parsed"] = pd.to_datetime(df["auction_end_time"], errors="coerce")
-    else:
-        df["auction_end_time_parsed"] = pd.NaT
-
-    df["location_clean"] = (
-        df.get("location", pd.Series([None] * len(df), index=df.index))
-        .fillna("")
-        .astype(str)
-        .str.strip()
-        .replace({"nan": "", "None": ""})
-    )
-
-    return df
-
-
-def _carsales_search_url(row: pd.Series) -> str:
-    parts = [str(row.get("year", "")).strip(), row.get("make", ""), row.get("model", ""), row.get("variant", "")]
-    slug = "-".join([str(p).strip() for p in parts if p not in (None, "")])
-    slug = "-".join(slug.split())
-    encoded = urllib.parse.quote_plus(slug.lower())
-    return f"https://www.carsales.com.au/cars/{encoded}"
-
-
-def _format_odometer(value: Any) -> str:
-    if value is None or (isinstance(value, float) and pd.isna(value)):
-        return "N/A"
-    try:
-        return f"{int(float(str(value).replace(',', '').strip())):,} km"
-    except Exception:
-        text = str(value).strip()
-        return f"{text} km" if text else "N/A"
-
-
-def _format_range_text(min_val: Any, max_val: Any) -> str:
-    if min_val is None and max_val is None:
-        return ""
-    min_txt = f"${float(min_val):,.0f}" if min_val is not None and not pd.isna(min_val) else ""
-    max_txt = f"${float(max_val):,.0f}" if max_val is not None and not pd.isna(max_val) else ""
-    if min_txt and max_txt:
-        return f"{min_txt} - {max_txt}"
-    return min_txt or max_txt
-
-
-def _parse_range_text(raw: Any) -> tuple[Optional[float], Optional[float]]:
-    """Accept '12000-15000' or '$12k - $15k' and return (min, max)."""
-    if raw is None or (isinstance(raw, float) and pd.isna(raw)):
-        return None, None
-    text = str(raw).strip()
-    if not text:
-        return None, None
-    normalized = text.lower().replace("to", "-").replace("–", "-").replace("—", "-")
-    parts = [p for p in normalized.split("-") if p.strip()]
-    values: list[float] = []
-    for part in parts:
-        val = coerce_price(part)
-        if val is not None:
-            values.append(val)
-    if not values:
-        return None, None
-    if len(values) == 1:
-        return values[0], None
-    return values[0], values[1]
-
-
-def _format_price(value: Any) -> str:
-    parsed = coerce_price(value)
-    if parsed is None:
-        return "N/A"
-    return f"${parsed:,.0f}"
-
-
-df = _load_vehicle_table()
-
-# Filters
-st.sidebar.markdown("### Filters")
-time_label, time_bounds = render_time_filter(
-    container=st.sidebar,
-    label="Time remaining",
-    default_option="< 24h",
+edited_df = st.data_editor(
+    curves_df,
+    num_rows="dynamic",
+    use_container_width=True,
 )
-vehicle_toggles = render_vehicle_filter_toggles(container=st.sidebar)
-df = apply_vehicle_filters(df, vehicle_toggles)
 
-# Base filtering
-missing_manual_mask = df["manual_carsales_min"].apply(_is_blank)
-status_mask = ~df["status"].isin(EXCLUDED_STATUSES)
-skip_mask = ~df["carsales_skipped"].fillna(False).astype(bool)
-hours_mask = pd.Series([True] * len(df))
-lower_bound, upper_bound = time_bounds
-if lower_bound is not None or upper_bound is not None:
-    hours_mask = df["hours_remaining"].apply(
-        lambda val: (
-            (lower_bound is None or (val is not None and val >= lower_bound))
-            and (upper_bound is None or (val is not None and val < upper_bound))
+col_save, col_refresh = st.columns([1, 1])
+with col_save:
+    if st.button("Save curves", type="primary"):
+        cleaned = _fill_medians(_ensure_columns(edited_df))
+        cleaned["created_at"] = cleaned["created_at"].fillna(
+            datetime.utcnow().isoformat(timespec="seconds")
         )
-    )
+        save_curves(cleaned)
+        st.success("Curves saved.")
 
-filtered = df[missing_manual_mask & status_mask & skip_mask & hours_mask].copy()
+with col_refresh:
+    if st.button("Reload"):
+        rerun = getattr(st, "rerun", None) or getattr(st, "experimental_rerun", None)
+        if rerun:
+            rerun()
 
-if filtered.empty:
-    st.info("No vehicles need manual Carsales estimates right now.")
-    st.stop()
 
-# Sort by auction end time (when available) or hours remaining.
-filtered["sort_key"] = filtered.apply(
-    lambda row: row["auction_end_time_parsed"]
-    if pd.notna(row["auction_end_time_parsed"])
-    else row.get("hours_remaining", None),
-    axis=1,
+st.markdown(
+    clean_html(
+        """
+        <div class="autosniper-section">
+            <div class="section-title">Add anchor point</div>
+            <div class="section-subtitle">
+                Add a single anchor row quickly. Median is auto-calculated if low/high are provided.
+            </div>
+        </div>
+        """
+    ),
+    unsafe_allow_html=True,
 )
-filtered = filtered.sort_values(by="sort_key", kind="mergesort")
 
-filtered["carsales_search"] = filtered.apply(_carsales_search_url, axis=1)
-filtered["odometer_display"] = filtered["odometer_reading"].apply(_format_odometer)
+with st.form("add_curve_form", clear_on_submit=True):
+    group_id = st.selectbox("Group ID", GROUP_IDS)
+    series = st.text_input("Series (optional)", value="")
+    anchor_year = st.number_input("Anchor year", min_value=1990, max_value=2100, value=2020, step=1)
+    km_anchor = st.number_input("KM anchor", min_value=0, max_value=400000, value=100000, step=5000)
+    price_low = st.number_input("Price low", min_value=0, max_value=200000, value=0, step=500)
+    price_high = st.number_input("Price high", min_value=0, max_value=200000, value=0, step=500)
+    price_median = st.number_input("Price median (optional)", min_value=0, max_value=200000, value=0, step=500)
+    source = st.text_input("Source", value="carsales_sell_tool")
+    submitted = st.form_submit_button("Add anchor")
 
-st.markdown("Enter ranges and counts below, then click **Save** for each row.")
-st.divider()
+if submitted:
+    median_value = price_median or None
+    if median_value is None or median_value == 0:
+        if price_low > 0 and price_high > 0:
+            median_value = int(round((price_low + price_high) / 2.0))
+    new_row = {
+        "group_id": group_id,
+        "series": series.strip() or None,
+        "anchor_year": int(anchor_year),
+        "km_anchor": int(km_anchor),
+        "price_low": int(price_low) if price_low > 0 else None,
+        "price_high": int(price_high) if price_high > 0 else None,
+        "price_median": int(median_value) if median_value else None,
+        "source": source or "carsales_sell_tool",
+        "created_at": datetime.utcnow().isoformat(timespec="seconds"),
+    }
+    updated = pd.concat([curves_df, pd.DataFrame([new_row])], ignore_index=True)
+    updated = _fill_medians(_ensure_columns(updated))
+    save_curves(updated)
+    st.success("Anchor added.")
 
-st.caption(f"Showing {len(filtered)} vehicles needing manual entries.")
 
+st.markdown(
+    clean_html(
+        """
+        <div class="autosniper-section">
+            <div class="section-title">Paste pipe rows</div>
+            <div class="section-subtitle">
+                Format: <code>model | group_key | series | year | km | price</code>
+            </div>
+        </div>
+        """
+    ),
+    unsafe_allow_html=True,
+)
 
-def _safe_int(value: Any) -> Optional[int]:
-    try:
-        if value is None or (isinstance(value, float) and pd.isna(value)):
-            return None
-        text = str(value).strip()
-        if not text:
-            return None
-        return int(float(text))
-    except Exception:
-        return None
-
-
-for _, row in filtered.iterrows():
-    url = str(row.get("url", "")).strip()
-    parts = [row.get("year"), row.get("make"), row.get("model"), row.get("variant")]
-    safe_parts = []
-    for part in parts:
-        if part is None:
+pipe_rows = st.text_area("Pipe rows", height=160, placeholder="i30 | hatch_petrol_auto | PD.V4 | 2022 | 50000 | 22900")
+if st.button("Import pipe rows"):
+    rows = []
+    errors = []
+    for line_no, line in enumerate(pipe_rows.splitlines(), start=1):
+        raw = line.strip()
+        if not raw:
             continue
-        if isinstance(part, float) and pd.isna(part):
+        parts = [part.strip() for part in raw.split("|")]
+        if len(parts) != 6:
+            errors.append(f"Line {line_no}: expected 6 fields, got {len(parts)}.")
             continue
-        if isinstance(part, pd._libs.missing.NAType):
+        model_key, group_key, series_key, year_text, km_text, price_text = parts
+        if not model_key or not group_key:
+            errors.append(f"Line {line_no}: model/group_key missing.")
             continue
-        text = str(part).strip()
-        if not text:
+        model_norm = _norm_key(model_key)
+        group_norm = _norm_key(group_key)
+        series_norm = series_key.strip() or None
+        try:
+            year_val = int(float(year_text))
+            km_val = int(float(km_text))
+            price_val = int(float(price_text))
+        except ValueError:
+            errors.append(f"Line {line_no}: year/km/price must be numeric.")
             continue
-        safe_parts.append(text)
-    title = " ".join(safe_parts)
-
-    with st.form(key=f"manual_form_{url}"):
-        st.markdown("<div class='manual-card'>", unsafe_allow_html=True)
-        header_col, meta_col = st.columns([3, 2])
-        header_col.markdown(f"<span class='manual-title'>{html.escape(title)}</span>", unsafe_allow_html=True)
-        header_col.markdown(
-            f"<div class='manual-meta'>{row.get('location_clean', 'Location: N/A') or 'Location: N/A'}</div>",
-            unsafe_allow_html=True,
+        resolved_group = None
+        if group_key in GROUP_IDS:
+            resolved_group = group_key
+        else:
+            resolved_group = GROUP_KEY_MAP.get((model_norm, group_norm))
+        if not resolved_group:
+            errors.append(f"Line {line_no}: unknown group mapping for {model_key} | {group_key}.")
+            continue
+        rows.append(
+            {
+                "group_id": resolved_group,
+                "series": series_norm,
+                "anchor_year": year_val,
+                "km_anchor": km_val,
+                "price_low": None,
+                "price_high": None,
+                "price_median": price_val,
+                "source": "curve_pipe_import",
+                "created_at": datetime.utcnow().isoformat(timespec="seconds"),
+            }
         )
-        meta_col.write(row.get("odometer_display", "N/A"))
-        meta_col.caption(f"{row.get('transmission', 'N/A')} | {row.get('fuel_type', 'N/A')}")
-        price_display = _format_price(row.get("price") or row.get("current_price"))
-        meta_col.caption(f"Current price: {price_display}")
-        listing_link = row.get("url") or row.get("carsales_search", "")
-        link_label = "Open listing" if row.get("url") else "Carsales search"
-        meta_col.markdown(f"[{link_label}]({listing_link})", unsafe_allow_html=False)
-
-        resale_default = _format_range_text(row.get("manual_carsales_min"), row.get("manual_carsales_max"))
-        sold_default = _safe_int(row.get("manual_carsales_sold_30d")) or 0
-
-        resale_col, sold_col = st.columns([3, 1])
-        resale_input = resale_col.text_input(
-            "Carsales resale (min - max)",
-            value=resale_default,
-            placeholder="$15,000 - $18,000",
-        )
-        sold_input = sold_col.number_input(
-            "Sold last 30d",
-            min_value=0,
-            step=1,
-            value=sold_default,
-            help="Count of similar vehicles sold on Carsales in the last 30 days.",
-        )
-
-        action_col1, action_col2, _ = st.columns([1, 1, 3])
-        save_clicked = action_col1.form_submit_button("Save")
-        skip_clicked = action_col2.form_submit_button("Skip")
-
-        if save_clicked:
-            manual_min, manual_max = _parse_range_text(resale_input)
-            if manual_min is None:
-                st.error("Carsales resale range is required (min or min-max).")
-                continue
-
-            updated = update_vehicle_estimates(
-                url,
-                manual_min=manual_min,
-                manual_max=manual_max,
-                sold_last_30d=int(sold_input) if sold_input is not None else None,
-                skipped=False,
-            )
-            if updated:
-                st.success("Saved Carsales estimates.")
-                _load_vehicle_table.clear()
-                st.rerun()
-            else:
-                st.error("Unable to update this vehicle.")
-
-        if skip_clicked:
-            updated = update_vehicle_estimates(url, skipped=True)
-            if updated:
-                st.info("Skipped. You can revisit later by clearing the flag in CSV.")
-                _load_vehicle_table.clear()
-                st.rerun()
-            else:
-                st.error("Unable to skip this vehicle.")
-
-        st.markdown("</div>", unsafe_allow_html=True)
+    if rows:
+        merged = pd.concat([curves_df, pd.DataFrame(rows)], ignore_index=True)
+        merged = _fill_medians(_ensure_columns(merged))
+        save_curves(merged)
+        st.success(f"Imported {len(rows)} curve row(s).")
+    if errors:
+        st.warning("Import issues:\n" + "\n".join(errors))

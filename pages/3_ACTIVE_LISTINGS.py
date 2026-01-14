@@ -31,15 +31,20 @@ inject_global_styles()
 display_banner()
 render_logo_centered()
 
-missing = ensure_datasets_available(["vehicle_static_details.csv"])
+missing = ensure_datasets_available(["active_vehicle_details.csv"])
 if missing:
     st.error(
-        "Required dataset `vehicle_static_details.csv` is missing. "
+        "Required dataset `active_vehicle_details.csv` is missing. "
         "Configure `AUTOSNIPER_DATA_URL` or upload the CSV to `CSV_data/`."
     )
     st.stop()
 
-CSV_FILE = dataset_path("vehicle_static_details.csv")
+CSV_FILE = dataset_path("active_vehicle_details.csv")
+STATUS_OPTIONS: dict[str, str] = {
+    "active": "Active",
+    "sold": "Sold",
+    "referred": "Referred",
+}
 
 if "skipped_urls" not in st.session_state:
     st.session_state.skipped_urls = []
@@ -90,9 +95,14 @@ def parse_time_remaining_hours(value: object) -> float | None:
     return total_hours if total_hours > 0 else None
 
 
-async def run_bid_update(links: list[str] | None = None) -> None:
+async def run_bid_update(links: list[str] | None = None, limit: int | None = None) -> None:
+    target_links = links
+    limit_arg = limit
+    if target_links and limit_arg:
+        target_links = target_links[:limit_arg]
+        limit_arg = None
     with st.spinner("Updating bid and time data..."):
-        df, skipped_urls = await update_bids(input_links=links)
+        df, skipped_urls = await update_bids(input_links=target_links, limit=limit_arg)
         st.session_state.skipped_urls = skipped_urls
         if not df.empty:
             st.success(f"Updated {len(df)} listings in {CSV_FILE}.")
@@ -111,9 +121,18 @@ refresh_all_clicked = hero_action_card(
     "Refresh every listing",
     button_key="refresh_all_listings",
 )
+active_batch_size = st.number_input(
+    "Active scraper batch size",
+    min_value=0,
+    max_value=500,
+    value=0,
+    step=1,
+    help="Process only this many listings per run (0 = refresh every available listing).",
+    key="active_batch_size_input",
+)
 
 if refresh_all_clicked:
-    asyncio.run(run_bid_update())
+    asyncio.run(run_bid_update(limit=int(active_batch_size) if active_batch_size > 0 else None))
 
 if st.session_state.skipped_urls:
     skipped_html = clean_html(
@@ -130,7 +149,12 @@ if st.session_state.skipped_urls:
     skipped_df = pd.DataFrame(st.session_state.skipped_urls, columns=["URL"])
     st.dataframe(skipped_df, width="stretch")
     if st.button("Re-run scraper with skipped URLs"):
-        asyncio.run(run_bid_update(st.session_state.skipped_urls))
+        asyncio.run(
+            run_bid_update(
+                st.session_state.skipped_urls,
+                limit=int(active_batch_size) if active_batch_size > 0 else None,
+            )
+        )
 
 
 @st.cache_data(ttl=0)
@@ -155,22 +179,55 @@ if CSV_FILE.exists():
     for col in df.select_dtypes(include="object").columns:
         df[col] = df[col].fillna("").astype(str).str.strip()
 
+    if "status" not in df.columns:
+        df["status"] = "active"
     df["status"] = df["status"].astype(str).str.strip().str.lower()
-    active_df = df[df["status"] == "active"].copy()
+    if "time_remaining_or_date_sold" not in df.columns:
+        df["time_remaining_or_date_sold"] = ""
 
-    if active_df.empty:
-        st.info("No active listings available. Refresh the scrapers to pull the latest data.")
+    def _is_blank(series: pd.Series) -> pd.Series:
+        lowered = series.astype(str).str.strip().str.lower()
+        return lowered.isin(["", "nan", "none"])
+
+    blank_price = _is_blank(df["price"]) if "price" in df.columns else pd.Series(False, index=df.index)
+    blank_bids = _is_blank(df["bids"]) if "bids" in df.columns else pd.Series(False, index=df.index)
+    blank_time = _is_blank(df["time_remaining_or_date_sold"])
+    missing_mask = (df["status"] == "active") & (blank_price | blank_bids | blank_time)
+    missing_urls = df.loc[missing_mask, "url"].dropna().unique().tolist()
+    if missing_urls:
+        st.warning(f"{len(missing_urls):,} listings are missing bid/price/time data.")
+        if st.button("Refresh newly added listings", key="refresh_missing_rows"):
+            asyncio.run(
+                run_bid_update(
+                    missing_urls,
+                    limit=int(active_batch_size) if active_batch_size > 0 else None,
+                )
+            )
+
+    available_statuses = [status for status in STATUS_OPTIONS if status in df["status"].unique()]
+    if not available_statuses:
+        st.info("No listings available. Refresh the scrapers to pull the latest data.")
         st.stop()
 
     st.sidebar.markdown("### Filters")
+    status_selection = st.sidebar.multiselect(
+        "Listing status",
+        options=available_statuses,
+        default=available_statuses,
+        format_func=lambda value: STATUS_OPTIONS.get(value, value.title()),
+    )
+    status_filtered_df = df[df["status"].isin(status_selection)].copy() if status_selection else df.copy()
+    if status_filtered_df.empty:
+        st.info("No listings match the selected statuses. Adjust the filters or refresh the scrapers.")
+        st.stop()
     time_choice, time_bounds = render_time_filter(
         container=st.sidebar,
         label="Time remaining",
-        default_option="< 24h",
+        default_option="All",
     )
     vehicle_toggles = render_vehicle_filter_toggles(container=st.sidebar)
 
-    filtered_df = apply_vehicle_filters(active_df, vehicle_toggles)
+    filtered_df = apply_vehicle_filters(status_filtered_df, vehicle_toggles)
     filtered_df = filtered_df.copy()
     filtered_df["time_remaining_hours"] = filtered_df["time_remaining_or_date_sold"].apply(parse_time_remaining_hours)
     filtered_df["vehicle_name"] = filtered_df.apply(assemble_vehicle_title, axis=1)
@@ -196,18 +253,27 @@ if CSV_FILE.exists():
     else:
         visible_urls = []
 
+    for required_col in ("price", "bids"):
+        if required_col not in scoped_df.columns:
+            scoped_df[required_col] = ""
+
     col_left, col_right = st.columns([3, 1])
     with col_right:
         if st.button("Refresh visible listings"):
             if visible_urls:
-                asyncio.run(run_bid_update(visible_urls))
+                asyncio.run(
+                    run_bid_update(
+                        visible_urls,
+                        limit=int(active_batch_size) if active_batch_size > 0 else None,
+                    )
+                )
             else:
                 st.info("No listings match the current filters.")
 
     summary_html = clean_html(
         f"""
         <div class="autosniper-section">
-            <div class="section-title">Active Vehicle Listings</div>
+            <div class="section-title">Vehicle Listings</div>
             <div class="section-subtitle">
                 Showing {len(scoped_df):,} of {len(filtered_df):,} filtered records · {time_choice}
             </div>
@@ -217,11 +283,12 @@ if CSV_FILE.exists():
     col_left.markdown(summary_html, unsafe_allow_html=True)
 
     if scoped_df.empty:
-        st.info("No active listings match the current filters.")
+        st.info("No listings match the current filters.")
     else:
         table_df = scoped_df[
             [
                 "vehicle_name",
+                "status",
                 "time_remaining_or_date_sold",
                 "price",
                 "bids",
@@ -233,6 +300,7 @@ if CSV_FILE.exists():
         ].rename(
             columns={
                 "vehicle_name": "Vehicle",
+                "status": "Status",
                 "time_remaining_or_date_sold": "Time Remaining",
                 "price": "Guide Price",
                 "bids": "Bids",
@@ -245,7 +313,7 @@ if CSV_FILE.exists():
 
         st.dataframe(
             table_df,
-            use_container_width=True,
+            width="stretch",
             hide_index=True,
             column_config={
                 "Guide Price": st.column_config.Column("Guide Price ($)"),

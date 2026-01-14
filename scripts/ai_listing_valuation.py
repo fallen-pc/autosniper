@@ -30,7 +30,10 @@ REQUIRED_COLUMNS = [
     # Risk decisioning
     "confidence",
     "risk_flags",
-    "verdict",
+    "computed_verdict",
+    "no_edge",
+    "edge_note",
+    "edge_buffer",
     # Legacy fields (kept for compatibility)
     "carsales_price_estimate",
     "carsales_price_range",
@@ -51,12 +54,24 @@ REQUIRED_COLUMNS = [
 # Default cost assumptions (AUD)
 DEFAULT_TRANSPORT = 400.0
 DEFAULT_PREP = 300.0
+COST_BUFFER = 1_500.0
 UNREGISTERED_REGO_COST = 1_200.0
 REGISTERED_REGO_COST = 0.0
 MIN_FEES = 500.0
 FEES_RATE = 0.08
 # Max headroom we give above the current live bid before we cap the recommendation.
 CURRENT_BID_HEADROOM = 3_500.0
+EDGE_BUFFER = 50.0
+WORST_CASE_DOWNSIDE = 0.17  # 17% downside band used for worst-case resale
+NO_EDGE_MESSAGE = "No edge left at current bid — do not bid above {amount}."
+
+
+def _round_to_10(value: Optional[float]) -> Optional[float]:
+    if value is None:
+        return None
+    return round(value / 10.0) * 10.0
+
+
 # Minimum net profit target and band controls
 MIN_NET_PROFIT_ABSOLUTE = 1_500.0
 MIN_NET_PROFIT_RATIO = 0.15
@@ -404,18 +419,6 @@ def _solve_max_bid(
     return max(0.0, min(best, resale_low))
 
 
-def _map_verdict(net_profit_worst: Optional[float], confidence: Optional[float]) -> str:
-    if net_profit_worst is None or net_profit_worst <= 0 or confidence is None:
-        return "Avoid"
-    if net_profit_worst >= 2_500 and confidence >= 0.65:
-        return "Sniper Buy"
-    if net_profit_worst >= 1_200 and confidence >= 0.45:
-        return "Flippable"
-    if net_profit_worst > 0:
-        return "Trap"
-    return "Avoid"
-
-
 def update_manual_carsales_data(
     url: str,
     price_estimate: Optional[str],
@@ -523,6 +526,7 @@ The score must be numeric between 0 and 10 (inclusive) and align with your state
     return prompt
 
 
+
 def run_ai_listing_analysis(listing_row: pd.Series, force_refresh: bool = False) -> Dict[str, Any]:
     cached_df = load_cached_results()
     url = listing_row.get("url")
@@ -601,57 +605,79 @@ def run_ai_listing_analysis(listing_row: pd.Series, force_refresh: bool = False)
     if score_value is not None:
         score_value = max(0.0, min(10.0, score_value))
 
-    ai_carsales_estimate = _parse_currency(data.get("carsales_price_estimate"))
-    ai_carsales_range = _parse_currency(data.get("carsales_price_range"))
+    recommended_max_bid_val = _parse_currency(data.get("recommended_max_bid"))
+    recommended_max_bid_str = data.get("recommended_max_bid")
 
-    resale_mid_value = manual_avg_value or ai_carsales_estimate or ai_carsales_range
-    if resale_mid_value is None:
-        resale_mid_value = _parse_currency(listing_row.get("historical_price_median"))
-    if resale_mid_value is None:
-        resale_mid_value = _parse_currency(listing_row.get("historical_price_mean"))
-    if resale_mid_value is None:
-        resale_mid_value = _parse_currency(listing_row.get("historical_price_max"))
-    if resale_mid_value is None:
-        resale_mid_value = _parse_currency(listing_row.get("historical_price_min"))
-    if resale_mid_value is None:
-        resale_mid_value = _parse_currency(listing_row.get("current_price"))
-    if resale_mid_value is None:
-        return {"url": url, "error": "Unable to derive resale estimate."}
+    carsales_estimate = data.get("carsales_price_estimate")
+    carsales_range = data.get("carsales_price_range")
 
-    notes_to_append: list[str] = []
-    risk_flags = _detect_risk_flags(listing_row)
-    confidence = _calculate_confidence(listing_row, risk_flags)
-    downside_pct = _calculate_downside_percent(risk_flags)
-    downside_pct, confidence, risk_flags, notes_to_append = apply_platform_risk_adjustments(
-        listing_row.to_dict(),
-        downside_pct,
-        confidence,
-        risk_flags,
-        notes_to_append,
-    )
-    upside_pct = _calculate_upside_percent(risk_flags)
-    resale_low_value = resale_mid_value * (1 - downside_pct)
-    resale_high_value = resale_mid_value * (1 + upside_pct)
+    if manual_avg_value is not None:
+        carsales_estimate = _format_currency(manual_avg_value)
 
-    carsales_estimate = _format_currency(resale_mid_value)
-    carsales_range = f"{_format_currency(resale_low_value)} - {_format_currency(resale_high_value)}"
+    if manual_min_val is not None or manual_max_val is not None:
+        min_display = _format_currency(manual_min_val) if manual_min_val is not None else None
+        max_display = _format_currency(manual_max_val) if manual_max_val is not None else None
+        if min_display and max_display:
+            carsales_range = f"{min_display} - {max_display}"
+        else:
+            carsales_range = min_display or max_display
 
-    risk_profit_buffer = sum(RISK_NET_PROFIT_ADDERS.get(flag, 0.0) for flag in risk_flags)
-    absolute_floor = MIN_NET_PROFIT_ABSOLUTE + risk_profit_buffer
-    ratio_floor = resale_mid_value * MIN_NET_PROFIT_RATIO + risk_profit_buffer
-    min_net_profit = max(absolute_floor, ratio_floor)
+    adjusted_avg_price = manual_avg_value
+    if adjusted_avg_price is None:
+        parsed_estimate = _parse_currency(carsales_estimate)
+        if parsed_estimate is None and carsales_range:
+            parsed_estimate = _parse_currency(carsales_range)
+        adjusted_avg_price = parsed_estimate
 
-    recommended_max_bid_val = _solve_max_bid(resale_low_value, min_net_profit, listing_row)
-    break_even_bid = _solve_max_bid(resale_low_value, 0.0, listing_row)
+    break_even_bid = None
+    if adjusted_avg_price is not None:
+        break_even_bid = max(0.0, adjusted_avg_price - COST_BUFFER)
 
     current_price_val = _parse_currency(listing_row.get("current_price"))
     if current_price_val is None:
         current_price_val = _parse_currency(listing_row.get("price"))
+
     historical_min_val = _parse_currency(listing_row.get("historical_price_min"))
     historical_close_median_val = _parse_currency(listing_row.get("historical_close_price_median"))
     historical_close_min_val = _parse_currency(listing_row.get("historical_close_price_min"))
 
-    floor_value = current_price_val
+    notes_to_append: list[str] = []
+
+    if recommended_max_bid_val is None:
+        if break_even_bid is not None:
+            recommended_max_bid_val = break_even_bid
+            notes_to_append.append("AI response missing max bid; defaulted to break-even after $1,500 buffer.")
+        else:
+            fallback_candidates = [value for value in (historical_min_val, current_price_val) if value is not None]
+            if fallback_candidates:
+                fallback_value = max(fallback_candidates)
+                recommended_max_bid_val = fallback_value
+                notes_to_append.append(f"AI response missing max bid; using observed floor {_format_currency(fallback_value)}.")
+
+    if break_even_bid is not None and recommended_max_bid_val is not None and recommended_max_bid_val > break_even_bid:
+        recommended_max_bid_val = break_even_bid
+
+    if adjusted_avg_price is not None and recommended_max_bid_val is not None:
+        recommended_max_bid_val = min(recommended_max_bid_val, adjusted_avg_price)
+
+    raised_to_match_current_bid = False
+    if current_price_val is not None:
+        if recommended_max_bid_val is None:
+            recommended_max_bid_val = current_price_val
+            raised_to_match_current_bid = True
+        elif recommended_max_bid_val < current_price_val:
+            recommended_max_bid_val = current_price_val
+            raised_to_match_current_bid = True
+            notes_to_append.append(f"Raised recommended max bid to match the current live bid {_format_currency(current_price_val)}.")
+
+    if current_price_val is not None and recommended_max_bid_val is not None and CURRENT_BID_HEADROOM > 0:
+        headroom_cap = current_price_val + CURRENT_BID_HEADROOM
+        if recommended_max_bid_val > headroom_cap:
+            recommended_max_bid_val = headroom_cap
+            notes_to_append.append(
+                f"Capped recommended max bid at {_format_currency(headroom_cap)} (current bid plus ${CURRENT_BID_HEADROOM:,.0f} headroom)."
+            )
+
     historical_references: list[tuple[str, float]] = []
     for label, value in (
         ("historical auction minimum", historical_min_val),
@@ -661,116 +687,151 @@ def run_ai_listing_analysis(listing_row: pd.Series, force_refresh: bool = False)
         if value is not None:
             historical_references.append((label, value))
 
-    def _would_be_unprofitable_if_raised(floor_bid: float | None, break_even: float | None) -> bool:
-        if floor_bid is None:
-            return False
-        if break_even is None:
-            return True
-        return floor_bid > break_even + 1e-6
-
-    if floor_value is not None:
-        if recommended_max_bid_val is None or recommended_max_bid_val <= 0:
-            if _would_be_unprofitable_if_raised(floor_value, break_even_bid):
-                if break_even_bid is not None and break_even_bid > 0:
-                    recommended_max_bid_val = max(0.0, break_even_bid)
-                    notes_to_append.append(
-                        f"Did not set max bid to current bid ({_format_currency(floor_value)}) because it exceeds break-even "
-                        f"({(_format_currency(break_even_bid) or '--')})."
-                    )
-                else:
-                    notes_to_append.append(
-                        f"Did not set max bid to current bid ({_format_currency(floor_value)}) because break-even could not be established."
-                    )
-            else:
-                recommended_max_bid_val = floor_value
-        elif recommended_max_bid_val < floor_value:
-            if _would_be_unprofitable_if_raised(floor_value, break_even_bid):
+    if recommended_max_bid_val is not None:
+        for label, value in historical_references:
+            if value is not None and recommended_max_bid_val < value:
                 notes_to_append.append(
-                    f"Kept safe max bid at {_format_currency(recommended_max_bid_val)}; current bid "
-                    f"({_format_currency(floor_value)}) exceeds break-even ({(_format_currency(break_even_bid) or '--')})."
+                    f"Recommended bid undercuts the {label} ({_format_currency(value)}); confirm condition advantages before bidding."
                 )
-            else:
-                recommended_max_bid_val = floor_value
-                notes_to_append.append(
-                    f"Raised recommended max bid to match the current live bid ({_format_currency(floor_value)})."
-                )
+                break
 
-    if floor_value is not None and break_even_bid is not None and floor_value > break_even_bid:
-        notes_to_append.append("Current bid exceeds break-even; treat as Avoid unless price drops.")
+    if recommended_max_bid_val is not None:
+        recommended_max_bid_val = max(0.0, recommended_max_bid_val)
 
-    if (
-        current_price_val is not None
-        and CURRENT_BID_HEADROOM > 0
-        and recommended_max_bid_val > current_price_val + CURRENT_BID_HEADROOM
-    ):
-        headroom_cap = current_price_val + CURRENT_BID_HEADROOM
-        recommended_max_bid_val = headroom_cap
-        notes_to_append.append(
-            f"Capped recommended max bid at {_format_currency(headroom_cap)} (current bid plus ${CURRENT_BID_HEADROOM:,.0f} headroom)."
-        )
+    assumed_purchase_val = recommended_max_bid_val
+    if assumed_purchase_val is None:
+        assumed_purchase_val = current_price_val
 
-    if recommended_max_bid_val > resale_low_value:
-        recommended_max_bid_val = resale_low_value
+    resale_mid_val = adjusted_avg_price
+    resale_low_val = None
+    resale_high_val = None
+    if resale_mid_val is not None:
+        resale_low_val = resale_mid_val * (1.0 - WORST_CASE_DOWNSIDE)
+        resale_high_val = resale_mid_val * 1.07
 
-    for label, value in historical_references:
-        if value is not None and recommended_max_bid_val < value:
-            notes_to_append.append(
-                f"Recommended bid undercuts the {label} ({_format_currency(value)}); confirm condition advantages before bidding."
-            )
-            break
+    if manual_max_val is not None:
+        resale_high_val = manual_max_val
+    if manual_min_val is not None:
+        resale_low_val = manual_min_val
 
-    recommended_max_bid_val = max(0.0, recommended_max_bid_val)
-    costs_map = _estimate_costs(recommended_max_bid_val, listing_row)
-    total_costs = sum(costs_map.values())
-    net_profit_worst_val = resale_low_value - recommended_max_bid_val - total_costs
-    net_profit_mid_val = resale_mid_value - recommended_max_bid_val - total_costs
+    resale_mid_val = _round_to_10(resale_mid_val)
+    resale_low_val = _round_to_10(resale_low_val)
+    resale_high_val = _round_to_10(resale_high_val)
 
-    expected_profit = _format_currency(net_profit_mid_val)
-    margin_value = (net_profit_mid_val / resale_mid_value) * 100 if resale_mid_value else None
-    profit_margin = f"{margin_value:.1f}%" if margin_value is not None else None
-    recommended_max_bid_str = _format_currency(recommended_max_bid_val)
+    net_profit_mid_val = None
+    net_profit_worst_val = None
+    if assumed_purchase_val is not None and resale_mid_val is not None:
+        net_profit_mid_val = resale_mid_val - COST_BUFFER - assumed_purchase_val
+    if assumed_purchase_val is not None and resale_low_val is not None:
+        net_profit_worst_val = resale_low_val - COST_BUFFER - assumed_purchase_val
 
-    verdict = _map_verdict(net_profit_worst_val, confidence)
+    expected_profit_val = None
+    if resale_mid_val is not None and recommended_max_bid_val is not None:
+        expected_profit_val = resale_mid_val - COST_BUFFER - recommended_max_bid_val
 
-    high_risk_platform_flags = {"DSG_HIGH_RISK", "POWERSHIFT_HIGH_RISK", "CVT_HIGH_RISK"}
-    platform_high_risk = any(flag in high_risk_platform_flags for flag in risk_flags)
-    forced_verdict: Optional[str] = None
-    if platform_high_risk:
-        if net_profit_worst_val is not None and net_profit_worst_val < 0:
-            forced_verdict = "Avoid"
-        elif net_profit_worst_val is not None and net_profit_worst_val < 2_500:
-            forced_verdict = "Trap"
-        elif confidence < 0.45:
-            forced_verdict = "Trap"
-        if forced_verdict and forced_verdict != verdict:
-            verdict = forced_verdict
-            notes_to_append.append(
-                "Forced verdict downgrade due to drivetrain risk (DSG/Powershift/CVT heuristics)."
-            )
+    expected_profit_val = max(0.0, expected_profit_val or 0.0) if expected_profit_val is not None else None
+    expected_profit = _format_currency(expected_profit_val) if expected_profit_val is not None else data.get("expected_profit")
 
-    if net_profit_mid_val <= 0:
-        score_value = 0.0
-    elif margin_value is not None:
-        score_cap = max(0.0, min(10.0, margin_value / 5.0))
-        if score_value is None:
-            score_value = score_cap
-        else:
-            score_value = min(score_value, score_cap)
+    profit_margin = data.get("profit_margin_percent")
+    margin_value: Optional[float] = None
+    if expected_profit_val is not None and resale_mid_val:
+        margin_value = (expected_profit_val / resale_mid_val) * 100 if resale_mid_val else 0
+        profit_margin = f"{margin_value:.1f}%"
 
+    if recommended_max_bid_val is not None:
+        recommended_max_bid_str = _format_currency(recommended_max_bid_val)
+
+    confidence_val = None
     if score_value is not None:
-        score_value = round(float(score_value), 1)
+        confidence_val = max(0.0, min(1.0, float(score_value) / 10.0))
+    else:
+        confidence_val = 0.45
 
-    notes_to_append.append(f"Applied {downside_pct*100:.0f}% downside band for worst-case pricing.")
-    if net_profit_worst_val < min_net_profit:
-        notes_to_append.append("Worst-case net profit below target; treat as high-risk.")
+    risk_flags: list[str] = []
+    rego_state_val = str(listing_row.get("rego_state") or listing_row.get("registration_state") or "").strip()
+    if not rego_state_val:
+        risk_flags.append("UNREGISTERED")
+    condition_text = str(listing_row.get("general_condition") or "").lower()
+    condition_notes_text = str(listing_row.get("condition_notes") or "").lower()
+    warning_keywords = ("warning", "warning light", "engine light", "check engine", "cel", "abs", "airbag")
+    if any(keyword in condition_text or keyword in condition_notes_text for keyword in warning_keywords):
+        risk_flags.append("WARNING_LIGHT")
+    make_val = str(listing_row.get("make") or "").lower()
+    year_val = _parse_int(listing_row.get("year"))
+    if make_val == "bmw" and year_val is not None and year_val < 2014:
+        risk_flags.append("BMW_PRE2014_RISK")
+
+    warning_light_flag = (
+        "WARNING_LIGHT" in risk_flags
+        or "warning light" in condition_text
+        or "warning light" in condition_notes_text
+    )
+    if warning_light_flag:
+        if confidence_val is not None:
+            confidence_val = max(0.0, confidence_val - 0.12)
+        if net_profit_worst_val is not None:
+            net_profit_worst_val -= 2000.0
+        wl_note = "Warning light present → mechanical uncertainty penalty applied."
+        if wl_note not in notes_to_append:
+            notes_to_append.append(wl_note)
+
+        fuel_text = str(listing_row.get("fuel_type") or "").lower()
+        title_text = " ".join(
+            filter(
+                None,
+                [
+                    str(listing_row.get("title") or ""),
+                    str(listing_row.get("variant") or ""),
+                    str(listing_row.get("model") or ""),
+                ],
+            )
+        ).lower()
+        diesel_warning = "diesel" in fuel_text or "diesel" in title_text
+        if diesel_warning:
+            if confidence_val is not None:
+                confidence_val = max(0.0, confidence_val - 0.05)
+            if net_profit_worst_val is not None:
+                net_profit_worst_val -= 1500.0
+            diesel_note = "Diesel + warning light → higher expected repair risk."
+            if diesel_note not in notes_to_append:
+                notes_to_append.append(diesel_note)
+
+    current_bid_val = current_price_val
+
+    no_edge_at_current_bid = False
+    if recommended_max_bid_val is not None and current_bid_val is not None:
+        no_edge_at_current_bid = recommended_max_bid_val <= current_bid_val + EDGE_BUFFER
+    edge_note = ""
+    if no_edge_at_current_bid and "NO_EDGE" not in risk_flags:
+        risk_flags.append("NO_EDGE")
+    if no_edge_at_current_bid:
+        edge_amount = _format_currency(recommended_max_bid_val) if recommended_max_bid_val is not None else None
+        if not edge_amount:
+            edge_amount = "--"
+        edge_note_text = NO_EDGE_MESSAGE.format(amount=edge_amount)
+        edge_note = edge_note_text
+        if edge_note_text not in notes_to_append:
+            notes_to_append.append(edge_note_text)
+
+    def _derive_verdict() -> str:
+        conf_value = confidence_val if confidence_val is not None else 0.0
+        if net_profit_worst_val is None:
+            return "Trap"
+        if net_profit_worst_val <= 0:
+            return "Avoid"
+        if no_edge_at_current_bid:
+            return "Trap"
+        if conf_value >= 0.70 and net_profit_worst_val >= 3000:
+            return "Strong Flip"
+        if conf_value >= 0.55 and net_profit_worst_val > 0:
+            return "Conditional Flip"
+        return "Trap"
+
+    computed_verdict = _derive_verdict()
 
     if notes_to_append:
         existing_notes = (
-            [
-                note.strip()
-                for note in str(notes_value).split(";")
-                if note.strip() and note.strip().lower() != "none"
-            ]
+            [note.strip() for note in str(notes_value).split(";") if note.strip() and note.strip().lower() != "none"]
             if notes_value
             else []
         )
@@ -786,28 +847,42 @@ def run_ai_listing_analysis(listing_row: pd.Series, force_refresh: bool = False)
     manual_max_display = _format_currency(manual_max_val)
     manual_avg_display = _format_currency(manual_avg_value) if manual_avg_value is not None else manual_estimate_display
 
+    cost_basis = recommended_max_bid_val
+    if cost_basis is None:
+        cost_basis = current_price_val
+    if cost_basis is None:
+        cost_basis = 0.0
+    costs_map = _estimate_costs(cost_basis, listing_row)
+
+    risk_flags_str = "|".join(sorted(set(risk_flags))) if risk_flags else ""
+
     result_row = {
         "url": url,
         "analysis_timestamp": datetime.now(tz=timezone.utc).isoformat(),
-        "resale_low": _format_currency(resale_low_value),
-        "resale_mid": _format_currency(resale_mid_value),
-        "resale_high": _format_currency(resale_high_value),
-        "net_profit_mid": _format_currency(net_profit_mid_val),
-        "net_profit_worst": _format_currency(net_profit_worst_val),
-        "fees_estimate": _format_currency(costs_map["fees_estimate"]),
-        "transport_estimate": _format_currency(costs_map["transport_estimate"]),
-        "rego_estimate": _format_currency(costs_map["rego_estimate"]),
-        "prep_estimate": _format_currency(costs_map["prep_estimate"]),
-        "confidence": round(confidence, 3),
-        "risk_flags": "|".join(risk_flags) if risk_flags else None,
-        "verdict": verdict,
         "carsales_price_estimate": carsales_estimate,
         "carsales_price_range": carsales_range,
         "recommended_max_bid": recommended_max_bid_str,
         "expected_profit": expected_profit,
         "profit_margin_percent": profit_margin,
-        "score_out_of_10": score_value,
+        "score_out_of_10": round(float(score_value), 1) if score_value is not None else None,
         "confidence_notes": notes_value,
+        "fees_estimate": _format_currency(costs_map["fees_estimate"]),
+        "transport_estimate": _format_currency(costs_map["transport_estimate"]),
+        "rego_estimate": _format_currency(costs_map["rego_estimate"]),
+        "prep_estimate": _format_currency(costs_map["prep_estimate"]),
+        "resale_low": _format_currency(resale_low_val),
+        "resale_mid": _format_currency(resale_mid_val),
+        "resale_high": _format_currency(resale_high_val),
+        "net_profit_mid": _format_currency(net_profit_mid_val) if net_profit_mid_val is not None else None,
+        "net_profit_worst": _format_currency(net_profit_worst_val) if net_profit_worst_val is not None else None,
+        "confidence": round(float(confidence_val), 3) if confidence_val is not None else None,
+        "risk_flags": risk_flags_str,
+        "computed_verdict": computed_verdict,
+        "verdict": computed_verdict,
+        "no_edge": bool(no_edge_at_current_bid),
+        "edge_note": edge_note if no_edge_at_current_bid else "",
+        "no_edge_at_current_bid": bool(no_edge_at_current_bid),
+        "edge_buffer": EDGE_BUFFER,
         "manual_carsales_count": manual_count_val,
         "manual_carsales_min": manual_min_display,
         "manual_carsales_max": manual_max_display,
@@ -815,6 +890,152 @@ def run_ai_listing_analysis(listing_row: pd.Series, force_refresh: bool = False)
         "manual_carsales_estimate": listing_row.get("manual_carsales_estimate") or manual_estimate_display,
         "manual_recent_sales_30d": listing_row.get("manual_recent_sales_30d"),
         "manual_carsales_table": listing_row.get("manual_carsales_table"),
+    }
+
+    _save_result_row(result_row)
+    result_row["cached"] = False
+    return result_row
+
+
+def run_curve_listing_analysis(
+    listing_row: pd.Series,
+    resale_mid: float | None,
+    *,
+    comps_median: float | None = None,
+    comps_count: int | None = None,
+    force_refresh: bool = False,
+) -> Dict[str, Any]:
+    cached_df = load_cached_results()
+    url = listing_row.get("url")
+
+    if (
+        not force_refresh
+        and url
+        and url in set(cached_df["url"].dropna().tolist())
+    ):
+        existing = cached_df[cached_df["url"] == url].iloc[0].to_dict()
+        existing["cached"] = True
+        return existing
+
+    if resale_mid is None or resale_mid <= 0:
+        return {
+            "url": url,
+            "error": "No curve estimate available.",
+        }
+
+    listing_data = listing_row.to_dict()
+    if comps_count is not None:
+        listing_data["historical_match_count"] = comps_count
+        listing_data["historical_matches_rows"] = comps_count
+
+    risk_flags = _detect_risk_flags(listing_data)
+    downside_pct = _calculate_downside_percent(risk_flags)
+    upside_pct = _calculate_upside_percent(risk_flags)
+    confidence_val = _calculate_confidence(listing_data, risk_flags)
+    notes: list[str] = []
+    downside_pct, confidence_val, risk_flags, notes = apply_platform_risk_adjustments(
+        listing_data, downside_pct, confidence_val, risk_flags, notes
+    )
+    confidence_val = max(CONFIDENCE_MIN, min(CONFIDENCE_MAX, confidence_val))
+
+    resale_low_val = resale_mid * (1.0 - downside_pct)
+    resale_high_val = resale_mid * (1.0 + upside_pct)
+
+    resale_mid_val = _round_to_10(resale_mid)
+    resale_low_val = _round_to_10(resale_low_val)
+    resale_high_val = _round_to_10(resale_high_val)
+
+    min_net_profit = max(MIN_NET_PROFIT_ABSOLUTE, MIN_NET_PROFIT_RATIO * (resale_low_val or resale_mid))
+    recommended_max_bid_val = _solve_max_bid(resale_low_val, min_net_profit, listing_data)
+
+    current_price_val = _parse_currency(listing_row.get("price"))
+    if current_price_val is not None and recommended_max_bid_val is not None:
+        if recommended_max_bid_val < current_price_val:
+            recommended_max_bid_val = current_price_val
+
+    no_edge_at_current_bid = False
+    if recommended_max_bid_val is not None and current_price_val is not None:
+        no_edge_at_current_bid = recommended_max_bid_val <= current_price_val + EDGE_BUFFER
+
+    cost_basis = recommended_max_bid_val or current_price_val or 0.0
+    costs_map = _estimate_costs(cost_basis, listing_data)
+
+    net_profit_mid_val = None
+    net_profit_worst_val = None
+    if recommended_max_bid_val is not None:
+        net_profit_mid_val = _net_profit_value(resale_mid_val or resale_mid, recommended_max_bid_val, listing_data)
+        net_profit_worst_val = _net_profit_value(resale_low_val or resale_mid, recommended_max_bid_val, listing_data)
+
+    expected_profit_val = net_profit_mid_val
+    expected_profit = _format_currency(expected_profit_val) if expected_profit_val is not None else None
+
+    profit_margin = None
+    if expected_profit_val is not None and resale_mid_val:
+        profit_margin = f"{(expected_profit_val / resale_mid_val) * 100:.1f}%"
+
+    def _derive_verdict() -> str:
+        if resale_low_val is None:
+            return "Not Covered"
+        if net_profit_worst_val is None or net_profit_worst_val <= 0:
+            return "Avoid"
+        if no_edge_at_current_bid:
+            return "Trap"
+        if confidence_val >= 0.70 and net_profit_worst_val >= 3000:
+            return "Strong Flip"
+        if confidence_val >= 0.55 and net_profit_worst_val > 0:
+            return "Conditional Flip"
+        return "Trap"
+
+    computed_verdict = _derive_verdict()
+    edge_note = ""
+    if no_edge_at_current_bid:
+        edge_note = NO_EDGE_MESSAGE.format(
+            amount=_format_currency(recommended_max_bid_val) if recommended_max_bid_val is not None else "--"
+        )
+
+    score_out_of_10 = round(float(confidence_val) * 10.0, 1) if confidence_val is not None else None
+
+    risk_flags_str = "|".join(sorted(set(risk_flags))) if risk_flags else ""
+    notes_value = "; ".join(notes) if notes else None
+
+    result_row = {
+        "url": url,
+        "analysis_timestamp": datetime.now(tz=timezone.utc).isoformat(),
+        "carsales_price_estimate": _format_currency(resale_mid_val),
+        "carsales_price_range": (
+            f"{_format_currency(resale_low_val)} - {_format_currency(resale_high_val)}"
+            if resale_low_val is not None and resale_high_val is not None
+            else None
+        ),
+        "recommended_max_bid": _format_currency(recommended_max_bid_val) if recommended_max_bid_val is not None else None,
+        "expected_profit": expected_profit,
+        "profit_margin_percent": profit_margin,
+        "score_out_of_10": score_out_of_10,
+        "confidence_notes": notes_value,
+        "fees_estimate": _format_currency(costs_map["fees_estimate"]),
+        "transport_estimate": _format_currency(costs_map["transport_estimate"]),
+        "rego_estimate": _format_currency(costs_map["rego_estimate"]),
+        "prep_estimate": _format_currency(costs_map["prep_estimate"]),
+        "resale_low": _format_currency(resale_low_val),
+        "resale_mid": _format_currency(resale_mid_val),
+        "resale_high": _format_currency(resale_high_val),
+        "net_profit_mid": _format_currency(net_profit_mid_val) if net_profit_mid_val is not None else None,
+        "net_profit_worst": _format_currency(net_profit_worst_val) if net_profit_worst_val is not None else None,
+        "confidence": round(float(confidence_val), 3) if confidence_val is not None else None,
+        "risk_flags": risk_flags_str,
+        "computed_verdict": computed_verdict,
+        "verdict": computed_verdict,
+        "no_edge": bool(no_edge_at_current_bid),
+        "edge_note": edge_note,
+        "no_edge_at_current_bid": bool(no_edge_at_current_bid),
+        "edge_buffer": EDGE_BUFFER,
+        "manual_carsales_count": comps_count,
+        "manual_carsales_min": _format_currency(comps_median) if comps_median is not None else None,
+        "manual_carsales_max": _format_currency(comps_median) if comps_median is not None else None,
+        "manual_carsales_avg": _format_currency(comps_median) if comps_median is not None else None,
+        "manual_carsales_estimate": _format_currency(comps_median) if comps_median is not None else None,
+        "manual_recent_sales_30d": None,
+        "manual_carsales_table": None,
     }
 
     _save_result_row(result_row)

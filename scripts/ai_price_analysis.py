@@ -1,6 +1,7 @@
 import re
 from dataclasses import dataclass
 from typing import Iterable, List, Optional
+from urllib.parse import urlparse
 
 import pandas as pd
 from difflib import SequenceMatcher
@@ -9,8 +10,8 @@ from pathlib import Path
 from shared.data_loader import DATA_DIR
 
 
-ACTIVE_PRIMARY_PATH = DATA_DIR / "vehicle_static_details.csv"
-ACTIVE_FALLBACK_PATH = DATA_DIR / "active_vehicle_details.csv"
+ACTIVE_PRIMARY_PATH = DATA_DIR / "active_vehicle_details.csv"
+ACTIVE_FALLBACK_PATH = DATA_DIR / "vehicle_static_details.csv"
 BASE_SOLD_PATH = DATA_DIR / "sold_cars.csv"
 SOLD_ARCHIVE_DIR = DATA_DIR / "ai_analysis_ready"
 
@@ -161,6 +162,31 @@ def _normalise_sold_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def _infer_make_model_from_url(url_value: object) -> tuple[Optional[str], Optional[str]]:
+    if url_value is None or (isinstance(url_value, float) and pd.isna(url_value)):
+        return None, None
+    try:
+        parsed = urlparse(str(url_value).strip())
+    except Exception:
+        return None, None
+    slug = parsed.path.rstrip("/").split("/")[-1]
+    if not slug:
+        return None, None
+    slug = slug.split("?")[0].split("#")[0]
+    if slug.endswith(".html"):
+        slug = slug[:-5]
+    parts = [part for part in slug.replace("_", "-").split("-") if part]
+    while parts and parts[0].isdigit() and len(parts[0]) == 4:
+        parts.pop(0)
+    if not parts:
+        return None, None
+    make_token = parts[0]
+    model_tokens = parts[1:]
+    make_text = make_token.replace("-", " ").strip().title()
+    model_text = " ".join(model_tokens).replace("-", " ").strip().title() if model_tokens else None
+    return make_text or None, model_text or None
+
+
 def _resolve_active_path(csv_path: Optional[Path]) -> Optional[Path]:
     if csv_path is not None and csv_path.exists():
         return csv_path
@@ -185,13 +211,30 @@ def load_active_listings_within_hours(
 
     df = pd.read_csv(resolved_path)
 
-    # Ensure consistent casing and status filtering.
-    df["status"] = df.get("status", "").astype(str).str.lower().str.strip()
-    df = df[df["status"] == "active"].copy()
+    # Ensure optional columns exist for downstream processing.
+    if "price" not in df.columns:
+        df["price"] = pd.NA
+    time_column = None
+    for candidate in ("time_remaining_or_date_sold", "time_remaining"):
+        if candidate in df.columns:
+            time_column = candidate
+            break
+    if time_column and time_column != "time_remaining_or_date_sold":
+        df["time_remaining_or_date_sold"] = df[time_column]
+    elif "time_remaining_or_date_sold" not in df.columns:
+        df["time_remaining_or_date_sold"] = pd.NA
+
+    # Ensure consistent casing and status filtering when the column exists.
+    if "status" in df.columns:
+        df["status"] = df["status"].astype(str).str.lower().str.strip()
+        df = df[df["status"] == "active"].copy()
     if df.empty:
         return df
 
-    df["hours_remaining"] = df["time_remaining_or_date_sold"].apply(_extract_hours_remaining)
+    if "time_remaining_or_date_sold" in df.columns:
+        df["hours_remaining"] = df["time_remaining_or_date_sold"].apply(_extract_hours_remaining)
+    else:
+        df["hours_remaining"] = pd.NA
     known_mask = df["hours_remaining"].notna()
     filtered_df = df[known_mask].copy()
     if min_hours is not None:
@@ -294,7 +337,98 @@ def load_historical_sales(
         sold_df["odometer_numeric"] = sold_df["odometer_reading"].apply(_parse_odometer)
     else:
         sold_df["odometer_numeric"] = None
+
+    if "vin" in sold_df.columns:
+        sold_df["_vin_norm"] = (
+            sold_df["vin"].astype(str).str.strip().str.lower().replace("", pd.NA)
+        )
+    else:
+        sold_df["_vin_norm"] = pd.NA
+
+    if "date_sold" in sold_df.columns:
+        sold_df["_date_sold_parsed"] = pd.to_datetime(sold_df["date_sold"], errors="coerce")
+    else:
+        sold_df["_date_sold_parsed"] = pd.NaT
+
+    if "vin" in sold_df.columns:
+        sold_df["_vin_norm"] = (
+            sold_df["vin"].astype(str).str.strip().str.lower().replace("", pd.NA)
+        )
+    else:
+        sold_df["_vin_norm"] = pd.NA
+    if "odometer_numeric" not in sold_df.columns:
+        sold_df["odometer_numeric"] = None
+    valid_reauction = sold_df["_vin_norm"].notna() & sold_df["odometer_numeric"].notna()
+    if valid_reauction.any():
+        reauction_stats = (
+            sold_df.loc[valid_reauction]
+            .groupby(["_vin_norm", "odometer_numeric"])["final_price_numeric"]
+            .agg(["size", "min", "max"])
+            .rename(
+                columns={
+                    "size": "reauction_group_size",
+                    "min": "reauction_price_min",
+                    "max": "reauction_price_max",
+                }
+            )
+            .reset_index()
+        )
+        sold_df = sold_df.merge(
+            reauction_stats,
+            how="left",
+            left_on=["_vin_norm", "odometer_numeric"],
+            right_on=["_vin_norm", "odometer_numeric"],
+        )
+        sold_df["reauction_price_range"] = (
+            sold_df["reauction_price_max"] - sold_df["reauction_price_min"]
+        )
+        sold_df["reauction_flag"] = sold_df["reauction_group_size"].ge(2)
+    else:
+        sold_df["reauction_group_size"] = None
+        sold_df["reauction_price_min"] = None
+        sold_df["reauction_price_max"] = None
+        sold_df["reauction_price_range"] = None
+        sold_df["reauction_flag"] = False
+    sold_df.drop(columns=["_vin_norm"], inplace=True)
+
+    if "url" in sold_df.columns:
+        inferred = sold_df["url"].apply(_infer_make_model_from_url)
+        sold_df["make_from_url"] = [entry[0] for entry in inferred]
+        sold_df["model_from_url"] = [entry[1] for entry in inferred]
+        if "make" in sold_df.columns:
+            sold_df["make"] = sold_df["make_from_url"].where(
+                sold_df["make_from_url"].notna(), sold_df["make"]
+            )
+        if "model" in sold_df.columns:
+            sold_df["model"] = sold_df["model_from_url"].where(
+                sold_df["model_from_url"].notna(), sold_df["model"]
+            )
+        sold_df.drop(columns=["make_from_url", "model_from_url"], inplace=True)
+        sold_df["make_norm"] = sold_df["make"].apply(_normalize_text)
+        sold_df["model_norm"] = sold_df["model"].apply(_normalize_text)
+
     sold_df = sold_df[sold_df["final_price_numeric"].notna()]
+
+    # Drop re-auction duplicates where VIN + odometer + price are identical (no variance).
+    if "_vin_norm" in sold_df.columns:
+        dedupe_mask = (
+            sold_df["_vin_norm"].notna()
+            & sold_df["odometer_numeric"].notna()
+            & sold_df["final_price_numeric"].notna()
+        )
+        if dedupe_mask.any():
+            dedupe_subset = sold_df.loc[dedupe_mask].copy()
+            dedupe_subset = dedupe_subset.sort_values(
+                by=["_date_sold_parsed"],
+                kind="mergesort",
+            )
+            kept = dedupe_subset.drop_duplicates(
+                subset=["_vin_norm", "odometer_numeric", "final_price_numeric"],
+                keep="last",
+            ).index
+            sold_df = sold_df.drop(index=dedupe_subset.index.difference(kept)).reset_index(drop=True)
+
+    sold_df.drop(columns=[col for col in ("_vin_norm", "_date_sold_parsed") if col in sold_df.columns], inplace=True)
 
     return sold_df
 
@@ -549,14 +683,20 @@ def compare_active_to_history(
     summaries = []
 
     for _, active_row in active_df.iterrows():
-        make = active_row.get("make_norm", "")
-        model = active_row.get("model_norm", "")
+        make = str(active_row.get("make_norm", "") or "")
+        model = str(active_row.get("model_norm", "") or "")
         year = active_row.get("year_int")
 
-        base_candidates = sold_df[
-            (sold_df["make_norm"] == make) &
-            (sold_df["model_norm"] == model)
-        ]
+        base_candidates = sold_df.copy()
+        if make:
+            base_candidates = base_candidates[base_candidates["make_norm"] == make]
+        if model and "model_norm" in base_candidates.columns:
+            tokens = [token for token in model.split() if token]
+            for token in tokens:
+                pattern = rf"\b{re.escape(token)}\b"
+                base_candidates = base_candidates[
+                    base_candidates["model_norm"].astype(str).str.contains(pattern, na=False, regex=True)
+                ]
 
         base_candidates = _apply_attribute_filters(active_row, base_candidates)
         active_odometer = active_row.get("odometer_numeric")
@@ -575,6 +715,14 @@ def compare_active_to_history(
             year_matches = base_candidates[base_candidates["year_int"] == year]
             if not year_matches.empty:
                 candidates = year_matches
+            else:
+                lower_bound = year - 1
+                upper_bound = year + 1
+                year_int_series = base_candidates["year_int"]
+                within_range = year_int_series.notna() & year_int_series.between(lower_bound, upper_bound)
+                range_matches = base_candidates[within_range]
+                if not range_matches.empty:
+                    candidates = range_matches
 
         stats, selected_matches, close_matches = _build_match_summary(candidates)
 
@@ -619,7 +767,6 @@ def compare_active_to_history(
             "raw_price": active_row.get("price"),
             "no_of_plates": active_row.get("no_of_plates"),
             "general_condition": active_row.get("general_condition"),
-            "features_list": active_row.get("features_list"),
             "url": active_row.get("url"),
             "location": active_row.get("location"),
             "odometer_reading": active_row.get("odometer_reading"),
@@ -680,6 +827,8 @@ def _prepare_match_rows(
         "owners_manual",
         "service_history",
         "engine_turns_over",
+        "reauction_group_size",
+        "reauction_price_range",
     ]
     if include_diff and "odometer_diff" in df.columns:
         display_columns.append("odometer_diff")
@@ -762,6 +911,18 @@ def _prepare_match_rows(
         subset["year"] = [
             format_year_with_delta(y, d) for y, d in zip(subset["year"].tolist(), delta_values)
         ]
+    def format_reauction_count(value):
+        if pd.isna(value) or value < 2:
+            return ""
+        try:
+            return int(round(float(value)))
+        except Exception:
+            return str(value)
+
+    if "reauction_group_size" in subset.columns:
+        subset["reauction_group_size"] = subset["reauction_group_size"].apply(format_reauction_count)
+    if "reauction_price_range" in subset.columns:
+        subset["reauction_price_range"] = subset["reauction_price_range"].apply(format_price)
 
     rename_map = {
         "year": "Year",
@@ -780,6 +941,8 @@ def _prepare_match_rows(
         "service_history": "Service History",
         "engine_turns_over": "Engine Turns Over",
         "odometer_diff": "Odo Diff",
+        "reauction_group_size": "Reauction Count",
+        "reauction_price_range": "Reauction Price Range",
     }
     subset = subset.rename(columns=rename_map)
 
@@ -799,6 +962,8 @@ def _prepare_match_rows(
         "Price",
         "Date Sold",
         "Location",
+        "Reauction Count",
+        "Reauction Price Range",
     ]
     if include_diff and "Odo Diff" in subset.columns:
         preferred_order.append("Odo Diff")
