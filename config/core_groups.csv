@@ -13,4 +13,5 @@ holden_captiva_suv_diesel_auto_4cyl | HOLDEN | CAPTIVA | suv | diesel | auto | F
 ford_ranger_dualcab_ute_diesel_auto | FORD | RANGER | dual cab ute | diesel | auto | 4x2/4x4 |  | Exclude cab chassis/single/super/extra cab/petrol/manual
 mazda_cx5_suv_petrol_auto_20 | MAZDA | CX-5 | suv | petrol | auto | FWD/AWD |  | Exclude diesel/turbo/manual; 2.0L only
 mazda_cx5_suv_petrol_auto_25 | MAZDA | CX-5 | suv | petrol | auto | FWD/AWD |  | Exclude diesel/turbo/manual; 2.5L only
+mazda_3_hatch_petrol_auto_20_na | MAZDA | 3 | hatch | petrol | auto | FWD | 2.0 NA | Mazda3 only; exclude diesel/turbo/manual/sedan/MPS/SP25/2.5/mild hybrid
 nissan_navara_dualcab_ute_diesel_auto | NISSAN | NAVARA | dual cab ute | diesel | auto | 4x2/4x4 |  | Exclude cab chassis/single/extra/king cab/petrol/manual

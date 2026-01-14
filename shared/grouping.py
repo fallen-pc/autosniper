@@ -34,6 +34,8 @@ MODEL_ALIASES = {
     "ranger": "ranger",
     "cx5": "cx5",
     "navara": "navara",
+    "3": "3",
+    "mazda3": "3",
 }
 
 TOP_12_MODELS = {
@@ -49,6 +51,7 @@ TOP_12_MODELS = {
     ("ford", "ranger"),
     ("mazda", "cx5"),
     ("nissan", "navara"),
+    ("mazda", "3"),
 }
 
 GROUP_IDS = [
@@ -67,6 +70,7 @@ GROUP_IDS = [
     "mazda_cx5_suv_petrol_auto_20",
     "mazda_cx5_suv_petrol_auto_25",
     "nissan_navara_dualcab_ute_diesel_auto",
+    "mazda_3_hatch_petrol_auto_20_na",
 ]
 
 REPAIRABLE_TOKENS = (
@@ -539,6 +543,27 @@ def _assign_navara(row: object, text: str, body_text: str) -> Tuple[str | None, 
     return "nissan_navara_dualcab_ute_diesel_auto", ""
 
 
+def _assign_mazda3(row: object, text: str, body_text: str) -> Tuple[str | None, str]:
+    if not _is_hatch(text, body_text):
+        return None, "BAD_GROUP:BODY_MISMATCH"
+    if _fuel_type(row, text) != "petrol":
+        return None, "BAD_GROUP:FUEL_MISMATCH"
+    if _match_regex(text, r"\bhybrid\b|\bm[- ]?hybrid\b"):
+        return None, "BAD_GROUP:FUEL_MISMATCH"
+    if not _is_auto(row, text):
+        return None, "BAD_GROUP:TRANS_MISMATCH"
+    if _match_regex(text, r"\bmps\b|\bturbo\b|\bsp25\b|\b2\.5\b"):
+        return None, "BAD_GROUP:ENGINE_MISMATCH"
+    engine_liters = _parse_engine_capacity_liters(getattr(row, "get", lambda _: None)("engine_capacity"))
+    if engine_liters is None:
+        engine_liters = _extract_engine_hint(text)
+    if engine_liters is None:
+        return None, "INSUFFICIENT_DATA"
+    if not (1.9 <= engine_liters <= 2.1):
+        return None, "BAD_GROUP:ENGINE_MISMATCH"
+    return "mazda_3_hatch_petrol_auto_20_na", ""
+
+
 def assign_group_id(row: object) -> Tuple[str | None, str]:
     """
     Return (group_id, reason_code). group_id is None if listing is excluded.
@@ -585,5 +610,7 @@ def assign_group_id(row: object) -> Tuple[str | None, str]:
         return _assign_cx5(row, text, body_text)
     if (make, model) == ("nissan", "navara"):
         return _assign_navara(row, text, body_text)
+    if (make, model) == ("mazda", "3"):
+        return _assign_mazda3(row, text, body_text)
 
     return None, "BAD_GROUP"

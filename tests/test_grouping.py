@@ -63,6 +63,36 @@ class GroupingTests(unittest.TestCase):
         self.assertIsNone(group_id)
         self.assertIn("GENERATION_NOT_MODELED", reason)
 
+    def test_mazda3_hatch_petrol_auto_20_included(self) -> None:
+        row = {
+            "make": "Mazda",
+            "model": "Mazda3",
+            "variant": "Maxx Sport",
+            "body_type": "Hatch",
+            "fuel_type": "Petrol",
+            "transmission": "Automatic",
+            "engine_capacity": "2.0L",
+            "location": "VIC",
+        }
+        group_id, reason = assign_group_id(row)
+        self.assertEqual(group_id, "mazda_3_hatch_petrol_auto_20_na")
+        self.assertEqual(reason, "")
+
+    def test_mazda3_sedan_excluded(self) -> None:
+        row = {
+            "make": "Mazda",
+            "model": "3",
+            "variant": "Maxx",
+            "body_type": "Sedan",
+            "fuel_type": "Petrol",
+            "transmission": "Automatic",
+            "engine_capacity": "2.0L",
+            "location": "VIC",
+        }
+        group_id, reason = assign_group_id(row)
+        self.assertIsNone(group_id)
+        self.assertIn("BODY_MISMATCH", reason)
+
 
 if __name__ == "__main__":
     unittest.main()

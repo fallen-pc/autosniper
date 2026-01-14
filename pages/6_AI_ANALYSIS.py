@@ -13,6 +13,13 @@ from shared.curves import load_curves, interpolate_base_by_year
 from shared.data_loader import dataset_path, ensure_datasets_available
 from shared.filter_controls import describe_time_selection, render_time_filter
 from shared.grouping import GROUP_IDS
+from shared.spec import (
+    get_group_spec,
+    is_series_allowed,
+    load_spec,
+    resolve_series_for_year,
+    validate_curve_requirements,
+)
 from shared.styling import clean_html, display_banner, inject_global_styles, page_intro
 
 
@@ -93,6 +100,13 @@ curves_df = load_curves()
 active_df = load_active_data()
 group_map_df = load_group_map()
 sold_df = load_sold_data()
+spec = load_spec()
+
+spec_issues = validate_curve_requirements(spec, curves_df) if spec else []
+if spec_issues:
+    issue_preview = "\n".join(spec_issues[:10])
+    extra = "" if len(spec_issues) <= 10 else f"\n...and {len(spec_issues) - 10} more"
+    st.warning(f"Spec/curve issues detected:\n{issue_preview}{extra}")
 
 active_groups = group_map_df[group_map_df["source"] == "active"][["url", "group_id"]]
 active_df = active_df.merge(active_groups, on="url", how="left")
@@ -166,7 +180,27 @@ for _, row in filtered.iterrows():
     group_id = row.get("group_id")
     year_val = _safe_int(row.get("year"))
     odo_val = row.get("odometer_numeric")
-    base_estimate = interpolate_base_by_year(curves_df, group_id, year_val, odo_val)
+    spec_reason = ""
+    series_key = None
+    spec_group = get_group_spec(spec, group_id) if spec else None
+    if spec and not spec_group:
+        spec_reason = "UNKNOWN_GROUP_MAPPING"
+    elif spec_group:
+        series_key, spec_reason = resolve_series_for_year(spec, group_id, year_val)
+        if not spec_reason and series_key and not is_series_allowed(spec_group, series_key):
+            spec_reason = "SERIES_NOT_COVERED"
+
+    curve_subset = curves_df
+    if group_id:
+        curve_subset = curve_subset[curve_subset["group_id"] == group_id]
+    if series_key and not curve_subset.empty:
+        curve_subset = curve_subset[curve_subset["series"] == series_key]
+        if curve_subset.empty and not spec_reason:
+            spec_reason = "SERIES_NOT_COVERED"
+
+    base_estimate = None
+    if not spec_reason:
+        base_estimate = interpolate_base_by_year(curve_subset, group_id, year_val, odo_val)
     stats = sold_stats.loc[group_id] if group_id in sold_stats.index else None
     comps_count = int(stats["comps_count"]) if stats is not None else None
     comps_median = float(stats["comps_median"]) if stats is not None else None
@@ -186,6 +220,8 @@ for _, row in filtered.iterrows():
                 "recommended_max_bid": None,
                 "resale_mid": None,
                 "net_profit_worst": None,
+                "spec_reason": spec_reason or "NOT_COVERED",
+                "spec_series": series_key,
             }
         )
         continue
@@ -201,6 +237,8 @@ for _, row in filtered.iterrows():
     analysis["curve_adjusted"] = adjusted_estimate
     analysis["comps_count"] = comps_count
     analysis["comps_median"] = comps_median
+    analysis["spec_reason"] = spec_reason or ""
+    analysis["spec_series"] = series_key
     results.append(analysis)
 
 
@@ -234,6 +272,8 @@ display_columns = [
     "odometer_reading",
     "price",
     "group_id",
+    "spec_series",
+    "spec_reason",
     "curve_base",
     "curve_adjusted",
     "comps_count",

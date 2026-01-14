@@ -1,0 +1,227 @@
+# AutoSniper valuation spec v1 (restricted universe)
+# Canonical truth for group_ids, mappings, inclusion/exclusion, curve requirements, derived adjustments.
+
+version: v1
+timezone: Australia/Melbourne
+km_anchors: [50000, 120000, 200000, 260000]
+
+imports:
+  pipe_format:
+    fields: [model, group_key, series, year, km, price]
+  mapping_key: "{model}|{group_key}"
+
+universe_policy:
+  # CORE: actively valued + recommended to trade when margins allow
+  # RESTRICTED: valued but heavily filtered; high trap rate
+  # EXCLUDE: tracked for volume but never valued/bid by default
+  statuses: [CORE, RESTRICTED, EXCLUDE]
+  default_on_missing_curve: NOT_COVERED
+  default_on_unknown_mapping: REJECT_IMPORT
+  forbid_curve_fallback_across_series: true
+
+reason_codes:
+  - NOT_COVERED
+  - UNKNOWN_GROUP_MAPPING
+  - SERIES_NOT_COVERED
+  - GENERATION_NOT_COVERED
+  - BODY_MISMATCH
+  - FUEL_MISMATCH
+  - TRANS_MISMATCH
+  - ENGINE_MISMATCH
+  - TRIM_MISMATCH
+  - DRIVETRAIN_MISMATCH
+  - CONDITION_BAD
+
+global_excludes:
+  title_tokens_any:
+    - "write-off"
+    - "repairable"
+    - "statutory"
+    - "hail"
+    - "flood"
+    - "fire"
+    - "wreck"
+    - "parts"
+    - "spares"
+    - "not running"
+    - "engine issue"
+    - "blown"
+  action: EXCLUDE
+  reason: CONDITION_BAD
+
+groups:
+  # -----------------------------
+  # TOYOTA COROLLA (CORE)
+  # -----------------------------
+  - group_id: toyota_corolla_hatch_petrol_auto
+    status: CORE
+    pipe_mappings:
+      - "corolla|hatch_petrol_auto"
+    series_allowed: [E170, E180, E210]
+    series_year_guard:
+      E170: {year_min: 2013, year_max: 2015}
+      E180: {year_min: 2016, year_max: 2018}
+      E210: {year_min: 2019, year_max: 2023}
+    rules:
+      make: TOYOTA
+      model: COROLLA
+      body: [HATCH]
+      fuel: [PETROL]
+      transmission: [AUTO]
+    hard_excludes:
+      fuel_tokens_any: ["hybrid"]
+      transmission_tokens_any: ["manual"]
+    curve_requirements:
+      anchor_years: [2013, 2017, 2022]
+      km_anchors: [50000, 120000, 200000, 260000]
+
+  - group_id: toyota_corolla_sedan_petrol_auto
+    status: CORE
+    pipe_mappings:
+      - "corolla|sedan_petrol_auto"
+    series_allowed: [E170, E180, E210]
+    series_year_guard:
+      E170: {year_min: 2013, year_max: 2015}
+      E180: {year_min: 2016, year_max: 2018}
+      E210: {year_min: 2019, year_max: 2023}
+    rules:
+      make: TOYOTA
+      model: COROLLA
+      body: [SEDAN]
+      fuel: [PETROL]
+      transmission: [AUTO]
+    hard_excludes:
+      fuel_tokens_any: ["hybrid"]
+      transmission_tokens_any: ["manual"]
+    curve_requirements:
+      anchor_years: [2013, 2017, 2022]
+      km_anchors: [50000, 120000, 200000, 260000]
+
+  # -----------------------------
+  # HYUNDAI i30 (CORE)
+  # -----------------------------
+  - group_id: hyundai_i30_hatch_petrol_auto_na_active_elite
+    status: CORE
+    pipe_mappings:
+      - "i30|hatch_petrol_auto"
+    series_allowed: [GD, PD2, "PD.V4"]
+    series_year_guard:
+      GD: {year_min: 2012, year_max: 2016}
+      PD2: {year_min: 2017, year_max: 2020}
+      "PD.V4": {year_min: 2021, year_max: 2023}
+    rules:
+      make: HYUNDAI
+      model: I30
+      body: [HATCH]
+      fuel: [PETROL]
+      transmission: [AUTO]
+    hard_excludes:
+      title_tokens_any: ["n line", "n-line", "n "]
+      engine_tokens_any: ["turbo", "t-gdi", "tgdi"]
+      fuel_tokens_any: ["diesel"]
+      transmission_tokens_any: ["manual"]
+    curve_requirements:
+      anchor_years: [2012, 2018, 2022]
+      km_anchors: [50000, 120000, 200000, 260000]
+
+  # -----------------------------
+  # TOYOTA HILUX (CORE) - SR5 curve, SR derived
+  # -----------------------------
+  - group_id: toyota_hilux_dualcab_ute_diesel_auto_sr5_4x4
+    status: CORE
+    pipe_mappings:
+      - "hilux|dualcab_ute_sr5"
+    series_allowed: [KUN26R, GUN126R]
+    rules:
+      make: TOYOTA
+      model: HILUX
+      body: [DUAL_CAB_UTE]
+      fuel: [DIESEL]
+      transmission: [AUTO]
+      drivetrain: [4X4]
+      trim: [SR5]
+    hard_excludes:
+      title_tokens_any: ["hi-rider", "hi rider"]
+      drivetrain_tokens_any: ["4x2", "2wd"]
+      body_tokens_any: ["cab chassis", "single cab", "extra cab", "space cab"]
+    curve_requirements:
+      anchor_years: [2006, 2012, 2021]
+      km_anchors: [50000, 120000, 200000, 260000]
+    pricing:
+      derived_trim_adjustments:
+        - trim: SR
+          derived_from_group_id: toyota_hilux_dualcab_ute_diesel_auto_sr5_4x4
+          method: percentage_discount_by_series
+          discount_by_series:
+            KUN26R: 0.08
+            GUN126R: 0.15
+          clamp:
+            min_price: 0
+
+  # -----------------------------
+  # MAZDA 3 (CORE) - Hatch Petrol Auto 2.0 NA
+  # -----------------------------
+  - group_id: mazda_3_hatch_petrol_auto_20_na
+    status: CORE
+    pipe_mappings:
+      - "mazda3|hatch_petrol_auto"
+    series_allowed: [BM, BN, BP]
+    series_year_guard:
+      BM: {year_min: 2014, year_max: 2016}
+      BN: {year_min: 2017, year_max: 2018}
+      BP: {year_min: 2019, year_max: 2023}
+    rules:
+      make: MAZDA
+      model: "3"
+      body: [HATCH]
+      fuel: [PETROL]
+      transmission: [AUTO]
+      engine_liters: [2.0]
+      induction: ["NA"]
+    hard_excludes:
+      fuel_tokens_any: ["diesel", "mhev", "mild hybrid", "hybrid"]
+      engine_tokens_any: ["turbo", "2.5t", "g25", "sp25"]
+      model_tokens_any: ["mps"]
+      body_tokens_any: ["sedan"]
+      transmission_tokens_any: ["manual"]
+    curve_requirements:
+      anchor_years: [2015, 2017, 2022]
+      km_anchors: [50000, 120000, 200000, 260000]
+
+  # -----------------------------
+  # HOLDEN CRUZE (RESTRICTED) - Hatch Petrol Auto 1.8 NA (CD/CDX only)
+  # -----------------------------
+  - group_id: holden_cruze_hatch_petrol_auto_4cyl
+    status: RESTRICTED
+    pipe_mappings:
+      - "cruze|hatch_petrol_auto_18"
+      - "cruze|hatch_petrol_auto"
+    series_allowed: [JH]
+    series_year_guard:
+      JH: {year_min: 2011, year_max: 2015}
+    rules:
+      make: HOLDEN
+      model: CRUZE
+      body: [HATCH]
+      fuel: [PETROL]
+      transmission: [AUTO]
+      engine_liters: [1.8]
+      induction: ["NA"]
+      trim_any_of: [CD, CDX]
+    hard_excludes:
+      trim_tokens_any: ["equipe", "sri", "sri-v", "z series", "z-series"]
+      engine_tokens_any: ["1.4t", "1.6t", "turbo"]
+      fuel_tokens_any: ["diesel"]
+      transmission_tokens_any: ["manual"]
+      body_tokens_any: ["sedan", "wagon"]
+    curve_requirements:
+      anchor_years: [2013]
+      km_anchors: [50000, 120000, 200000, 260000]
+    risk_policy:
+      default_verdict: TRAP_UNLESS_ALL_RULES_MATCH
+      notes: "Cruze has high trap rate; only CD/CDX 1.8 NA allowed."
+
+notes:
+  - "No curve fallback across series. If (group_id, series) not present in curves.csv => NOT_COVERED."
+  - "Keep curves as median-only anchors; price_low/high optional and usually blank."
+  - "Any listing year earlier than series_year_guard for its assigned series => GENERATION_NOT_COVERED."

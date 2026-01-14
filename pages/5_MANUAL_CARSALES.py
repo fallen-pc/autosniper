@@ -7,6 +7,13 @@ import streamlit as st
 
 from shared.curves import CURVE_COLUMNS, load_curves, save_curves
 from shared.grouping import GROUP_IDS
+from shared.spec import (
+    build_pipe_mapping,
+    get_group_spec,
+    is_series_allowed,
+    load_spec,
+    normalize_mapping_key,
+)
 from shared.styling import clean_html, display_banner, inject_global_styles, page_intro
 
 
@@ -63,6 +70,7 @@ RAW_GROUP_KEY_MAP = {
     ("commodore", "sedan_petrol_auto_v6"): "holden_commodore_sedan_petrol_auto_v6",
     ("commodore", "wagon_petrol_auto_v6"): "holden_commodore_wagon_petrol_auto_v6",
     ("cruze", "hatch_petrol_auto"): "holden_cruze_hatch_petrol_auto_4cyl",
+    ("cruze", "hatch_petrol_auto_18"): "holden_cruze_hatch_petrol_auto_4cyl",
     ("territory", "suv_diesel_auto"): "ford_territory_suv_diesel_auto_4cyl",
     ("i30", "hatch_petrol_auto"): "hyundai_i30_hatch_petrol_auto_na_active_elite",
     ("corolla", "hatch_petrol_auto"): "toyota_corolla_hatch_petrol_auto",
@@ -74,12 +82,15 @@ RAW_GROUP_KEY_MAP = {
     ("cx5", "suv_petrol_auto_20"): "mazda_cx5_suv_petrol_auto_20",
     ("cx5", "suv_petrol_auto_25"): "mazda_cx5_suv_petrol_auto_25",
     ("navara", "dualcab_ute_diesel_auto"): "nissan_navara_dualcab_ute_diesel_auto",
+    ("mazda3", "hatch_petrol_auto"): "mazda_3_hatch_petrol_auto_20_na",
 }
 GROUP_KEY_MAP = {
     (_norm_key(model), _norm_key(group_key)): group_id
     for (model, group_key), group_id in RAW_GROUP_KEY_MAP.items()
 }
 
+SPEC_DATA = load_spec()
+SPEC_PIPE_MAPPING = build_pipe_mapping(SPEC_DATA)
 
 curves_df = _ensure_columns(load_curves())
 
@@ -209,13 +220,30 @@ if st.button("Import pipe rows"):
             errors.append(f"Line {line_no}: year/km/price must be numeric.")
             continue
         resolved_group = None
-        if group_key in GROUP_IDS:
+        spec_group = None
+        if SPEC_PIPE_MAPPING:
+            mapping_key = normalize_mapping_key(f"{model_key}|{group_key}")
+            resolved_group = SPEC_PIPE_MAPPING.get(mapping_key)
+            if resolved_group:
+                spec_group = get_group_spec(SPEC_DATA, resolved_group)
+        if not resolved_group and group_key in GROUP_IDS:
             resolved_group = group_key
-        else:
+        if not resolved_group:
             resolved_group = GROUP_KEY_MAP.get((model_norm, group_norm))
+        if not spec_group and SPEC_DATA:
+            spec_group = get_group_spec(SPEC_DATA, resolved_group) if resolved_group else None
         if not resolved_group:
             errors.append(f"Line {line_no}: unknown group mapping for {model_key} | {group_key}.")
             continue
+        if spec_group and spec_group.get("series_allowed"):
+            if not series_norm:
+                errors.append(f"Line {line_no}: series required for {resolved_group}.")
+                continue
+            if not is_series_allowed(spec_group, series_norm):
+                errors.append(
+                    f"Line {line_no}: series {series_norm} not allowed for {resolved_group}."
+                )
+                continue
         rows.append(
             {
                 "group_id": resolved_group,
