@@ -132,6 +132,9 @@ groups:
     pipe_mappings:
       - "hilux|dualcab_ute_sr5"
     series_allowed: [KUN26R, GUN126R]
+    series_year_guard:
+      KUN26R: {year_min: 2005, year_max: 2015}
+      GUN126R: {year_min: 2015, year_max: 2023}
     rules:
       make: TOYOTA
       model: HILUX
