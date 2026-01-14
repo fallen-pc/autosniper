@@ -18,10 +18,10 @@ except AttributeError:
 
 from scripts import extract_links, extract_vehicle_details, update_bids, update_master
 from scripts.outcome_tracking import compute_outcome_metrics
-from shared.data_loader import DATA_DIR
+from shared.data_loader import dataset_path
 
 METRICS_PATH = ROOT_DIR / "status" / "metrics.json"
-ACTIVE_CSV_PATH = DATA_DIR / "active_vehicle_details.csv"
+ACTIVE_CSV_PATH = dataset_path("active_vehicle_details.csv")
 
 
 def _load_existing_metrics() -> Dict[str, Any]:

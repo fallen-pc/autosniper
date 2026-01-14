@@ -12,10 +12,10 @@ if __package__ in (None, ""):
     import sys
 
     sys.path.append(str(Path(__file__).resolve().parent.parent))
-    from shared.data_loader import DATA_DIR, dataset_path
+    from shared.data_loader import dataset_path
     from scripts.extract_vehicle_details import process_links
 else:  # pragma: no cover
-    from shared.data_loader import DATA_DIR, dataset_path
+    from shared.data_loader import dataset_path
     from scripts.extract_vehicle_details import process_links
 
 
@@ -23,7 +23,7 @@ DEFAULT_DATASETS = [
     "vehicle_static_details.csv",
     "sold_cars.csv",
 ]
-LEGACY_DIR = DATA_DIR / "ai_analysis_ready"
+LEGACY_DIR = dataset_path("ai_analysis_ready")
 SNAPSHOT_COLUMNS = [
     "general_condition",
 ]

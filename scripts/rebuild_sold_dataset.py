@@ -14,7 +14,7 @@ if __package__ in (None, ""):
     import sys
 
     sys.path.append(str(Path(__file__).resolve().parent.parent))
-    from shared.data_loader import DATA_DIR
+    from shared.data_loader import dataset_path
     from shared.schema import SOLD_LISTING_SCHEMA, SOLD_RAW_SCRAPE_COLUMNS
     from shared.sold_cleaning import (
         drop_invalid_odometer_rows,
@@ -24,7 +24,7 @@ if __package__ in (None, ""):
     )
     from scripts.extract_vehicle_details import process_links
 else:  # pragma: no cover
-    from shared.data_loader import DATA_DIR
+    from shared.data_loader import dataset_path
     from shared.schema import SOLD_LISTING_SCHEMA, SOLD_RAW_SCRAPE_COLUMNS
     from shared.sold_cleaning import (
         drop_invalid_odometer_rows,
@@ -40,8 +40,8 @@ SCHEMA_FIELDS = SOLD_RAW_SCRAPE_COLUMNS
 ROOT_DIR = Path(__file__).resolve().parent.parent
 SCRAPE_RULES_PATH = ROOT_DIR / "config" / "scrape_rules.json"
 DATE_RE = re.compile(r"(\d{1,2}\s+[A-Za-z]+\s+\d{4})")
-DEFAULT_SOURCE = DATA_DIR / "sold_cars.csv"
-DEFAULT_OUTPUT = DATA_DIR / "sold_cars_rescraped.csv"
+DEFAULT_SOURCE = dataset_path("sold_cars.csv")
+DEFAULT_OUTPUT = dataset_path("sold_cars_rescraped.csv")
 MOTORBIKE_KEYWORDS = (
     "motorbike",
     "motor bike",

@@ -48,6 +48,21 @@ class GroupingTests(unittest.TestCase):
         self.assertIsNone(group_id)
         self.assertIn("PERFORMANCE_TRIM", reason)
 
+    def test_corolla_pre_2013_excluded(self) -> None:
+        row = {
+            "year": 2010,
+            "make": "Toyota",
+            "model": "Corolla",
+            "variant": "Ascent ZRE152R",
+            "body_type": "Hatchback",
+            "fuel_type": "Petrol",
+            "transmission": "Automatic",
+            "location": "VIC",
+        }
+        group_id, reason = assign_group_id(row)
+        self.assertIsNone(group_id)
+        self.assertIn("GENERATION_NOT_MODELED", reason)
+
 
 if __name__ == "__main__":
     unittest.main()

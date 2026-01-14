@@ -9,7 +9,7 @@ from typing import Iterable, List, Optional, Sequence, Tuple
 
 import pandas as pd
 
-from shared.data_loader import DATA_DIR
+from shared.data_loader import dataset_path
 
 CURVE_COLUMNS: Sequence[str] = (
     "group_id",
@@ -59,7 +59,7 @@ def _fill_median_row(row: pd.Series) -> pd.Series:
 
 
 def load_curves(path: Path | None = None) -> pd.DataFrame:
-    curve_path = path or DATA_DIR / "curves.csv"
+    curve_path = path or dataset_path("curves.csv")
     if not curve_path.exists():
         return pd.DataFrame(columns=list(CURVE_COLUMNS))
     df = pd.read_csv(curve_path)
@@ -77,7 +77,7 @@ def load_curves(path: Path | None = None) -> pd.DataFrame:
 
 
 def save_curves(df: pd.DataFrame, path: Path | None = None) -> None:
-    curve_path = path or DATA_DIR / "curves.csv"
+    curve_path = path or dataset_path("curves.csv")
     curve_path.parent.mkdir(parents=True, exist_ok=True)
     working = df.copy()
     for column in CURVE_COLUMNS:

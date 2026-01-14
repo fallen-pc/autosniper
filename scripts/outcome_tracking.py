@@ -8,17 +8,16 @@ import pandas as pd
 
 from scripts.ai_listing_valuation import load_cached_results
 from scripts.ai_price_analysis import load_historical_sales
-from shared.data_loader import DATA_DIR
+from shared.data_loader import dataset_path
 
 
-SCORING_DIR = DATA_DIR
-SCORING_PATH = SCORING_DIR / "scored_listings.csv"
-ENRICHED_PATH = SCORING_DIR / "scored_listings_enriched.csv"
-WEEKLY_METRICS_PATH = SCORING_DIR / "model_accuracy_weekly.csv"
-TIER_METRICS_PATH = SCORING_DIR / "model_accuracy_by_tier.csv"
+SCORING_PATH = dataset_path("scored_listings.csv")
+ENRICHED_PATH = dataset_path("scored_listings_enriched.csv")
+WEEKLY_METRICS_PATH = dataset_path("model_accuracy_weekly.csv")
+TIER_METRICS_PATH = dataset_path("model_accuracy_by_tier.csv")
 
-PREDICTIONS_SOURCE = SCORING_DIR / "ai_listing_valuations.csv"
-VERDICTS_SOURCE = SCORING_DIR / "ai_verdicts.csv"
+PREDICTIONS_SOURCE = dataset_path("ai_listing_valuations.csv")
+VERDICTS_SOURCE = dataset_path("ai_verdicts.csv")
 
 
 PREDICTED_COLUMNS = [

@@ -7,13 +7,13 @@ import pandas as pd
 from difflib import SequenceMatcher
 from pathlib import Path
 
-from shared.data_loader import DATA_DIR
+from shared.data_loader import dataset_path
 
 
-ACTIVE_PRIMARY_PATH = DATA_DIR / "active_vehicle_details.csv"
-ACTIVE_FALLBACK_PATH = DATA_DIR / "vehicle_static_details.csv"
-BASE_SOLD_PATH = DATA_DIR / "sold_cars.csv"
-SOLD_ARCHIVE_DIR = DATA_DIR / "ai_analysis_ready"
+ACTIVE_PRIMARY_PATH = dataset_path("active_vehicle_details.csv")
+ACTIVE_FALLBACK_PATH = dataset_path("vehicle_static_details.csv")
+BASE_SOLD_PATH = dataset_path("sold_cars.csv")
+SOLD_ARCHIVE_DIR = dataset_path("ai_analysis_ready")
 
 
 @dataclass

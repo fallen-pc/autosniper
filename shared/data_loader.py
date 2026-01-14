@@ -39,6 +39,34 @@ import requests
 
 DATA_DIR = Path(os.getenv("AUTOSNIPER_DATA_DIR", "CSV_data"))
 
+DATASET_PATHS: dict[str, Path] = {
+    "all_vehicle_links.csv": Path("scrapers") / "all_vehicle_links.csv",
+    "vehicle_static_details.csv": Path("scrapers") / "vehicle_static_details.csv",
+    "active_vehicle_details.csv": Path("scrapers") / "active_vehicle_details.csv",
+    "sold_cars.csv": Path("scrapers") / "sold_cars.csv",
+    "referred_cars.csv": Path("scrapers") / "referred_cars.csv",
+    "active_snapshots.csv": Path("scrapers") / "active_snapshots.csv",
+    "bid_history.csv": Path("scrapers") / "bid_history.csv",
+    "bid_history_bidders.csv": Path("scrapers") / "bid_history_bidders.csv",
+    "bid_history_listings.csv": Path("scrapers") / "bid_history_listings.csv",
+    "bid_history_targets.csv": Path("scrapers") / "bid_history_targets.csv",
+    "ai_listing_valuations.csv": Path("ai") / "ai_listing_valuations.csv",
+    "carsales_pricing.csv": Path("ai") / "carsales_pricing.csv",
+    "ai_verdicts.csv": Path("ai") / "ai_verdicts.csv",
+    "active_vehicle_details_restricted.csv": Path("restricted") / "active_vehicle_details_restricted.csv",
+    "sold_cars_restricted.csv": Path("restricted") / "sold_cars_restricted.csv",
+    "restricted_group_map.csv": Path("restricted") / "restricted_group_map.csv",
+    "curves.csv": Path("restricted") / "curves.csv",
+    "scored_listings.csv": Path("model_audit") / "scored_listings.csv",
+    "scored_listings_enriched.csv": Path("model_audit") / "scored_listings_enriched.csv",
+    "model_accuracy_weekly.csv": Path("model_audit") / "model_accuracy_weekly.csv",
+    "model_accuracy_by_tier.csv": Path("model_audit") / "model_accuracy_by_tier.csv",
+    "sold_cars_historical.csv": Path("archives") / "sold_cars_historical.csv",
+    "sold_cars_rescraped.csv": Path("archives") / "sold_cars_rescraped.csv",
+    "ai_analysis_ready": Path("archives") / "ai_analysis_ready",
+    "repair_estimates.csv": Path("repairs") / "repair_estimates.csv",
+}
+
 REQUIRED_FILES: List[str] = [
     "vehicle_static_details.csv",
     "active_vehicle_details.csv",
@@ -51,9 +79,19 @@ REQUIRED_FILES: List[str] = [
 _SYNC_MARKER = DATA_DIR / ".remote_sync.json"
 
 
+def _dataset_relpath(name: str) -> Path:
+    path = Path(name)
+    if len(path.parts) > 1:
+        return path
+    mapped = DATASET_PATHS.get(name)
+    if mapped is not None:
+        return mapped
+    return path
+
+
 def dataset_path(filename: str) -> Path:
     """Return the absolute path to a dataset within ``CSV_data``."""
-    return DATA_DIR / filename
+    return DATA_DIR / _dataset_relpath(filename)
 
 
 def _missing_required_files() -> list[str]:
@@ -92,7 +130,8 @@ def _extract_zip(content: bytes) -> None:
             parts = list(member_path.parts)
             if parts and parts[0].lower() == "csv_data":
                 parts = parts[1:]
-            target_path = DATA_DIR.joinpath(*parts)
+            relative = Path(*parts)
+            target_path = DATA_DIR / _dataset_relpath(relative.as_posix())
             target_path.parent.mkdir(parents=True, exist_ok=True)
             with archive.open(member) as src, target_path.open("wb") as dst:
                 dst.write(src.read())
@@ -130,10 +169,11 @@ def _build_zip_bytes(filenames: Iterable[str]) -> bytes:
     buffer = io.BytesIO()
     with zipfile.ZipFile(buffer, "w", compression=zipfile.ZIP_DEFLATED) as archive:
         for name in filenames:
-            path = dataset_path(name)
+            relative = _dataset_relpath(name)
+            path = DATA_DIR / relative
             if not path.exists():
                 continue
-            archive.write(path, arcname=Path("CSV_data") / Path(name).name)
+            archive.write(path, arcname=Path("CSV_data") / relative)
     return buffer.getvalue()
 
 

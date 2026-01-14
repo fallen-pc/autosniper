@@ -17,7 +17,7 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 from scripts import extract_links, extract_vehicle_details, update_bids, update_master
-from shared.data_loader import DATA_DIR
+from shared.data_loader import dataset_path
 from shared.sold_cleaning import is_compliance_slug, normalize_listing_fields
 
 CHECK_URL = os.getenv("AUTOSNIPER_HEALTHCHECK_URL", "https://www.grays.com/")
@@ -90,7 +90,7 @@ def _release_lock() -> None:
 
 
 def _load_active_df() -> pd.DataFrame:
-    path = DATA_DIR / "active_vehicle_details.csv"
+    path = dataset_path("active_vehicle_details.csv")
     if not path.exists():
         print(f"Missing {path}; nothing to update.")
         return pd.DataFrame()

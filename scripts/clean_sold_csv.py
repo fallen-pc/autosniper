@@ -10,14 +10,14 @@ import pandas as pd
 
 if __package__ in (None, ""):
     sys.path.append(str(Path(__file__).resolve().parent.parent))
-    from shared.data_loader import DATA_DIR
+    from shared.data_loader import dataset_path
     from shared.sold_cleaning import normalize_listing_fields
 else:  # pragma: no cover
-    from shared.data_loader import DATA_DIR
+    from shared.data_loader import dataset_path
     from shared.sold_cleaning import normalize_listing_fields
 
 
-CSV_PATH = DATA_DIR / "sold_cars.csv"
+CSV_PATH = dataset_path("sold_cars.csv")
 DEDUP_BACKUP_PATH = CSV_PATH.with_suffix(".csv.bak")
 MANUAL_CARSALES_COLUMNS = (
     "manual_carsales_min",

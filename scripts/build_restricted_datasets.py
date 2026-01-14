@@ -11,22 +11,22 @@ if __package__ in (None, ""):
     import sys
 
     sys.path.append(str(Path(__file__).resolve().parent.parent))
-    from shared.data_loader import DATA_DIR
+    from shared.data_loader import dataset_path
     from shared.grouping import assign_group_id
     from shared.schema import ACTIVE_LISTING_SCHEMA, SOLD_LISTING_SCHEMA
     from shared.sold_cleaning import normalize_listing_fields
 else:  # pragma: no cover
-    from shared.data_loader import DATA_DIR
+    from shared.data_loader import dataset_path
     from shared.grouping import assign_group_id
     from shared.schema import ACTIVE_LISTING_SCHEMA, SOLD_LISTING_SCHEMA
     from shared.sold_cleaning import normalize_listing_fields
 
 
-ACTIVE_SOURCE = DATA_DIR / "active_vehicle_details.csv"
-SOLD_SOURCE = DATA_DIR / "sold_cars.csv"
-ACTIVE_RESTRICTED = DATA_DIR / "active_vehicle_details_restricted.csv"
-SOLD_RESTRICTED = DATA_DIR / "sold_cars_restricted.csv"
-GROUP_MAP_PATH = DATA_DIR / "restricted_group_map.csv"
+ACTIVE_SOURCE = dataset_path("active_vehicle_details.csv")
+SOLD_SOURCE = dataset_path("sold_cars.csv")
+ACTIVE_RESTRICTED = dataset_path("active_vehicle_details_restricted.csv")
+SOLD_RESTRICTED = dataset_path("sold_cars_restricted.csv")
+GROUP_MAP_PATH = dataset_path("restricted_group_map.csv")
 
 
 def _has_value(value: object) -> bool:

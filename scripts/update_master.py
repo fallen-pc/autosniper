@@ -13,17 +13,17 @@ import pandas as pd
 
 if __package__ in (None, ""):
     sys.path.append(str(Path(__file__).resolve().parent.parent))
-    from shared.data_loader import DATA_DIR
+    from shared.data_loader import dataset_path
     from shared.sold_cleaning import normalize_listing_fields
     from scripts.build_restricted_datasets import build_restricted_datasets
 else:
-    from shared.data_loader import DATA_DIR
+    from shared.data_loader import dataset_path
     from shared.sold_cleaning import normalize_listing_fields
     from scripts.build_restricted_datasets import build_restricted_datasets
-SOLD_FILE = DATA_DIR / "sold_cars.csv"
-REFERRED_FILE = DATA_DIR / "referred_cars.csv"
-ACTIVE_FILE = DATA_DIR / "active_vehicle_details.csv"
-STATIC_FILE = DATA_DIR / "vehicle_static_details.csv"
+SOLD_FILE = dataset_path("sold_cars.csv")
+REFERRED_FILE = dataset_path("referred_cars.csv")
+ACTIVE_FILE = dataset_path("active_vehicle_details.csv")
+STATIC_FILE = dataset_path("vehicle_static_details.csv")
 
 DEDUP_KEYS: Sequence[str] = ("url", "vin")
 REFERRED_STATUSES = {"referred", "canceled", "cancelled", "closed"}

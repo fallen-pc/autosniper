@@ -123,40 +123,16 @@ def render_sold_inventory() -> None:
     for make_value, make_df in working_df.groupby("make", dropna=False):
         make_label = str(make_value).strip() if pd.notna(make_value) and str(make_value).strip() else "Unknown Make"
         with st.expander(f"{make_label} ({len(make_df)} vehicles)", expanded=False):
-            make_models = make_df.groupby("model", dropna=False)
-            for model_value, model_df in make_models:
-                model_label = str(model_value).strip() if pd.notna(model_value) and str(model_value).strip() else "Unknown Model"
-                model_html = clean_html(
-                    f"""
-                    <div class="section-subtitle" style="margin-top:0;">{model_label} · {len(model_df)} records</div>
-                    """
-                )
-                st.markdown(model_html, unsafe_allow_html=True)
-                variant_groups = model_df.groupby("variant", dropna=False)
-                for variant_value, variant_df in variant_groups:
-                    variant_label = (
-                        str(variant_value).strip()
-                        if pd.notna(variant_value) and str(variant_value).strip()
-                        else "Unknown Variant"
-                    )
-                    variant_html = clean_html(
-                        f"""
-                        <div style="font-weight:600;margin-top:0.25rem;">{variant_label} · {len(variant_df)} records</div>
-                        """
-                    )
-                    st.markdown(variant_html, unsafe_allow_html=True)
-                    display_df = variant_df.drop(columns=["year_numeric"]).sort_values(
-                        by=["year"],
-                        ascending=False,
-                        kind="mergesort",
-                    )
-                    st.dataframe(
-                        display_df.reset_index(drop=True),
-                        width="stretch",
-                        hide_index=True,
-                    )
-
-
+            display_df = make_df.drop(columns=["year_numeric"]).sort_values(
+                by=["model", "year"],
+                ascending=[True, False],
+                kind="mergesort",
+            )
+            st.dataframe(
+                display_df.reset_index(drop=True),
+                width="stretch",
+                hide_index=True,
+            )
 render_sold_inventory()
 
 render_dataset(

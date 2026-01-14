@@ -205,6 +205,24 @@ def _parse_cylinders(value: object) -> int | None:
     return None
 
 
+def _parse_year(value: object) -> int | None:
+    if value is None:
+        return None
+    text = str(value).strip()
+    if not text:
+        return None
+    match = re.search(r"\b(19|20)\d{2}\b", text)
+    if match:
+        try:
+            return int(match.group(0))
+        except ValueError:
+            return None
+    try:
+        return int(float(text))
+    except (TypeError, ValueError):
+        return None
+
+
 def _has_any(text: str, keywords: Iterable[str]) -> bool:
     return any(keyword in text for keyword in keywords)
 
@@ -419,6 +437,9 @@ def _assign_i30(row: object, text: str, body_text: str) -> Tuple[str | None, str
 
 
 def _assign_corolla(row: object, text: str, body_text: str) -> Tuple[str | None, str]:
+    year_val = _parse_year(getattr(row, "get", lambda _: None)("year"))
+    if year_val is not None and year_val < 2013:
+        return None, "BAD_GROUP:GENERATION_NOT_MODELED"
     if _fuel_type(row, text) != "petrol":
         return None, "BAD_GROUP:FUEL_MISMATCH"
     if _match_regex(text, r"\bhybrid\b"):

@@ -36,12 +36,12 @@ PAGE_SUMMARIES: tuple[PageSummary, ...] = (
         capabilities=(
             "Runs `scripts/extract_links.py` when the **Run link scraper** button is pressed and surfaces"
             " immediate success / failure feedback in the UI.",
-            "Counts the rows in `CSV_data/all_vehicle_links.csv` and previews the first 20 links so you"
+            "Counts the rows in `CSV_data/scrapers/all_vehicle_links.csv` and previews the first 20 links so you"
             " know what was captured in the latest crawl.",
         ),
         data_flows=(
             "Input: none — the scraper hits Grays directly.",
-            "Output: `CSV_data/all_vehicle_links.csv` (listing URL, title, metadata).",
+            "Output: `CSV_data/scrapers/all_vehicle_links.csv` (listing URL, title, metadata).",
         ),
         notes=(
             "Kick this page off whenever you want to refresh the entire discovery pipeline before"
@@ -61,8 +61,8 @@ PAGE_SUMMARIES: tuple[PageSummary, ...] = (
             " `vehicle_static_details.csv` along with a total count so you can sanity-check the pull.",
         ),
         data_flows=(
-            "Input: `CSV_data/all_vehicle_links.csv` (required).",
-            "Output: `CSV_data/vehicle_static_details.csv` (master spec sheet for each listing).",
+            "Input: `CSV_data/scrapers/all_vehicle_links.csv` (required).",
+            "Output: `CSV_data/scrapers/vehicle_static_details.csv` (master spec sheet for each listing).",
         ),
         notes=(
             "Use this immediately after refreshing the link list so the remaining tools have up-to-date"

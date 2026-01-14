@@ -18,8 +18,9 @@ from shared.repair_features import (
     serialize_tags,
 )
 from shared.parts_cost import estimate_parts_cost
+from shared.data_loader import dataset_path
 
-DEFAULT_INPUT = ROOT_DIR / "CSV_data" / "sold_cars.csv"
+DEFAULT_INPUT = dataset_path("sold_cars.csv")
 DEFAULT_OUTPUT = ROOT_DIR / "artifacts" / "training_data" / "sold_cars_repairs_enriched.csv"
 
 

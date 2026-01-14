@@ -1,0 +1,478 @@
+bidder_name,bid_count,listings,avg_bid,max_bid,reserve_met_count
+D.M - PORT MELBOURNE VIC,9,5,,,9
+R.S - Marsden Park NSW,8,4,,,8
+a.l - blaxcell NSW,7,4,,,7
+s.f - kirkwood QLD,7,4,,,7
+A.M - Yowie Bay NSW,5,4,,,3
+M.C - Castle hill NSW,6,3,,,6
+S.S - Wakeley NSW,6,3,,,6
+C.S - Roseville NSW,5,3,,,5
+H.A - South Brisbane QLD,5,3,,,5
+M.C - GREENSBOROUGH VIC,3,3,,,0
+A.B - WATTLE GROVE NSW,4,2,,,4
+A.M - HILLSDALE NSW,4,2,,,2
+G.P - Dandenong VIC,4,2,,,4
+K.M - pendle hill NSW,4,2,,,2
+K.N - MORPHETT VALE SA,4,2,,,4
+M.B - Revesby NSW,4,2,,,4
+M.F - Wiley park NSW,4,2,,,4
+M.H - Ingleburn NSW,4,2,,,4
+M.I - Liverpool NSW,4,2,,,4
+M.J - Kellyville NSW,4,2,,,4
+P.S - Hartley NSW,4,2,,,4
+R.M - Voyager point NSW,4,2,,,4
+S.P - Roselands NSW,4,2,,,4
+h.c - St Andrews NSW,4,2,,,4
+j.p - HELENVALE QLD,4,2,,,4
+s.r - auburn NSW,4,2,,,4
+F.C - Noarlunga Downs SA,3,2,,,0
+K.B - Upper Caboolture QLD,3,2,,,1
+K.S - Ashfield NSW,3,2,,,3
+M.M - Ashfield NSW,3,2,,,3
+P.C - Rosehill NSW,3,2,,,2
+S.S - Greenfield park NSW,3,2,,,3
+A.A - Dandenong north VIC,2,2,,,0
+A.Z - Cedar grove QLD,2,2,,,0
+B.H - CONDINGUP WA,2,2,,,0
+B.L - Clyde north VIC,2,2,,,0
+B.W - East Bendigo VIC,2,2,,,0
+C.G - EAGLEBY QLD,2,2,,,1
+C.K - LAVERTON NORTH VIC,2,2,,,0
+D.B - Banyo QLD,2,2,,,0
+D.C - Beechboro WA,2,2,,,0
+D.D - DELETED DELETED,2,2,,,0
+D.S - TUART HILL WA,2,2,,,0
+I.A - Biloela QLD,2,2,,,1
+R.V - Baldivis WA,2,2,,,0
+S.K - Nairne SA,2,2,,,0
+S.L - Parramatta NSW,2,2,,,0
+V.B - Richmond VIC,2,2,,,1
+d.c - Underwood QLD,2,2,,,1
+f.p - Cranbourne VIC,2,2,,,0
+k.m - Armstrong Creek VIC,2,2,,,0
+z.k - wollert VIC,2,2,,,0
+A.M - Bondi Junction NSW,4,1,,,0
+D.S - Truganina VIC,4,1,,,0
+G.H - Barretta TAS,4,1,,,0
+K.K - Ryde NSW,4,1,,,0
+M.D - Mickleham VIC,4,1,,,0
+O.S - Pitt town NSW,4,1,,,0
+P.M - Lane Cove NSW,4,1,,,0
+P.R - Albion Park rail NSW,4,1,,,0
+R.O - Miranda NSW,4,1,,,0
+S.E - Gap Ridge WA,4,1,,,0
+Z.S - Epping VIC,4,1,,,0
+r.z - greenacre NSW,4,1,,,0
+s.i - FINDON SA,4,1,,,0
+-.A - point cook VIC,2,1,,,2
+A.A - Bankstown NSW,2,1,,,2
+A.H - Robina QLD,2,1,,,2
+A.I - Penrith NSW,2,1,,,2
+A.K - Campsie NSW,2,1,,,2
+A.K - ROSEHILL NSW,2,1,,,2
+A.K - Westmead NSW,2,1,,,2
+A.P - Mount Lewis NSW,2,1,,,2
+A.T - MUDGEERABA QLD,2,1,,,2
+A.V - Tarneit VIC,2,1,,,2
+A.b - Seven hills NSW,2,1,,,2
+B.A - Sefton NSW,2,1,,,2
+B.M - North Haven SA,2,1,,,2
+C.B - Ambarvale NSW,2,1,,,0
+C.K - Greenacre NSW,2,1,,,2
+C.t - Liverpool NSW,2,1,,,2
+D.O - Kallangur QLD,2,1,,,2
+D.k - mickleham VIC,2,1,,,2
+E.N - Corio VIC,2,1,,,2
+F.Y - Busby NSW,2,1,,,2
+F.Y - Mickleham VIC,2,1,,,2
+G.J - Broadbeach QLD,2,1,,,2
+G.P - ROXBURGH PARK VIC,2,1,,,2
+G.S - Tarneit VIC,2,1,,,2
+G.j - cannington WA,2,1,,,2
+H.A - PARAFIELD GARDENS SA,2,1,,,2
+H.J - East Launceston TAS,2,1,,,2
+H.K - ROZELLE NSW,2,1,,,2
+H.K - glenwood NSW,2,1,,,2
+H.N - Clyde VIC,2,1,,,2
+J.D - KARAWARA WA,2,1,,,2
+J.J - Blair Athol SA,2,1,,,2
+J.K - Sans Souci NSW,2,1,,,2
+J.P - Hampton park VIC,2,1,,,2
+J.R - Rowville VIC,2,1,,,2
+J.S - Reservoir VIC,2,1,,,2
+J.S - SCONE NSW,2,1,,,2
+K.A - blair athol NSW,2,1,,,2
+K.E - Fairfield east NSW,2,1,,,2
+K.E - Greenacre NSW,2,1,,,2
+K.E - Mickleham VIC,2,1,,,2
+K.K - Guildford NSW,2,1,,,0
+L.I - Schofields NSW,2,1,,,2
+L.K - SANS SOUCI NSW,2,1,,,2
+M.A - Liverpool NSW,2,1,,,2
+M.G - Grantham Farm NSW,2,1,,,2
+M.H - Chester Hill NSW,2,1,,,2
+M.H - KENMORE HILLS QLD,2,1,,,2
+M.K - MANOR LAKES VIC,2,1,,,2
+M.M - Port Douglas QLD,2,1,,,2
+M.Q - Amaroo ACT,2,1,,,2
+M.R - Liverpool NSW,2,1,,,2
+M.U - RAVENHALL VIC,2,1,,,2
+M.z - Minchinbury NSW,2,1,,,0
+N.C - Brighton Le sands NSW,2,1,,,2
+N.D - Kingsgrove NSW,2,1,,,2
+N.K - CONISTON NSW,2,1,,,2
+N.U - Davoren Park SA,2,1,,,2
+O.S - Melton VIC,2,1,,,2
+P.O - Lismore NSW,2,1,,,2
+P.P - St marys NSW,2,1,,,2
+R.D - Castle Hill NSW,2,1,,,2
+R.F - granville NSW,2,1,,,2
+R.G - Wheelers Hill VIC,2,1,,,2
+R.S - Campbelltown SA,2,1,,,2
+S.G - Bankstown NSW,2,1,,,2
+S.P - Glenorchy TAS,2,1,,,2
+S.Y - Chipping Norton NSW,2,1,,,0
+T.D - Carlingford NSW,2,1,,,2
+T.H - Macquarie Fields NSW,2,1,,,2
+T.M - Smithfield QLD,2,1,,,2
+T.S - Blacktown NSW,2,1,,,2
+T.S - Gerogery NSW,2,1,,,2
+V.B - Cobbitty NSW,2,1,,,2
+W.A - Hoppers Crossing VIC,2,1,,,2
+W.L - Parramatta NSW,2,1,,,2
+a.f - Breakfast Point NSW,2,1,,,2
+c.m - sandgate NSW,2,1,,,2
+f.h - Mickleham VIC,2,1,,,2
+j.m - Sippy Downs QLD,2,1,,,2
+k.r - blacktown NSW,2,1,,,2
+k.s - Merrylands NSW,2,1,,,2
+l.b - LAKELANDS NSW,2,1,,,2
+m.b - Burraneer NSW,2,1,,,2
+r.g - hassall grove NSW,2,1,,,2
+s.K - Baulkham hills NSW,2,1,,,2
+A.A - Auburn NSW,1,1,,,0
+A.A - Austral NSW,1,1,,,0
+A.A - Narre Warren south VIC,1,1,,,0
+A.B - Gooseberry hill WA,1,1,,,0
+A.B - Para Hills West SA,1,1,,,0
+A.C - AUSTRALIND WA,1,1,,,0
+A.D - Mickleham VIC,1,1,,,0
+A.E - Fullarton SA,1,1,,,0
+A.F - Merrylands NSW,1,1,,,1
+A.F - ROCKDALE NSW,1,1,,,0
+A.G - Coogee WA,1,1,,,0
+A.H - BRIGHTON LE SANDS NSW,1,1,,,0
+A.H - Smithfield NSW,1,1,,,0
+A.H - The ponds NSW,1,1,,,1
+A.J - Narrikup WA,1,1,,,0
+A.K - Berwick VIC,1,1,,,0
+A.K - Glenroy VIC,1,1,,,0
+A.K - Mickleham VIC,1,1,,,0
+A.K - craigieburn VIC,1,1,,,0
+A.M - CROYDON SOUTH VIC,1,1,,,0
+A.M - Loganholme QLD,1,1,,,0
+A.M - Melton VIC,1,1,,,0
+A.M - ROSEHILL NSW,1,1,,,1
+A.N - Lawnton QLD,1,1,,,0
+A.S - Auburn NSW,1,1,,,1
+A.S - DEANSIDE VIC,1,1,,,0
+A.W - ROSEBERY NT,1,1,,,0
+A.W - Tooperang SA,1,1,,,0
+A.W - Walkerville VIC,1,1,,,0
+B.B - Ashfield NSW,1,1,,,1
+B.B - Burpengary East QLD,1,1,,,0
+B.G - Pakenham VIC,1,1,,,0
+B.P - Broome WA,1,1,,,0
+B.R - Baranduda VIC,1,1,,,0
+B.S - Duncraig WA,1,1,,,0
+B.T - Thomastown VIC,1,1,,,0
+B.t - ELIZABETH SOUTH SA,1,1,,,0
+C.C - Bacchus Marsh VIC,1,1,,,0
+C.F - HAMILTON HILL WA,1,1,,,0
+C.H - Melton VIC,1,1,,,0
+C.M - Surfers Paradise QLD,1,1,,,1
+C.N - CRAIGIE WA,1,1,,,0
+C.O - Macleay Island QLD,1,1,,,1
+C.P - Craigieburn VIC,1,1,,,0
+C.P - TREEBY WA,1,1,,,0
+C.R - Alberton QLD,1,1,,,0
+C.R - CARDIFF NSW,1,1,,,1
+C.R - Seville VIC,1,1,,,0
+D.A - Mernda VIC,1,1,,,0
+D.B - GOWER VIC,1,1,,,0
+D.B - Wattleup WA,1,1,,,0
+D.C - ELIZABETH DOWNS SA,1,1,,,0
+D.C - Keilor downs VIC,1,1,,,0
+D.H - SMITHFIELD NSW,1,1,,,0
+D.J - KINGSLEY WA,1,1,,,0
+D.K - Forster NSW,1,1,,,0
+D.M - Happy valley SA,1,1,,,0
+D.O - Ngunnawal ACT,1,1,,,0
+D.P - Beverley WA,1,1,,,0
+D.R - COOROY QLD,1,1,,,0
+D.S - Melbourne VIC,1,1,,,0
+D.S - Rhodes NSW,1,1,,,0
+D.W - Piccadilly WA,1,1,,,0
+E.B - Tetoora road VIC,1,1,,,0
+E.C - Athelstone SA,1,1,,,1
+E.D - MELTON SOUTH VIC,1,1,,,0
+E.D - canning vale WA,1,1,,,0
+E.H - Gilles plains SA,1,1,,,0
+E.I - Guildford NSW,1,1,,,0
+E.J - ARANA HILLS QLD,1,1,,,1
+E.M - Craigieburn VIC,1,1,,,0
+E.M - EAST SIDE NT,1,1,,,0
+E.R - Moorebank NSW,1,1,,,0
+E.S - Blacktown NSW,1,1,,,0
+F.A - Rosehill NSW,1,1,,,0
+F.G - Lakelands WA,1,1,,,0
+F.H - Waikiki WA,1,1,,,0
+F.P - Truganina VIC,1,1,,,0
+G.B - South Brisbane QLD,1,1,,,1
+G.D - Clearview SA,1,1,,,0
+G.H - Berwick VIC,1,1,,,0
+G.H - SOUTH BRISBANE QLD,1,1,,,0
+G.L - Hampton Park VIC,1,1,,,0
+G.M - Bell park VIC,1,1,,,0
+G.M - Maroubra NSW,1,1,,,1
+G.M - Ulverstone TAS,1,1,,,0
+G.N - Blairgowrie VIC,1,1,,,0
+G.P - Maraylya NSW,1,1,,,0
+H.A - Sunshine West VIC,1,1,,,0
+H.A - Truganina VIC,1,1,,,0
+H.D - Birrong NSW,1,1,,,0
+H.N - Moonyoonooka WA,1,1,,,0
+H.T - Lurnea NSW,1,1,,,0
+H.T - Quairading WA,1,1,,,0
+I.A - Austral NSW,1,1,,,0
+I.F - Aldgate SA,1,1,,,0
+I.R - Avoca VIC,1,1,,,0
+I.S - Mascot NSW,1,1,,,0
+I.U - DERRIMUT VIC,1,1,,,0
+I.c - Rockdale NSW,1,1,,,0
+J.B - Carabooda WA,1,1,,,0
+J.B - Ormeau QLD,1,1,,,0
+J.C - Sunshine VIC,1,1,,,0
+J.D - Greenfields WA,1,1,,,0
+J.F - Bunya QLD,1,1,,,1
+J.G - Orange NSW,1,1,,,0
+J.H - Baynton WA,1,1,,,0
+J.H - Manning WA,1,1,,,0
+J.H - PRAHRAN VIC,1,1,,,0
+J.H - Padbury WA,1,1,,,0
+J.H - ROSEMEADOW NSW,1,1,,,0
+J.K - Sandy Bay TAS,1,1,,,0
+J.L - Bellbird Park QLD,1,1,,,0
+J.L - Dianella WA,1,1,,,0
+J.M - Abbotsford NSW,1,1,,,0
+J.M - Summertown SA,1,1,,,0
+J.N - Bullsbrook WA,1,1,,,0
+J.O - Roxburgh park VIC,1,1,,,0
+J.O - St Kilda east VIC,1,1,,,0
+J.P - ESSENDON NORTH VIC,1,1,,,0
+J.R - Fairfield West NSW,1,1,,,0
+J.S - Gray NT,1,1,,,0
+J.T - Armadale WA,1,1,,,0
+J.T - Mount louisa QLD,1,1,,,0
+J.T - Pakenham VIC,1,1,,,0
+J.W - Boronia VIC,1,1,,,0
+J.W - Frankston VIC,1,1,,,0
+J.l - Craigieburn VIC,1,1,,,0
+J.w - gosnells WA,1,1,,,0
+K.B - Craigieburn VIC,1,1,,,0
+K.C - BELLFIELD VIC,1,1,,,0
+K.E - Russell island QLD,1,1,,,0
+K.J - Somerton VIC,1,1,,,0
+K.K - Noble park VIC,1,1,,,0
+K.L - Derrimut VIC,1,1,,,0
+K.R - Waterford QLD,1,1,,,1
+K.S - Cranbourne East VIC,1,1,,,0
+K.S - Keysborough VIC,1,1,,,0
+K.T - ST JOHNS PARK NSW,1,1,,,0
+K.Y - Smithfield NSW,1,1,,,0
+L.I - Narrabeen NSW,1,1,,,0
+L.K - Lidcombe NSW,1,1,,,0
+L.L - Gnowangerup WA,1,1,,,0
+L.M - Frankston South VIC,1,1,,,0
+L.S - BRISBANE QLD,1,1,,,0
+M.A - Doonside NSW,1,1,,,1
+M.A - Wavell Heights QLD,1,1,,,1
+M.B - Ormond VIC,1,1,,,0
+M.B - Safety bay WA,1,1,,,0
+M.D - Beechboro WA,1,1,,,0
+M.D - Doncaster VIC,1,1,,,0
+M.D - Hoppers Crossing VIC,1,1,,,0
+M.D - MARONG VIC,1,1,,,1
+M.F - KARDINYA WA,1,1,,,0
+M.G - Tarneit VIC,1,1,,,0
+M.H - Craigieburn VIC,1,1,,,1
+M.H - Nilma VIC,1,1,,,0
+M.I - DALLAS VIC,1,1,,,0
+M.J - Parafield Gardens SA,1,1,,,0
+M.K - Dulwich hill NSW,1,1,,,1
+M.M - Pakenham VIC,1,1,,,0
+M.N - Moorebank NSW,1,1,,,0
+M.N - Paralowie SA,1,1,,,0
+M.O - Strathalbyn SA,1,1,,,0
+M.P - Ballina NSW,1,1,,,1
+M.P - CRAIGIEBURN VIC,1,1,,,1
+M.P - Calderwood NSW,1,1,,,0
+M.P - Ringwood VIC,1,1,,,0
+M.R - The Summit QLD,1,1,,,0
+M.R - ellenbrook WA,1,1,,,0
+M.S - SPRINGVALE SOUTH VIC,1,1,,,0
+M.T - Glenroy VIC,1,1,,,0
+M.T - HOPPERS CROSSING VIC,1,1,,,0
+M.T - Kingscliff NSW,1,1,,,0
+M.T - Liverpool NSW,1,1,,,0
+M.W - CHELSEA HEIGHTS VIC,1,1,,,0
+M.W - RIVERTON WA,1,1,,,0
+M.h - Arana hills QLD,1,1,,,0
+M.t - Devonport TAS,1,1,,,0
+N.D - Southport QLD,1,1,,,1
+N.J - Cedar grove QLD,1,1,,,0
+N.M - Berwick VIC,1,1,,,0
+N.M - Endeavour hills VIC,1,1,,,0
+N.O - Roxburgh Park VIC,1,1,,,0
+N.P - Bentleigh VIC,1,1,,,0
+N.R - Lockwood South VIC,1,1,,,0
+N.S - CANNING VALE WA,1,1,,,0
+N.S - Mooroolbark VIC,1,1,,,0
+N.S - Perth WA,1,1,,,0
+N.S - Tarneit VIC,1,1,,,0
+O.A - Burnside SA,1,1,,,0
+P.A - Padstow NSW,1,1,,,0
+P.C - Ivanhoe VIC,1,1,,,0
+P.C - Narara NSW,1,1,,,1
+P.D - Mawson Lakes SA,1,1,,,1
+P.D - Paralowie SA,1,1,,,0
+P.K - Wyndham vale VIC,1,1,,,0
+P.L - Chidlow WA,1,1,,,0
+P.O - karama NT,1,1,,,0
+P.S - Blacktown NSW,1,1,,,0
+P.S - Lockleys SA,1,1,,,0
+P.T - PARKWOOD QLD,1,1,,,0
+P.V - BUNDOORA VIC,1,1,,,1
+P.Z - Girraween NSW,1,1,,,0
+P.p - BLACKBURN VIC,1,1,,,0
+R.C - Rothwell QLD,1,1,,,0
+R.C - SANDY BAY TAS,1,1,,,0
+R.D - Mission Beach QLD,1,1,,,1
+R.H - Sunbury VIC,1,1,,,0
+R.J - South Guildford WA,1,1,,,0
+R.K - Port Melbourne VIC,1,1,,,0
+R.M - Hampton park VIC,1,1,,,0
+R.M - Yagoona NSW,1,1,,,0
+R.R - SOUTHPORT QLD,1,1,,,0
+R.S - Dandenong North VIC,1,1,,,0
+R.S - Dean park NSW,1,1,,,0
+R.S - Hoxton Park NSW,1,1,,,0
+R.T - Dandenong VIC,1,1,,,0
+S.A - Tarneit VIC,1,1,,,0
+S.A - Windsor Gardens SA,1,1,,,0
+S.B - BOONDALL QLD,1,1,,,1
+S.B - Forrestdale WA,1,1,,,0
+S.B - GREENWITH SA,1,1,,,1
+S.B - Wellard WA,1,1,,,0
+S.C - Byford WA,1,1,,,0
+S.D - Cecil hills NSW,1,1,,,0
+S.D - Mildura VIC,1,1,,,0
+S.D - SEMAPHORE SOUTH SA,1,1,,,0
+S.D - South Morang VIC,1,1,,,0
+S.D - Success WA,1,1,,,0
+S.G - DUNCRAIG WA,1,1,,,0
+S.G - Ulverstone TAS,1,1,,,0
+S.H - BALLAJURA WA,1,1,,,0
+S.H - Liverpool NSW,1,1,,,1
+S.I - Fairfield NSW,1,1,,,0
+S.J - Cranbourne North VIC,1,1,,,0
+S.K - Ellenbrook WA,1,1,,,0
+S.L - Blacktown NSW,1,1,,,0
+S.L - Point Cook VIC,1,1,,,0
+S.L - Wellard WA,1,1,,,0
+S.M - Hastings VIC,1,1,,,0
+S.M - Pyrmont NSW,1,1,,,0
+S.R - BOSSLEY PARK NSW,1,1,,,0
+S.R - CAMPBELLTOWN NSW,1,1,,,0
+S.R - Granville NSW,1,1,,,0
+S.S - BRISBANE CITY QLD,1,1,,,0
+S.S - FORTITUDE VALLEY QLD,1,1,,,0
+S.S - Medina WA,1,1,,,0
+S.T - Clyde north VIC,1,1,,,0
+S.T - MARGARET RIVER WA,1,1,,,0
+S.T - Melbourne VIC,1,1,,,0
+S.U - Coolaroo VIC,1,1,,,0
+S.V - PHILLIP ACT,1,1,,,0
+S.g - WINGFIELD SA,1,1,,,0
+S.m - Glen eden QLD,1,1,,,0
+T.C - PIALBA QLD,1,1,,,1
+T.C - SPRINGFIELD LAKES QLD,1,1,,,0
+T.H - Green valley NSW,1,1,,,0
+T.L - West Leederville WA,1,1,,,0
+T.M - Mudgee NSW,1,1,,,0
+T.M - connolly WA,1,1,,,0
+T.T - MERRIWA WA,1,1,,,0
+T.T - Moorebank NSW,1,1,,,1
+T.T - Nerang QLD,1,1,,,1
+T.W - Boronia VIC,1,1,,,0
+T.W - Rockingham WA,1,1,,,0
+T.b - sunbury VIC,1,1,,,0
+T.o - aratula QLD,1,1,,,0
+U.U - Roxburgh Park VIC,1,1,,,0
+V.H - west ryde NSW,1,1,,,0
+V.S - Burwood East VIC,1,1,,,1
+V.T - Wynnum West QLD,1,1,,,0
+W.A - BELLAMACK NT,1,1,,,0
+W.A - Northbridge NSW,1,1,,,0
+W.K - Chittering WA,1,1,,,0
+W.K - Hurstville NSW,1,1,,,0
+W.P - Clayton South VIC,1,1,,,0
+W.S - Box Hill NSW,1,1,,,1
+W.T - Mystic Park VIC,1,1,,,1
+Y.H - Croydon VIC,1,1,,,0
+Y.R - Essendon VIC,1,1,,,0
+Y.Y - EIGHT MILE PLAINS QLD,1,1,,,0
+Y.Z - Marsden Park NSW,1,1,,,0
+Z.M - Mill Park VIC,1,1,,,0
+a.a - hillside VIC,1,1,,,0
+a.c - East bunbury WA,1,1,,,0
+a.f - Coburg VIC,1,1,,,0
+a.k - georges hall NSW,1,1,,,0
+a.p - snowtown SA,1,1,,,0
+a.t - hillside VIC,1,1,,,0
+a.u - Mount Archer QLD,1,1,,,0
+b.g - Fern bay NSW,1,1,,,0
+c.g - wyndham vale VIC,1,1,,,0
+c.t - st albans VIC,1,1,,,0
+f.m - Tallebudgera QLD,1,1,,,0
+f.m - taylors lakes VIC,1,1,,,0
+g.N - BLUE HAVEN NSW,1,1,,,0
+g.m - miranda NSW,1,1,,,0
+h.c - waterford west QLD,1,1,,,1
+h.g - ROXBURGH PARK VIC,1,1,,,0
+i.a - MADDINGTON WA,1,1,,,0
+j.k - pemulwuy NSW,1,1,,,1
+j.s - BLACKTOWN NSW,1,1,,,0
+j.s - mount barker junction SA,1,1,,,0
+k.A - Gladstone park VIC,1,1,,,0
+k.u - GIRRAWEEN NSW,1,1,,,0
+l.P - Mortlake VIC,1,1,,,0
+l.k - Dubbo NSW,1,1,,,0
+m.R - Cape Jervis SA,1,1,,,0
+m.b - byford WA,1,1,,,0
+m.m - ingle farm SA,1,1,,,0
+m.n - Lake grace WA,1,1,,,0
+m.p - richlands QLD,1,1,,,0
+m.r - wallalong NSW,1,1,,,0
+m.w - SOUTH LISMORE NSW,1,1,,,0
+n.a - Katoomba NSW,1,1,,,1
+n.b - meadow heights VIC,1,1,,,0
+p.b - bundall QLD,1,1,,,1
+p.f - Rowville VIC,1,1,,,0
+p.m - warwick farm NSW,1,1,,,0
+r.p - seaford VIC,1,1,,,0
+r.s - Lidcombe NSW,1,1,,,0
+r.s - rydalmere NSW,1,1,,,0
+s.N - Glenwood NSW,1,1,,,0
+v.g - meadow heights VIC,1,1,,,0
+y.t - Sunshine north VIC,1,1,,,0

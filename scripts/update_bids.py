@@ -20,16 +20,16 @@ if __package__ in (None, ""):
     import sys
 
     sys.path.append(str(Path(__file__).resolve().parent.parent))
-    from shared.data_loader import DATA_DIR
+    from shared.data_loader import dataset_path
 else:  # pragma: no cover
-    from shared.data_loader import DATA_DIR
+    from shared.data_loader import dataset_path
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-CSV_FILE = str(DATA_DIR / "active_vehicle_details.csv")
-SNAPSHOT_FILE = DATA_DIR / "active_snapshots.csv"
+CSV_FILE = str(dataset_path("active_vehicle_details.csv"))
+SNAPSHOT_FILE = dataset_path("active_snapshots.csv")
 SNAPSHOT_COLUMNS = [
     "snapshot_ts",
     "url",

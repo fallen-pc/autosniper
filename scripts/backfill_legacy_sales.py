@@ -15,15 +15,15 @@ if __package__ in (None, ""):
     import sys
 
     sys.path.append(str(Path(__file__).resolve().parent.parent))
-    from shared.data_loader import DATA_DIR
+    from shared.data_loader import dataset_path
     from scripts.extract_vehicle_details import process_links
 else:  # pragma: no cover
-    from shared.data_loader import DATA_DIR
+    from shared.data_loader import dataset_path
     from scripts.extract_vehicle_details import process_links
 
 
-LEGACY_DIR = DATA_DIR / "ai_analysis_ready"
-SOLD_PATH = DATA_DIR / "sold_cars.csv"
+LEGACY_DIR = dataset_path("ai_analysis_ready")
+SOLD_PATH = dataset_path("sold_cars.csv")
 DEFAULT_PATTERN = "soldcars*.csv"
 BACKFILL_FIELDS = [
     "general_condition",

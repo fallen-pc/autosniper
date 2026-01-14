@@ -17,7 +17,7 @@ if __package__ in (None, ""):
     import sys
 
     sys.path.append(str(Path(__file__).resolve().parent.parent))
-    from shared.data_loader import DATA_DIR
+    from shared.data_loader import dataset_path
     from shared.schema import SOLD_RAW_SCRAPE_COLUMNS, STATIC_VEHICLE_SCHEMA
     from shared.sold_cleaning import (
         drop_invalid_odometer_rows,
@@ -27,7 +27,7 @@ if __package__ in (None, ""):
         remove_compliance_markers,
     )
 else:
-    from shared.data_loader import DATA_DIR
+    from shared.data_loader import dataset_path
     from shared.schema import SOLD_RAW_SCRAPE_COLUMNS, STATIC_VEHICLE_SCHEMA
     from shared.sold_cleaning import (
         drop_invalid_odometer_rows,
@@ -39,9 +39,9 @@ else:
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 ROOT_DIR = SCRIPT_DIR.parent
-INPUT_FILE = DATA_DIR / "all_vehicle_links.csv"
-OUTPUT_FILE = DATA_DIR / "vehicle_static_details.csv"
-ACTIVE_OUTPUT_FILE = DATA_DIR / "active_vehicle_details.csv"
+INPUT_FILE = dataset_path("all_vehicle_links.csv")
+OUTPUT_FILE = dataset_path("vehicle_static_details.csv")
+ACTIVE_OUTPUT_FILE = dataset_path("active_vehicle_details.csv")
 SKIPPED_LOG = ROOT_DIR / "logs" / "skipped_links.txt"
 
 SCHEMA_FIELDS = SOLD_RAW_SCRAPE_COLUMNS.copy()

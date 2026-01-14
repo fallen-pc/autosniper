@@ -46,16 +46,16 @@ whole workflow can be shared on GitHub and hosted on Streamlit Cloud.
 
 ## Dataset Management
 
-`CSV_data/` holds the working datasets. A `.gitignore` allowlist keeps the key files under
-version control so Streamlit Cloud receives them by default:
+`CSV_data/` holds the working datasets, organized into subfolders:
 
 ```
-vehicle_static_details.csv
-active_vehicle_details.csv
-all_vehicle_links.csv
-ai_listing_valuations.csv
-sold_cars.csv
-referred_cars.csv
+CSV_data/
+  scrapers/      # raw + master listings
+  ai/            # AI outputs + manual Carsales notes
+  restricted/    # VIC Top-12 restricted datasets + curves
+  model_audit/   # scored listings + accuracy metrics
+  archives/      # historical dumps + legacy archives
+  repairs/       # repair estimates
 ```
 
 If you prefer not to commit CSVs, host a ZIP bundle and point the app to it:

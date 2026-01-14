@@ -9,10 +9,10 @@ import pandas as pd
 from dotenv import load_dotenv, find_dotenv
 from openai import OpenAI
 
-from shared.data_loader import DATA_DIR
+from shared.data_loader import dataset_path
 
 
-AI_RESULTS_PATH = DATA_DIR / "ai_listing_valuations.csv"
+AI_RESULTS_PATH = dataset_path("ai_listing_valuations.csv")
 REQUIRED_COLUMNS = [
     "url",
     "analysis_timestamp",
@@ -997,6 +997,22 @@ def run_curve_listing_analysis(
 
     risk_flags_str = "|".join(sorted(set(risk_flags))) if risk_flags else ""
     notes_value = "; ".join(notes) if notes else None
+    manual_source: Mapping[str, Any] | pd.Series = listing_row
+    if url and not cached_df.empty and "url" in cached_df.columns:
+        existing_rows = cached_df[cached_df["url"] == url]
+        if not existing_rows.empty:
+            manual_source = existing_rows.iloc[0].to_dict()
+
+    def _manual_value(key: str) -> Any:
+        getter = getattr(manual_source, "get", lambda _: None)
+        value = getter(key)
+        if value is None:
+            return None
+        if isinstance(value, float) and pd.isna(value):
+            return None
+        if pd.isna(value):
+            return None
+        return value
 
     result_row = {
         "url": url,
@@ -1029,13 +1045,13 @@ def run_curve_listing_analysis(
         "edge_note": edge_note,
         "no_edge_at_current_bid": bool(no_edge_at_current_bid),
         "edge_buffer": EDGE_BUFFER,
-        "manual_carsales_count": comps_count,
-        "manual_carsales_min": _format_currency(comps_median) if comps_median is not None else None,
-        "manual_carsales_max": _format_currency(comps_median) if comps_median is not None else None,
-        "manual_carsales_avg": _format_currency(comps_median) if comps_median is not None else None,
-        "manual_carsales_estimate": _format_currency(comps_median) if comps_median is not None else None,
-        "manual_recent_sales_30d": None,
-        "manual_carsales_table": None,
+        "manual_carsales_count": _manual_value("manual_carsales_count"),
+        "manual_carsales_min": _manual_value("manual_carsales_min"),
+        "manual_carsales_max": _manual_value("manual_carsales_max"),
+        "manual_carsales_avg": _manual_value("manual_carsales_avg"),
+        "manual_carsales_estimate": _manual_value("manual_carsales_estimate"),
+        "manual_recent_sales_30d": _manual_value("manual_recent_sales_30d"),
+        "manual_carsales_table": _manual_value("manual_carsales_table"),
     }
 
     _save_result_row(result_row)

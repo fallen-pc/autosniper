@@ -9,18 +9,18 @@ import pandas as pd
 
 if __package__ in (None, ""):
     sys.path.append(str(Path(__file__).resolve().parent.parent))
-    from shared.data_loader import DATA_DIR
+    from shared.data_loader import dataset_path
     from shared.sold_cleaning import normalize_listing_fields
 else:  # pragma: no cover
-    from shared.data_loader import DATA_DIR
+    from shared.data_loader import dataset_path
     from shared.sold_cleaning import normalize_listing_fields
 
 
 TARGET_FILES = (
-    DATA_DIR / "vehicle_static_details.csv",
-    DATA_DIR / "active_vehicle_details.csv",
-    DATA_DIR / "sold_cars.csv",
-    DATA_DIR / "referred_cars.csv",
+    dataset_path("vehicle_static_details.csv"),
+    dataset_path("active_vehicle_details.csv"),
+    dataset_path("sold_cars.csv"),
+    dataset_path("referred_cars.csv"),
 )
 
 

@@ -17,9 +17,9 @@ if __package__ in (None, ""):
     import sys
 
     sys.path.append(str(Path(__file__).resolve().parent.parent))
-    from shared.data_loader import DATA_DIR
+    from shared.data_loader import dataset_path
 else:  # pragma: no cover
-    from shared.data_loader import DATA_DIR
+    from shared.data_loader import dataset_path
 
 
 USER_AGENTS = [
@@ -28,8 +28,8 @@ USER_AGENTS = [
     "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
 ]
 
-DEFAULT_INPUT = DATA_DIR / "active_vehicle_details.csv"
-DEFAULT_OUTPUT = DATA_DIR / "bid_history.csv"
+DEFAULT_INPUT = dataset_path("active_vehicle_details.csv")
+DEFAULT_OUTPUT = dataset_path("bid_history.csv")
 
 PRIMARY_BID_SELECTOR = "a[data-target=\"#dvBidHistoryPop\"]"
 FALLBACK_SELECTORS = [

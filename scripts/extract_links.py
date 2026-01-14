@@ -12,21 +12,21 @@ from bs4 import BeautifulSoup
 
 if __package__ in (None, ""):
     sys.path.append(str(Path(__file__).resolve().parent.parent))
-    from shared.data_loader import DATA_DIR
+    from shared.data_loader import dataset_path
     from shared.sold_cleaning import is_compliance_slug
 else:
-    from shared.data_loader import DATA_DIR
+    from shared.data_loader import dataset_path
     from shared.sold_cleaning import is_compliance_slug
 
 BASE_URL = (
     "https://www.grays.com/search/automotive-trucks-and-marine/"
     "motor-vehiclesmotor-cycles/motor-vehicles"
 )
-OUTPUT_FILE = DATA_DIR / "all_vehicle_links.csv"
+OUTPUT_FILE = dataset_path("all_vehicle_links.csv")
 SUMMARY_FILE = Path("logs") / "link_scrape_summary.json"
-ACTIVE_FILE = DATA_DIR / "active_vehicle_details.csv"
-SOLD_FILE = DATA_DIR / "sold_cars.csv"
-REFERRED_FILE = DATA_DIR / "referred_cars.csv"
+ACTIVE_FILE = dataset_path("active_vehicle_details.csv")
+SOLD_FILE = dataset_path("sold_cars.csv")
+REFERRED_FILE = dataset_path("referred_cars.csv")
 
 PROXY_BASE = "https://r.jina.ai/"
 MAX_PAGES = 60
@@ -169,7 +169,7 @@ def extract_all_vehicle_links() -> None:
 
         page += 1
 
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
     existing_urls = _load_existing_urls((ACTIVE_FILE, SOLD_FILE, REFERRED_FILE))
     filtered_links = [
         link for link in all_links if _normalize_url(link) not in existing_urls

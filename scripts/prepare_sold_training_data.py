@@ -16,10 +16,11 @@ if str(ROOT_DIR) not in sys.path:
 
 from shared.comps_engine import CompsEngine, parse_currency, parse_numeric
 from shared.repair_features import REPAIR_CATEGORIES
+from shared.data_loader import dataset_path
 
 DEFAULT_INPUT = ROOT_DIR / "artifacts" / "training_data" / "sold_cars_repairs_enriched.csv"
 DEFAULT_OUTPUT = ROOT_DIR / "artifacts" / "training_data" / "sold_training_table.csv"
-DEFAULT_SNAPSHOTS = ROOT_DIR / "CSV_data" / "active_snapshots.csv"
+DEFAULT_SNAPSHOTS = dataset_path("active_snapshots.csv")
 
 STATE_ABBREVIATIONS = ("ACT", "NSW", "NT", "QLD", "SA", "TAS", "VIC", "WA")
 
