@@ -9,6 +9,7 @@ from shared.curves import CURVE_COLUMNS, load_curves, save_curves
 from shared.grouping import GROUP_IDS
 from shared.spec import (
     build_pipe_mapping,
+    get_spec_error,
     get_group_spec,
     is_series_allowed,
     load_spec,
@@ -90,6 +91,10 @@ GROUP_KEY_MAP = {
 }
 
 SPEC_DATA = load_spec()
+spec_error = get_spec_error(SPEC_DATA)
+if spec_error == "pyyaml_missing":
+    st.warning("Spec checks disabled: install `pyyaml` to enable config/spec_v1.yaml validation.")
+    SPEC_DATA = {}
 SPEC_PIPE_MAPPING = build_pipe_mapping(SPEC_DATA)
 
 curves_df = _ensure_columns(load_curves())

@@ -14,6 +14,7 @@ from shared.data_loader import dataset_path, ensure_datasets_available
 from shared.filter_controls import describe_time_selection, render_time_filter
 from shared.grouping import GROUP_IDS
 from shared.spec import (
+    get_spec_error,
     get_group_spec,
     is_series_allowed,
     load_spec,
@@ -102,6 +103,10 @@ active_df = load_active_data()
 group_map_df = load_group_map()
 sold_df = load_sold_data()
 spec = load_spec()
+spec_error = get_spec_error(spec)
+if spec_error == "pyyaml_missing":
+    st.warning("Spec checks disabled: install `pyyaml` to enable config/spec_v1.yaml validation.")
+    spec = {}
 
 spec_issues = validate_curve_requirements(spec, curves_df) if spec else []
 if spec_issues:

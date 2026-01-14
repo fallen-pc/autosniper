@@ -21,10 +21,16 @@ def load_spec(path: Path | None = None) -> Dict[str, Any]:
         return {}
     try:
         import yaml
-    except ImportError as exc:  # pragma: no cover - handled by requirements
-        raise RuntimeError("pyyaml is required to load config/spec_v1.yaml") from exc
+    except ImportError:  # pragma: no cover - handled by requirements
+        return {"_error": "pyyaml_missing", "_path": str(spec_path)}
     with spec_path.open("r", encoding="utf-8") as handle:
         return yaml.safe_load(handle) or {}
+
+
+def get_spec_error(spec: Dict[str, Any] | None) -> str | None:
+    if not spec:
+        return None
+    return spec.get("_error")
 
 
 def get_group_index(spec: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
