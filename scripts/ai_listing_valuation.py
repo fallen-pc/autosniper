@@ -16,6 +16,7 @@ AI_RESULTS_PATH = dataset_path("ai_listing_valuations.csv")
 REQUIRED_COLUMNS = [
     "url",
     "analysis_timestamp",
+    "analysis_context",
     # Risk-banded resale figures
     "resale_low",
     "resale_mid",
@@ -794,6 +795,7 @@ def run_curve_listing_analysis(
     *,
     comps_median: float | None = None,
     comps_count: int | None = None,
+    analysis_context: str | None = None,
     force_refresh: bool = False,
 ) -> Dict[str, Any]:
     cached_df = load_cached_results()
@@ -805,6 +807,8 @@ def run_curve_listing_analysis(
         and url in set(cached_df["url"].dropna().tolist())
     ):
         existing = cached_df[cached_df["url"] == url].iloc[0].to_dict()
+        if analysis_context and not existing.get("analysis_context"):
+            existing["analysis_context"] = analysis_context
         existing["cached"] = True
         return existing
 
@@ -891,6 +895,7 @@ def run_curve_listing_analysis(
     result_row = {
         "url": url,
         "analysis_timestamp": datetime.now(tz=timezone.utc).isoformat(),
+        "analysis_context": analysis_context,
         "carsales_price_estimate": _format_currency(resale_mid_val),
         "carsales_price_range": (
             f"{_format_currency(resale_low_val)} - {_format_currency(resale_high_val)}"

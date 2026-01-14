@@ -92,6 +92,7 @@ def load_sold_data() -> pd.DataFrame:
     sold_path = dataset_path("sold_cars_restricted.csv")
     df = pd.read_csv(sold_path)
     df["url"] = df["url"].astype(str).str.strip()
+    df["odometer_numeric"] = df["odometer_reading"].apply(parse_numeric)
     df["price_numeric"] = df["price"].apply(parse_currency)
     return df
 
@@ -123,20 +124,39 @@ sold_stats = (
 
 
 st.sidebar.header("Filters")
-time_label, time_bounds = render_time_filter(
-    container=st.sidebar,
-    label="Show listings finishing within",
-    default_option="< 24h",
+input_source = st.sidebar.selectbox(
+    "Dataset",
+    ["Active (restricted)", "Sold (restricted)"],
 )
-lower_bound, upper_bound = time_bounds
-min_hours = 0.0 if lower_bound is None else lower_bound
-max_hours = upper_bound
+force_recompute = st.sidebar.checkbox(
+    "Force recompute saved results",
+    value=input_source == "Sold (restricted)",
+)
+
+apply_time_filter = input_source == "Active (restricted)"
+if apply_time_filter:
+    time_label, time_bounds = render_time_filter(
+        container=st.sidebar,
+        label="Show listings finishing within",
+        default_option="< 24h",
+    )
+    lower_bound, upper_bound = time_bounds
+    min_hours = 0.0 if lower_bound is None else lower_bound
+    max_hours = upper_bound
+else:
+    time_label = None
+    min_hours = None
+    max_hours = None
 
 group_filter = st.sidebar.selectbox("Group ID", ["All"] + sorted(GROUP_IDS))
 refresh_clicked = st.sidebar.button("Refresh curve valuations")
+force_refresh = refresh_clicked or force_recompute
 
-time_window_text = describe_time_selection(time_label)
-st.caption(f"Restricted active listings finishing within {time_window_text}.")
+if apply_time_filter:
+    time_window_text = describe_time_selection(time_label)
+    st.caption(f"Restricted active listings finishing within {time_window_text}.")
+else:
+    st.caption("Restricted sold listings (simulated as active).")
 
 st.markdown(
     clean_html(
@@ -158,8 +178,8 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-filtered = active_df.copy()
-if "hours_remaining" in filtered.columns:
+filtered = active_df.copy() if apply_time_filter else sold_df.copy()
+if apply_time_filter and "hours_remaining" in filtered.columns:
     if min_hours is not None:
         filtered = filtered[filtered["hours_remaining"].fillna(0) >= min_hours]
     if max_hours is not None:
@@ -214,6 +234,7 @@ for _, row in filtered.iterrows():
         results.append(
             {
                 "url": row.get("url"),
+                "analysis_context": "active" if apply_time_filter else "sold_simulated",
                 "curve_base": None,
                 "curve_adjusted": None,
                 "computed_verdict": "Not Covered",
@@ -231,7 +252,8 @@ for _, row in filtered.iterrows():
         adjusted_estimate,
         comps_median=comps_median,
         comps_count=comps_count,
-        force_refresh=refresh_clicked,
+        analysis_context="active" if apply_time_filter else "sold_simulated",
+        force_refresh=force_refresh,
     )
     analysis["curve_base"] = base_estimate
     analysis["curve_adjusted"] = adjusted_estimate
@@ -272,6 +294,7 @@ display_columns = [
     "odometer_reading",
     "price",
     "group_id",
+    "analysis_context",
     "spec_series",
     "spec_reason",
     "curve_base",
