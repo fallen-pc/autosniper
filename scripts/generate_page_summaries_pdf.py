@@ -116,54 +116,29 @@ PAGE_SUMMARIES: tuple[PageSummary, ...] = (
         ),
     ),
     PageSummary(
-        title="5. AI Pricing Analysis",
+        title="5. Curve Pricing Analysis",
         purpose=(
-            "Blend rule-based pricing heuristics, historical sale comps, manual Carsales research, and"
-            " GPT valuations to prioritise listings finishing soon."
+            "Blend curve-based pricing heuristics with historical sale comps to prioritise listings"
+            " finishing soon."
         ),
         capabilities=(
-            "Requires a rich data stack (`vehicle_static_details.csv`, `active_vehicle_details.csv`,"
-            " `ai_listing_valuations.csv`, and `sold_cars.csv`) so comparisons always"
-            " combine the latest auction context with historical baselines.",
+            "Requires restricted datasets (`active_vehicle_details_restricted.csv`,"
+            " `sold_cars_restricted.csv`, `restricted_group_map.csv`, and `curves.csv`) so pricing stays"
+            " within the Top-12 VIC universe.",
             "Lets you focus on a time window (24/48/72h) plus reuse the Active Listings filters to hide"
             " engine issues, unregistered stock, or non-VIC locations.",
             "Calculates median discounts versus comparable sales, surfaces the most underpriced cars in"
             " one tab, and routes listings with no comps into a second review queue.",
-            "Inside each listing panel you can refresh bid data, run or re-run the Carsales-oriented GPT"
-            " valuation (`scripts.ai_listing_valuation.run_ai_listing_analysis`), and capture manual"
-            " Carsales research (instant offer, sell range, comps table, recent sales).",
-            "AI verdict widgets show Carsales estimate, recommended max bid, expected profit, and any"
-            " qualitative confidence notes saved in the cache.",
+            "Each listing computes a resale band, max bid, and profit guardrails deterministically"
+            " using the curve + rules engine.",
         ),
         data_flows=(
-            "Inputs: active auction snapshots, historical sold data, cached AI Carsales checks, and"
-            " operator-entered Carsales estimates.",
+            "Inputs: restricted active snapshots, restricted sold comps, and curve anchors.",
             "Outputs: updated `ai_listing_valuations.csv` plus refreshed bid data when you trigger"
             " updates from the page.",
         ),
         notes=(
-            "The page stores manual Carsales inputs per URL in `st.session_state` so partially entered"
-            " values persist while you compare vehicles.",
-        ),
-    ),
-    PageSummary(
-        title="6. Missed Opportunities",
-        purpose=(
-            "Cross-check recent sale prices against the manual Carsales valuations to highlight deals"
-            " that should have been bought."),
-        capabilities=(
-            "Loads cached Carsales tables and `sold_cars.csv`, filters to sold records, and computes the"
-            " profit gap between the manual average price and the actual hammer price.",
-            "Shows the top three gaps as callouts plus a full table with currency-formatted pricing and"
-            " odometer stats so you can review the evidence.",
-        ),
-        data_flows=(
-            "Inputs: `ai_listing_valuations.csv` (for manual Carsales data) and `sold_cars.csv`.",
-            "Output: in-app leaderboard of positive profit deltas for post-mortems.",
-        ),
-        notes=(
-            "Every calculation normalises the saved text values into numeric form, so even loosely"
-            " structured Carsales notes can be compared objectively.",
+            "All outputs are deterministic; there is no GPT inference in this workflow.",
         ),
     ),
     PageSummary(

@@ -29,17 +29,6 @@ DEDUP_KEYS: Sequence[str] = ("url", "vin")
 REFERRED_STATUSES = {"referred", "canceled", "cancelled", "closed"}
 EXCLUDED_VARIANT_KEYWORDS = ("motorcycle",)
 SOLD_REDUNDANT_COLUMNS = ("time_remaining_or_date_sold", "final_price", "final_bids", "status")
-MANUAL_CARSALES_COLUMNS = (
-    "manual_carsales_min",
-    "manual_carsales_max",
-    "manual_carsales_avg",
-    "manual_carsales_sold_30d",
-    "manual_recent_sales_30d",
-    "manual_carsales_count",
-    "manual_carsales_table",
-    "manual_carsales_estimate",
-    "carsales_skipped",
-)
 
 
 def _load_dataframe(path: Path) -> pd.DataFrame:
@@ -103,9 +92,6 @@ def _prepare_sold_rows(frame: pd.DataFrame) -> pd.DataFrame:
     if drop_cols:
         prepared = prepared.drop(columns=drop_cols)
         print(f"Pruned redundant sold columns: {drop_cols}")
-    manual_cols = [column for column in MANUAL_CARSALES_COLUMNS if column in prepared.columns]
-    if manual_cols:
-        prepared = prepared.drop(columns=manual_cols)
     if "sale_price" in prepared.columns:
         prepared = prepared.drop(columns=["sale_price"])
     return prepared
@@ -122,9 +108,6 @@ def _prepare_referred_rows(frame: pd.DataFrame) -> pd.DataFrame:
         prepared.loc[mask, "referral_reason"] = prepared.loc[mask, "general_condition"]
         mask = _blank_mask(prepared["referral_reason"])
     prepared["referral_reason"] = prepared["referral_reason"].fillna("")
-    manual_cols = [column for column in MANUAL_CARSALES_COLUMNS if column in prepared.columns]
-    if manual_cols:
-        prepared = prepared.drop(columns=manual_cols)
     return prepared
 
 

@@ -19,17 +19,6 @@ else:  # pragma: no cover
 
 CSV_PATH = dataset_path("sold_cars.csv")
 DEDUP_BACKUP_PATH = CSV_PATH.with_suffix(".csv.bak")
-MANUAL_CARSALES_COLUMNS = (
-    "manual_carsales_min",
-    "manual_carsales_max",
-    "manual_carsales_avg",
-    "manual_carsales_sold_30d",
-    "manual_recent_sales_30d",
-    "manual_carsales_count",
-    "manual_carsales_table",
-    "manual_carsales_estimate",
-    "carsales_skipped",
-)
 
 
 def parse_price(value: object) -> float | None:
@@ -62,9 +51,6 @@ def build_candidate_date(frame: pd.DataFrame) -> pd.Series:
 def deduplicate_sold(df: pd.DataFrame) -> pd.DataFrame:
     """Return dataframe without duplicate VIN rows, keeping latest entries."""
     df = df.copy()
-    drop_cols = [column for column in MANUAL_CARSALES_COLUMNS if column in df.columns]
-    if drop_cols:
-        df = df.drop(columns=drop_cols)
     df["__candidate_date"] = build_candidate_date(df)
     df["__price_numeric"] = df.apply(lambda row: parse_price(row.get("final_price", row.get("price"))), axis=1)
 

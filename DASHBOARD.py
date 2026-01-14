@@ -329,13 +329,9 @@ else:
                 location = str(row.get("location", "") or "Unknown location")
                 time_remaining = str(row.get("time_remaining_or_date_sold", "N/A"))
                 current_price = format_currency_value(row.get("current_price_value"))
-                manual_override = row.get("manual_carsales_estimate") or row.get("manual_carsales_avg")
-                if manual_override:
-                    carsales_estimate = manual_override
-                else:
-                    carsales_estimate = row.get("carsales_price_estimate") or format_currency_value(
-                        parse_currency_value(row.get("carsales_price_estimate"))
-                    )
+                carsales_estimate = row.get("carsales_price_estimate") or format_currency_value(
+                    parse_currency_value(row.get("carsales_price_estimate"))
+                )
                 expected_profit = format_currency_value(row.get("expected_profit_value"))
                 profit_margin = row.get("profit_margin_percent") or (
                     f"{row['profit_margin_value']:.0f}%" if pd.notna(row.get("profit_margin_value")) else "N/A"
@@ -514,54 +510,6 @@ if not active_df.empty:
     if not price_series.empty:
         avg_active_price = float(price_series.mean())
 
-manual_columns = [
-    "manual_carsales_estimate",
-    "manual_carsales_avg",
-    "manual_carsales_min",
-    "manual_carsales_max",
-]
-manual_df = pd.DataFrame()
-if not valuations_df.empty:
-    available_manual_cols = [col for col in manual_columns if col in valuations_df.columns]
-    if available_manual_cols:
-        mask = valuations_df[available_manual_cols].notna().any(axis=1)
-        manual_df = valuations_df[mask].copy()
-        if not manual_df.empty:
-            def _manual_price(row: pd.Series) -> float | None:
-                for candidate in ("manual_carsales_avg", "manual_carsales_estimate"):
-                    value = parse_currency_value(row.get(candidate))
-                    if value is not None:
-                        return value
-                min_val = parse_currency_value(row.get("manual_carsales_min"))
-                max_val = parse_currency_value(row.get("manual_carsales_max"))
-                if min_val is None and max_val is None:
-                    return None
-                if min_val is None:
-                    return max_val
-                if max_val is None:
-                    return min_val
-                return (min_val + max_val) / 2.0
-
-            manual_df["manual_avg_price"] = manual_df.apply(_manual_price, axis=1)
-            manual_df = manual_df.dropna(subset=["manual_avg_price"])
-
-positive_count = 0
-avg_positive_gap = None
-if not manual_df.empty and not sold_df.empty:
-    sale_source = sold_df["sale_price"] if "sale_price" in sold_df.columns else sold_df.get("price")
-    sale_values = pd.Series(dtype=float)
-    if sale_source is not None:
-        sale_values = sale_source.apply(parse_currency_value)
-    joined = sold_df.assign(sale_price_value=sale_values)
-    joined = joined.merge(manual_df[["url", "manual_avg_price"]], on="url", how="inner")
-    joined = joined.dropna(subset=["manual_avg_price", "sale_price_value"])
-    if not joined.empty:
-        joined["potential_profit"] = joined["manual_avg_price"] - joined["sale_price_value"]
-        positives = joined[joined["potential_profit"] > 0]
-        positive_count = len(positives)
-        if not positives.empty:
-            avg_positive_gap = positives["potential_profit"].mean()
-
 model_last_text, _ = describe_last_run(SCORED_FILE)
 settled_count = 0
 accuracy_display = "N/A"
@@ -644,20 +592,6 @@ workflow_cards = [
             ),
         ],
         "page": "pages/6_AI_ANALYSIS.py",
-    },
-    {
-        "title": "Page 7 - Missed Opportunities",
-        "meta": describe_latest_run(SOLD_FILE, VALUATIONS_FILE),
-        "summary": (
-            f"{positive_count:,} profitable misses flagged."
-            if positive_count
-            else "Log manual Carsales tables to surface misses."
-        ),
-        "metrics": [
-            ("Manual tables", f"{len(manual_df):,}"),
-            ("Avg upside", format_currency_value(avg_positive_gap)),
-        ],
-        "page": "pages/7_MISSED_OPPORTUNITIES.py",
     },
     {
         "title": "Page 8 - Model Accuracy",

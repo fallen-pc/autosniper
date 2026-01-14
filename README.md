@@ -51,7 +51,7 @@ whole workflow can be shared on GitHub and hosted on Streamlit Cloud.
 ```
 CSV_data/
   scrapers/      # raw + master listings
-  ai/            # AI outputs + manual Carsales notes
+  ai/            # AI outputs
   restricted/    # VIC Top-12 restricted datasets + curves
   model_audit/   # scored listings + accuracy metrics
   archives/      # historical dumps + legacy archives

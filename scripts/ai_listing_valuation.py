@@ -42,13 +42,6 @@ REQUIRED_COLUMNS = [
     "profit_margin_percent",
     "score_out_of_10",
     "confidence_notes",
-    "manual_carsales_count",
-    "manual_carsales_min",
-    "manual_carsales_max",
-    "manual_carsales_avg",
-    "manual_carsales_estimate",
-    "manual_recent_sales_30d",
-    "manual_carsales_table",
 ]
 
 # Default cost assumptions (AUD)
@@ -419,48 +412,6 @@ def _solve_max_bid(
     return max(0.0, min(best, resale_low))
 
 
-def update_manual_carsales_data(
-    url: str,
-    price_estimate: Optional[str],
-    table_raw: str,
-    recent_sales_30d: Optional[int] = None,
-    comparable_count: Optional[int] = None,
-) -> pd.DataFrame:
-    df = load_cached_results()
-    if url in df["url"].values:
-        idx = df.index[df["url"] == url][0]
-    else:
-        missing_row = {column: None for column in REQUIRED_COLUMNS}
-        missing_row["url"] = url
-        df = pd.concat([df, pd.DataFrame([missing_row])], ignore_index=True)
-        idx = df.index[df["url"] == url][0]
-
-    df.at[idx, "manual_carsales_count"] = (
-        int(comparable_count) if comparable_count is not None else None
-    )
-    def _clean_string(value: Optional[str]) -> Optional[str]:
-        if value is None:
-            return None
-        if isinstance(value, (int, float)) and not pd.isna(value):
-            return _format_currency(float(value))
-        if isinstance(value, str):
-            cleaned = value.strip()
-            return cleaned if cleaned else None
-        return None
-
-    df.at[idx, "manual_carsales_estimate"] = _clean_string(price_estimate)
-    df.at[idx, "manual_carsales_min"] = df.at[idx, "manual_carsales_estimate"]
-    df.at[idx, "manual_carsales_max"] = df.at[idx, "manual_carsales_estimate"]
-    df.at[idx, "manual_carsales_avg"] = df.at[idx, "manual_carsales_estimate"]
-    df.at[idx, "manual_recent_sales_30d"] = (
-        int(recent_sales_30d) if recent_sales_30d is not None else None
-    )
-    df.at[idx, "manual_carsales_table"] = table_raw if table_raw else ""
-
-    df.to_csv(AI_RESULTS_PATH, index=False)
-    return df
-
-
 def _build_prompt(listing: Dict[str, Any]) -> str:
     listing_snapshot = {
         "year": listing.get("year"),
@@ -479,18 +430,6 @@ def _build_prompt(listing: Dict[str, Any]) -> str:
         "historical_max": listing.get("historical_price_max"),
         "historical_median_discount": listing.get("median_discount"),
     }
-    manual_snapshot = {
-        "comparable_count": listing.get("manual_carsales_count"),
-        "carsales_manual_estimate": listing.get("manual_carsales_estimate")
-        or listing.get("manual_carsales_avg"),
-        "recent_sales_30d": listing.get("manual_recent_sales_30d"),
-    }
-    if any(
-        value not in (None, "")
-        and not (isinstance(value, float) and pd.isna(value))
-        for value in manual_snapshot.values()
-    ):
-        listing_snapshot["carsales_manual_snapshot"] = manual_snapshot
     prompt = f"""
 You are an automotive pricing strategist. Evaluate the following listing and use your knowledge of Carsales.com.au market pricing for comparable vehicles in Australia. Incorporate the provided historical auction data as a wholesale reference point.
 
@@ -530,23 +469,6 @@ The score must be numeric between 0 and 10 (inclusive) and align with your state
 def run_ai_listing_analysis(listing_row: pd.Series, force_refresh: bool = False) -> Dict[str, Any]:
     cached_df = load_cached_results()
     url = listing_row.get("url")
-
-    manual_count_val = _parse_int(listing_row.get("manual_carsales_count"))
-    manual_estimate_val = _parse_currency(
-        listing_row.get("manual_carsales_estimate") or listing_row.get("manual_carsales_avg")
-    )
-    manual_min_val = _parse_currency(listing_row.get("manual_carsales_min"))
-    manual_max_val = _parse_currency(listing_row.get("manual_carsales_max"))
-    manual_recent_sales_val = _parse_int(listing_row.get("manual_recent_sales_30d"))
-
-    manual_avg_value = manual_estimate_val
-    if manual_avg_value is None:
-        if manual_min_val is not None and manual_max_val is not None:
-            manual_avg_value = (manual_min_val + manual_max_val) / 2.0
-        elif manual_min_val is not None:
-            manual_avg_value = manual_min_val
-        elif manual_max_val is not None:
-            manual_avg_value = manual_max_val
 
     if (
         not force_refresh
@@ -610,24 +532,10 @@ def run_ai_listing_analysis(listing_row: pd.Series, force_refresh: bool = False)
 
     carsales_estimate = data.get("carsales_price_estimate")
     carsales_range = data.get("carsales_price_range")
-
-    if manual_avg_value is not None:
-        carsales_estimate = _format_currency(manual_avg_value)
-
-    if manual_min_val is not None or manual_max_val is not None:
-        min_display = _format_currency(manual_min_val) if manual_min_val is not None else None
-        max_display = _format_currency(manual_max_val) if manual_max_val is not None else None
-        if min_display and max_display:
-            carsales_range = f"{min_display} - {max_display}"
-        else:
-            carsales_range = min_display or max_display
-
-    adjusted_avg_price = manual_avg_value
-    if adjusted_avg_price is None:
-        parsed_estimate = _parse_currency(carsales_estimate)
-        if parsed_estimate is None and carsales_range:
-            parsed_estimate = _parse_currency(carsales_range)
-        adjusted_avg_price = parsed_estimate
+    parsed_estimate = _parse_currency(carsales_estimate)
+    if parsed_estimate is None and carsales_range:
+        parsed_estimate = _parse_currency(carsales_range)
+    adjusted_avg_price = parsed_estimate
 
     break_even_bid = None
     if adjusted_avg_price is not None:
@@ -708,11 +616,6 @@ def run_ai_listing_analysis(listing_row: pd.Series, force_refresh: bool = False)
     if resale_mid_val is not None:
         resale_low_val = resale_mid_val * (1.0 - WORST_CASE_DOWNSIDE)
         resale_high_val = resale_mid_val * 1.07
-
-    if manual_max_val is not None:
-        resale_high_val = manual_max_val
-    if manual_min_val is not None:
-        resale_low_val = manual_min_val
 
     resale_mid_val = _round_to_10(resale_mid_val)
     resale_low_val = _round_to_10(resale_low_val)
@@ -842,11 +745,6 @@ def run_ai_listing_analysis(listing_row: pd.Series, force_refresh: bool = False)
                 deduped_notes.append(note)
         notes_value = "; ".join(deduped_notes) if deduped_notes else None
 
-    manual_estimate_display = _format_currency(manual_estimate_val)
-    manual_min_display = _format_currency(manual_min_val)
-    manual_max_display = _format_currency(manual_max_val)
-    manual_avg_display = _format_currency(manual_avg_value) if manual_avg_value is not None else manual_estimate_display
-
     cost_basis = recommended_max_bid_val
     if cost_basis is None:
         cost_basis = current_price_val
@@ -883,13 +781,6 @@ def run_ai_listing_analysis(listing_row: pd.Series, force_refresh: bool = False)
         "edge_note": edge_note if no_edge_at_current_bid else "",
         "no_edge_at_current_bid": bool(no_edge_at_current_bid),
         "edge_buffer": EDGE_BUFFER,
-        "manual_carsales_count": manual_count_val,
-        "manual_carsales_min": manual_min_display,
-        "manual_carsales_max": manual_max_display,
-        "manual_carsales_avg": manual_avg_display,
-        "manual_carsales_estimate": listing_row.get("manual_carsales_estimate") or manual_estimate_display,
-        "manual_recent_sales_30d": listing_row.get("manual_recent_sales_30d"),
-        "manual_carsales_table": listing_row.get("manual_carsales_table"),
     }
 
     _save_result_row(result_row)
@@ -997,23 +888,6 @@ def run_curve_listing_analysis(
 
     risk_flags_str = "|".join(sorted(set(risk_flags))) if risk_flags else ""
     notes_value = "; ".join(notes) if notes else None
-    manual_source: Mapping[str, Any] | pd.Series = listing_row
-    if url and not cached_df.empty and "url" in cached_df.columns:
-        existing_rows = cached_df[cached_df["url"] == url]
-        if not existing_rows.empty:
-            manual_source = existing_rows.iloc[0].to_dict()
-
-    def _manual_value(key: str) -> Any:
-        getter = getattr(manual_source, "get", lambda _: None)
-        value = getter(key)
-        if value is None:
-            return None
-        if isinstance(value, float) and pd.isna(value):
-            return None
-        if pd.isna(value):
-            return None
-        return value
-
     result_row = {
         "url": url,
         "analysis_timestamp": datetime.now(tz=timezone.utc).isoformat(),
@@ -1045,13 +919,6 @@ def run_curve_listing_analysis(
         "edge_note": edge_note,
         "no_edge_at_current_bid": bool(no_edge_at_current_bid),
         "edge_buffer": EDGE_BUFFER,
-        "manual_carsales_count": _manual_value("manual_carsales_count"),
-        "manual_carsales_min": _manual_value("manual_carsales_min"),
-        "manual_carsales_max": _manual_value("manual_carsales_max"),
-        "manual_carsales_avg": _manual_value("manual_carsales_avg"),
-        "manual_carsales_estimate": _manual_value("manual_carsales_estimate"),
-        "manual_recent_sales_30d": _manual_value("manual_recent_sales_30d"),
-        "manual_carsales_table": _manual_value("manual_carsales_table"),
     }
 
     _save_result_row(result_row)

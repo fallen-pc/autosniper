@@ -1,296 +1,820 @@
 year,make,model,variant,body_type,transmission,fuel_type,odometer_reading,no_of_seats,vin,rego_no,rego_expiry,no_of_cylinders,engine_capacity,exterior_colour,interior_colour,key,spare_key,owners_manual,service_history,engine_turns_over,location,url,general_condition
-2009,TOYOTA,Landcruiser,Workmate VDJ79R,Cab Chassis,Manual,Diesel,376280,3,JTELV71J000012174,DA70JQ,"Sold Unregistered, Without Plates",8,4.5,White,Grey,Yes,No,Yes,Partial,Yes,NSW,https://www.grays.com/lot/0001-10352116/motor-vehicles-motor-cycles/2009-toyota-landcruiser-workmate-vdj79r-turbo-diesel-manual-cab-chassis,"Large Scratch on Bonnet
-Medium Dent on Passenger side front guard, drivers door
-Windscreen Chipped or Cracked.
-Engine idling rough
-Engine Smoke visible
-Brakes require attention, Recommend towing on collection
-Engine noise observed."
-2010,TOYOTA,Landcruiser,Workmate (4x4) VDJ79R,Cab Chassis,Manual,Diesel,207847,3,JTELV71J000019691,No Plates,"Sold Unregistered, Without Plates",8,4.5,Silver,Grey,Yes,No,No,No,Yes,NSW,https://www.grays.com/lot/0001-10352118/motor-vehicles-motor-cycles/2010-toyota-landcruiser-workmate-4x4-vdj79r-turbo-diesel-manual,"Corrosion visible Underbody including structural components
-Suspension requires attention
-Power steering leak
-Steering requires attention.
-Transmission Requires attention Strongly recommend inspection by qualified third party
-Radio Not Working
-Controls inoperable 4WD selector stick stuck
-Engine light ON
-Brakes require attention, Recommend towing on collection
-Driveline requires attention, recommend inspection by qualified third party
-Paint fading or peeling in some areas"
-2018,TOYOTA,Hiace,SLWB KDH221R Van,Van,Automatic,Diesel,64827,2,JTFPT22P500021641,CX48YH,"Sold Unregistered, Without Plates",4,3,Blue,Black,Yes,Yes,Yes,Partial,Yes,NSW,https://www.grays.com/lot/0001-10352162/motor-vehicles-motor-cycles/2018-toyota-hiace-slwb-kdh221r-turbo-diesel-automatic-van,Large Dent on Driver side rear quarter panel
-2012,HYUNDAI,Elantra,Active MD,Sedan,Automatic,Petrol,152945,5,KMHDG41EMDU536925,ZBV310,"Sold Unregistered, Without Plates",4,1.8,Silver,Black,Yes,Yes,Yes,No,Yes,NSW,https://www.grays.com/lot/0001-10352168/motor-vehicles-motor-cycles/2012-hyundai-elantra-active-md-automatic-sedan,Please refer to the photos or arrange inspection to view the condition of this vehicle.
-2008,TOYOTA,Hilux,TRD 4000SL GGN25R Dual Cab,Cab Chassis,Automatic,Petrol,263578,5,MR0FU29G504302128,No plates,"Sold Unregistered, Without Plates",6,4,White,Black,Yes,No,No,No,Yes,NSW,https://www.grays.com/lot/0001-10352171/motor-vehicles-motor-cycles/2008-toyota-hilux-trd-4000sl-ggn25r-automatic-dual-cab,"Large Dent on Roof, passenger side rear quarter
-Engine noise observed.
-Brakes require attention, Recommend towing on collection
-ABS light ON
+2010,VOLKSWAGEN,Multivan,132 TDI HIGHLINE T5,People Mover,Automatic,Diesel,139104,7,WV2ZZZ7HZBH073548,No plates,"Sold Unregistered, Without Plates",4,2,Black,Grey,Yes,Yes,Yes,Partial,Yes,NSW,https://www.grays.com/lot/0001-10352138/motor-vehicles-motor-cycles/2010-volkswagen-multivan-132-tdi-highline-t5-turbo-diesel-automatic,"Hail damage visible.
+Paint fading Bonnet, roof, bumper bars
+Controls inoperable Passenger side electric sliding door
+Medium Dent on Tailgate
+Seat Torn driver seat
+Front Seat worn Passenger side
+Damaged RHF Fog light
+Door Mirror Broken Housing on passenger side"
+2015,MITSUBISHI,Challenger,4WD PC,Wagon,Manual,Diesel,197838,5,MMAGNKH40EF005626,DAU73E,"Sold Unregistered, Without Plates",4,2.5,Silver,Black,Yes,Yes,Yes,Partial,Yes,NSW,https://www.grays.com/lot/0001-10352160/motor-vehicles-motor-cycles/2015-mitsubishi-challenger-4wd-pc-turbo-diesel-manual-wagon,Seat Torn Drivers seat
+2013,BMW,118i,118i F20,Hatchback,Automatic,Petrol,92022,5,WBA1A32020VY67707,YSK46B,"Sold Unregistered, Without Plates",4,1.6,White,Black,Yes,No,Yes,Partial,Yes,NSW,https://www.grays.com/lot/0001-10352163/motor-vehicles-motor-cycles/2013-bmw-118i-118i-f20-automatic-8-speed-hatchback,Please refer to the photos or arrange inspection to view the condition of this vehicle.
+2015,JEEP,Grand,Cherokee Limited WK,Wagon,Automatic,Diesel,317605,5,1C4RJFFM6FC869128,DM58MR,"Sold Unregistered, Without Plates",6,3,Black,Black,Yes,No,Yes,Partial,Yes,NSW,https://www.grays.com/lot/0001-10352175/motor-vehicles-motor-cycles/2015-jeep-grand-cherokee-limited-wk-turbo-diesel-automatic-8-speed-wagon,"Hail damage visible
+Large Dent on Drivers door
+Corrosion visible Bonnet
+Large Scratch on Bumper bars
 Seat Torn Drivers seat
-Medium Dent on Bonnet
-Damaged Driver side front foglight
-Medium Scratch on door panel"
-2011,HOLDEN,Colorado,4X2 LX 3.6 V6 RC,Dual Cab,Automatic,Petrol,120770,5,MMMTFR27HBH535604,CG45UX,"Sold Unregistered, Without Plates",6,3.6,White,Grey,Yes,No,Yes,No,Yes,NSW,https://www.grays.com/lot/0001-10352172/motor-vehicles-motor-cycles/2011-holden-colorado-4x2-lx-3-6-v6-rc-automatic-dual-cab,"Damaged Passenger side tail light
-Large Dent on Passenger side of rear tub
-Front Seat worn driver
-Paint cracked fender"
-2017,TOYOTA,Hilux,Workmate (4x4) GUN125R,Cab Chassis,Automatic,Diesel,288634,2,MR0FB3CB800220975,FHS88M,"Sold Unregistered, Without Plates",4,2.4,White,Black,Yes,No,Yes,Partial,Yes,NSW,https://www.grays.com/lot/0001-10352173/motor-vehicles-motor-cycles/2017-toyota-hilux-workmate-4x4-gun125r-turbo-diesel-automatic-cab-chassis,"Corrosion visible Underbody, bonnet, engine bay, roof
-Seat Torn Drivers seat"
-2008,BMW,3,Series 323i E92,Coupe,Automatic,Petrol,324070,4,WBAWB12090JY93784,DJ38AJ,"Sold Unregistered, Without Plates",6,2.5,Grey,Black,Yes,No,Yes,Partial,Yes,NSW,https://www.grays.com/lot/0001-10352179/motor-vehicles-motor-cycles/2008-bmw-3-series-323i-e92-automatic-coupe,"Hail damage visible.
+Engine light On
+Other Warning light On
+Windscreen Chipped or Cracked
+Engine Smoke visible
+Driveline requires attention, recommend inspection by qualified third party.
+Comment: Tyre pressure warning light on. Thumping in reverse.
+Interior: Trim pieces in cargo area loose."
+2000,NISSAN,Patrol,ST 3.0 Y61,Wagon,Manual,Diesel,288735,7,JN1TESY61A0304709,Y61,"Sold Unregistered, Without Plates",4,3,Champagne,Grey,Yes,Yes,Yes,Partial,Yes,NSW,https://www.grays.com/lot/0001-10352181/motor-vehicles-motor-cycles/2000-nissan-patrol-st-3-0-y61-turbo-diesel-manual-7-seats-wagon,"Medium Dent on Passenger side rear quarter panel
+Paint peeling Roof and bonnet
+Windscreen Chipped or Cracked.
+Engine Oil Leak
+Corrosion visible Underbody components
+Gear Knob Broken
+Carpet worn in places.
+Hail damage visible."
+2011,HYUNDAI,I40,Premium VF,Wagon,Automatic,Petrol,206288,5,KMHLC81DMCU024277,FTW50Q,"Sold Unregistered, Without Plates",4,2,Grey,Black,Yes,No,No,No,Yes,NSW,https://www.grays.com/lot/0001-10352182/motor-vehicles-motor-cycles/2011-hyundai-i40-premium-vf-automatic-wagon,"Large Dent on Passenger side rear quarter panel, driver side front guard
+Corrosion visible Passenger side rear quarter panel
+Medium Dent on Driver side rear quarter panel
 Front Cracked bumper.
-Damaged Driver side tail light
-Large Dent on Rear quarter panels, drivers door
-Large Scratch on Drivers door and rear quarter panel
-Engine noise observed.
-Driveline requires attention, recommend inspection by qualified third party
-Other Warning light ON
-Controls inoperable iDrive system faulty
-Controls Broken Buttons under audio unit not secure.
-Engine replaced"
-1981,MERCEDES-BENZ,420,SEL Limousine,,Automatic,Lpg,302783,5,WDB12603322022684,No plates,"Sold Unregistered, Without Plates",8,4.2,White,Tan Leather,Yes,No,No,No,Yes,VIC,https://www.grays.com/lot/0001-20086502/motor-vehicles-motor-cycles/1981-mercedes-benz-420-sel-automatic-limousine,"Medium Dent on Around vehicle
-Medium Scratch on Around vehicle
-Other Warning light ON"
-2006,HONDA,Civic,Hybrid 8TH GEN,Sedan,CVT,Hybrid,91976,5,JHMFD36206S200907,No plates,"Sold Unregistered, Without Plates",4,1.3,White,Multi,Yes,Yes,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061666/motor-vehicles-motor-cycles/2006-honda-civic-hybrid-8th-gen-cvt-sedan,"Medium Scuff on Rear bumper
-Paint cracked Around exterior
-Corrosion visible Around exterior
-Brakes require attention.
-Dents or marks on body consistent with age and kilometres."
-2010,MERCEDES,Benz,ML63 AMG W164 WOVR-REPAIRABLE,Wagon,Automatic,Petrol,159143,5,WDC1641772A681665,No plates,"Sold Unregistered, Without Plates",8,6.2,White,Black Leather,Yes,No,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061671/motor-vehicles-motor-cycles/2010-mercedes-benz-ml63-amg-w164-auto-wovr-repairable,"Dents or marks on body consistent with age and kilometres.
-Front bumper Cracked bumper.
-Steering requires attention
+Paint fading Rear spoiler
+Seat Torn Front seats"
+2021,HYUNDAI,Tucson,FWD NX4,Wagon,Automatic,Petrol,136988,5,KMHJB81DMNU041136,DB08JV,"Sold Unregistered, Without Plates",4,2,White,Black,Yes,Yes,Yes,Partial,Yes,NSW,https://www.grays.com/lot/0001-10352184/motor-vehicles-motor-cycles/2021-hyundai-tucson-fwd-nx4-automatic-wagon,"Flat Battery. Jump start or towing required
+Large Dent on Roof
+Large Scratch on Front bumper bar
 Medium Dent on Bonnet
-Other Warning light ON"
-2009,BMW,118i,18i E87,Hatchback,Automatic,Petrol,159701,5,WBAUE72070E017144,XXU497,15-01-2026 -,4,2,Black,Black,Yes,Yes,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061672/motor-vehicles-motor-cycles/2009-bmw-118i-18i-e87-automatic-hatchback,"Engine Smoke visible
-Other Warning light ON
+Windscreen Chipped or Cracked."
+2021,HYUNDAI,Tucson,FWD NX4,Wagon,Automatic,Petrol,113242,5,KMHJB81DMNU041135,DB36JU,"Sold Unregistered, Without Plates",4,2,White,Grey,Yes,No,Yes,Yes,Yes,NSW,https://www.grays.com/lot/0001-10352185/motor-vehicles-motor-cycles/2021-hyundai-tucson-fwd-nx4-automatic-wagon,"Front bar impact damage Cracked bumper.
+Medium Dent on Drivers rear door and passengers quarter
+Dents or marks on body."
+2021,HYUNDAI,Tucson,FWD NX4,Wagon,Automatic,Petrol,114081,5,KMHJB81DMNU042581,DC26PT,"Sold Unregistered, Without Plates",4,2,White,Black,Yes,Yes,Yes,Yes,Yes,NSW,https://www.grays.com/lot/0001-10352186/motor-vehicles-motor-cycles/2021-hyundai-tucson-fwd-nx4-automatic-wagon,"Medium Scratch on Drivers door jamb area
+Hail damage visible.
+Dents or marks on body consistent with age and kilometres."
+2022,HYUNDAI,Tucson,FWD NX4,Wagon,Automatic,Petrol,95385,5,KMHJB81DMNU129941,DD24WJ,"Sold Unregistered, Without Plates",4,2,Silver,Black,Yes,Yes,Yes,Partial,Yes,NSW,https://www.grays.com/lot/0001-10352187/motor-vehicles-motor-cycles/2022-hyundai-tucson-fwd-nx4-automatic-wagon,Medium Dent on Driver side cant rail
+2021,HYUNDAI,Tucson,FWD NX4,Wagon,Automatic,Petrol,65431,5,KMHJB81DMNU041157,DB09JV,"Sold Unregistered, Without Plates",4,2,White,Black,Yes,Yes,Yes,Yes,Yes,NSW,https://www.grays.com/lot/0001-10352188/motor-vehicles-motor-cycles/2021-hyundai-tucson-fwd-nx4-automatic-wagon,Other Warning light ON
+2015,MAZDA,Cx-5,Maxx Sport KE,Wagon,Automatic,Diesel,131944,5,JM0KE102200307681,1ZK4HQ,28-12-2025 -,4,2.2,Black,Black,Yes,Yes,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061162/motor-vehicles-motor-cycles/2015-mazda-cx-5-maxx-sport-ke-turbo-diesel-automatic-wagon,Dents or marks on body consistent with age and kilometres.
+2011,MAZDA,2,Neo DE,Hatchback,Automatic,Petrol,387262,5,JM0DE10Y2B0208927,YLG947,06-01-2026 -,4,1.5,Grey,Grey,Yes,No,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061214/motor-vehicles-motor-cycles/2011-mazda-2-neo-de-automatic-hatchback,"Seat Torn Front passenger, Carpet worn in places.
+Dents, marks and scuffs on body consistent with age and kilometres.
+Windscreen Chip
+Comment: Passenger mirror cover crackedSteering requires attention.
+Comment: Passenger mirror cover cracked
+Steering requires attention."
+2012,MERCEDES,Benz,C200 BE W204,Sedan,Automatic,Petrol,131726,5,WDD2040482A765521,2DC7CV,08-01-2026 -,4,1.8,Silver,Black Leather,Yes,Yes,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061340/motor-vehicles-motor-cycles/2012-mercedes-benz-c200-be-w204-automatic-sedan,"Dents or marks on body consistent with age and kilometres.
+Seat Torn Drivers Seat"
+2007,BMW,3,Series 320d LUMINANCE E90,Sedan,Automatic,Diesel,121052,5,WBAVG96010NG61410,WGE634,02-01-2026 -,4,2,Black,Beige Leather,Yes,No,Yes,No,Yes,VIC,https://www.grays.com/lot/0001-21061502/motor-vehicles-motor-cycles/2007-bmw-3-series-320d-luminance-e90-turbo-diesel-automatic-sedan,"Dents or marks on body consistent with age and kilometres.
+Medium Scratch on Around vehicle
+Engine Oil Leak"
+2017,LAND,Rover,Discovery Sport SD4 HSE 177KW T D,Wagon,Automatic,Diesel,107240,7,SALCA2AN2JH731556,2EB4UY,28-02-2026 -,4,2,Black,Black Leather,Yes,Yes,Yes,Yes,Yes,VIC,https://www.grays.com/lot/0001-21061538/motor-vehicles-motor-cycles/2017-land-rover-discovery-sport-sd4-hse-177kw-t-d-auto-7-seats-wagon,"Medium Scratch on Around vehicle
+Dents or marks on body consistent with age and kilometres."
+2024,LEXUS,Ux,UX300H Sports Luxury MZAH11R,Wagon,CVT,Petrol,17154,5,JTHYBBAH702003848,CZI996,30-05-2026 -,4,2,Grey,Beige Leather,Yes,Yes,Yes,Yes,Yes,VIC,https://www.grays.com/lot/0001-21061546/motor-vehicles-motor-cycles/2024-lexus-ux-ux300h-sports-luxury-mzah11r-cvt-wagon,"Dents or marks on body consistent with age and kilometres.
+Dents or marks on body consistent with age and kilometres."
+2013,MERCEDES,Benz,B 180 B180 BE W246,Hatchback,Automatic,Petrol,89978,5,WDD2462422J152339,AAR947,28-12-2025 -,4,1.6,Black,Black Leather,Yes,Yes,Yes,Yes,Yes,VIC,https://www.grays.com/lot/0001-21061560/motor-vehicles-motor-cycles/2013-mercedes-benz-b-180-b180-be-w246-automatic-hatchback,Medium Scratch on Around vehicle
+2018,MAZDA,Cx-8,ASAKI AWD KG,Wagon,Automatic,Diesel,220582,7,JM0KG4W2A00100805,1NQ2IU,02-11-2026 -,4,2.2,Silver,Black Leather,Yes,Yes,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061595/motor-vehicles-motor-cycles/2018-mazda-cx-8-asaki-awd-kg-turbo-diesel-automatic-7-seats-wagon,"Dents or marks on body consistent with age and kilometres.
 Medium Scratch on Around vehicle"
-2008,TOYOTA,Hilux,SR (4x4) KUN26R Dual Cab,Cab Chassis,Automatic,Diesel,261495,5,MR0FZ22G801017596,2DT1OQ,27-02-2026 -,4,3,White,Grey,Yes,Yes,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061673/motor-vehicles-motor-cycles/2008-toyota-hilux-sr-4x4-kun26r-auto-dual-cab,"Dents or marks on body consistent with age and kilometres.
+2004,NISSAN,Patrol,ST 3.0 GU II,Wagon,Manual,Diesel,224304,7,JN1TESY61A0371175,086OE2,"Sold Unregistered, Without Plates",4,3,Brown,Grey,Yes,Yes,Yes,No,Yes,VIC,https://www.grays.com/lot/0001-21061597/motor-vehicles-motor-cycles/2004-nissan-patrol-st-3-0-gu-ii-turbo-diesel-manual-7-seats-wagon,"Controls Broken Cruise control on steering wheel
+Paint peeling Around vehicle
+Damaged Right rear lower brake light
 Medium Scratch on Around vehicle
-Medium Dent on Around vehicle
-Corrosion visible Around vehicle
-Seat Torn Driver seat
-Medium Scuff on Around vehicle
-Paint peeling various panels"
-2016,MITSUBISHI,Outlander,EXCEED 4WD ZK,Wagon,CVT,Petrol,250297,7,JMFXTGF8WGJ000220,No Plates,"Sold Unregistered, Without Plates",4,2.4,Black,Black Leather,Yes,Yes,Yes,Yes,Yes,VIC,https://www.grays.com/lot/0001-21061674/motor-vehicles-motor-cycles/2016-mitsubishi-outlander-exceed-4wd-zk-cvt-7-seats-wagon,"Medium Scratch on Some Places
-Medium Dent on Some places
-Front Seat worn Drivers"
-2016,NISSAN,Navara,4X2 ST NP300 Dual Cab,Cab Chassis,Automatic,Diesel,92102,5,MNTCB2D23A0004569,No Plates,"Sold Unregistered, Without Plates",4,2.3,White,Black,Yes,No,No,No,Yes,VIC,https://www.grays.com/lot/0001-21061676/motor-vehicles-motor-cycles/2016-nissan-navara-4x2-st-np300-turbo-diesel-automatic-dual-cab,"Medium Scuff on Around vehicle
-Engine light ON
+Corrosion visible Right rear quarter"
+2013,AUDI,A4,ALLROAD QUATTRO B8,Wagon,Automatic,Diesel,112812,5,WAUZZZ8K0EA091342,ABF554,17-03-2026 -,4,2,Grey,Black Leather,Yes,Yes,Yes,Yes,Yes,VIC,https://www.grays.com/lot/0001-21061600/motor-vehicles-motor-cycles/2013-audi-a4-allroad-quattro-b8-turbo-diesel-automatic-wagon,Medium Scratch on Around vehicle
+2013,LAND,Rover,Range Rover Evoque Si4 DYNAMIC,Wagon,Automatic,Petrol,225126,5,SALVA2AG5DH856159,SJD5OO,22-02-2026 -,4,2,Red,Black Leather,Yes,No,No,Yes,Yes,VIC,https://www.grays.com/lot/0001-21061626/motor-vehicles-motor-cycles/2013-land-rover-range-rover-evoque-si4-dynamic-automatic-wagon,"Other Warning light ON
 Dents or marks on body consistent with age and kilometres.
-Engine Water Leak"
-2013,MAZDA,6,,Wagon,Automatic,Diesel,221697,5,JM0GJ102100107108,ZRF727,26-01-2026 -,4,2.2,Silver,Black Leather,Yes,Yes,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061677/motor-vehicles-motor-cycles/2013-mazda-6-automatic-wagon,"Other Warning light ON
-Medium Scratch on Around vehicle
-Paint fading Tailgate.
-Cruise Radar not working."
-2011,AUDI,A3,1.4 TFSI 8P,Hatchback,Automatic,Petrol,174800,5,WAUZZZ8P8BA114129,1VR4NT,23-03-2026 -,4,1.4,Black,Black Leather,Yes,Yes,No,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061678/motor-vehicles-motor-cycles/2011-audi-a3-1-4-tfsi-8p-automatic-hatchback,"Paint peeling Roof
-Medium Scratch on Around vehicle
-Medium Dent on boot"
-2013,AUDI,Q7,3.0 TDI quattro,Wagon,Automatic,Diesel,189834,7,WAUZZZ4L9DD028641,VAP491,Sold Unregistered. No Plates.,6,3,Grey,Black Leather,Yes,Yes,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061679/motor-vehicles-motor-cycles/2013-audi-q7-3-0-tdi-quattro-turbo-diesel-automatic-8-speed-wagon,"Dents or marks on body consistent with age and kilometres.
-Gearbox leak - requires attention."
-2013,VOLVO,Xc60,D5 R DESIGN,Wagon,Automatic,Diesel,232783,5,YV1DZ8256D2440888,ZVE783,12-01-2026 -,5,2.4,Black,Black Leather,Yes,Yes,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061680/motor-vehicles-motor-cycles/2013-volvo-xc60-d5-r-design-turbo-diesel-automatic-wagon,"Dents or marks on body consistent with age and kilometres.
-Medium Dent on Around vehicle
+Paint fading On all door handles.
+Medium Scuff on rear bumper"
+2019,TOYOTA,Camry,ASCENT HYBRID AXVH71R,Sedan,CVT,Hybrid,263828,5,JTNB23HK703058465,1QM7JN,11-03-2026 -,4,2.5,White,Black,Yes,No,Yes,No,Yes,VIC,https://www.grays.com/lot/0001-21061630/motor-vehicles-motor-cycles/2019-toyota-camry-ascent-hybrid-axvh71r-cvt-sedan,Medium Scratch on Around vehicle
+2019,KIA,Cerato,,Sedan,Automatic,Petrol,163364,5,KNAF241CML5067990,1UU4MN,29-01-2026 -,4,2,White,Black,Yes,Yes,Yes,Yes,Yes,VIC,https://www.grays.com/lot/0001-21061652/motor-vehicles-motor-cycles/2019-kia-cerato-automatic-sedan,"Medium Scuff on Around vehicle
+Dents or marks on body consistent with age and kilometres."
+2008,SUBARU,Outback,3.0R B4A,Wagon,Automatic,Petrol,159968,5,JF2BPEKUA8G069556,BFK72C,"Sold Unregistered, Without Plates",6,3,Grey,Black,Yes,Yes,Yes,Yes,Yes,VIC,https://www.grays.com/lot/0001-21061692/motor-vehicles-motor-cycles/2008-subaru-outback-3-0r-b4a-automatic-wagon,"Door card Damaged.
+Dash Torn or Cracked
+Seat Torn Front passenger
+Front Seat worn Drivers
+Windscreen Chipped or Cracked.
+Large Scratch on Around vehicle
+Paint fading Around vehicle
+Marks in boot
+Paint peeling various panels
+Body/panel damage LH side panels
+Dents or marks on body consistent with age and kilometres."
+2011,MITSUBISHI,Triton,4X4 GLX MN,Dual Cab,Automatic,Diesel,177285,5,MMAJRKB40BD011511,YPS045,31-12-2025 -,4,2.5,White,Grey,Yes,No,No,Yes,Yes,VIC,https://www.grays.com/lot/0001-21061693/motor-vehicles-motor-cycles/2011-mitsubishi-triton-4x4-glx-mn-turbo-diesel-automatic-dual-cab,"Front Seat Stains Both
+Back Seat Stains.
 Medium Scratch on Around vehicle
 Door Mirror Broken Passenger side
-Front Seat worn Driver seat"
-2009,FORD,Falcon,,Ute,Manual,Petrol,173525,2,6FPAAAJGCM9E85071,DN86HZ,"Sold Unregistered, Without Plates",6,4,White,Black,Yes,Yes,Yes,Yes,Yes,VIC,https://www.grays.com/lot/0001-21061681/motor-vehicles-motor-cycles/2009-ford-falcon-manual-ute,"Dents or marks on body consistent with age and kilometres.
-Medium Scratch on Around vehicle
-Damaged side marker light"
-2010,TOYOTA,Landcruiser,Prado GXL KDJ150R,Wagon,Automatic,Diesel,441724,7,JTEBH3FJ60K041462,301OV7,"Sold Unregistered, Without Plates",4,3,Silver,Grey,Yes,No,No,No,Yes,VIC,https://www.grays.com/lot/0001-21061682/motor-vehicles-motor-cycles/2010-toyota-landcruiser-prado-gxl-kdj150r-turbo-diesel-auto-7-seats-wagon,"Dents or marks on body consistent with age and kilometres.
-Medium Scratch on Around vehicle
-Windscreen Chipped or Cracked.
-Medium Dent on around vehicle"
-2014,ISUZU,Mu-x,4x4 LS-M,Wagon,Automatic,Diesel,218661,7,MPAUCS85GET003340,1JF6HW,21-12-2025 -,4,3,White,Black,Yes,No,No,No,Yes,VIC,https://www.grays.com/lot/0001-21061685/motor-vehicles-motor-cycles/2014-isuzu-mu-x-4x4-ls-m-turbo-diesel-automatic-7-seats-wagon,"Traction control light ON
-Seat Torn Drivers
-Large Scratch on Around vehicle
-Dents or marks on body consistent with age and kilometres."
-2021,NISSAN,X-trail,ST FWD T32,Wagon,CVT,Petrol,120362,5,JN1TBAT32A0086116,BUL224,15-12-2025 -,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061686/motor-vehicles-motor-cycles/2021-nissan-x-trail-st-fwd-t32-cvt-wagon,"Dents or marks on body consistent with age and kilometres.
-Paint peeling Front and rear bar"
-2016,FORD,Escape,TREND AWD ZG,Wagon,Automatic,Diesel,112491,5,WF0AXXWPMAGS14569,2DE7NZ,23-01-2026 -,4,2,Silver,Grey,Yes,Yes,No,No,Yes,VIC,https://www.grays.com/lot/0001-21061687/motor-vehicles-motor-cycles/2016-ford-escape-trend-awd-zg-turbo-diesel-automatic-wagon,"Medium Scratch on Around vehicle
-Medium Dent on Bonnet"
-2022,HYUNDAI,Kona,N LINE OS WOVR-INSPECTED,Wagon,Automatic,Petrol,79121,5,KMHK3813WNU926117,697OR6,"Sold Unregistered, Without Plates",4,1.6,White,Black Leather,Yes,No,Yes,Yes,Yes,VIC,https://www.grays.com/lot/0001-21061688/motor-vehicles-motor-cycles/2022-hyundai-kona-n-line-os-automatic-wovr-inspected,Medium Scratch on Around vehicle
-2013,MAZDA,Bt-50,4X4 XTR,Dual Cab,Automatic,Diesel,149192,5,MM0UP0YF100173613,No plates,"Sold Unregistered, Without Plates",5,3.2,Silver,Black,Yes,Yes,Yes,Yes,Yes,VIC,https://www.grays.com/lot/0001-21061690/motor-vehicles-motor-cycles/2013-mazda-bt-50-4x4-xtr-turbo-diesel-automatic-dual-cab,"Engine noise observed.
-Dents or marks on body consistent with age and kilometres.
-Medium Scratch on Around vehicle
-Medium Dent on Around vehicle"
-2003,SUBARU,Liberty,B4 B3,Sedan,Manual,Petrol,201607,5,JF1BE5KD33G029052,No plates,"Sold Unregistered, Without Plates",4,2,Blue,Black Leather,Yes,No,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061699/motor-vehicles-motor-cycles/2003-subaru-liberty-b4-b3-manual-sedan,"Carpet worn in places.
-Medium Scratch on Around vehicle
-Paint fading on Around vehicle"
-2014,HOLDEN,Cruze,SRi Z SERIES JH,Hatchback,Automatic,Petrol,187354,5,6G1PE6EN3EL994054,1IO3EP,15-01-2026 -,4,1.6,Green,Black Leather,Yes,No,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061718/motor-vehicles-motor-cycles/2014-holden-cruze-sri-z-series-jh-automatic-hatchback,"Medium Scratch on Around vehicle
-Engine light ON"
-2010,TOYOTA,Corolla,Ascent ZRE152R,Hatchback,Automatic,Petrol,237819,5,JTNKU56E001128659,XVI948,15-07-2026 -,4,1.8,White,Black,Yes,Yes,Yes,Yes,Yes,VIC,https://www.grays.com/lot/0001-21061719/motor-vehicles-motor-cycles/2010-toyota-corolla-ascent-zre152r-automatic-hatchback,Medium Scratch on Around vehicle
-2017,FORD,Ecosport,Ambiente BL,Wagon,Automatic,Petrol,98556,5,MAJBXXMRKBHK28042,ARN407,20-12-2026 -,3,1.5,Blue,Black,Yes,Yes,Yes,Yes,Yes,VIC,https://www.grays.com/lot/0001-21061720/motor-vehicles-motor-cycles/2017-ford-ecosport-ambiente-bl-automatic-wagon,"Medium Scratch on Around vehicle
-Medium Dent on Front right fender
-Other Warning light ON"
-2007,TOYOTA,Rav,4 CRUISER ACA33R,Wagon,Automatic,Petrol,257932,5,JTMBD31VX05155487,ECKY66,30-06-2026 -,4,2.4,Grey,Black,Yes,No,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061721/motor-vehicles-motor-cycles/2007-toyota-rav-4-cruiser-aca33r-automatic-wagon,"Medium Scratch on Around vehicle
+Paint peeling Lhr door
 Carpet worn in places.
-Dents or marks on body consistent with age and kilometres."
-2016,NISSAN,Qashqai,TI J11 II,Wagon,CVT,Petrol,128373,5,SJNFBAJ11A1907192,1WB2UN,12-01-2026 -,4,2,Silver,Black Leather,Yes,Yes,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061722/motor-vehicles-motor-cycles/2016-nissan-qashqai-ti-j11-ii-cvt-wagon,"Medium Scratch on Around vehicle
-Windscreen Chipped or Cracked.
-Dents or marks on body consistent with age and kilometres."
-2014,MINI,Cooper,COUNTRYMAN D R60,Wagon,Automatic,Diesel,149007,5,WMWXD32030WN36050,AIH425,06-02-2026 -,4,2,White,Black Leather,Yes,No,Yes,Yes,Yes,VIC,https://www.grays.com/lot/0001-21061723/motor-vehicles-motor-cycles/2014-mini-cooper-countryman-d-r60-turbo-diesel-automatic-wagon,"Dents or marks on body consistent with age and kilometres.
-Front Seat worn driver side"
-2015,JAGUAR,Xe,20d PRESTIGE,Sedan,Automatic,Diesel,142672,5,SAJAB4ANXGA904895,AFM319,01-09-2026 -,4,2,White,Black Leather,Yes,Yes,Yes,Yes,Yes,VIC,https://www.grays.com/lot/0001-21061724/motor-vehicles-motor-cycles/2015-jaguar-xe-20d-prestige-turbo-diesel-automatic-8-speed-sedan,"Dents or marks on body consistent with age and kilometres.
-Medium Scratch on Around vehicle"
-2008,PEUGEOT,207,XT 1.6,Hatchback,Manual,Petrol,98041,5,VF3WC5FWC34650939,XGF724,22-01-2026 -,4,1.6,Silver,Black,Yes,No,No,No,Yes,VIC,https://www.grays.com/lot/0001-21061725/motor-vehicles-motor-cycles/2008-peugeot-207-xt-1-6-manual-hatchback,"Medium Scratch on Around vehicle
-Engine light ON
-Engine idling rough
-Door card Worn.
-Door Mirror Broken Driver side
-Engine Smoke visible
-Dents or marks on body consistent with age and kilometres.
-Front Seat worn driver side
-Medium Dent on RHR door"
-2018,HOLDEN,Equinox,LT 2WD EQ,Wagon,Automatic,Petrol,110033,5,3G0AX7EX3JS616135,1PL3OE,17-11-2025 -,4,2,White,Grey,Yes,Yes,Yes,Yes,Yes,VIC,https://www.grays.com/lot/0001-21061726/motor-vehicles-motor-cycles/2018-holden-equinox-lt-2wd-eq-automatic-wagon,"Dents or marks on body consistent with age and kilometres.
-Medium Scratch on Around vehicle"
-2018,TOYOTA,Hilux,4X2 SR Hi Rider GUN136R,Dual Cab,Automatic,Diesel,251289,5,MR0JA3DD000343635,2DR9BH,29-04-2026 -,4,2.8,White,Black,Yes,No,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061728/motor-vehicles-motor-cycles/2018-toyota-hilux-4x2-sr-hi-rider-gun136r-turbo-diesel-automatic-dual-cab,"Corrosion visible Roof
-Windscreen Chipped or Cracked.
-Paint fading Around vehicle
-Front Seat worn trim driver side
-Dents or marks on body consistent with age and kilometres."
-2009,FORD,Fiesta,CL WS,Hatchback,Automatic,Petrol,182039,5,WF0JXXGAJJ9A32379,XJS105,15-01-2026 -,4,1.4,Maroon,Multi,Yes,No,Yes,Yes,Yes,VIC,https://www.grays.com/lot/0001-21061729/motor-vehicles-motor-cycles/2009-ford-fiesta-cl-ws-automatic-hatchback,"Paint peeling Around vehicle
-Dents or marks on body consistent with age and kilometres.
-Front Seat Stains Drivers
-Medium Scratch on Around vehicle
-Damaged Rear fog light"
-2008,TOYOTA,Corolla,Ascent ZRE152R,Sedan,Manual,Petrol,100253,5,JTNBU52E30J019702,No plates,"Sold Unregistered, Without Plates",4,1.8,Silver,Black,Yes,Yes,Yes,No,Yes,VIC,https://www.grays.com/lot/0001-21061730/motor-vehicles-motor-cycles/2008-toyota-corolla-ascent-zre152r-manual-sedan,"Medium Scuff on Rear bumper
-Dents or marks on body consistent with age and kilometres."
-2009,HYUNDAI,I30cw,TROPHY LE FD,Wagon,Automatic,Petrol,112954,5,KMHDC81EMAU067873,XVM832,23-07-2026 -,4,2,Blue,Black Leather,Yes,Yes,Yes,Yes,Yes,VIC,https://www.grays.com/lot/0001-21061731/motor-vehicles-motor-cycles/2009-hyundai-i30cw-trophy-le-fd-automatic-wagon,"Dents or marks on body consistent with age and kilometres.
-Medium Scratch on Around vehicle
-Front Seat worn driver side"
-2015,MERCEDES,Benz,GLE 350d GLE350d 4MATIC W166 9,Wagon,Automatic,Diesel,169079,5,WDC1660242A655605,1FY7CA,28-04-2026 -,6,3,White,Brown Leather,Yes,Yes,Yes,No,Yes,VIC,https://www.grays.com/lot/0001-21061733/motor-vehicles-motor-cycles/2015-mercedes-benz-gle-350d-gle350d-4matic-w166-turbo-diesel-9-auto-wagon,"Medium Scratch on Around vehicle
-Engine light ON
-Other Warning light ON
-Transmission selector fault
-Windscreen Chipped or Cracked."
-2014,AUDI,Q5,2.0 TDI Quattro 8R,Wagon,Automatic,Diesel,119776,5,WAUZZZ8R2EA099519,CTC70W,"Sold Unregistered, Without Plates",4,2,White,Black Leather,Yes,No,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061758/motor-vehicles-motor-cycles/2014-audi-q5-2-0-tdi-quattro-8r-turbo-diesel-automatic-wagon,"Hood Lining Sagging
-Dents or marks on body consistent with age and kilometres.
-Large Scratch on Around vehicle
 Medium Scuff on various panels"
-2010,AUDI,A4,1.8 TFSI B8,Sedan,CVT,Petrol,236827,5,WAUZZZ8K3AA135215,XWD840,13-03-2026 -,4,1.8,Silver,Black Leather,Yes,No,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061760/motor-vehicles-motor-cycles/2010-audi-a4-1-8-tfsi-b8-cvt-sedan,"Medium Scratch on Around vehicle
+2012,JEEP,Grand,Cherokee Laredo WK,Wagon,Automatic,Petrol,183561,5,1C4RJFEG5DC622515,ZPP835,15-01-2026 -,6,3.6,Silver,Black,Yes,Yes,No,No,Yes,VIC,https://www.grays.com/lot/0001-21061694/motor-vehicles-motor-cycles/2012-jeep-grand-cherokee-laredo-wk-automatic-wagon,"Medium Scratch on Around vehicle
+Seat Torn Driver seat"
+2014,MITSUBISHI,Asx,LS 2WD XB,Wagon,CVT,Petrol,207809,5,JMFXTGA2WFZ001377,1IE4YY,15-01-2026 -,4,2,White,Black,Yes,No,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061695/motor-vehicles-motor-cycles/2014-mitsubishi-asx-ls-2wd-xb-cvt-wagon,"Front Seat worn Drivers
+Medium Scratch on Around vehicle
+Paint cracked Rear bar
+Engine requires attention
+Medium Scuff on various panels"
+2016,HOLDEN,Cruze,CD JH,Hatchback,Automatic,Petrol,173755,5,6G1PD6EM0GL219532,AII903,12-05-2026 -,4,1.8,Silver,Black,Yes,No,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061696/motor-vehicles-motor-cycles/2016-holden-cruze-cd-jh-automatic-hatchback,"Medium Scratch on Around vehicle
+Medium Dent on Around vehicle
 Dents or marks on body consistent with age and kilometres."
-2017,LAND,Rover,Discovery 2.0 TD4 SE SERIES 5,Wagon,Automatic,Diesel,191647,7,SALRA2AN4HA045645,2DZ8PX,16-03-2026 -,4,2,White,Black Leather,Yes,Yes,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061761/motor-vehicles-motor-cycles/2017-land-rover-discovery-2-0-td4-se-series-5-turbo-diesel-auto-7-seats,"Medium Scratch on Around vehicle
+2013,MERCEDES,Benz,Vito 113 CDI SWB Van,Van,Automatic,Diesel,95044,2,WDF63960123787718,ZNB389,31-01-2026 -,4,2.1,White,Black,Yes,Yes,Yes,Yes,Yes,VIC,https://www.grays.com/lot/0001-21061697/motor-vehicles-motor-cycles/2013-mercedes-benz-vito-113-cdi-swb-turbo-diesel-automatic-van,"Door Mirror Broken Plastic casing on passenger mirror
+Dents or marks on body consistent with age and kilometres.
+Medium Scuff on Around vehicle
+Damaged Right rear taillight
+Corrosion visible Left rear quarter"
+2005,MAZDA,3,Maxx BK,Sedan,Automatic,Petrol,307450,5,JM0BK10F100178670,TUB888,17-02-2026 -,4,2,Silver,Black,Yes,No,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061700/motor-vehicles-motor-cycles/2005-mazda-3-maxx-bk-automatic-sedan,"Radio Not Working
+Body/panel damage Rhr
+Large Scuff on Around vehicle
+Corrosion visible Rhr"
+2014,SUBARU,Outback,2.0D Premium B5A,Wagon,Manual,Diesel,238037,5,JF2BRDKZ4EG065351,1TW6GG,15-02-2026 -,4,2,White,Black Leather,Yes,Yes,No,No,Yes,VIC,https://www.grays.com/lot/0001-21061701/motor-vehicles-motor-cycles/2014-subaru-outback-2-0d-premium-b5a-turbo-diesel-manual-wagon,"Front Seat worn Both
+Medium Scratch on Around vehicle
+Dents or marks on body consistent with age and kilometres.
+Paint peeling Around vehicle"
+2003,HOLDEN,Commodore,S VY,Sedan,Automatic,Petrol,275733,5,6G1YK52A64L216435,1PB9DJ,23-02-2026 -,6,3.8,Black,Red,Yes,Yes,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061702/motor-vehicles-motor-cycles/2003-holden-commodore-s-vy-automatic-sedan,"Airbag light ON
+Dents or marks on body consistent with age and kilometres."
+2013,MAZDA,3,SP25 ASTINA BM,Sedan,Automatic,Petrol,168824,5,JM0BM523810101192,1BB5YV,11-03-2026 -,4,2.5,Blue,Black Leather,Yes,Yes,Yes,No,Yes,VIC,https://www.grays.com/lot/0001-21061703/motor-vehicles-motor-cycles/2013-mazda-3-sp25-astina-bm-automatic-sedan,"Medium Scratch on Around vehicle
+Service Light On
+Seat Torn Driver seat
+Dents or marks on body consistent with age and kilometres."
+2010,FORD,Mondeo,Zetec MC,Wagon,Automatic,Petrol,211815,5,WF0GXXGBBGAA23289,2CE8XP,03-01-2026 -,4,2.3,Blue,Black,Yes,No,Yes,No,Yes,VIC,https://www.grays.com/lot/0001-21061704/motor-vehicles-motor-cycles/2010-ford-mondeo-zetec-mc-automatic-wagon,"Door handle Worn..
+Body/panel damage Rhf
+Medium Scuff Various Panels."
+2020,TOYOTA,C-hr,AWD NGX50R,Wagon,CVT,Petrol,45890,5,JTNLY3FX701008534,2EA7SN,18-03-2026 -,4,1.2,Grey,Black,Yes,No,Yes,Yes,Yes,VIC,https://www.grays.com/lot/0001-21061705/motor-vehicles-motor-cycles/2020-toyota-c-hr-awd-ngx50r-cvt-wagon,"Medium Scratch on Around vehicle
+Dents or marks on body consistent with age and kilometres."
+2007,LAND,Rover,Range Rover Sport TDV6,Wagon,Automatic,Diesel,182846,5,SALLSAA137A997948,2DE6XV,07-02-2026 -,6,2.7,Grey,Black Leather,Yes,No,No,No,Yes,VIC,https://www.grays.com/lot/0001-21061709/motor-vehicles-motor-cycles/2007-land-rover-range-rover-sport-tdv6-turbo-diesel-automatic-wagon,"Hood Lining Sagging
+Dents or marks on body consistent with age and kilometres.
+Medium Scratch on Around vehicle"
+2006,TOYOTA,Corolla,Ascent ZZE122R,Sedan,Automatic,Petrol,101525,5,JTDBR23E303165055,2DJ8SD,"Sold Unregistered, Without Plates",4,1.8,Silver,Grey,Yes,Yes,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061710/motor-vehicles-motor-cycles/2006-toyota-corolla-ascent-zze122r-automatic-sedan,"Paint fading Around vehicle
+Medium Scuff on Around vehicle"
+2012,LAND,Rover,Discovery 2.7 TDV6 Series 4 T,Wagon,Automatic,Diesel,337787,7,SALLAAA13CA615388,YXA506,"Sold Unregistered, Without Plates",6,2.7,White,Black Leather,Yes,Yes,Yes,Yes,Yes,VIC,https://www.grays.com/lot/0001-21061713/motor-vehicles-motor-cycles/2012-land-rover-discovery-2-7-tdv6-series-4-t-diesel-auto-7-seats-wagon,"Engine light ON
+Windscreen Chipped or Cracked.
+Medium Scratch on Around vehicle
+Other Warning light ON
+Paint cracked various panels
+Dents or marks on body consistent with age and kilometres."
+2018,HOLDEN,Trax,LS TJ (WOVR-INSPECTED),Wagon,Automatic,Petrol,228145,5,KL3BA7689JB662730,1ZD5EW,27-02-2026 -,4,1.4,Blue,Black,Yes,Yes,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061714/motor-vehicles-motor-cycles/2018-holden-trax-ls-tj-automatic-wagon-wovr-inspected,"Medium Scratch on Around vehicle
+Hail damage visible."
+2009,TOYOTA,Hiace,Van,,Automatic,Petrol,273772,3,JTFHX02P100043827,No plates,"Sold Unregistered, Without Plates",4,2.7,White,Grey,Yes,Yes,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061715/motor-vehicles-motor-cycles/2009-toyota-hiace-automatic-van,"Windscreen Chipped or Cracked.
+Seat Torn Driver seat
+Corrosion visible Around vehicle
+Medium Scratch on Around vehicle"
+2016,HOLDEN,Colorado,4X2 LX RG,Cab Chassis,Automatic,Diesel,268530,5,MMU147CK0HH622366,1UF5UV,30-12-2025 -,4,2.8,White,Grey,Yes,Yes,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061716/motor-vehicles-motor-cycles/2016-holden-colorado-4x2-lx-rg-turbo-diesel-automatic-cab-chassis,"Dents or marks on body consistent with age and kilometres.
+Paint peeling Mirrors
+Airbag light ON"
+2007,TOYOTA,Rav,4 Cruiser L ACA33R,Wagon,Manual,Petrol,271696,5,JTMBD31V005083781,WUX925,30-12-2025 -,4,2.4,Blue,Black Leather,Yes,Yes,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061717/motor-vehicles-motor-cycles/2007-toyota-rav-4-cruiser-l-aca33r-manual-wagon,"Medium Dent on Around vehicle
+Medium Scratch on Around vehicle
+Corrosion visible Passenger side front guard
+Front Seat worn Both"
+2013,MAZDA,Cx-5,Maxx Sport KE,Wagon,Automatic,Diesel,240094,5,JM0KE102100229869,1AQ3ZY,24-12-2025 -,4,2.2,Dark Grey,Black,Yes,Yes,Yes,Yes,Yes,VIC,https://www.grays.com/lot/0001-21061732/motor-vehicles-motor-cycles/2013-mazda-cx-5-maxx-sport-ke-turbo-diesel-auto-wagon,"Medium Scratch on Around vehicle
+Hail damage visible.
+Dents or marks on body consistent with age and kilometres."
+2001,FORD,Courier,GL 4X2 PE,Ute,Manual,Petrol,179230,3,MNABSBD701W182586,QZR602,18-07-2026 -,4,2.6,White,Grey,Yes,No,Yes,No,Yes,VIC,https://www.grays.com/lot/0001-21061734/motor-vehicles-motor-cycles/2001-ford-courier-gl-4x2-pe-manual-ute,"Medium Scratch on Some places
+Medium Dent on Some places
+Hail damage visible.
+Front Seat worn Both
+Engine noise observed."
+2014,HYUNDAI,I30,TROPHY GD,Hatchback,Automatic,Petrol,216624,5,KMHD351EMEU219762,No plates,"Sold Unregistered, Without Plates",4,1.8,White,Black Leather,Yes,No,Yes,Yes,Yes,VIC,https://www.grays.com/lot/0001-21061735/motor-vehicles-motor-cycles/2014-hyundai-i30-trophy-gd-automatic-hatchback,"Medium Scratch on Around vehicle
+Medium Dent on Around vehicle
+Front Seat worn driver side
+Dents or marks on body consistent with age and kilometres.
+Paint fading on roof"
+2016,LAND,Rover,Range Rover Sport 3.0 TDV6 SE T D,Wagon,Automatic,Diesel,245804,7,SALWA2KE7GA119513,VRR078,18-05-2026 -,6,3,Grey,Black Leather,Yes,No,Yes,No,Yes,VIC,https://www.grays.com/lot/0001-21061736/motor-vehicles-motor-cycles/2016-land-rover-range-rover-sport-3-0-tdv6-se-t-d-auto-8-speed-7-seats,"Front Cracked bumper.
+Dents or marks on body consistent with age and kilometres.
+Medium Scratch on Around vehicle"
+2016,AUDI,Q7,3.0 TDI Quattro,Wagon,Automatic,Diesel,183828,7,WAUZZZ4M7GD041854,AHY556,13-04-2026 -,6,3,Grey,Black Leather,Yes,Yes,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061738/motor-vehicles-motor-cycles/2016-audi-q7-3-0-tdi-quattro-4m-turbo-diesel-auto-8-speed-7-seats-wagon,"Medium Scratch on Around vehicle
+Seat Torn Driver seat"
+2000,NISSAN,Pulsar,LX N15,Sedan,Automatic,Petrol,152628,5,JN1BCAN15A0548921,QGF970,28-02-2026 -,4,1.6,Red,Grey,Yes,Yes,Yes,No,Yes,VIC,https://www.grays.com/lot/0001-21061739/motor-vehicles-motor-cycles/2000-nissan-pulsar-lx-n15-automatic-sedan,"Large Scratch on Around vehicle
+Paint cracked Around vehicle
+Hail damage visible."
+2004,HONDA,Jazz,GLi GD,Hatchback,CVT,Petrol,248606,5,JHMGD18304S220865,1DZ7AJ,03-02-2026 -,4,1.3,Blue,Grey,Yes,Yes,Yes,Yes,Yes,VIC,https://www.grays.com/lot/0001-21061740/motor-vehicles-motor-cycles/2004-honda-jazz-gli-gd-cvt-hatchback,"Seat Torn Drivers
+Body/panel damage Rhr door
+Large Scratch on Around vehicle
+Windscreen Chipped or Cracked."
+2010,HOLDEN,Captiva,5 AWD CG,Wagon,Automatic,Petrol,214933,5,KL3DD26FJAB031194,1JC3HP,01-03-2026 -,4,2.4,Grey,Black,Yes,Yes,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061742/motor-vehicles-motor-cycles/2010-holden-captiva-5-awd-cg-automatic-wagon,"Door card Worn.
+Paint peeling Drivers mirror
+Large Scratch on Around vehicle"
+2011,MAZDA,Cx-9,LUXURY FWD,Wagon,Automatic,Petrol,213549,7,JM0TB10A4C0308468,2DZ7TQ,15-07-2026 -,6,3.7,Silver,Black Leather,Yes,Yes,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061743/motor-vehicles-motor-cycles/2011-mazda-cx-9-luxury-fwd-automatic-7-seats-wagon,"Medium Dent, Scratches Various Panels.
+Dents or marks on body consistent with age and kilometres."
+2010,FORD,Falcon,XR50 XR6 FG,Sedan,Automatic,Petrol,238014,5,6FPAAAJGSWAM40733,XXC073,05-01-2026 -,6,4,White,Black,Yes,No,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061744/motor-vehicles-motor-cycles/2010-ford-falcon-xr50-xr6-fg-automatic-sedan,"Front Seat worn Drivers seat
+Rear Cracked bumper.
+Medium Scuff on Around vehicle
+Paint cracked Front bar
+Windscreen Chipped or Cracked."
+2009,HYUNDAI,Tucson,CITY ELITE,Wagon,Automatic,Petrol,166695,5,KMHJN81BMAU184045,BMD58X,"Sold Unregistered, Without Plates",4,2,Black,Black Leather,Yes,No,No,No,Yes,VIC,https://www.grays.com/lot/0001-21061745/motor-vehicles-motor-cycles/2009-hyundai-tucson-city-elite-automatic-wagon,"Medium Scratch on Around vehicle
+Hail damage visible.
+Seat Torn Driver seat
+Medium Dent on front and rear bumper"
+2001,HOLDEN,Commodore,VU,Ute,Automatic,Petrol,222617,2,6H8VUK80A1L736427,QYX445,17-08-2026 -,6,3.8,White,Grey,Yes,Yes,Yes,No,Yes,VIC,https://www.grays.com/lot/0001-21061746/motor-vehicles-motor-cycles/2001-holden-commodore-ute-vu-automatic-ute,"Controls Broken Drivers window winder and centre console storage flap
+Large Scratch on Around vehicle
+Paint fading Around vehicle
+Dents or marks on body consistent with age and kilometres."
+2007,VOLKSWAGEN,Golf,GT Sport TSI 1k,Hatchback,Automatic,Petrol,189104,5,WVWZZZ1KZ8U003848,2DS7UM,30-01-2026 -,4,1.4,Blue,Black Leather,Yes,No,No,Yes,Yes,VIC,https://www.grays.com/lot/0001-21061747/motor-vehicles-motor-cycles/2007-volkswagen-golf-gt-sport-tsi-1k-automatic-hatchback,"Engine noise observed.
+Dents or marks on body consistent with age and kilometres.
+Hood Lining Sagging"
+2013,SUBARU,Xv,2.0i G4X,Hatchback,CVT,Petrol,218970,5,JF1GP7KC5DG033796,1AD3KG,29-07-2026 -,4,2,Grey,Black,Yes,Yes,Yes,Yes,Yes,VIC,https://www.grays.com/lot/0001-21061748/motor-vehicles-motor-cycles/2013-subaru-xv-2-0i-g4x-cvt-hatchback,"Medium Dent on Around vehicle
+Medium Scratch on Around vehicle"
+2012,MERCEDES,Benz,C-Class C 200 BE W204,Sedan,Automatic,Petrol,188979,5,WDD2040482A739968,No plates,"Sold Unregistered, Without Plates",4,1.8,Black,Black Leather,Yes,No,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061749/motor-vehicles-motor-cycles/2012-mercedes-benz-c-class-c-200-be-w204-automatic-sedan,"Dents or marks on body consistent with age and kilometres.
+Medium Dent on Around vehicle
+Paint peeling various panels
+Medium Scratch on Around vehicle"
+2008,AUDI,Tt,2.0 TFSI 8J,Coupe,Manual,Petrol,256149,4,TRUZZZ8J781044815,1TA1KD,28-02-2026 -,4,2,Black,Black Leather,Yes,No,Yes,Yes,Yes,VIC,https://www.grays.com/lot/0001-21061750/motor-vehicles-motor-cycles/2008-audi-tt-2-0-tfsi-8j-manual-coupe,"Carpet worn in places.
+Seat Torn Drivers
+Medium Scratch on Around vehicle
+Dents or marks on body consistent with age and kilometres."
+2013,CITROEN,Berlingo,L2 Van,Van,Manual,Diesel,284571,2,VF77E9HECDJ806666,No plates,"Sold Unregistered, Without Plates",4,1.6,White,Grey,Yes,No,No,No,Yes,VIC,https://www.grays.com/lot/0001-21061751/motor-vehicles-motor-cycles/2013-citroen-berlingo-l2-turbo-diesel-manual-van,"Carpet worn in places.
+Large Dent on Around vehicle
+Corrosion visible Around vehicle
+Paint peeling Around vehicle"
+2012,LAND,Rover,Range Rover Evoque SD4 Pure,Wagon,Automatic,Diesel,191599,5,SALVA2AE5CH705061,ZLB649,19-12-2025 -,4,2.2,White,Black Leather,Yes,Yes,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061752/motor-vehicles-motor-cycles/2012-land-rover-range-rover-evoque-sd4-pure-turbo-diesel-automatic-wagon,"Seat Torn Drivers
+Dents or marks on body consistent with age and kilometres."
+2015,HYUNDAI,Santa,Fe Active DM,Wagon,Automatic,Petrol,288472,7,KMHST81BSFU482848,1XT6WT,08-12-2025 -,4,2.4,Grey,Black,Yes,No,Yes,Yes,Yes,VIC,https://www.grays.com/lot/0001-21061753/motor-vehicles-motor-cycles/2015-hyundai-santa-fe-active-dm-automatic-7-seats-wagon,"Dents or marks on body consistent with age and kilometres.
+Medium Scratch on Around vehicle"
+2013,VOLKSWAGEN,Golf,90TSI A7,Hatchback,Automatic,Petrol,190242,5,WVWZZZAUZDW131943,AGE686,22-01-2026 -,4,1.4,Black,Multi,Yes,Yes,Yes,Yes,Yes,VIC,https://www.grays.com/lot/0001-21061754/motor-vehicles-motor-cycles/2013-volkswagen-golf-90tsi-a7-automatic-hatchback,"Front Seat Stains Drivers
+Dents or marks on body consistent with age and kilometres.
+Medium Scratch on Around vehicle"
+2006,TOYOTA,Yaris,YR NCP90R,Hatchback,Manual,Petrol,249518,5,JTDKW923300008693,1TL5XP,26-05-2026 -,4,1.3,Blue,Black,Yes,Yes,No,No,Yes,VIC,https://www.grays.com/lot/0001-21061755/motor-vehicles-motor-cycles/2006-toyota-yaris-yr-ncp90r-manual-hatchback,"Carpet worn in places.
+Dents or marks on body consistent with age and kilometres.
+Paint peeling Around vehicle
+Medium Scratch on Around vehicle
+Large Scuff on Front bumper"
+2017,NISSAN,X-trail,Ti AWD T32 Series 2,Wagon,CVT,Petrol,172555,5,JN1TBNT32A0042317,1KT7OC,25-01-2026 -,4,2.5,White,Black Leather,Yes,Yes,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061756/motor-vehicles-motor-cycles/2017-nissan-x-trail-ti-awd-t32-cvt-wagon-series-2,Dents or marks on body consistent with age and kilometres.
+2013,TOYOTA,Camry,Altise ASV50R (WOVR - Inspected),Sedan,Automatic,Petrol,191907,5,6T1BF3FK30X024124,2DX2QO,30-03-2026 -,4,2.5,Gold,Black,Yes,No,No,No,Yes,VIC,https://www.grays.com/lot/0001-21061759/motor-vehicles-motor-cycles/2013-toyota-camry-altise-asv50r-automatic-sedan-wovr-inspected,"Front Cracked bumper.
+Medium Scratch on Around vehicle
+Dents or marks on body consistent with age and kilometres.
+Door card Worn.
+Front Seat worn drivers"
+2008,HOLDEN,Calais,V VE,Sedan,Automatic,Petrol,185226,5,6G1EX55739L312180,WVR888,05-01-2026 -,6,3.6,Silver,Black Leather,Yes,Yes,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061772/motor-vehicles-motor-cycles/2008-holden-calais-v-ve-automatic-sedan,"Medium Scratch on Around vehicle
+Medium Dent on Around vehicle
+Front bumper Cracked bumper.
 Front Seat worn Driver seat
+Hood Lining Sagging
 Dents or marks on body consistent with age and kilometres."
-2012,FORD,Ranger,XLT 4X4 PX T D Dual Cab (WOVR-INSPECTED),Cab Chassis,Manual,Diesel,297374,5,MNAUMFF50CW123580,1EK4FS,09-04-2026 -,5,3.2,Blue,Grey,Yes,Yes,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061765/motor-vehicles-motor-cycles/2012-ford-ranger-xlt-4x4-px-t-d-manual-dual-cab-wovr-inspected,"Dents or marks on body consistent with age and kilometres.
+2008,VOLKSWAGEN,Polo,PACIFIC 9N,Hatchback,Automatic,Petrol,153989,5,WVWZZZ9NZ9U020476,XPD750,25-12-2025 -,4,1.6,Red,Multi,Yes,No,Yes,Yes,Yes,VIC,https://www.grays.com/lot/0001-21061773/motor-vehicles-motor-cycles/2008-volkswagen-polo-pacific-9n-automatic-hatchback,"Door Mirror Broken Passenger mirror lens
+Dents or marks on body consistent with age and kilometres.
+Medium Scratch on Around vehicle"
+2006,MITSUBISHI,Outlander,LS ZG (WOVR-INSPECTED),Wagon,CVT,Petrol,309694,5,JMFXTCW5W7U001586,788BR9,"Sold Unregistered, Without Plates",4,2.4,Blue,Black,Yes,No,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061774/motor-vehicles-motor-cycles/2006-mitsubishi-outlander-ls-zg-cvt-wagon-wovr-inspected,"Medium Scuff on Rear passenger side
+Dents or marks on body consistent with age and kilometres.
+Medium Dent on Around exterior
+Rear bumper Cracked bumper.
+Front Seat Stains driver side
+Paint peeling Rear bumper"
+2007,TOYOTA,Landcruiser,GXL VDJ200R,Wagon,Automatic,Diesel,376074,8,JTMHV09JX04001293,1YQ2ZM,28-02-2026 -,8,4.5,White,Grey,Yes,Yes,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061775/motor-vehicles-motor-cycles/2007-toyota-landcruiser-gxl-vdj200r-turbo-diesel-automatic-8-seats-wagon,"Door card Damaged.
+Medium Scratch on Around vehicle
+Windscreen Chipped or Cracked.
+Dents or marks on body consistent with age and kilometres."
+2003,MAZDA,323,Astina 1.8 SHADES BJ,Hatchback,Manual,Petrol,194999,5,JM0BJ10P200246528,WXU240,17-02-2026 -,4,1.8,Gold,Grey,Yes,Yes,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061776/motor-vehicles-motor-cycles/2003-mazda-323-astina-1-8-shades-bj-manual-hatchback,"Large Scratch on Around vehicle
+Corrosion visible Roof
+Dents or marks on body consistent with age and kilometres."
+2013,SUBARU,Forester,2.5i-L S4,Wagon,CVT,Petrol,172009,5,JF2SJ9KC5DG005749,ZQR903,27-03-2026 -,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061777/motor-vehicles-motor-cycles/2013-subaru-forester-2-5i-l-s4-cvt-wagon,Dents or marks on body consistent with age and kilometres.
+2012,OPEL,Insignia,GA,Sedan,Automatic,Diesel,228451,5,W0LGM5EM3D1001279,1FB3BW,05-05-2026 -,4,2,White,Black Leather,Yes,Yes,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061778/motor-vehicles-motor-cycles/2012-opel-insignia-ga-turbo-diesel-automatic-sedan,"Medium Dent on Around vehicle
+Medium Scratch on Around vehicle
+Windscreen Chipped or Cracked."
+2011,NISSAN,Dualis,ST J10,Wagon,CVT,Petrol,283356,5,SJNFBAJ10A2430406,YXJ207,28-02-2026 -,4,2,Silver,Black,Yes,No,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061779/motor-vehicles-motor-cycles/2011-nissan-dualis-st-j10-cvt-wagon,"Medium Scratch on Around vehicle
+Dents or marks on body consistent with age and kilometres.
+Door Mirror Broken Drivers mirror casing
+Seat Torn Drivers
+Carpet worn in places."
+2011,FORD,Focus,Titanium LW,Sedan,Automatic,Diesel,251412,5,WF0MXXGCBMBJ20429,1WM1DQ,26-02-2026 -,4,2,White,Black,Yes,No,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061780/motor-vehicles-motor-cycles/2011-ford-focus-titanium-lw-turbo-diesel-automatic-sedan,Dents or marks on body consistent with age and kilometres.
+2014,HOLDEN,Cruze,SRi-V JH,Hatchback,Automatic,Petrol,275843,5,6G1PE6EN4EL962391,2AE7OY,14-02-2026 -,4,1.6,Orange,Black Leather,Yes,Yes,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061781/motor-vehicles-motor-cycles/2014-holden-cruze-sri-v-jh-automatic-hatchback,"Dents or marks on body consistent with age and kilometres.
+Paint fading Mirrors
+Seat Torn Drivers seat"
+2014,BMW,X1,sDrive 20i E84 LCI,Wagon,Automatic,Petrol,148253,5,WBAVL92030VX89226,AEI012,06-02-2026 -,4,2,Grey,Black Leather,Yes,Yes,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061782/motor-vehicles-motor-cycles/2014-bmw-x1-sdrive-20i-e84-lci-automatic-8-speed-wagon,"Medium Scratch on Around vehicle
+Engine noise observed.
+Engine idling rough"
+2014,FIAT,500,S,Hatchback,Automatic,Petrol,127567,4,ZFA3120000J245555,AEM544,12-03-2026 -,4,1.4,White,Charcoal,Yes,No,Yes,Yes,Yes,VIC,https://www.grays.com/lot/0001-21061783/motor-vehicles-motor-cycles/2014-fiat-500-s-automatic-hatchback,"Dents or marks on body consistent with age and kilometres.
+Paint cracked Rear bar"
+2014,NISSAN,Qashqai,TL J11,Wagon,CVT,Diesel,233505,5,SJNFDAJ11A1103348,1CJ3DM,14-01-2026 -,4,1.6,White,Black Leather,Yes,No,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061784/motor-vehicles-motor-cycles/2014-nissan-qashqai-tl-j11-turbo-diesel-cvt-wagon,Paint peeling Around vehicle
+2015,HYUNDAI,Ix35,HIGHLANDER AWD LM,Wagon,Automatic,Petrol,155947,5,KMHJU81GSFU070495,1EK1ID,18-11-2025 -,4,2.4,White,Black Leather,Yes,Yes,Yes,Yes,Yes,VIC,https://www.grays.com/lot/0001-21061785/motor-vehicles-motor-cycles/2015-hyundai-ix35-highlander-awd-lm-automatic-wagon,Dents or marks on body consistent with age and kilometres.
+2019,AUDI,A5,2.0 TFSI F5,Hatchback,Automatic,Petrol,85800,5,WAUZZZF50KA077479,BDW949,30-04-2026 -,4,2,White,Black Leather,Yes,Yes,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061786/motor-vehicles-motor-cycles/2019-audi-a5-2-0-tfsi-f5-automatic-hatchback,"Windscreen Chipped or Cracked.
+Door card Worn.
+Medium Scratch on Around vehicle"
+2021,FORD,Everest,TREND RWD UAII 10,Wagon,Automatic,Diesel,100406,7,MNAAXXMAWAMA37126,1UH6HJ,25-05-2026 -,4,2,White,Black Leather,Yes,Yes,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061787/motor-vehicles-motor-cycles/2021-ford-everest-trend-rwd-uaii-turbo-diesel-10-auto-7-seats-wagon,"Dents or marks on body consistent with age and kilometres.
+Dents or marks on body consistent with age and kilometres."
+2021,KIA,Carnival,S KA4,People Mover,Automatic,Diesel,28336,8,KNANB81BMN6150509,1UY8DZ,07-12-2026 -,4,2.2,Grey,Grey,Yes,Yes,No,Yes,Yes,VIC,https://www.grays.com/lot/0001-21061788/motor-vehicles-motor-cycles/2021-kia-carnival-s-ka4-turbo-diesel-auto-8-speed-8-seats-people-mover,Dents or marks on body consistent with age and kilometres.
+2008,TOYOTA,Landcruiser,Prado VX KDJ120R,Wagon,Automatic,Diesel,422952,8,JTEBZ25J900180246,WMO163,10-03-2026 -,4,3,White,Black,Yes,Yes,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061796/motor-vehicles-motor-cycles/2008-toyota-landcruiser-prado-vx-kdj120r-turbo-diesel-auto-8-seats-wagon,"Medium Scratch on Around vehicle
+Paint peeling Around vehicle
+Corrosion visible Around vehicle
+Front Seat worn Passenger seat
+Seat Torn Driver seat
+Door card Worn.
+Carpet worn in places."
+2010,MAZDA,3,Neo BL (WOVR - REPAIRABLE),Hatchback,Manual,Petrol,181908,5,JM0BL10F100182975,YRI127,"Sold Unregistered, Without Plates -",4,2,Red,Black Leather,Yes,No,No,No,Yes,VIC,https://www.grays.com/lot/0001-21061797/motor-vehicles-motor-cycles/2010-mazda-3-neo-bl-manual-hatchback-wovr-repairable,"Paint peeling Around Vehicle
+Large Scratch on Around vehicle
+Dents or marks on body consistent with age and kilometres."
+2011,AUDI,A5,2.0 TFSI 8T,Convertible,CVT,Petrol,192054,4,WAUZZZ8F6BN017642,ZBB553,13-03-2026 -,4,2,Black,Black Leather,Yes,No,Yes,Yes,Yes,VIC,https://www.grays.com/lot/0001-21061798/motor-vehicles-motor-cycles/2011-audi-a5-2-0-tfsi-8t-cvt-convertible,"Seat Torn Drivers
+Hood Lining Sagging
+Dents or marks on body consistent with age and kilometres.
+Paint peeling Bonnet
+Door card Worn."
+2010,FORD,Territory,Ghia SY II,Wagon,Automatic,Petrol,174116,7,6FPAAAJGATAB53030,YCH238,11-02-2026 -,6,4,Blue,Black Leather,Yes,No,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061799/motor-vehicles-motor-cycles/2010-ford-territory-ghia-sy-ii-automatic-7-seats-wagon,"Front Seat worn Drivers seat foam and tear
+Medium Scratch on Around vehicle
+Hood Lining Sagging
+Seat Torn drivers
+Dents or marks on body consistent with age and kilometres."
+2013,RENAULT,Clio,Expression,Hatchback,Automatic,Petrol,106697,5,VF15R400ED0686467,1NT1EO,16-08-2026 -,4,1.2,Silver,Black,Yes,No,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061800/motor-vehicles-motor-cycles/2013-renault-clio-expression-automatic-hatchback,"Medium Dent on Around vehicle
+Large Scratch on Around vehicle"
+2005,FORD,Transit,LWB Mid Roof VJ Van,Van,Manual,Diesel,473473,3,WF0LXXTTFL5R40508,TTR731,03-10-2026 -,4,2.4,White,Grey,Yes,Yes,No,No,Yes,VIC,https://www.grays.com/lot/0001-21061801/motor-vehicles-motor-cycles/2005-ford-transit-lwb-mid-roof-vj-turbo-diesel-manual-van,"Medium Scratch on Around vehicle
+Large Dent on Around vehicle
+Windscreen Chipped or Cracked.
+Corrosion visible Around vehicle
+Damaged Driver side rear tail light
+Gear Knob Broken
+Seat Torn drivers
+Paint fading various panels"
+2015,DODGE,Journey,R T,People Mover,Automatic,Petrol,168549,7,3C4PDCKG5FT648489,1KS6RT,15-01-2026 -,6,3.6,Grey,Black Leather,Yes,Yes,No,No,Yes,VIC,https://www.grays.com/lot/0001-21061802/motor-vehicles-motor-cycles/2015-dodge-journey-r-t-automatic-7-seats-people-mover,Dents or marks on body consistent with age and kilometres.
+2003,FORD,Transit,LWB Mid Roof VH Van,Van,Manual,Diesel,562402,3,WF0LXXGBFL3Y12509,STW796,22-03-2026 -,4,2.4,White,Grey,Yes,Yes,No,No,Yes,VIC,https://www.grays.com/lot/0001-21061803/motor-vehicles-motor-cycles/2003-ford-transit-lwb-mid-roof-vh-turbo-diesel-manual-van,"Front Seat Stains Both
+Carpet worn in places.
+Controls Broken Hazard button, driver air vent
+Large Scratch on Around vehicle
+Body/panel damage Around vehicle
 Corrosion visible Around vehicle
 Windscreen Chipped or Cracked."
-2019,MITSUBISHI,Triton,4X4 GLX MQ Dual Cab,Cab Chassis,Manual,Diesel,245248,5,MMAJJKL10KH012868,No plates,"Sold Unregistered, Without Plates",4,2.4,White,Black,Yes,Yes,No,No,Yes,QLD,https://www.grays.com/lot/0001-50714055/motor-vehicles-motor-cycles/2019-mitsubishi-triton-4x4-glx-mq-turbo-diesel-manual-dual-cab,"Paint peeling RHR door
+2002,FORD,Transit,LWB Mid Roof VH Van,Van,Manual,Diesel,542353,3,WF0LXXGBFL2T76414,RWY129,19-11-2026 -,4,2.4,White,Grey,Yes,No,No,No,Yes,VIC,https://www.grays.com/lot/0001-21061804/motor-vehicles-motor-cycles/2002-ford-transit-lwb-mid-roof-vh-turbo-diesel-manual-van,"Controls inoperable Air speed selector
+Seat Torn Drivers
+Carpet worn in places.
+Controls Broken Hazard button
+Windscreen Chipped or Cracked.
+Large Dent on Around vehicle
+Corrosion visible Around vehicle
+Body/panel damage Around vehicle
+Damaged Rhr"
+2015,HOLDEN,Cascada,CJ,Convertible,Automatic,Petrol,165459,4,W0LWT3D94FG056288,ADD872,29-05-2026 -,4,1.6,Silver,Black Leather,Yes,Yes,Yes,Yes,Yes,VIC,https://www.grays.com/lot/0001-21061805/motor-vehicles-motor-cycles/2015-holden-cascada-cj-automatic-convertible,"Medium Scratch on various panels
+Medium Dent on fender"
+2009,SUBARU,Forester,,Wagon,Manual,Petrol,237870,5,JF2SH9KK4AG032839,XDD847,18-07-2026 -,4,2.5,Grey,Black,Yes,Yes,Yes,Yes,Yes,VIC,https://www.grays.com/lot/0001-21061807/motor-vehicles-motor-cycles/2009-subaru-forester-manual-wagon,"Dents or marks on body consistent with age and kilometres.
+Engine Smoke visible
+Medium Scratch on Right rear door"
+2014,NISSAN,Micra,ST K13,Hatchback,Automatic,Petrol,176323,5,MDHFBUK13A0005081,1GK2RE,15-04-2026 -,3,1.2,Red,Black,Yes,No,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061815/motor-vehicles-motor-cycles/2014-nissan-micra-st-k13-automatic-hatchback,"Medium Scratch on Around vehicle
+Medium Dent on Around vehicle
+Windscreen Chipped or Cracked.
+Other Warning light ON"
+2007,MAZDA,2,GENKI DE,Hatchback,Manual,Petrol,162180,5,JM0DE10Y180105902,WHB198,04-03-2026 -,4,1.5,Black,Black,Yes,Yes,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061816/motor-vehicles-motor-cycles/2007-mazda-2-genki-de-manual-hatchback,"Gear Knob Broken
 Dents or marks on body consistent with age and kilometres.
-Medium Dent on various panels
+Paint fading Around vehicle
+Windscreen Chipped or Cracked."
+2022,HAVAL,Haval,Jolion Hybrid,Wagon,Automatic,Hybrid,157699,5,LGWEEUA58NK640484,1WY8NC,30-07-2026 -,4,1.5,Blue,Black Leather,Yes,No,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061817/motor-vehicles-motor-cycles/2022-haval-haval-jolion-hybrid-automatic-wagon,"Door Mirror Broken Drivers mirror cap
+Dents or marks on body consistent with age and kilometres.
+Medium Dent on rear bumper"
+2006,BMW,X5,4.4i E53,Wagon,Automatic,Petrol,229651,5,WBAFB52070LT83400,VAJ069,01-02-2026 -,8,4.4,Grey,Black Leather,Yes,Yes,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061818/motor-vehicles-motor-cycles/2006-bmw-x5-4-4i-e53-automatic-wagon,"Engine Oil Leak
+Dents or marks on body consistent with age and kilometres.
+Medium Dent on Passenger side door
+Seat Torn driver side
+Door card Worn.
 Medium Scuff on various panels
-Paint cracked various panels.
-Front Cracked bumper.
-Comments: Rough Idle on start up
-Interior: Wear and tear consistent with age and kilometres travelled with Stained hood lining, Exterior: Front bumper requires attention, corrosion evident"
-2003,MERCEDES,Benz,S350 W220,Sedan,Automatic,Petrol,246698,5,WDB2200672A383531,No plates,"Sold Unregistered, Without Plates",6,3.7,Charcoal,Black Leather,Yes,No,No,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714089/motor-vehicles-motor-cycles/2003-mercedes-benz-s350-w220-automatic-sedan,"Paint peeling Roof
+Medium Scratch on various panels
+Corrosion visible on scuff and chip of paints"
+2013,MERCEDES,Benz,Sprinter 316 CDI MWB L ROOF Van,Van,Automatic,Diesel,314905,2,WDB9066332S742307,1IO6PG,03-11-2026 -,4,2.1,White,Grey,Yes,Yes,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061819/motor-vehicles-motor-cycles/2013-mercedes-benz-sprinter-316-cdi-mwb-l-roof-turbo-diesel-automatic-van,"Other Warning light ON
 Dents or marks on body consistent with age and kilometres.
+Marks in boot
+Windscreen Chipped or Cracked.
 Airbag light ON
 Dents or marks on body consistent with age and kilometres."
-2007,KIA,Rio,EX JB,Hatchback,Automatic,Petrol,225264,5,KNADE243386350511,No plates,"Sold Unregistered, Without Plates",4,1.6,Orange,Black,Yes,No,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714093/motor-vehicles-motor-cycles/2007-kia-rio-ex-jb-automatic-hatchback,"Engine light ON
+2011,JEEP,Grand,Cherokee LIMITED 70TH ANNIVERSARY (4x4) WK,Wagon,Automatic,Petrol,229901,5,1J4R25GG6BC646883,YPB318,23-03-2026 -,6,3.6,Black,Black Leather,Yes,Yes,Yes,Yes,Yes,VIC,https://www.grays.com/lot/0001-21061820/motor-vehicles-motor-cycles/2011-jeep-grand-cherokee-limited-70th-anniversary-4x4-wk-automatic-wagon,"Seat Torn Passenger front
+Door card Worn.
+Controls Broken Bonnet release
+Large Dent on Around vehicle
+Paint fading Roof
+Dents or marks on body consistent with age and kilometres."
+2018,AUDI,A1,1.4 TFSI SPORT 8X,Hatchback,Automatic,Petrol,165791,5,WAUZZZ8X0JB068871,DXF83Q,"Sold Unregistered, Without Plates",4,1.4,White,Black,Yes,No,Yes,No,Yes,VIC,https://www.grays.com/lot/0001-21061821/motor-vehicles-motor-cycles/2018-audi-a1-1-4-tfsi-sport-8x-automatic-hatchback,"Dents or marks on body consistent with age and kilometres.
+Medium Dent on door panel"
+2004,HONDA,Civic,GLi 7th Gen,Sedan,Automatic,Petrol,231881,5,MRHES16504P020154,TEF520,"Sold Unregistered, Without Plates",4,1.7,White,Grey,Yes,No,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061822/motor-vehicles-motor-cycles/2004-honda-civic-gli-7th-gen-automatic-sedan,"Corrosion visible Bonnet
 Dents or marks on body consistent with age and kilometres.
-Paint fading Various panels
-Medium Dent on Bonnet"
-2014,AUDI,A3,Cabriolet 1.8 TSI Ambition 8V WOVR-INSPECTED,Convertible,Automatic,Petrol,97721,4,WAUZZZ8V0F1057302,No plates,"Sold Unregistered, Without Plates",4,1.8,Black,Black Leather,Yes,No,No,No,Yes,QLD,https://www.grays.com/lot/0001-50714094/motor-vehicles-motor-cycles/2014-audi-a3-cabriolet-1-8-tsi-ambition-8v-wovr-inspected,"Hail damage visible.
-Dents or marks on body consistent with age and kilometres.
-Medium Scuff on various panels"
-2016,MAZDA,Cx-5,Grand Touring KE,Wagon,Automatic,Diesel,196807,5,JM0KE102200380420,No plates,"Sold Unregistered, Without Plates",4,2.2,White,Black Leather,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714096/motor-vehicles-motor-cycles/2016-mazda-cx-5-grand-touring-ke-turbo-diesel-automatic-wagon,"Dents or marks on body consistent with age and kilometres.
-Seat Torn drivers seat"
-2021,TOYOTA,Prado,Kakadu 4WD,Wagon,Automatic,Diesel,48945,7,JTEBR3FJ00K199146,No plates,"Sold Unregistered, Without Plates",4,,Blue,Black,Yes,Yes,Yes,Yes,Yes,NT,https://www.grays.com/lot/0001-60049881/motor-vehicles-motor-cycles/2021-toyota-prada-kakadu-4wd-automatic-wagon,"Comment: ABS Brakes, Driving Lights, Multi Function Steering Wheel, Tow Bar"
-2008,MERCEDES,Benz,C200 K Elegance W204,Sedan,Automatic,Petrol,130650,5,WDD2040412A199591,No plates,"Sold Unregistered, Without Plates",4,1.8,Silver,Black Leather,Yes,Yes,Yes,Yes,Yes,SA,https://www.grays.com/lot/0001-60049921/motor-vehicles-motor-cycles/2008-mercedes-benz-c200-k-elegance-w204-automatic-sedan,Please refer to the photos or arrange inspection to view the condition of this vehicle.
-2009,TOYOTA,Landcruiser,Prado GXL KDJ120R,Wagon,Automatic,Diesel,436631,8,JTEBZ29J700199274,No plates,"Sold Unregistered, Without Plates",4,3,Silver,Multi,Yes,No,Yes,No,Yes,SA,https://www.grays.com/lot/0001-60049922/motor-vehicles-motor-cycles/2009-toyota-landcruiser-prado-gxl-kdj120r-turbo-diesel-auto-8-seats-wagon,"Please refer to the photos or arrange inspection to view the condition of this vehicle.
-Dent rear bumper."
-2016,TOYOTA,C-hr,FWD KOBA NGX10R,Wagon,CVT,Petrol,244687,5,JTNKY3BX001000115,No plates,"Sold Unregistered, Without Plates",4,1.2,White,Multi,Yes,Yes,Yes,Yes,Yes,SA,https://www.grays.com/lot/0001-60049943/motor-vehicles-motor-cycles/2016-toyota-c-hr-fwd-koba-ngx10r-cvt-wagon,"Transmission Requires attention Strongly recommend inspection by qualified third party
-Engine light ON
+Interior: Steering wheel worn
+Exterior: Bonnet latch requires attention, Poor previous repair on passenger front quarter panel evident, dislodge front bumper"
+2005,TOYOTA,Hiace,SUPER LWB KDH220R T D Van (WOVR-INSPECTED),Van,Manual,Diesel,610901,3,JTFPS22P900001931,1IY9SC,14-03-2026 -,4,2.5,White,Grey,Yes,No,No,No,Yes,VIC,https://www.grays.com/lot/0001-21061823/motor-vehicles-motor-cycles/2005-toyota-hiace-super-lwb-kdh220r-t-d-manual-van-wovr-inspected,"Windscreen Chipped or Cracked.
+Medium Dent on Around vehicle
+Medium Scratch on Around vehicle
+Corrosion visible Around vehicle
+Comment: Compliance plate damaged"
+2017,HOLDEN,Astra,R BK,Hatchback,Automatic,Petrol,124264,5,W0LBF6EC5HG178663,No plates,"Sold Unregistered, Without Plates",4,1.4,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50517712/motor-vehicles-motor-cycles/2017-holden-astra-r-bk-automatic-hatchback,"Engine light ON
 Traction control light ON
-Other Warning light ON"
-2019,TOYOTA,Land,Cruiser 4WD,Ute,Manual,Diesel,261820,2,JTELV71J90B009312,No plates,"Sold Unregistered, Without Plates",8,,White,Black,Yes,Yes,Yes,Yes,Yes,NT,https://www.grays.com/lot/0001-60049954/motor-vehicles-motor-cycles/2019-toyota-land-cruiser-4wd-manual-ute,"Comment: Side Steps, Snorkel, UHF"
-1999,MERCEDES,Benz,CLK430,Coupe,Automatic,Petrol,236722,4,WDB2083702F115354,No plates,"Sold Unregistered, Without Plates",8,4.3,Green,Black,Yes,Yes,Yes,Yes,Yes,NT,https://www.grays.com/lot/0001-60049960/motor-vehicles-motor-cycles/1999-mercedes-benz-clk430-automatic-coupe,Comment: Multi Function Steering Wheel
-2015,HOLDEN,Trax,LS FWD,Hatchback,Manual,Petrol,76506,5,KL3BF7659GB603919,No plates,"Sold Unregistered, Without Plates",4,1.8,Black,Black,Yes,Yes,Yes,Unknown,Yes,NT,https://www.grays.com/lot/0001-60049961/motor-vehicles-motor-cycles/2015-holden-trax-ls-fwd-manual-5-speed-hatchback,"Comment: ABS Brakes, Multi Function Steering Wheel"
-2003,TOYOTA,Rav4,AWD,Wagon,Automatic,Petrol,226725,5,JTEHH20V300231330,No plates,"Sold Unregistered, Without Plates",4,2,White,Grey,Yes,No,No,No,Yes,NT,https://www.grays.com/lot/0001-60049962/motor-vehicles-motor-cycles/2003-toyota-rav4-automatic-wagon-awd-automatic-wagon,"Air Conditioning
-CD Player
-Electric Windows
-Power Steering
-Location: 38 Toupein Road, Yarrawonga, NT 0830"
-2008,MITSUBISHI,Triton,RWD,Ute,Manual,Petrol,269708,3,MMAENKA509D004812,No plates,"Sold Unregistered, Without Plates",4,,White,Grey,Yes,Yes,Yes,No,Yes,NT,https://www.grays.com/lot/0001-60049963/motor-vehicles-motor-cycles/2008-mitsubishi-triton-rwd-manual-ute,"Seats and Upholstery: Good
-Controls and Dash: Good
-Paint & Panel: Good
-Exterior Damage: Starts, Runs, Drives"
-2017,TOYOTA,Hilux,Workmate 4 x 4 Ute,Dual Cab,Automatic,Diesel,106441,5,MR0KA3CD901207911,No plates,"Sold Unregistered, Without Plates",4,,White,Black,Yes,No,No,No,Yes,QLD,https://www.grays.com/lot/0001-7061089/motor-vehicles-motor-cycles/2017-toyota-hilux-workmate-automatic-4-x-4-dual-cab-ute,"Interior Damage: PoorExterior Damage: PoorEngine & Mechanical: Engine Light On, Engine Noise, Corrosion Evident. Vehicles previously from a mine site, therefore, may require extra parts not listed in descriptions, or batteries/jump pack to start on collection. Inspection is highly recommended.
-Exterior Damage: Poor
-Engine & Mechanical: Engine Light On, Engine Noise, Corrosion Evident. Vehicles previously from a mine site, therefore, may require extra parts not listed in descriptions, or batteries/jump pack to start on collection. Inspection is highly recommended."
-2022,TOYOTA,Hilux,4X2 SR HI RIDER GUN136R Dual Cab,Cab Chassis,Automatic,Electric,1889,5,MR0JA3DD700351134,1IOA392,10/03/2026 - Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy,0,0,Green,Charcoal,Yes,Yes,Yes,No,Yes,WA,https://www.grays.com/lot/0001-9065749/motor-vehicles-motor-cycles/2022-toyota-hilux-4x2-sr-hi-rider-gun136r-automatic-dual-cab,"This vehicle was originally complied with a diesel engine and was re complied in 2025 as a `Second Stage Manufacture` Due to the engine being removed and the vehicle made fully electric.Along with this it appears that there may have been a GVM upgrade but this is unclear to us. The vehicle was originally white from factory but appears to have been externally painted or wrapped Green. The WA Department of Transport Record has been amended to reflect the colour changeBrakes require attentionRecommend towing on collectionABS light ONEngine light ONTraction control light ONOther Warning light ONDents or marks on body consistent with age and kilometres.
-Along with this it appears that there may have been a GVM upgrade but this is unclear to us. The vehicle was originally white from factory but appears to have been externally painted or wrapped Green. The WA Department of Transport Record has been amended to reflect the colour changeBrakes require attentionRecommend towing on collectionABS light ONEngine light ONTraction control light ONOther Warning light ONDents or marks on body consistent with age and kilometres.
-Brakes require attention
-Recommend towing on collection
+Engine idling rough
+Hail damage visible.
+Paint peeling Bonnet, roof
+Medium Scratch on LHR guard
+Dents or marks on body consistent with age and kilometres."
+2013,MAZDA,Bt-50,4X2 XT,Cab Chassis,Automatic,Diesel,114920,2,MM0UP0YD100193307,No plates,"Sold Unregistered, Without Plates",4,2.2,Grey,Black,Yes,Yes,Yes,No,Yes,QLD,https://www.grays.com/lot/0001-50517713/motor-vehicles-motor-cycles/2013-mazda-bt-50-4x2-xt-turbo-diesel-automatic-cab-chassis,"Engine noise observed.
+Engine lacks power
+Door card Worn.
+Paint fading Bonnet and roof
+Dents or marks on body consistent with age and kilometres."
+2017,MERCEDES,Benz,GLC-CLASS AMG GLC 43 X253 9,Coupe,Automatic,Petrol,141635,5,WDC2533642F271826,No plates,"Sold Unregistered, Without Plates",6,3,Red,Black Leather,Yes,No,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50517715/motor-vehicles-motor-cycles/2017-mercedes-benz-glc-class-amg-glc-43-coupe-x253-9-auto-coupe,"Driveline requires attention, recommend inspection by qualified third party
+Other Warning light ON
+Dents or marks on body consistent with age and kilometres.
+Medium Scratch on Rear bumper
+Large Scratch on RHF and RHR door"
+2008,FORD,Falcon,G6E Turbo FG,Sedan,Automatic,Petrol,206949,5,6FPAAAJGSW8C75294,No plates,"Sold Unregistered, Without Plates",6,4,Silver,Black Leather,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50517720/motor-vehicles-motor-cycles/2008-ford-falcon-g6e-turbo-fg-automatic-sedan,"Dents or marks on body consistent with age and kilometres.
+Medium Dent on LHR above tail light"
+2008,VOLKSWAGEN,Golf,GT SPORT TDI A5,Hatchback,Manual,Diesel,224018,5,WVWZZZ1KZ8U021022,No plates,"Sold Unregistered, Without Plates",4,2,Silver,Black,Yes,Yes,No,Partial,Yes,QLD,https://www.grays.com/lot/0001-50517721/motor-vehicles-motor-cycles/2008-volkswagen-golf-gt-sport-tdi-a5-turbo-diesel-manual-hatchback,"Dents or marks on body consistent with age and kilometres.
+Other Warning light ON
+Paint peeling Various panels
+Large Dent on Tailgate"
+2009,VOLKSWAGEN,Passat,R36 R36 3C,Sedan,Automatic,Petrol,176532,5,WVWZZZ3CZAE047575,No plates,"Sold Unregistered, Without Plates",6,3.6,Dark Grey,Black,Yes,Yes,No,Partial,Yes,QLD,https://www.grays.com/lot/0001-50517722/motor-vehicles-motor-cycles/2009-volkswagen-passat-r36-r36-3c-automatic-sedan,Dents or marks on body consistent with age and kilometres.
+2011,HYUNDAI,I20,Active PB,Hatchback,Automatic,Petrol,180268,5,MALBB31CMCM027875,No plates,"Sold Unregistered, Without Plates",4,1.4,White,Black,Yes,No,Yes,No,Yes,QLD,https://www.grays.com/lot/0001-50517723/motor-vehicles-motor-cycles/2011-hyundai-i20-active-pb-automatic-hatchback,"Paint peeling Various panels
+Rear Cracked bumper.
+Large Dent on LHR guard
+Airbag light ON
+Medium Scratch on various panels
+Medium Dent on various panels
+Dents or marks on body consistent with age and kilometres."
+2014,HYUNDAI,Ix35,Active FWD LM,Wagon,Automatic,Petrol,164406,5,KMHJT81FMEU938886,CH43QA,"Sold Unregistered, Without Plates",4,2,White,Black,Yes,Yes,Yes,Partial,Yes,NSW,https://www.grays.com/lot/0001-5062062/motor-vehicles-motor-cycles/2014-hyundai-ix35-active-fwd-lm-automatic-wagon,"Paint fading Roof, bonnet
+Medium Scratch on Bumper bars
+Medium Dent on Tailgate
+Windscreen Chipped or Cracked.
+Paint peeling Rear spoiler, driver side door mirror"
+2015,MAZDA,Cx-3,AKARI DK,Wagon,Automatic,Petrol,207249,5,JM0DK2W7A00104311,EGK41L,"Sold Unregistered, Without Plates",4,2,White,Black,Yes,Yes,Yes,Partial,Yes,NSW,https://www.grays.com/lot/0001-5062063/motor-vehicles-motor-cycles/2015-mazda-cx-3-akari-dk-automatic-wagon,"Hail damage visible.
+Corrosion visible Bonnet, engine bay
+Large Dent on Bumper bars
+Large Dent on Bonnet"
+2015,AUDI,Q7,3.0 TDI Quattro TD,Wagon,Automatic,Diesel,188517,7,WAUZZZ4M5GD008318,No plates,"Sold Unregistered, Without Plates",6,3,Black,Black Leather,Yes,No,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714058/motor-vehicles-motor-cycles/2015-audi-q7-3-0-tdi-quattro-4m-td-auto-8-speed-7-seats-wagon,"Driveline requires attention, recommend inspection by qualified third party
+Dents or marks on body consistent with age and kilometres.
+Medium Scratch on RHF guard, RHR door handle and front bumper"
+2017,AUDI,Q7,3.0 TDI Quattro TD,Wagon,Automatic,Diesel,94516,7,WAUZZZ4M0HD055922,No plates,"Sold Unregistered, Without Plates",6,3,Grey,Black Leather,Yes,No,No,No,Yes,QLD,https://www.grays.com/lot/0001-50714059/motor-vehicles-motor-cycles/2017-audi-q7-3-0-tdi-quattro-4m-td-auto-8-speed-7-seats-wagon,"Windscreen Chipped or Cracked.
+Dents or marks on body consistent with age and kilometres."
+2012,MAZDA,Cx-5,Grand Touring KE,Wagon,Automatic,Diesel,157577,5,JM0KE102100108025,No plates,"Sold Unregistered, Without Plates",4,2.2,Red,Black Leather,Yes,Yes,Yes,Yes,Yes,QLD,https://www.grays.com/lot/0001-50714064/motor-vehicles-motor-cycles/2012-mazda-cx-5-grand-touring-ke-turbo-diesel-automatic-wagon,"Dents or marks on body consistent with age and kilometres.
+Door card Damaged.
+Paint peeling Rear bumper"
+2017,MAHINDRA,S5,series,Ute,Manual,Diesel,215412,5,MA1RC4VG2J2013636,No plates,"Sold Unregistered, Without Plates",4,2.2,White,Black,Yes,Yes,No,No,Yes,QLD,https://www.grays.com/lot/0001-50714067/motor-vehicles-motor-cycles/2017-mahindra-s5-series-manual-ute,"Windscreen Chipped or Cracked.
+Dents or marks on body consistent with age and kilometres.
+Medium Scratch on LHF door
+Large Dent on RHF guard"
+2018,FORD,Ranger,XLT 4X4 PX III,Ute,Automatic,Diesel,297125,4,MNAUM2F60JW896798,No plates,"Sold Unregistered, Without Plates",4,2,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714073/motor-vehicles-motor-cycles/2018-ford-ranger-xlt-4x4-px-iii-turbo-diesel-automatic-ute,"Dents or marks on body consistent with age and kilometres.
+Driveline requires attention, recommend inspection by qualified third party"
+2018,HOLDEN,Equinox,LT 2WD EQ,Wagon,Automatic,Petrol,227629,5,3G0AX7EX1JS622337,No plates,"Sold Unregistered, Without Plates",4,2,Charcoal,Black,Yes,No,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714074/motor-vehicles-motor-cycles/2018-holden-equinox-lt-2wd-eq-automatic-wagon,"Dents or marks on body consistent with age and kilometres.
+Body/panel damage Rhf guard
+Large Dent on Tailgate, lhr door
+Medium Dent on LHF guard,
+Large Scuff on RHR door"
+2012,ISUZU,D-max,4X2 SX,Dual Cab,Manual,Diesel,220009,5,MPATFR85JCT100487,No plates,"Sold Unregistered, Without Plates",4,3,White,Black,Yes,No,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714077/motor-vehicles-motor-cycles/2012-isuzu-d-max-4x2-sx-turbo-diesel-manual-dual-cab,"Paint peeling Various panels
+Dents or marks on body consistent with age and kilometres."
+1992,FORD,Falcon,GLi EB II,Wagon,Automatic,Petrol,164785,3,6FPAAAJGWANK20775,No plates,"Sold Unregistered, Without Plates",6,4,White,Grey,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714082/motor-vehicles-motor-cycles/1992-ford-falcon-gli-eb-ii-automatic-wagon,Dents or marks on body consistent with age and kilometres.
+2014,BMW,X5,xDrive 25d F15,Wagon,Automatic,Diesel,152554,5,WBAKS220900C48372,No plates,"Sold Unregistered, Without Plates",4,2,White,Black Leather,Yes,Yes,No,No,Yes,QLD,https://www.grays.com/lot/0001-50714085/motor-vehicles-motor-cycles/2014-bmw-x5-xdrive-25d-f15-turbo-diesel-automatic-8-speed-wagon,"Door card Damaged.
+Dents or marks on body consistent with age and kilometres."
+2019,HOLDEN,Colorado,4X4 LTZ RG,Dual Cab,Automatic,Diesel,163587,5,MMU148MK0KH660420,No plates,"Sold Unregistered, Without Plates",4,2.8,White,Black,Yes,Yes,No,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714086/motor-vehicles-motor-cycles/2019-holden-colorado-4x4-ltz-rg-turbo-diesel-automatic-dual-cab,"Paint peeling Rear canopy
+Dents or marks on body consistent with age and kilometres."
+2015,FORD,Fiesta,Ambiente WZ,Hatchback,Manual,Petrol,115710,5,MPB8XXMXJ8FC10614,No plates,"Sold Unregistered, Without Plates",4,1.5,Grey,Black,Yes,No,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714087/motor-vehicles-motor-cycles/2015-ford-fiesta-ambiente-wz-manual-hatchback,"Rear hatch Door not Working
+Dents or marks on body consistent with age and kilometres."
+2013,HYUNDAI,Iload,TQ Van,Van,Automatic,Diesel,286040,3,KMFWBX7KMDU584813,No plates,"Sold Unregistered, Without Plates",4,2.5,White,Grey,Yes,No,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714092/motor-vehicles-motor-cycles/2013-hyundai-iload-tq-turbo-diesel-automatic-van,"Medium Scuff on RHF door
+Large Scuff on LHF door
+Large Scratch on LHR door
+Medium Dent on LHR guard
+Damaged RH taill light
+Paint cracked Rear bumper
+Front Seat worn RHF"
+2010,TOYOTA,Landcruiser,GXL VDJ200R,Wagon,Automatic,Diesel,448268,8,JTMHV09J804049942,No plates,"Sold Unregistered, Without Plates",8,4.5,Black,Grey,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714097/motor-vehicles-motor-cycles/2010-toyota-landcruiser-gxl-vdj200r-turbo-diesel-automatic-8-seats-wagon,"Dents or marks on body consistent with age and kilometres.
+Seat Torn RHF
+Paint cracked Rear bumper
+Paint fading Various panels
+Windscreen Chipped or Cracked."
+2012,JEEP,Wrangler,Unlimited Sport JK,Wagon,Manual,Petrol,183811,5,1C4HJWKG3CL255726,No plates,"Sold Unregistered, Without Plates",6,3.6,Green,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714098/motor-vehicles-motor-cycles/2012-jeep-wrangler-unlimited-sport-jk-manual-wagon,"Engine light ON
+Dents or marks on body consistent with age and kilometres."
+2012,FORD,Territory,Titanium SZ,Wagon,Automatic,Diesel,257252,7,6FPAAAJGATCT21400,No plates,"Sold Unregistered, Without Plates",6,2.7,White,Black Leather,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714105/motor-vehicles-motor-cycles/2012-ford-territory-titanium-sz-turbo-diesel-automatic-7-seats-wagon,"Transmission Requires attention Strongly recommend inspection by qualified third party
+Front Seat worn Both
+Back Seat worn.
+Large Dent on RHR quarter panel
+Medium Scuff on LHF bumper
+Dents or marks on body consistent with age and kilometres."
+2017,HOLDEN,Equinox,LTZ-V AWD EQ,Wagon,Automatic,Diesel,170561,5,3G0AX7E81JS531836,No plates,"Sold Unregistered, Without Plates",4,1.6,Bronze,Black Leather,Yes,No,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714113/motor-vehicles-motor-cycles/2017-holden-equinox-ltz-v-awd-eq-turbo-diesel-automatic-wagon,"Engine light ON
+Large Dent on LHF guard and LHF door
+Dents or marks on body consistent with age and kilometres."
+2018,HYUNDAI,Tucson,GO FWD TL,Wagon,Automatic,Petrol,94013,5,KMHJ2814MKU815837,No plates,"Sold Unregistered, Without Plates",4,2,White,Black,Yes,Yes,Yes,Yes,Yes,QLD,https://www.grays.com/lot/0001-50714115/motor-vehicles-motor-cycles/2018-hyundai-tucson-go-fwd-tl-automatic-wagon,Dents or marks on body consistent with age and kilometres.
+2022,NISSAN,X-trail,ST FWD T32,Wagon,CVT,Petrol,100895,5,JN1TBAT32A0088098,No plates,"Sold Unregistered, Without Plates",4,2.5,White,Black,Yes,Yes,Yes,Yes,Yes,QLD,https://www.grays.com/lot/0001-50714116/motor-vehicles-motor-cycles/2022-nissan-x-trail-st-fwd-t32-cvt-wagon,"Paint peeling Rear bumper
+Dents or marks on body consistent with age and kilometres."
+2020,TOYOTA,Camry,ASCENT HYBRID AXVH71R,Sedan,CVT,Hybrid,121821,5,JTNB23HK303082360,No plates,"Sold Unregistered, Without Plates",4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714117/motor-vehicles-motor-cycles/2020-toyota-camry-ascent-hybrid-axvh71r-cvt-sedan,"Front Seat Stains Both
+Dents or marks on body consistent with age and kilometres.
+Large Scratch on various panels"
+2022,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,90639,5,JTNB13HK603163386,No plates,"Sold Unregistered, Without Plates",4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714118/motor-vehicles-motor-cycles/2022-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,"Front Seat Stains Lhf
+Dents or marks on body consistent with age and kilometres."
+2022,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,91114,5,JTNB13HK103163084,No plates,"Sold Unregistered, Without Plates",4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714119/motor-vehicles-motor-cycles/2022-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.
+2021,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,54708,5,JTNB13HK803147898,No plates,"Sold Unregistered, Without Plates",4,2.5,White,Black,Yes,Yes,Yes,Yes,Yes,QLD,https://www.grays.com/lot/0001-50714120/motor-vehicles-motor-cycles/2021-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.
+2012,KIA,Sportage,Platinum SL,Wagon,Automatic,Diesel,318290,5,KNAPC813SC7344047,No plates,"Sold Unregistered, Without Plates",4,2,Silver,Black Leather,Yes,No,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714121/motor-vehicles-motor-cycles/2012-kia-sportage-platinum-sl-turbo-diesel-automatic-wagon,"Paint fading Various panels
+Dents or marks on body consistent with age and kilometres."
+2012,MITSUBISHI,Challenger,PB,Wagon,Automatic,Diesel,297230,5,MMAGYKH40CF002403,No plates,"Sold Unregistered, Without Plates",4,2.5,Black,Black,Yes,No,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714122/motor-vehicles-motor-cycles/2012-mitsubishi-challenger-pb-turbo-diesel-automatic-wagon,"Paint fading Various panels
+Medium Scuff on RHF guard
+Large Scuff on LHR guard"
+2016,TOYOTA,Camry,Atara S ASV50R,Sedan,Automatic,Petrol,211297,5,6T1BF3FK40X095767,No plates,"Sold Unregistered, Without Plates",4,2.5,Other,Multi,Yes,Yes,Yes,Yes,Yes,SA,https://www.grays.com/lot/0001-60049936/motor-vehicles-motor-cycles/2016-toyota-camry-atara-s-asv50r-automatic-sedan,Please refer to the photos or arrange inspection to view the condition of this vehicle.
+2018,AUDI,Q3,1.4 TFSI COD 8U,Wagon,Automatic,Petrol,69977,5,WAUZZZ8U4JR079854,No plates,"Sold Unregistered, Without Plates",4,1.4,Black,Black Leather,Yes,Yes,Yes,Yes,Yes,SA,https://www.grays.com/lot/0001-60049940/motor-vehicles-motor-cycles/2018-audi-q3-1-4-tfsi-cod-8u-automatic-wagon,Please refer to the photos or arrange inspection to view the condition of this vehicle.
+2010,FORD,Territory,TX (RWD) SY II,Wagon,Automatic,Petrol,239088,5,6FPAAAJGATAY93180,No plates,"Sold Unregistered, Without Plates",6,4,White,Multi,Yes,Yes,Yes,Yes,Yes,SA,https://www.grays.com/lot/0001-60049942/motor-vehicles-motor-cycles/2010-ford-territory-tx-rwd-sy-ii-automatic-wagon,Engine light ON
+2007,MINI,Cooper,S R56,Hatchback,Automatic,Petrol,159800,4,WMWMF72040TL40317,No plates,"Sold Unregistered, Without Plates",4,1.6,Multi,Black Leather,Yes,Yes,Yes,Yes,Yes,SA,https://www.grays.com/lot/0001-60049946/motor-vehicles-motor-cycles/2007-mini-cooper-s-r56-automatic-hatchback,Please refer to the photos or arrange inspection to view the condition of this vehicle.
+2018,ISUZU,D-max,4X2 SX Crew,Cab Chassis,Automatic,Diesel,148604,5,MPATFR85JJT002485,No plates,"Sold Unregistered, Without Plates",4,3,White,Multi,Yes,No,No,No,Yes,SA,https://www.grays.com/lot/0001-60049947/motor-vehicles-motor-cycles/2018-isuzu-d-max-4x2-sx-turbo-diesel-automatic-crew-cab-chassis,Please refer to the photos or arrange inspection to view the condition of this vehicle.
+2018,FORD,Endura,TREND FWD,Wagon,Automatic,Diesel,278763,5,2FMTK9JA1KBB05372,No plates,"Sold Unregistered, Without Plates",4,2,White,Multi,Yes,Yes,Yes,Yes,Yes,SA,https://www.grays.com/lot/0001-60049948/motor-vehicles-motor-cycles/2018-ford-endura-trend-fwd-turbo-diesel-automatic-8-speed-wagon,Please refer to the photos or arrange inspection to view the condition of this vehicle.
+2014,FORD,Ranger,XLT 4X4 PX Dual Cab,Cab Chassis,Automatic,Diesel,257013,5,MNAUMFF50EW319048,No plates,"Sold Unregistered, Without Plates",5,3.2,Gold,Multi,Yes,No,Yes,Yes,Yes,SA,https://www.grays.com/lot/0001-60049949/motor-vehicles-motor-cycles/2014-ford-ranger-xlt-4x4-px-turbo-diesel-automatic-dual-cab,Transmission Requires attention Strongly recommend inspection by qualified third party
+2013,HOLDEN,Colorado,4X4 LT RG Dual Cab,Cab Chassis,Automatic,Diesel,259399,5,MMU148FK0EH610947,No plates,"Sold Unregistered, Without Plates",4,2.8,Blue,Multi,Yes,No,No,No,Yes,SA,https://www.grays.com/lot/0001-60049950/motor-vehicles-motor-cycles/2013-holden-colorado-4x4-lt-rg-turbo-diesel-automatic-dual-cab,Please refer to the photos or arrange inspection to view the condition of this vehicle.
+2013,LAND,Rover,Discovery 3.0 TDV6 Series 4,Wagon,Automatic,Diesel,245622,7,SALLAAAN5EA700434,No plates,"Sold Unregistered, Without Plates",6,3,White,Black Leather,Yes,No,Yes,No,Yes,SA,https://www.grays.com/lot/0001-60049951/motor-vehicles-motor-cycles/2013-land-rover-discovery-3-0-tdv6-series-4-turbo-diesel-auto-wagon,Please refer to the photos or arrange inspection to view the condition of this vehicle.
+2012,JEEP,Grand,Cherokee OVERLAND WK,Wagon,Automatic,Diesel,177703,5,1C4RJFGM3DC552239,No plates,"Sold Unregistered, Without Plates",6,3,Red,Black Leather,Yes,Yes,Yes,Yes,Yes,SA,https://www.grays.com/lot/0001-60049953/motor-vehicles-motor-cycles/2012-jeep-grand-cherokee-overland-wk-turbo-diesel-automatic-wagon,Please refer to the photos or arrange inspection to view the condition of this vehicle.
+2013,HOLDEN,Cruze,CD JH,Hatchback,Automatic,Diesel,142470,5,6G1PD6EY5DL822989,No plates,"Sold Unregistered, Without Plates",4,2,White,Multi,Yes,No,Yes,Yes,Yes,SA,https://www.grays.com/lot/0001-60049964/motor-vehicles-motor-cycles/2013-holden-cruze-cd-jh-turbo-diesel-automatic-hatchback,Please refer to the photos or arrange inspection to view the condition of this vehicle.
+2017,MITSUBISHI,Outlander,LS AWD SAFETY PACK ZK T D,Wagon,Automatic,Diesel,151329,7,JMFXLGF6WJZ000310,No plates,"Sold Unregistered, Without Plates",4,2.3,White,Multi,Yes,Yes,Yes,Yes,Yes,SA,https://www.grays.com/lot/0001-60049966/motor-vehicles-motor-cycles/2017-mitsubishi-outlander-ls-awd-safety-pack-zk-t-d-auto-wagon,Please refer to the photos or arrange inspection to view the condition of this vehicle.
+2011,HOLDEN,Commodore,Calais V2 VE,Wagon,Automatic,Petrol,184298,5,6G1EX8EV4BL530618,1IST762,08-04-2026 - Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy,6,3.6,Champagne,Black Leather,Yes,No,Yes,Partial,Yes,WA,https://www.grays.com/lot/0001-9066158/motor-vehicles-motor-cycles/2011-holden-commodore-calais-v2-ve-automatic-wagon,"Paint fading (minor) roof and bonnet
+Front Seat worn Driver
+Door card Damaged.
+Damaged Driver taillight
+Dents or marks on body consistent with age and kilometres."
+2008,HONDA,Accord,,Sedan,Automatic,Petrol,273591,5,MRHCP26308P032780,1CXX775,22-01-2026 - Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy,4,2.4,Black,Charcoal,Yes,Yes,No,No,Yes,WA,https://www.grays.com/lot/0001-9066262/motor-vehicles-motor-cycles/2008-honda-accord-automatic-sedan,"Engine light ON
 ABS light ON
+Engine Smoke visible
+Paint fading various panels
+Medium Scuff on front bumper
+Large Dent on rear left quarter
+Other Warning light ON"
+2011,HYUNDAI,Ix35,ELITE AWD LM,Wagon,Automatic,Petrol,83947,5,KMHJU81CSBU319278,1DRD368,10-04-2026 - Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy,4,2.4,Red,Black Partial Leather,Yes,No,No,Partial,Yes,WA,https://www.grays.com/lot/0001-9066263/motor-vehicles-motor-cycles/2011-hyundai-ix35-elite-awd-lm-automatic-wagon,"Dents or marks on body consistent with age and kilometres.
+Medium Dent on Rear right quarter panel
+Front Seat worn Drivers seat
+Paint peeling Various panels
+Engine light ON"
+2007,HYUNDAI,Getz,,Hatchback,Manual,Petrol,161791,5,KMHBT31DR8U177589,1GYO914,21-02-2026 - Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy,4,1.4,Black,Grey,Yes,No,No,No,Yes,WA,https://www.grays.com/lot/0001-9066265/motor-vehicles-motor-cycles/2007-hyundai-getz-manual-hatchback,Dents or marks on body consistent with age and kilometres.
+2007,VOLKSWAGEN,Eos,2.0 TDI 1F,Convertible,Manual,Diesel,249308,4,WVWZZZ1FZ8V032557,1CWA209,25-03-2026 - Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy,4,2,Champagne,Charcoal,Yes,Yes,Yes,Yes,Yes,WA,https://www.grays.com/lot/0001-9066266/motor-vehicles-motor-cycles/2007-volkswagen-eos-2-0-tdi-1f-turbo-diesel-manual-convertible,"Dents or marks on body consistent with age and kilometres.
+Door card Worn.
+Paint peeling Front right quarter panel"
+2002,KIA,Rio,BC,Hatchback,Manual,Petrol,242084,5,KNADC243226081862,1CVY528,16-03-2026 - Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy,4,1.5,White,Grey,Yes,No,Yes,Partial,Yes,WA,https://www.grays.com/lot/0001-9066267/motor-vehicles-motor-cycles/2002-kia-rio-bc-manual-hatchback,"Engine Oil Leak
+Large Dent on rear left quarter
+Medium Scuff on rear bumper
+Front Seat Stains driver
+Windscreen Chipped or Cracked."
+2008,TOYOTA,Corolla,,Sedan,Manual,Petrol,165946,5,JTNBU56E00J018968,1CXB458,26-02-2026 - Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy,4,1.8,Red,Grey,Yes,No,Yes,Yes,Yes,WA,https://www.grays.com/lot/0001-9066269/motor-vehicles-motor-cycles/2008-toyota-corolla-manual-sedan,"Medium Scuff on both bumpers
+Paint peeling various panels"
+2010,FORD,Falcon,FG,Ute,Automatic,Lpg,300397,2,6FPAAAJGCMAY94079,1DGO864,"12-01-2026 - Please note this vehicle license has expired, but can be paid until 12/04/2026. Vehicle license must be renewed online before this date and time of collection, otherwise this vehicle will be sold unregistered, without plates. - Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy",6,4,White,Charcoal,Yes,Yes,Yes,No,Yes,WA,https://www.grays.com/lot/0001-9066270/motor-vehicles-motor-cycles/2010-ford-falcon-fg-automatic-ute,"Dents or marks on body consistent with age and kilometres.
+Medium Dent on Various panels
+Medium Scratch on Various panels
+Hood Lining Sagging
+Door card Worn."
+2010,SUBARU,Forester,X S3,Wagon,Automatic,Petrol,258156,5,JF2SH9KL5AG046961,Unlicensed,"Sold Unregistered, Without Plates",4,2.5,Silver,Charcoal,Yes,Yes,Yes,Partial,Yes,WA,https://www.grays.com/lot/0001-9066271/motor-vehicles-motor-cycles/2010-subaru-forester-x-s3-automatic-wagon,"Dents or marks on body consistent with age and kilometres.
+Medium Dent on Various panels
+Medium Scuff on Rear right
+Carpet worn in places."
+2012,FORD,Focus,Trend LW II,Hatchback,Automatic,Petrol,186001,5,MPB1XXMXB1CE06581,1GIZ047,31-03-2026 - Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy,4,2,Grey,Black,Yes,Yes,No,No,Yes,WA,https://www.grays.com/lot/0001-9066272/motor-vehicles-motor-cycles/2012-ford-focus-trend-lw-ii-automatic-hatchback,"Dents or marks on body consistent with age and kilometres.
+Engine idling rough
+Engine light ON
+Medium Scuff on Driver Back Door"
+2011,MERCEDES,Benz,GL450 CDI Luxury X164 T D,Wagon,Automatic,Diesel,197081,7,WDC1648282A761533,Unlicensed,"Sold Unregistered, Without Plates",8,4,Grey,Black Leather,Yes,No,No,No,Yes,WA,https://www.grays.com/lot/0001-9066273/motor-vehicles-motor-cycles/2011-mercedes-benz-gl450-cdi-luxury-x164-t-d-auto-7-seats-wagon,"Dents or marks on body consistent with age and kilometres.
+Medium Scuff on rear bumper
+Engine light ON
+Other Warning light ON"
+2010,HOLDEN,Cruze,CDX JG,Sedan,Automatic,Petrol,154327,5,KL3JA695JAK690857,1ITY362,"06-01-2026, Please note this vehicle license has expired, but can be paid until 06/04/2026. Vehicle license must be renewed online before this date and time of collection, otherwise this vehicle will be sold unregistered, without plates. - Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy",4,1.8,White,Black Leather,Yes,Yes,Yes,Partial,Yes,WA,https://www.grays.com/lot/0001-9066275/motor-vehicles-motor-cycles/2010-holden-cruze-cdx-jg-automatic-sedan,"Dents or marks on body consistent with age and kilometres.
+Engine Smoke visible
+Engine noise observed.
+Door card Worn.
+Paint cracked front bumper
+Medium Scratch on front bumper"
+2015,FORD,Territory,Titanium SZ II T D Autom (WOVR-INSPECTED),Wagon,Automatic,Diesel,205939,7,6FPAAAJGATFD79889,1IQN799,17-03-2026 - Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy,6,2.7,Dark Grey,Tan Leather,Yes,Yes,Yes,Partial,Yes,WA,https://www.grays.com/lot/0001-9066292/motor-vehicles-motor-cycles/2015-ford-territory-titanium-sz-ii-t-d-autom-wagon-wovr-inspected,Dents or marks on body consistent with age and kilometres.
+2014,MITSUBISHI,Triton,4X2 GL MN,Cab Chassis,Manual,Petrol,125599,2,MMAENKA50FD017806,Unlicensed,"Sold Unregistered, Without Plates",4,2.4,White,Grey,Yes,No,Yes,Partial,Yes,WA,https://www.grays.com/lot/0001-9066293/motor-vehicles-motor-cycles/2014-mitsubishi-triton-4x2-gl-mn-manual-cab-chassis,"Dents or marks on body consistent with age and kilometres.
+Medium Dent on Front Quarters, Driver Door
+Front Bumper Cracked bumper.
+Door card Damaged.
+Carpet worn in places."
+2011,MAZDA,3,Neo BL,Hatchback,Automatic,Petrol,265380,5,JM0BL10F100216170,1DPL453,"06-01-2026, Please note this vehicle license has expired, but can be paid until 06/04/2026. Vehicle license must be renewed online before this date and time of collection, otherwise this vehicle will be sold unregistered, without plates. - Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy",4,2,Silver,Charcoal,Yes,Yes,Yes,Partial,Yes,WA,https://www.grays.com/lot/0001-9066294/motor-vehicles-motor-cycles/2011-mazda-3-neo-bl-automatic-hatchback,"Medium Dent on Various panels
+Medium Scratch on Various panels
+Engine light ON
+Large Dent on Boot
+Door Mirror Broken Passenger side
+Paint fading Various panels
+Seat Torn Drivers seat
+Back Seat Marks.
+Paint peeling rear panel
+Dents or marks on body consistent with age and kilometres."
+2008,TOYOTA,Rav,4 CV ACA33R,Wagon,Automatic,Petrol,357145,5,JTMBD33V905191605,1DLN127,13-03-2026 - Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy,4,2.4,Black,Black,Yes,Yes,No,No,Yes,WA,https://www.grays.com/lot/0001-9066295/motor-vehicles-motor-cycles/2008-toyota-rav-4-cv-aca33r-automatic-wagon,"Dents or marks on body consistent with age and kilometres.
+Medium Scuff on Front Bumper, Rear Bumper, Side Mirror
+Engine noise observed.
+Engine idling rough
+Medium Dent on Rear Bumper
+Front Bumper Disjointed Cracked bumper.
+Engine Smoke visible"
+2004,TOYOTA,Echo,NCP12R,Sedan,Automatic,Petrol,245204,5,JTDBT133100355108,1HLL647,17-01-2026 - Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy,4,1.5,Light Blue,Charcoal,Yes,Yes,Yes,Partial,Yes,WA,https://www.grays.com/lot/0001-9066296/motor-vehicles-motor-cycles/2004-toyota-echo-ncp12r-automatic-sedan,"Paint peeling various panels
+Paint cracked rear bumper
+Medium Dent on front bumper and hood."
+2007,KIA,Sportage,EX V6 LIMITED PACK KM,Wagon,Automatic,Petrol,182770,5,KNAJE553887511878,1DRP881,03-03-2026 - Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy,6,2.7,Silver,Black Leather,Yes,Yes,No,Partial,Yes,WA,https://www.grays.com/lot/0001-9066297/motor-vehicles-motor-cycles/2007-kia-sportage-ex-v6-limited-pack-km-automatic-wagon,"Dents or marks on body consistent with age and kilometres.
+Medium Scratch on Various panels
+Seat Torn Both front seats"
+2007,HONDA,Civic,,Sedan,Automatic,Petrol,269937,5,MRHFD16708P030774,MH98326,05-02-2026 - Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy,4,1.8,Silver,Grey,Yes,No,Yes,Partial,Yes,WA,https://www.grays.com/lot/0001-9066298/motor-vehicles-motor-cycles/2007-honda-civic-automatic-sedan,"Dents or marks on body consistent with age and kilometres.
+Engine noise observed.
+Medium Scratch on Various panels
+Paint peeling Right mirror
+Door card Worn.
+Paint fading Various panels
+Windscreen Chipped or Cracked."
+2014,VOLKSWAGEN,Tiguan,103TDi Pacific 5N,Wagon,Automatic,Diesel,310544,5,WVGZZZ5NZEW082153,1ISB530,12-02-2026 - Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy,4,2,Silver,Charcoal,Yes,Yes,Yes,Partial,Yes,WA,https://www.grays.com/lot/0001-9066300/motor-vehicles-motor-cycles/2014-volkswagen-tiguan-103tdi-pacific-5n-turbo-diesel-automatic-wagon,"Dents or marks on body consistent with age and kilometres.
+Engine light ON
+Front Seat Marks Both front seats"
+2016,MAHINDRA,Xuv500,,Wagon,Automatic,Diesel,141476,7,MA1YV2VMVG6C58505,Unlicensed,"Sold Unregistered, Without Plates",4,2.2,Red,Black Leather,Yes,Yes,No,No,Yes,WA,https://www.grays.com/lot/0001-9066301/motor-vehicles-motor-cycles/2016-mahindra-xuv500-automatic-7-seats-wagon,"Dents or marks on body consistent with age and kilometres.
+Paint peeling Visible on Front Bumper
+Door card Worn.
+Front Seat worn Driver, Passenger
+Back Seat worn.
+Medium Scratch on various panels
+Medium Dent on various panels
+Medium Scuff on Front bumper"
+2014,MITSUBISHI,Triton,4X4 GLX MN,Dual Cab,Automatic,Diesel,194318,5,MMAJRKB40FD015654,Unlicensed,"Sold Unregistered, Without Plates",4,2.5,White,Grey,Yes,Yes,No,Partial,Yes,WA,https://www.grays.com/lot/0001-9066302/motor-vehicles-motor-cycles/2014-mitsubishi-triton-4x4-glx-mn-turbo-diesel-automatic-dual-cab,"Seat Torn Driver
+Carpet worn in places.
+Dents or marks on body consistent with age and kilometres.
+Flat Battery. Jump start or towing required
+Medium Scratch on Passenger Doors
+Door Mirror Broken Passenger
+Front Bumper Cracked bumper.
+Engine light ON
+Corrosion visible Engine Bay, Tray"
+2000,AUDI,Tt,1.8 Quattro 8N,Coupe,Manual,Petrol,224962,4,TRUZZZ8NZY1068061,1ITO317,17-01-2026 - Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy,4,1.8,Silver,Black Leather,Yes,No,No,No,Yes,WA,https://www.grays.com/lot/0001-9066303/motor-vehicles-motor-cycles/2000-audi-tt-1-8-quattro-8n-manual-coupe,"Dents or marks on body consistent with age and kilometres.
+Hood Lining Sagging
+Paint fading Rear Panel
+Front Seat worn both"
+2020,KIA,Cerato,S BD,Hatchback,Automatic,Petrol,128028,5,KNAF251CMM5099747,1HLB611,31-03-2026 - Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy,4,2,White,Grey,Yes,Yes,Yes,Partial,Yes,WA,https://www.grays.com/lot/0001-9066304/motor-vehicles-motor-cycles/2020-kia-cerato-s-bd-automatic-hatchback,"Dents or marks on body consistent with age and kilometres.
+Engine Smoke visible
+Door Mirror Broken Passenger
+Other Warning light ON"
+2014,FORD,Ranger,XLT 4X4 PX,Dual Cab,Manual,Diesel,197861,5,MNAUMFF50EW300485,1HFK370,18-01-2026 - Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy,5,3.2,White,Charcoal,Yes,Yes,Yes,Unknown,Yes,WA,https://www.grays.com/lot/0001-9066305/motor-vehicles-motor-cycles/2014-ford-ranger-xlt-4x4-px-turbo-diesel-manual-dual-cab,"Dents or marks on body consistent with age and kilometres.
+Engine noise observed.
+Seat Torn drivers"
+2011,AUDI,Q5,3.0 TDI Quattro 8R,Wagon,Automatic,Diesel,199385,5,WAUZZZ8R4CA057639,1GGN297,28-12-2025 - Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy,6,3,Black,Black Leather,Yes,No,Yes,Partial,Yes,WA,https://www.grays.com/lot/0001-9066306/motor-vehicles-motor-cycles/2011-audi-q5-3-0-tdi-quattro-8r-turbo-diesel-automatic-wagon,"Transmision requires attention
+Vehicle has reverse malfunction
+Reverse Malfunction light on
+Dents or marks on body consistent with age and kilometres.
+Paint fading Spots on Vehicle, Rear Bumper
+Large Scratch on Various Panels Passenger Doors, Bonnet
+Medium Scuff on Passenger Rear Quarter Above Tire, Front Bumper
+Front Seat worn Driver
+Inspection highly recommended by qualified third party or by NAS (in our added services) prior to bidding"
+2018,HOLDEN,Commodore,Liftback RS ZB (WOVR-INSPECTED),Hatchback,Automatic,Petrol,51282,5,W0VZS6ED7J1093150,1IVB597,03-03-2026 - Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy,6,3.6,Silver,Charcoal,Yes,No,No,No,Yes,WA,https://www.grays.com/lot/0001-9066307/motor-vehicles-motor-cycles/2018-holden-commodore-liftback-rs-zb-auto-hatchback-wovr-inspected,"Dents or marks on body consistent with age and kilometres.
+Medium Dent on Front left quater panel
+Medium Scuff on Front left quater panel
+Paint fading on various panels"
+2014,HONDA,Civic,VTi-S 9TH GEN,Hatchback,Manual,Petrol,175447,5,SHHFK2740DU308262,1HAH885,"15-01-2026, Please note this vehicle license has expired, but can be paid until 15-04-2026. Vehicle license must be renewed online before this date and time of collection, otherwise this vehicle will be sold unregistered, without plates. - Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy",4,1.8,Red,Charcoal,Yes,Yes,Yes,Yes,Yes,WA,https://www.grays.com/lot/0001-9066308/motor-vehicles-motor-cycles/2014-honda-civic-vti-s-9th-gen-manual-hatchback,"Dents or marks on body consistent with age and kilometres.
+Engine light ON"
+2010,TOYOTA,Hilux,SR (4x4) KUN26R,Crew Cab Chassis,Manual,Diesel,226569,5,MR0FZ22G601174611,1EFV270,11-03-2026 - Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy,4,3,White,Grey,Yes,Yes,Yes,Partial,Yes,WA,https://www.grays.com/lot/0001-9066309/motor-vehicles-motor-cycles/2010-toyota-hilux-sr-4x4-kun26r-turbo-diesel-manual-crew-cab-chassis,"Dents or marks on body consistent with age and kilometres.
+Large Dent on Front right quater panel
+Seat Torn Drivers seat"
+2009,TOYOTA,Kluger,SUV,,Automatic,Petrol,267291,7,JTEDS41A902079405,Unlicensed,"Sold Unregistered, Without Plates",6,3.5,Red,Black Leather,Yes,No,Yes,Partial,Yes,WA,https://www.grays.com/lot/0001-9066312/motor-vehicles-motor-cycles/2009-toyota-kluger-automatic-7-seats-suv,"Dents or marks on body consistent with age and kilometres.
+Paint peeling Various panels
+Medium Scratch on Various panels
+Front Seat worn driver side"
+2016,TOYOTA,Hilux,4x4 SR GUN126R,Crew Cab Chassis,Automatic,Diesel,226257,5,MR0KA3CD701192485,1GBS170,08-02-2026 - Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy,4,2.8,White,Charcoal,Yes,Yes,Yes,Partial,Yes,WA,https://www.grays.com/lot/0001-9066313/motor-vehicles-motor-cycles/2016-toyota-hilux-4x4-sr-gun126r-turbo-diesel-automatic-crew-cab-chassis,"Dents or marks on body consistent with age and kilometres.
 Engine light ON
 Traction control light ON
 Other Warning light ON
-Dents or marks on body consistent with age and kilometres."
-2023,TOYOTA,Hilux,SR (4x4) GUN126R Dual Cab,Cab Chassis,Automatic,Electric,13362,5,MR0KA3CD701291615,1IMR024,19-12-2025 - Registration may require renewal to be paid by purchaser prior to release of vehicle. Vebcile will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy,0,0,Green,Charcoal,Yes,No,Yes,No,Yes,WA,https://www.grays.com/lot/0001-9065751/motor-vehicles-motor-cycles/2023-toyota-hilux-sr-4x4-gun126r-automatic-dual-cab,"This Vehicle was originally complied with a Diesel Engine and was re complied in 2024 as a `Second Stage Manufacture` Due to the engine being removed and the vehicle made fully electric. Along with this it appears that there may have been a GVM upgrade, but this is unclear to us.
-The vehicle was originally white from factory but appears to have been externally painted or wrapped Green. The WA Department of Transport Record has been amended to reflect the colour change
-Dents or marks on body consistent with age and kilometres.
+Seat Torn driver side
+Corrosion visible on tray"
+2012,VOLKSWAGEN,Polo,GTI 6R,Hatchback,Automatic,Petrol,162732,5,WVWZZZ6RZDY151068,1HTC023,20-03-2026 - Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy,4,1.4,Red,Charcoal,Yes,No,Yes,Partial,Yes,WA,https://www.grays.com/lot/0001-9066314/motor-vehicles-motor-cycles/2012-volkswagen-polo-gti-6r-automatic-hatchback,"Dents or marks on body consistent with age and kilometres.
+Paint peeling Various panels
+Other Warning light ON
+Hood Lining Sagging"
+1998,FORD,Explorer,,Wagon,Automatic,Diesel,198585,5,1FMZU34E8HZB03282,1IUW879,26/02/2026 - Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy,6,4,White,Grey,Yes,Yes,Yes,Partial,Yes,WA,https://www.grays.com/lot/0001-9066315/motor-vehicles-motor-cycles/1998-ford-explorer-automatic-wagon,"Dents or marks on body consistent with age and kilometres.
+Paint peeling on engine bay"
+2008,SUZUKI,Grand,Vitara 2.4 JT,Wagon,Automatic,Petrol,208600,4,JSAJTAA4V00101573,1GYP784,"22-12-2025, Please note this vehicle license has expired but can be paid until 22/03/2026. Vehicle license must be renewed online before this date and time of collection; otherwise, this vehicle will be sold unregistered, without plates. - Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy",4,2.4,Red,Grey,Yes,Yes,Yes,Partial,Yes,WA,https://www.grays.com/lot/0001-9066316/motor-vehicles-motor-cycles/2008-suzuki-grand-vitara-2-4-jt-automatic-wagon,"Dents or marks on body consistent with age and kilometres.
+Door card Worn.
+Engine overheating, tow advisable.
 Traction control light ON
-Some interior trims damaged, missing or incomplete.
-Any missing items do not form part of sale.
-Red Dirt throughout.
-Holes in dash,
-Exterior may be incomplete and some areas may have minor damage.
-Any missing parts or panels do not form part of sale"
-2009,FORD,Fiesta,Zetec WS,Hatchback,Manual,Petrol,180184,5,WF0JXXGAJJ9P31790,1DDA114,15-01-2026 - Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy,4,1.6,Black,Grey,Yes,No,Yes,Partial,Yes,WA,https://www.grays.com/lot/0001-9066364/motor-vehicles-motor-cycles/2009-ford-fiesta-zetec-ws-manual-hatchback,"Dents or marks on body consistent with age and kilometres.
-Front Seat worn Driver Passenger
-Engine light ON
+Front Seat worn driver side
+Door Mirror Broken driver side
+Paint peeling on various panels
+Medium Scratch on various panels
+Medium Dent on various panels"
+2004,BMW,5,Series 525i E60,Sedan,Automatic,Petrol,259634,5,WBANA520X0B573356,1CCT856,07-03-2026 - Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy,6,2.5,Grey,Black Leather,Yes,Yes,Yes,Partial,Yes,WA,https://www.grays.com/lot/0001-9066317/motor-vehicles-motor-cycles/2004-bmw-5-series-525i-e60-automatic-sedan,"Dents or marks on body consistent with age and kilometres.
+Hood Lining Sagging
 Paint peeling Various Panels
-Paint cracked front bumper
+Front Seat worn Driver, Passenger
+Seat Torn Driver Cracked
+Door card Damaged.
+Other Warning light ON
+Paint peeling Various panels
+Airbag light ON
+Paint fading on various panels
+Medium Scratch on various panels
+Medium Dent on various panels
+Damaged Cracked LHF Headlight"
+2011,TOYOTA,Aurion,AT-X GSV40R,Sedan,Automatic,Petrol,201929,5,6T153KK400X352256,WA22540,27-02-2026 - Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy,6,3.5,White,Grey,Yes,Yes,Yes,Partial,Yes,WA,https://www.grays.com/lot/0001-9066318/motor-vehicles-motor-cycles/2011-toyota-aurion-at-x-gsv40r-automatic-sedan,"Dents or marks on body consistent with age and kilometres.
+Medium Scuff on Front Bumper, Driver Side Rear Quarter
+Seat Torn driver side
+Paint peeling on various panels
 Medium Scratch on various panels"
-2023,TOYOTA,Hilux,8 Gen RWD,Ute,Manual,Diesel,16111,2,MR0CB3DBX05665030,No plates,"Sold Unregistered, Without Plates",4,,Silver,Black,Yes,Yes,Yes,Yes,Yes,NT,https://www.grays.com/lot/0002-60049881/motor-vehicles-motor-cycles/2023-toyota-hilux-8-gen-rwd-manual-6-speed-ute,"Comment: ABS Brakes, Multi Function Steering Wheel, Tow Bar,
-Interior Damage: Front Toyota Badge Missing"
-2018,TOYOTA,Landcruiser,Prado GX 4 x 4,Wagon,Automatic,Diesel,113227,5,JTEBR3FJ20K102190,No plates,"Sold Unregistered, Without Plates",4,,White,Black,Yes,No,No,Unknown,Yes,QLD,https://www.grays.com/lot/0002-7061089/motor-vehicles-motor-cycles/2018-toyota-landcruiser-prado-gx-automatic-4-x-4-wagon,"Interior Damage: Poor
-Exterior Damage: Poor
-Engine & Mechanical: Wear & tear, Jump Start Required, Unknown Battery Condition, Corrosion evident. Vehicles previously from a mine site, therefore, may require extra parts not listed in descriptions, or batteries/jump pack to start on collection. Inspection is highly recommended."
-2018,TOYOTA,Hilux,8 Gen RWD,,Manual,Diesel,78345,5,MR0JA3DDX00344968,No plates,"Sold Unregistered, Without Plates",4,2.8,White,Black,Yes,Yes,Yes,Yes,Yes,NT,https://www.grays.com/lot/0003-60049881/motor-vehicles-motor-cycles/2018-toyota-hilux-8gen-rwd-manual-6-speed,"Air Conditioning
-ABS Brakes
-Multi Function Steering Wheel,
-Tow Bar,
-Tray Length Storage Drawers
-Bluetooth Capability
-Drivers Airbag
-Electric Windows
-Park Assist
-Power Steering
-Reverse Camera
-Location: NT - 38 Toupein Road, Yarrawonga"
-2011,HYUNDAI,Santa,Fe AWD SUV,Wagon,Automatic,Diesel,186166,7,KMHSH81XSBU771689,No plates,"Sold Unregistered, Without Plates",4,,White,Black,Yes,No,Yes,Unknown,Yes,QLD,https://www.grays.com/lot/0003-7061089/motor-vehicles-motor-cycles/2011-hyundai-santa-fe-awd-automatic-suv-wagon,"Interior: Poor
-Exterior: Poor
-Engine & Mechanical: Wear & tear, corrosion evident. Vehicles previously from a mine site, therefore, may require extra parts not listed in descriptions, or batteries/jump pack to start on collection. Inspection is highly recommended."
-2015,TOYOTA,Hilux,8 Gen,Ute,Manual,Diesel,143132,2,MR0JA3CBX00060403,No plates,"Sold Unregistered, Without Plates",4,2.8,Blue,Black,Yes,Yes,Yes,Yes,Yes,NT,https://www.grays.com/lot/0004-60049881/motor-vehicles-motor-cycles/2015-toyota-hilux-8-gen-manual-ute,"Comment: ABS Brakes, Multi Function Steering Wheel, Tow Bar"
-2024,TOYOTA,Hilux,8 Gen RWD Ute,Dual Cab,Automatic,Petrol,20637,5,MR0CX3CD400107126,No plates,"Sold Unregistered, Without Plates",4,2.7,White,Black,Yes,Yes,Yes,Yes,Yes,NT,https://www.grays.com/lot/0005-60049881/motor-vehicles-motor-cycles/2024-toyota-hilux-8-gen-rwd-automatic-dual-cab-ute,"Comment: ABS Brakes, Tow Bar"
-2018,TOYOTA,Landcruiser,4 x 4 V8 Ute,Cab Chassis,Manual,Diesel,201050,2,JTELV71J107403177,No plates,"Sold Unregistered, Without Plates",No_of_Cylinders_UNDEFINED,,White,Grey,Yes,No,No,Unknown,Yes,QLD,https://www.grays.com/lot/0008-7061089/motor-vehicles-motor-cycles/2018-toyota-landcruiser-4-x-4-manual-v8-turbo-diesel-ute,"Interior: Poor
-Exterior: Poor
-Engine & Mechanical: Wear & tear, corrosion evident, engine noise evident. Vehicles previously from a mine site, therefore, may require extra parts not listed in descriptions, or batteries/jump pack to start on collection. Inspection is highly recommended."
-2008,TOYOTA,Landcruiser,4 x 4 V8,Wagon,Automatic,Diesel,207385,8,JTMHV09J004025926,No plates,"Sold Unregistered, Without Plates",8,,White,Black,Yes,Yes,Yes,Unknown,Yes,QLD,https://www.grays.com/lot/0009-7061089/motor-vehicles-motor-cycles/2008-toyota-landcruiser-4-x-4-automatic-v8-turbo-diesel-wagon,"Interior: Poor
-Exterior: Poor
-Engine & Mechanical: Wear & tear, corrosion evident. Vehicles previously from a mine site, therefore, may require extra parts not listed in descriptions, or batteries/jump pack to start on collection. Inspection is highly recommended."
-2019,TOYOTA,Hilux,4 x 4 Dual Cab Ute,Cab Chassis,Automatic,Diesel,32768,5,MR0KA3CD801231455,No plates,"Sold Unregistered, Without Plates",4,,White,Black,Yes,No,No,Unknown,Yes,QLD,https://www.grays.com/lot/0013-7061089/motor-vehicles-motor-cycles/2019-toyota-hilux-4-x-4-turbo-diesel-automatic-dual-cab-ute,"Interior: Poor
-Exterior: Poor
-Engine & Mechanical: Wear & tear, corrosion evident, No Tray or Tub. Vehicles previously from a mine site, therefore, may require extra parts not listed in descriptions, or batteries/jump pack to start on collection. Inspection is highly recommended."
-2018,TOYOTA,Hilux,4 x 4 Ute,Dual Cab,Automatic,Diesel,60947,5,MR0KA3CD501224981,No plates,"Sold Unregistered, Without Plates",4,,White,Black,Yes,No,No,Unknown,Yes,QLD,https://www.grays.com/lot/0014-7061089/motor-vehicles-motor-cycles/2018-toyota-hilux-4-x-4-turbo-diesel-automatic-dual-cab-ute,"Interior: Poor
-Exterior: Poor
-Engine & Mechanical: Wear & tear, corrosion evident. Vehicles previously from a mine site, therefore, may require extra parts not listed in descriptions, or batteries/jump pack to start on collection. Inspection is highly recommended."
-2019,TOYOTA,Hilux,4 x 4 Dual Cab Ute,Cab Chassis,Automatic,Diesel,71469,5,MR0KA3CD201231452,No plates,"Sold Unregistered, Without Plates",4,,White,Black,Yes,No,No,Unknown,Yes,QLD,https://www.grays.com/lot/0015-7061089/motor-vehicles-motor-cycles/2019-toyota-hilux-4-x-4-turbo-diesel-automatic-dual-cab-ute,"Interior: Poor
-Exterior: Poor
-Engine & Mechanical: Wear & tear, corrosion evident, taillight missing/broken. Vehicles previously from a mine site, therefore, may require extra parts not listed in descriptions, or batteries/jump pack to start on collection. Inspection is highly recommended."
-2018,TOYOTA,Hilux,4 x 4 Dual Cab Ute,Cab Chassis,Automatic,Diesel,88208,5,MR0KA3CD001224936,No plates,"Sold Unregistered, Without Plates",4,,White,Black,Yes,No,No,Unknown,Yes,QLD,https://www.grays.com/lot/0016-7061089/motor-vehicles-motor-cycles/2018-toyota-hilux-4-x-4-turbo-diesel-automatic-dual-cab-ute,"Interior: Poor
-Exterior: Poor
-Engine & Mechanical: Wear & tear, corrosion evident, RHF impact damage. Vehicles previously from a mine site, therefore, may require extra parts not listed in descriptions, or batteries/jump pack to start on collection. Inspection is highly recommended."
-2018,TOYOTA,Landcruiser,4 x 4 V8 Dual Cab Ute,Cab Chassis,Manual,Diesel,115515,5,JTEBV71J707021781,No plates,"Sold Unregistered, Without Plates",8,,White,Grey,Yes,Yes,No,Unknown,Yes,QLD,https://www.grays.com/lot/0017-7061089/motor-vehicles-motor-cycles/2018-toyota-landcruiser-4-x-4-manual-v8-turbo-diesel-dual-cab-ute,"Interior: Poor
-Exterior: Poor
-Engine & Mechanical: Wear & tear, corrosion evident, engine noise evident. Vehicles previously from a mine site, therefore, may require extra parts not listed in descriptions, or batteries/jump pack to start on collection. Inspection is highly recommended."
-2010,TOYOTA,Landcruiser,4 x 4 V8,Wagon,Manual,Diesel,161255,5,JTEEV73J000005361,No plates,"Sold Unregistered, Without Plates",8,,White,Grey,Yes,No,No,Unknown,Yes,QLD,https://www.grays.com/lot/0018-7061089/motor-vehicles-motor-cycles/2010-toyota-landcruiser-4-x-4-manual-v8-turbo-diesel-wagon,"Interior: Poor
-Exterior: Poor
-Engine & Mechanical: Wear & tear, corrosion evident/rust holes, engine light on, engine noise evident. Vehicles previously from a mine site, therefore, may require extra parts not listed in descriptions, or batteries/jump pack to start on collection. Inspection is highly recommended."
-2011,TOYOTA,Landcruiser,Prado 4 x 4,Wagon,Manual,Diesel,148074,5,JTEBH3FJ00K060024,No plates,"Sold Unregistered, Without Plates",4,,White,Grey,Yes,No,No,Unknown,Yes,QLD,https://www.grays.com/lot/0019-7061089/motor-vehicles-motor-cycles/2011-toyota-landcruiser-prado-4-x-4-turbo-diesel-manual-wagon,"Interior: Poor
-Exterior: Poor
-Engine & Mechanical: Wear & tear, corrosion evident, engine noise evident, engine running rough. Vehicles previously from a mine site, therefore, may require extra parts not listed in descriptions, or batteries/jump pack to start on collection. Inspection is highly recommended."
-2018,TOYOTA,Landcruiser,4 x 4 V8 Dual Cab Ute,Wagon,Manual,Diesel,195875,5,JTEBV71J007021850,No plates,"Sold Unregistered, Without Plates",No_of_Cylinders_UNDEFINED,,White,Grey,Yes,Yes,No,Unknown,Yes,QLD,https://www.grays.com/lot/0020-7061089/motor-vehicles-motor-cycles/2018-toyota-landcruiser-4-x-4-manual-v8-turbo-diesel-dual-cab-ute,"Interior: Poor
-Exterior: Poor
-Engine & Mechanical: Wear & tear, corrosion evident, engine noise evident, engine running rough, ABS light on, brakes require attention, caution out of service tag evident. Vehicles previously from a mine site, therefore, may require extra parts not listed in descriptions, or batteries/jump pack to start on collection. Inspection is highly recommended."
-2010,TOYOTA,Landcruiser,Prado GX 4 x 4,Wagon,Manual,Diesel,229010,5,JTEBH3FJ00K032661,No plates,"Sold Unregistered, Without Plates",4,,White,Grey,Yes,No,No,Unknown,Yes,QLD,https://www.grays.com/lot/0021-7061089/motor-vehicles-motor-cycles/2010-toyota-landcruiser-prado-gx-4-x-4-manual-turbo-diesel-wagon,"Interior: Poor
-Exterior: Poor
-Engine & Mechanical: Wear & tear, corrosion evident, engine noise evident, engine running rough, rough idle. Vehicles previously from a mine site, therefore, may require extra parts not listed in descriptions, or batteries/jump pack to start on collection. Inspection is highly recommended."
+2008,BMW,525i,E60,Sedan,Automatic,Petrol,196457,5,WBANU52040CZ89131,1IUN506,25-01-2026 - Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy,6,3,Grey,Black Leather,Yes,No,Yes,Partial,Yes,WA,https://www.grays.com/lot/0001-9066319/motor-vehicles-motor-cycles/2008-bmw-525i-e60-automatic-sedan,"Dents or marks on body consistent with age and kilometres.
+Other Warning light ON
+Engine light ON"
+2010,TOYOTA,Landcruiser,GXL VDJ200R,Wagon,Automatic,Diesel,303945,5,JTMHV09J205018521,1ITP017,21-03-2026 - Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy,8,4.5,White,Black,Yes,Yes,Yes,Partial,Yes,WA,https://www.grays.com/lot/0001-9066323/motor-vehicles-motor-cycles/2010-toyota-landcruiser-gxl-vdj200r-turbo-diesel-automatic-wagon,"Dents or marks on body consistent with age and kilometres.
+Door Mirror Broken Driver Mirror"
+2005,HOLDEN,Commodore,Equipe VZ,Sedan,Automatic,Petrol,213000,5,6G1ZK54B85L438079,1GXS003,10-02-2026 - Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy,6,3.6,Green,Black,Yes,No,Yes,Partial,Yes,WA,https://www.grays.com/lot/0001-9066324/motor-vehicles-motor-cycles/2005-holden-commodore-equipe-vz-automatic-sedan,"Dents or marks on body consistent with age and kilometres.
+Hood Lining Sagging
+Seat Torn Driver
+Front Seat worn Driver Passenger
+Steering requires attention.
+Paint fading Various Panels
+Medium Scratch on various panels"
+2012,NISSAN,Murano,TI Z51,Wagon,CVT,Petrol,114233,5,JN1TANZ51A0018251,1EPS529,14-04-2026 - Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy,6,3.5,Black,Black Leather,Yes,Yes,Yes,Partial,Yes,WA,https://www.grays.com/lot/0001-9066325/motor-vehicles-motor-cycles/2012-nissan-murano-ti-z51-cvt-wagon,Dents or marks on body consistent with age and kilometres.
+2012,TOYOTA,Prius-v,ZVW40R,Wagon,CVT,Hybrid,729967,7,JTDZS3EU703017388,1DZE228,25-01-2026 - Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy,4,1.8,White,Grey,Yes,Yes,No,Partial,Yes,WA,https://www.grays.com/lot/0001-9066326/motor-vehicles-motor-cycles/2012-toyota-prius-v-zvw40r-cvt-7-seats-wagon,"Dents or marks on body consistent with age and kilometres.
+Engine light ON"
+2010,VOLVO,S40,T5 R DESIGN,Sedan,Automatic,Petrol,166061,5,YV1MS6759B2537011,1IUL152,27-01-2026 - Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy,5,2.5,Silver,Multi,Yes,Yes,Yes,Partial,Yes,WA,https://www.grays.com/lot/0001-9066327/motor-vehicles-motor-cycles/2010-volvo-s40-t5-r-design-automatic-sedan,"Front Seat worn Driver, Passenger
+Back Seat worn.
+Front Bumper Hanging Off Cracked bumper.
+Dents or marks on body consistent with age and kilometres.
+Paint peeling on various panels
+Medium Scratch on various panels"
+2012,MAZDA,Cx-5,Grand Touring KE,Wagon,Automatic,Diesel,182207,5,JM0KE102100108644,1DXL714,28-02-2026 - Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy,4,2.2,Black,Cream Leather,Yes,Yes,Yes,Partial,Yes,WA,https://www.grays.com/lot/0001-9066329/motor-vehicles-motor-cycles/2012-mazda-cx-5-grand-touring-ke-turbo-diesel-automatic-wagon,"Dents or marks on body consistent with age and kilometres.
+Seat Torn Driver, Passenger leather Cracked
+Back Seat worn."
+2008,FORD,Ranger,XL 4x2 Single PJ,Cab Chassis,Manual,Diesel,214483,2,MNALSAE108W746584,1EZE776,06-03-2026 - Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,WA,https://www.grays.com/lot/0001-9066330/motor-vehicles-motor-cycles/2008-ford-ranger-xl-4x2-single-pj-turbo-diesel-manual-cab-chassis,"Dents or marks on body consistent with age and kilometres.
+Windscreen Chipped or Cracked.
+Door Mirror Broken Passenger
+Front Bumper Disjointed Cracked bumper.
+Corrosion visible Underchasis
+Damaged Drivers Headlight
+Controls Missing AC Temperature Knob
+Steering requires attention."
+2006,AUDI,A4,2.0 TFSI Quattro B7,Sedan,Automatic,Petrol,251506,5,WAUZZZ8E77A044791,1DBK318,06-04-2026 - Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy,4,2,Red,Black Leather,Yes,No,Yes,Partial,Yes,WA,https://www.grays.com/lot/0001-9066331/motor-vehicles-motor-cycles/2006-audi-a4-2-0-tfsi-quattro-b7-automatic-sedan,"Dents or marks on body consistent with age and kilometres.
+Front bumper damaged Cracked bumper.
+Seat Torn Drivers seat
+Engine noise observed.
+Damaged Rear right tail light
+Paint peeling on various panels
+Door card Worn."
+2006,NISSAN,Tiida,ST C11,Sedan,Manual,Petrol,163857,5,JN1BBAC11A0104881,1GPT076,12-02-2026 - Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy,4,1.8,White,Charcoal,Yes,Yes,No,Partial,Yes,WA,https://www.grays.com/lot/0001-9066332/motor-vehicles-motor-cycles/2006-nissan-tiida-st-c11-manual-sedan,"Dents or marks on body consistent with age and kilometres.
+Medium Dent on Various panels
+Windscreen Chipped or Cracked.
+Engine light ON
+Front Seat Stains driver side
+Large Dent on Drivers door side"
+2013,HOLDEN,Captiva,5 LT AWD CG II,Wagon,Automatic,Diesel,218227,5,KL3DD266JDB101641,1HJU655,05-03-2026 - Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy,4,2.2,Brown,Black Leather,Yes,Yes,Yes,Partial,Yes,WA,https://www.grays.com/lot/0001-9066333/motor-vehicles-motor-cycles/2013-holden-captiva-5-lt-awd-cg-ii-turbo-diesel-automatic-wagon,"Engine light ON
+Windscreen Chipped or Cracked.
+Front Seat worn driver side
+Dents or marks on body consistent with age and kilometres."
+2012,DODGE,Journey,R T,People Mover,Automatic,Petrol,195161,7,3C4PDCKG7DT539237,1EDH154,06-02-2026 - Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy,6,3.6,Dark Grey,Black,Yes,No,No,No,Yes,WA,https://www.grays.com/lot/0001-9066335/motor-vehicles-motor-cycles/2012-dodge-journey-r-t-automatic-7-seats-people-mover,"Dents or marks on body consistent with age and kilometres.
+Damaged Driver Indicator
+Medium Scratch on Driver Rear Quarter
+Door Mirror Broken Passenger Side Mirror Exterior Panel Cover
+Front Seat worn Driver
+Engine light ON
+Other Warning light ON
+Engine noise observed."
+2014,MITSUBISHI,Triton,4X4 GLX MN,Dual Cab,Automatic,Diesel,285859,5,MMAJRKB40FD001211,Unlicensed,"Sold Unregistered, Without Plates",4,2.5,White,Grey,Yes,No,Yes,Partial,Yes,WA,https://www.grays.com/lot/0001-9066336/motor-vehicles-motor-cycles/2014-mitsubishi-triton-4x4-glx-mn-turbo-diesel-automatic-dual-cab,"Back Seat Stains.
+Dents or marks on body consistent with age and kilometres.
+Door card Worn.
+Engine Smoke visible
+Seat Torn Driver, Passenger
+Front Seat Stains drivers seat
+Corrosion visible small section above the windscreen"
+2008,MITSUBISHI,Outlander,LS ZG,Wagon,CVT,Petrol,248805,5,JMFXTCW5W8Z005238,1CXK126,21-06-2026 - Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy,4,2.4,Silver,Grey,Yes,Yes,Yes,Partial,Yes,WA,https://www.grays.com/lot/0001-9066337/motor-vehicles-motor-cycles/2008-mitsubishi-outlander-ls-zg-cvt-wagon,"Dents or marks on body consistent with age and kilometres.
+Engine idling rough
+Engine Smoke visible
+Front Bumper Cracked bumper.
+Paint peeling Various Panels, Roof
+Front Seat worn Driver, Passenger
+Medium Scratch on Driver Front Quarter
+Engine noise observed.
+Back Seat Marks.
+Medium Dent on various panels"
+2012,HYUNDAI,Veloster,SR TURBO FS,Coupe,Manual,Petrol,155557,4,KMHTC61ELDU091341,1GXK269,05-03-2026 - Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy,4,1.6,Grey,Black Leather,Yes,No,Yes,Partial,Yes,WA,https://www.grays.com/lot/0001-9066338/motor-vehicles-motor-cycles/2012-hyundai-veloster-sr-turbo-fs-manual-coupe,Dents or marks on body consistent with age and kilometres.
+2000,NISSAN,Pulsar,LX N16,Sedan,Automatic,Petrol,272339,5,JN1CFAN16A0007093,Unlicensed,"Sold Unregistered, Without Plates",4,1.6,White,Grey,Yes,No,Yes,Partial,Yes,WA,https://www.grays.com/lot/0001-9066339/motor-vehicles-motor-cycles/2000-nissan-pulsar-lx-n16-automatic-sedan,"Medium Dent on Front right fender
+Medium Scratch on various panels
+Dents or marks on body consistent with age and kilometres.
+Paint fading on various panels"
+2010,BMW,3,Series 323i E90,Sedan,Automatic,Petrol,151239,5,WBAPG76050NM63696,1EMP036,"02-01-2026 - Please note this vehicle license has expired, but can be paid until 02/04/2026. Vehicle license must be renewed online before this date and time of collection, otherwise this vehicle will be sold unregistered, without plates. - Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy",6,2.5,Black,Cream Leather,Yes,Yes,Yes,Partial,Yes,WA,https://www.grays.com/lot/0001-9066341/motor-vehicles-motor-cycles/2010-bmw-3-series-323i-e90-automatic-sedan,"Dents or marks on body consistent with age and kilometres.
+Door card Worn.
+Back Seat Marks.
+Airbag light ON
+Front Seat worn drivers seat
+Head Gasket Requires Attention
+Vehicle Over Heating
+Inspection highly recommended, Tilt Tray Required For Collection
+Paint fading various panels
+Medium Scratch on rear panel"
+2010,HOLDEN,Commodore,Omega VE II,Sedan,Automatic,Petrol,305462,5,6G1EK5E72BL517686,1DNO605,"30-12-2025, Please note this vehicle license has expired, but can be paid until 30-03-2026. Vehicle license must be renewed online before this date and time of collection, otherwise this vehicle will be sold unregistered, without plates. Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy",6,3.6,Silver,Grey,Yes,No,Yes,Partial,Yes,WA,https://www.grays.com/lot/0001-9066342/motor-vehicles-motor-cycles/2010-holden-commodore-omega-ve-ii-automatic-sedan,"Engine light ON
+ABS light ON
+Paint peeling Bonnet and fenders
+Dents or marks on body consistent with age and kilometres."
+2009,HOLDEN,Epica,CDX EP,Sedan,Automatic,Diesel,184632,5,KL3LA69RJAB000508,Unlicensed,"Sold Unregistered, Without Plates",4,2,White,Black,Yes,Yes,Yes,Partial,Yes,WA,https://www.grays.com/lot/0001-9066345/motor-vehicles-motor-cycles/2009-holden-epica-cdx-ep-turbo-diesel-automatic-sedan,"Front Seat Marks Both Seats
+Back Seat Marks.
+Airbag light ON
+Medium Scuff on various panels
+Dents or marks on body consistent with age and kilometres.
+Paint cracked on various panels"
+2007,MITSUBISHI,380,SX DB III,Sedan,Automatic,Petrol,244193,5,6MMDB4S417T029886,1HDZ967,01-02-2026 - Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy,6,3.8,Silver,Charcoal,Yes,No,Yes,No,Yes,WA,https://www.grays.com/lot/0001-9066346/motor-vehicles-motor-cycles/2007-mitsubishi-380-sx-db-iii-automatic-sedan,"Medium Dent on Various panels
+Medium Scratch on Various panels
+Engine Smoke visible
+Engine Oil Leak
+Medium Scuff on Across both left doors
+Paint peeling on various panels
+Seat Torn driver side
+Large Dent on LHR bumper
+Damaged RHR Tail light"
+2009,BMW,X5,3.0si E70,Wagon,Automatic,Petrol,220385,7,WBAFE42070LK96520,1IVI624,25-03-2026 - Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy,6,3,Silver,Black Leather,Yes,No,Yes,Partial,Yes,WA,https://www.grays.com/lot/0001-9066347/motor-vehicles-motor-cycles/2009-bmw-x5-3-0si-e70-automatic-7-seats-wagon,"Dents or marks on body consistent with age and kilometres.
+Engine light ON
+Other Warning light ON
+Paint fading Various Panels
+Back Seat worn.
+Front Seat worn Driver, Passenger
+Seats Removed"
+2013,LAND,Rover,Range Rover Evoque SD4 Pure,Wagon,Automatic,Diesel,104536,5,SALVA2AE8DH776918,Unlicensed,"Sold Unregistered, Without Plates",4,2.2,Black,Black Leather,Yes,Yes,No,No,Yes,WA,https://www.grays.com/lot/0001-9066354/motor-vehicles-motor-cycles/2013-land-rover-range-rover-evoque-sd4-pure-turbo-diesel-automatic-wagon,"Seat Torn Driver
+Door Mirror Broken Driver
+Dents or marks on body consistent with age and kilometres.
+Medium Scratch on various panels"
+2002,SUBARU,Forester,2.5X (WOVR-INSPECTED),Wagon,Manual,Petrol,368860,5,JF2SG9KK33G011359,1BHY766,09-02-2026 - Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy,4,2.5,White,Grey,Yes,No,Yes,Partial,Yes,WA,https://www.grays.com/lot/0001-9066358/motor-vehicles-motor-cycles/2002-subaru-forester-2-5x-manual-wagon-wovr-inspected,"Dents or marks on body consistent with age and kilometres.
+Medium Dent on Various panels
+Paint fading Various panels
+Paint cracked hood
+Front and back Cracked bumper.
+Door card Worn."
+2013,FORD,Ranger,XL 4X4 PX,Dual Cab,Automatic,Diesel,107787,5,MNAUMFF50DW225123,1EKD357,30-01-2026 - Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy,5,3.2,Green,Charcoal,Yes,No,No,Partial,Yes,WA,https://www.grays.com/lot/0001-9066359/motor-vehicles-motor-cycles/2013-ford-ranger-xl-4x4-px-turbo-diesel-automatic-dual-cab,"Dents or marks on body consistent with age and kilometres.
+Paint fading Various panels
+Other Warning light ON
+Medium Scratch on various panels"
+2001,TOYOTA,Landcruiser,Prado GXL V6 VZJ95R,Wagon,Automatic,Petrol,538040,8,JTEBN99J000085301,1CRB890,01-05-2026 - Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy,6,3.4,Green,Grey,Yes,Yes,Yes,Yes,Yes,WA,https://www.grays.com/lot/0001-9066360/motor-vehicles-motor-cycles/2001-toyota-landcruiser-prado-gxl-v6-vzj95r-automatic-8-seats-wagon,"Dents or marks on body consistent with age and kilometres.
+Large Dent on Rear bumper
+Seat Torn driver side
+Seats Removed
+Medium Scratch on various panels"
+2014,MERCEDES,Benz,C-Class C200 W205,Sedan,Automatic,Petrol,148525,5,WDD2050422R032189,Unlicensed,"Sold Unregistered, Without Plates",4,2,Grey,Black Leather,Yes,Yes,Yes,Partial,Yes,WA,https://www.grays.com/lot/0001-9066361/motor-vehicles-motor-cycles/2014-mercedes-benz-c-class-c200-w205-automatic-sedan,"Dents or marks on body consistent with age and kilometres.
+Paint peeling roof"
+2019,MAZDA,Cx-5,GT KF,Wagon,Automatic,Petrol,70672,5,JM0KF4WLA00354861,Unlicensed,"Sold Unregistered, Without Plates",4,2.5,Black,Black Leather,Yes,Yes,Yes,Partial,Yes,WA,https://www.grays.com/lot/0001-9066362/motor-vehicles-motor-cycles/2019-mazda-cx-5-gt-kf-automatic-wagon,"Dents or marks on body consistent with age and kilometres.
+Engine idling rough
+Engine light ON
+Medium Scratch on Front Bumper Passenger Side"
+2012,FORD,Territory,TX SZ,Wagon,Automatic,Diesel,312233,5,6FPAAAJGATCD82943,1EPF035,31-12-2025 - Registration will only be transferred to the registered bidder who must hold a valid WA Licence otherwise vehicle will be sold unregistered. Vehicle Sold Without Roadworthy,6,2.7,White,Charcoal,Yes,No,Yes,Partial,Yes,WA,https://www.grays.com/lot/0001-9066377/motor-vehicles-motor-cycles/2012-ford-territory-tx-sz-turbo-diesel-automatic-wagon,"Dents or marks on body consistent with age and kilometres.
+Windscreen Chipped or Cracked.
+Other Warning light ON
+Medium Dent on Various panels
+Medium Scratch on Various panels"
