@@ -80,6 +80,7 @@ RAW_GROUP_KEY_MAP = {
     ("3series", "sedan_petrol_auto_4cyl_20"): "bmw_3series_sedan_petrol_auto_4cyl_20",
     ("captiva", "suv_diesel_auto"): "holden_captiva_suv_diesel_auto_4cyl",
     ("ranger", "dualcab_ute_diesel_auto"): "ford_ranger_dualcab_ute_diesel_auto",
+    ("ranger", "dualcab_ute_diesel_auto_xlt_4x4"): "ford_ranger_dualcab_ute_diesel_auto",
     ("cx5", "suv_petrol_auto_20"): "mazda_cx5_suv_petrol_auto_20",
     ("cx5", "suv_petrol_auto_25"): "mazda_cx5_suv_petrol_auto_25",
     ("navara", "dualcab_ute_diesel_auto"): "nissan_navara_dualcab_ute_diesel_auto",

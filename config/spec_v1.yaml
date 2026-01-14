@@ -192,6 +192,31 @@ groups:
       km_anchors: [50000, 120000, 200000, 260000]
 
   # -----------------------------
+  # FORD RANGER (CORE) - Dual Cab Diesel Auto
+  # -----------------------------
+  - group_id: ford_ranger_dualcab_ute_diesel_auto
+    status: CORE
+    pipe_mappings:
+      - "ranger|dualcab_ute_diesel_auto"
+      - "ranger|dualcab_ute_diesel_auto_xlt_4x4"
+    series_allowed: [PX_MKII]
+    series_year_guard:
+      PX_MKII: {year_min: 2015, year_max: 2018}
+    rules:
+      make: FORD
+      model: RANGER
+      body: [DUAL_CAB_UTE]
+      fuel: [DIESEL]
+      transmission: [AUTO]
+    hard_excludes:
+      fuel_tokens_any: ["petrol"]
+      transmission_tokens_any: ["manual"]
+      body_tokens_any: ["cab chassis", "single cab", "extra cab", "space cab", "super cab"]
+    curve_requirements:
+      anchor_years: [2017]
+      km_anchors: [50000, 120000, 200000, 260000]
+
+  # -----------------------------
   # HOLDEN CRUZE (RESTRICTED) - Hatch Petrol Auto 1.8 NA (CD/CDX only)
   # -----------------------------
   - group_id: holden_cruze_hatch_petrol_auto_4cyl
