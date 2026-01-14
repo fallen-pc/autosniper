@@ -223,8 +223,31 @@ def _estimate_transport_cost(location: Any) -> float:
     return cost
 
 
+def _is_grays_listing(listing: Mapping[str, Any]) -> bool:
+    url = str(listing.get("url") or "").lower()
+    source = str(listing.get("source") or listing.get("platform") or "").lower()
+    return "grays" in url or "grays" in source
+
+
+def _grays_buyer_premium(final_bid: float) -> float:
+    if final_bid <= 2000:
+        return 495.0
+    if final_bid <= 5000:
+        return 650.0
+    if final_bid <= 10000:
+        return 710.0
+    if final_bid <= 30000:
+        return final_bid * 0.07
+    if final_bid <= 40000:
+        return final_bid * 0.06
+    return final_bid * 0.05
+
+
 def _estimate_costs(purchase_price: float, listing: Mapping[str, Any]) -> dict[str, float]:
-    fees = max(MIN_FEES, purchase_price * FEES_RATE)
+    if _is_grays_listing(listing):
+        fees = _grays_buyer_premium(purchase_price)
+    else:
+        fees = max(MIN_FEES, purchase_price * FEES_RATE)
     transport = _estimate_transport_cost(listing.get("location"))
     rego = UNREGISTERED_REGO_COST if _is_unregistered(listing) else REGISTERED_REGO_COST
     prep = DEFAULT_PREP
