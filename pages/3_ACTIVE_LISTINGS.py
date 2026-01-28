@@ -18,7 +18,6 @@ from shared.styling import (
     display_banner,
     hero_action_card,
     inject_global_styles,
-    render_logo_centered,
 )
 
 if os.name == "nt":
@@ -29,7 +28,6 @@ st.set_page_config(page_title="ACTIVE LISTINGS DASHBOARD", layout="wide")
 inject_global_styles()
 
 display_banner()
-render_logo_centered()
 
 missing = ensure_datasets_available(["active_vehicle_details.csv"])
 if missing:
@@ -95,6 +93,33 @@ def parse_time_remaining_hours(value: object) -> float | None:
     return total_hours if total_hours > 0 else None
 
 
+@st.cache_data(ttl=0)
+def load_csv() -> pd.DataFrame:
+    return pd.read_csv(CSV_FILE)
+
+
+def _is_blank_series(series: pd.Series) -> pd.Series:
+    lowered = series.astype(str).str.strip().str.lower()
+    return lowered.isin(["", "nan", "none"])
+
+
+def _missing_bid_urls(df: pd.DataFrame) -> list[str]:
+    if df.empty or "url" not in df.columns:
+        return []
+    if "status" in df.columns:
+        status_series = df["status"].astype(str).str.strip().str.lower()
+    else:
+        status_series = pd.Series("active", index=df.index)
+    if "time_remaining_or_date_sold" not in df.columns:
+        df = df.copy()
+        df["time_remaining_or_date_sold"] = ""
+    blank_price = _is_blank_series(df["price"]) if "price" in df.columns else pd.Series(False, index=df.index)
+    blank_bids = _is_blank_series(df["bids"]) if "bids" in df.columns else pd.Series(False, index=df.index)
+    blank_time = _is_blank_series(df["time_remaining_or_date_sold"])
+    missing_mask = (status_series == "active") & (blank_price | blank_bids | blank_time)
+    return df.loc[missing_mask, "url"].dropna().unique().tolist()
+
+
 async def run_bid_update(links: list[str] | None = None, limit: int | None = None) -> None:
     target_links = links
     limit_arg = limit
@@ -134,6 +159,19 @@ active_batch_size = st.number_input(
 if refresh_all_clicked:
     asyncio.run(run_bid_update(limit=int(active_batch_size) if active_batch_size > 0 else None))
 
+if st.button("Refresh listings missing bid/price/time", key="refresh_missing_listings_top"):
+    df = load_csv() if CSV_FILE.exists() else pd.DataFrame()
+    missing_urls = _missing_bid_urls(df)
+    if missing_urls:
+        asyncio.run(
+            run_bid_update(
+                missing_urls,
+                limit=int(active_batch_size) if active_batch_size > 0 else None,
+            )
+        )
+    else:
+        st.info("No listings are missing bid/price/time data.")
+
 if st.session_state.skipped_urls:
     skipped_html = clean_html(
         """
@@ -155,11 +193,6 @@ if st.session_state.skipped_urls:
                 limit=int(active_batch_size) if active_batch_size > 0 else None,
             )
         )
-
-
-@st.cache_data(ttl=0)
-def load_csv() -> pd.DataFrame:
-    return pd.read_csv(CSV_FILE)
 
 
 def assemble_vehicle_title(row: pd.Series) -> str:
@@ -185,15 +218,7 @@ if CSV_FILE.exists():
     if "time_remaining_or_date_sold" not in df.columns:
         df["time_remaining_or_date_sold"] = ""
 
-    def _is_blank(series: pd.Series) -> pd.Series:
-        lowered = series.astype(str).str.strip().str.lower()
-        return lowered.isin(["", "nan", "none"])
-
-    blank_price = _is_blank(df["price"]) if "price" in df.columns else pd.Series(False, index=df.index)
-    blank_bids = _is_blank(df["bids"]) if "bids" in df.columns else pd.Series(False, index=df.index)
-    blank_time = _is_blank(df["time_remaining_or_date_sold"])
-    missing_mask = (df["status"] == "active") & (blank_price | blank_bids | blank_time)
-    missing_urls = df.loc[missing_mask, "url"].dropna().unique().tolist()
+    missing_urls = _missing_bid_urls(df)
     if missing_urls:
         st.warning(f"{len(missing_urls):,} listings are missing bid/price/time data.")
         if st.button("Refresh newly added listings", key="refresh_missing_rows"):

@@ -75,9 +75,6 @@ def _extract_hours_remaining(value: Optional[str]) -> Optional[float]:
     if not text:
         return None
 
-    # Ignore absolute dates (e.g., "2025-06-26") or statuses.
-    if re.match(r"\d{4}-\d{2}-\d{2}", text):
-        return None
     if any(keyword in text for keyword in ("ended", "sold", "closed")):
         return None
 
@@ -92,9 +89,29 @@ def _extract_hours_remaining(value: Optional[str]) -> Optional[float]:
         minutes * 60 +
         seconds
     )
-    if total_seconds == 0:
+    if total_seconds > 0:
+        return total_seconds / 3600
+
+    date_hint = (
+        re.search(r"\d{4}-\d{2}-\d{2}", text)
+        or re.search(r"\d{1,2}[/-]\d{1,2}[/-]\d{2,4}", text)
+        or re.search(r"\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)\b", text)
+        or ":" in text
+    )
+    if not date_hint:
         return None
-    return total_seconds / 3600
+
+    parsed = pd.to_datetime(text, errors="coerce")
+    if pd.isna(parsed):
+        parsed = pd.to_datetime(text, errors="coerce", dayfirst=True)
+    if pd.isna(parsed):
+        return None
+
+    now = pd.Timestamp.now(tz=parsed.tzinfo) if parsed.tzinfo else pd.Timestamp.now()
+    delta_seconds = (parsed - now).total_seconds()
+    if delta_seconds <= 0:
+        return None
+    return delta_seconds / 3600
 
 
 def _to_int_or_none(value) -> Optional[int]:

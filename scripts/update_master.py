@@ -2,33 +2,304 @@
 
 from __future__ import annotations
 
+import json
 import os
+import re
 import shutil
 import sys
 import tempfile
+from datetime import datetime
 from pathlib import Path
 from typing import Callable, Sequence
 
 import pandas as pd
+from dateutil import parser as date_parser
 
 if __package__ in (None, ""):
     sys.path.append(str(Path(__file__).resolve().parent.parent))
     from shared.data_loader import dataset_path
     from shared.sold_cleaning import normalize_listing_fields
+    from shared.canonical_tagging import tag_dataframe
+    from shared.validators import R, validate_sold_cars_df
     from scripts.build_restricted_datasets import build_restricted_datasets
 else:
     from shared.data_loader import dataset_path
     from shared.sold_cleaning import normalize_listing_fields
+    from shared.canonical_tagging import tag_dataframe
+    from shared.validators import R, validate_sold_cars_df
     from scripts.build_restricted_datasets import build_restricted_datasets
 SOLD_FILE = dataset_path("sold_cars.csv")
 REFERRED_FILE = dataset_path("referred_cars.csv")
 ACTIVE_FILE = dataset_path("active_vehicle_details.csv")
 STATIC_FILE = dataset_path("vehicle_static_details.csv")
+SNAPSHOT_FILE = dataset_path("active_snapshots.csv")
+SOLD_DISCARD_LOG = dataset_path("scrapers/sold_discard_log.csv")
 
 DEDUP_KEYS: Sequence[str] = ("url", "vin")
 REFERRED_STATUSES = {"referred", "canceled", "cancelled", "closed"}
 EXCLUDED_VARIANT_KEYWORDS = ("motorcycle",)
 SOLD_REDUNDANT_COLUMNS = ("time_remaining_or_date_sold", "final_price", "final_bids", "status")
+WOVR_PATTERN = re.compile(
+    r"\bwovr\b|wovr[-\s]*(?:inspected|repairable|statutory)|write[-\s]?off",
+    re.IGNORECASE,
+)
+VIN_RE = re.compile(r"^[A-HJ-NPR-Z0-9]{17}$")
+YEAR_URL_PATTERN = re.compile(r"\b(19[5-9]\d|20[0-3]\d)\b")
+
+
+def _is_blank(value: object) -> bool:
+    if value is None:
+        return True
+    text = str(value).strip()
+    if not text:
+        return True
+    return text.lower() in {"nan", "none", "n/a"}
+
+
+def _to_int(value: object) -> int | None:
+    if value is None:
+        return None
+    text = str(value).strip().replace(",", "")
+    if not text:
+        return None
+    try:
+        return int(float(text))
+    except ValueError:
+        return None
+
+
+def _parse_year(value: object) -> int | None:
+    if _is_blank(value):
+        return None
+    text = str(value).strip()
+    if text.endswith(".0"):
+        text = text[:-2]
+    try:
+        year = int(text)
+    except ValueError:
+        try:
+            year = int(float(text))
+        except (TypeError, ValueError):
+            return None
+    current_year = datetime.now().year
+    if 1950 <= year <= current_year + 1:
+        return year
+    return None
+
+
+def _parse_price(value: object) -> int | None:
+    if _is_blank(value):
+        return None
+    text = str(value).strip()
+    cleaned = re.sub(r"[^\d.]", "", text)
+    if not cleaned:
+        return None
+    try:
+        price = int(float(cleaned))
+    except ValueError:
+        return None
+    return price if price > 0 else None
+
+
+def _parse_bids(value: object) -> int:
+    parsed = _to_int(value)
+    return parsed if parsed is not None and parsed >= 0 else 0
+
+
+def _parse_date(value: object) -> str | None:
+    if _is_blank(value):
+        return None
+    text = str(value).strip()
+    try:
+        parsed = date_parser.parse(text, fuzzy=True, dayfirst=True)
+    except (ValueError, TypeError):
+        return None
+    return parsed.date().isoformat()
+
+
+def _normalize_odometer(value: object) -> tuple[int | None, bool]:
+    if _is_blank(value):
+        return None, False
+    parsed = _to_int(value)
+    if parsed is None:
+        return None, True
+    if parsed == 0 or parsed < 1000 or parsed > 700000:
+        return None, True
+    return parsed, False
+
+
+def _append_sold_discard_log(records: list[dict[str, object]]) -> None:
+    if not records:
+        return
+    SOLD_DISCARD_LOG.parent.mkdir(parents=True, exist_ok=True)
+    file_exists = SOLD_DISCARD_LOG.exists()
+    df = pd.DataFrame(records)
+    df.to_csv(SOLD_DISCARD_LOG, mode="a", header=not file_exists, index=False)
+
+
+def _clean_sold_rows(frame: pd.DataFrame) -> tuple[pd.DataFrame, list[dict[str, object]]]:
+    if frame.empty:
+        return frame, []
+    cleaned_rows: list[dict[str, object]] = []
+    failures: list[dict[str, object]] = []
+    timestamp = datetime.utcnow().isoformat()
+    for _, row in frame.iterrows():
+        row_dict = row.to_dict()
+        url = str(row_dict.get("url", "") or "").strip()
+        make = str(row_dict.get("make", "") or "").strip()
+        model = str(row_dict.get("model", "") or "").strip()
+        raw_year = row_dict.get("year")
+
+        if not url:
+            reason = R.NO_URL
+        elif "sold-test" in url.lower() or str(raw_year).strip().lower() == "test":
+            reason = R.TEST_ROW
+        elif make.lower() == "test" and model.lower() == "test":
+            reason = R.TEST_ROW
+        else:
+            reason = ""
+
+        year = _parse_year(raw_year)
+        if not reason and year is None:
+            reason = R.BAD_YEAR
+
+        raw_price = row_dict.get("price")
+        if not reason and _is_blank(raw_price):
+            reason = R.NO_PRICE
+        price = _parse_price(raw_price)
+        if not reason and price is None:
+            reason = R.BAD_PRICE
+
+        date_candidate = row_dict.get("date_sold")
+        if _is_blank(date_candidate):
+            date_candidate = row_dict.get("time_remaining_or_date_sold")
+        if not reason and _is_blank(date_candidate):
+            reason = R.NO_DATE_SOLD
+        date_sold = _parse_date(date_candidate)
+        if not reason and date_sold is None:
+            reason = R.BAD_DATE_SOLD
+
+        if reason:
+            failures.append(
+                {
+                    "timestamp": timestamp,
+                    "url": url,
+                    "reason_code": reason,
+                    "field_snapshot": json.dumps(
+                        {
+                            "year": raw_year,
+                            "make": make,
+                            "model": model,
+                            "price": raw_price,
+                            "date_sold": date_candidate,
+                        },
+                        ensure_ascii=True,
+                    ),
+                }
+            )
+            continue
+
+        bids = _parse_bids(row_dict.get("bids"))
+        odometer, odo_suspect = _normalize_odometer(row_dict.get("odometer_reading"))
+        vin = str(row_dict.get("vin", "") or "").strip().upper()
+        if vin and not VIN_RE.match(vin):
+            failures.append(
+                {
+                    "timestamp": timestamp,
+                    "url": url,
+                    "reason_code": R.BAD_VIN,
+                    "field_snapshot": json.dumps(
+                        {"vin": vin, "make": make, "model": model},
+                        ensure_ascii=True,
+                    ),
+                }
+            )
+            continue
+
+        row_dict["year"] = year
+        row_dict["price"] = price
+        row_dict["bids"] = bids
+        row_dict["date_sold"] = date_sold
+        row_dict["odometer_reading"] = odometer if odometer is not None else ""
+        row_dict["odo_suspect"] = int(odo_suspect)
+        cleaned_rows.append(row_dict)
+
+    cleaned_df = pd.DataFrame(cleaned_rows)
+    return cleaned_df, failures
+
+
+def _parse_year_from_url(url: str) -> int | None:
+    if not url:
+        return None
+    match = YEAR_URL_PATTERN.search(str(url))
+    if not match:
+        return None
+    try:
+        return int(match.group(1))
+    except ValueError:
+        return None
+
+
+def _build_snapshot_sold_candidates(snapshot_path: Path, static_path: Path) -> pd.DataFrame:
+    if not snapshot_path.exists():
+        return pd.DataFrame()
+    snapshots = _load_dataframe(snapshot_path)
+    if snapshots.empty or "snapshot_ts" not in snapshots.columns or "url" not in snapshots.columns:
+        return pd.DataFrame()
+
+    snapshots["snapshot_ts"] = pd.to_datetime(snapshots["snapshot_ts"], errors="coerce")
+    snapshots["url"] = snapshots["url"].astype(str).str.strip()
+    snapshots = snapshots.dropna(subset=["snapshot_ts"])
+    snapshots = snapshots[snapshots["url"] != ""]
+    if snapshots.empty:
+        return pd.DataFrame()
+
+    snapshots["snapshot_date"] = snapshots["snapshot_ts"].dt.date
+    dates = sorted(date for date in snapshots["snapshot_date"].unique() if date is not None)
+    if len(dates) < 2:
+        return pd.DataFrame()
+    latest_date = max(dates)
+    prev_date = max(date for date in dates if date < latest_date)
+
+    prev_day = snapshots[snapshots["snapshot_date"] == prev_date].copy()
+    latest_day = snapshots[snapshots["snapshot_date"] == latest_date].copy()
+    missing_urls = set(prev_day["url"]) - set(latest_day["url"])
+    if not missing_urls:
+        return pd.DataFrame()
+
+    prev_day = prev_day[prev_day["url"].isin(missing_urls)]
+    prev_day = prev_day.sort_values("snapshot_ts")
+    last_seen = prev_day.groupby("url", as_index=False).tail(1).copy()
+
+    base = last_seen[["url", "price_numeric", "price_text", "bids_numeric"]].copy()
+    base["price"] = base["price_numeric"]
+    missing_price = base["price"].isna() | (base["price"] == 0)
+    if "price_text" in base.columns and missing_price.any():
+        base.loc[missing_price, "price"] = base.loc[missing_price, "price_text"].apply(_parse_price)
+    if "bids_numeric" in base.columns:
+        base["bids"] = base["bids_numeric"].fillna(0).astype(int)
+    else:
+        base["bids"] = 0
+    base["date_sold"] = prev_date.isoformat()
+    base["time_remaining_or_date_sold"] = base["date_sold"]
+    base["status"] = "sold"
+
+    static_df = _load_dataframe(static_path)
+    if not static_df.empty and "url" in static_df.columns:
+        static_df = static_df.copy()
+        static_df["url"] = static_df["url"].astype(str).str.strip()
+        static_df = static_df.drop_duplicates(subset=["url"], keep="last")
+        merged = base.merge(static_df, on="url", how="left", suffixes=("", "_static"))
+    else:
+        merged = base
+
+    if "year" not in merged.columns:
+        merged["year"] = pd.NA
+    missing_year = _blank_mask(merged["year"])
+    if missing_year.any():
+        merged.loc[missing_year, "year"] = merged.loc[missing_year, "url"].apply(_parse_year_from_url)
+
+    return merged
 
 
 def _load_dataframe(path: Path) -> pd.DataFrame:
@@ -88,13 +359,15 @@ def _prepare_sold_rows(frame: pd.DataFrame) -> pd.DataFrame:
             if not mask.any():
                 break
     prepared["price"] = prepared["price"].fillna("")
-    drop_cols = [column for column in SOLD_REDUNDANT_COLUMNS if column in prepared.columns]
+    cleaned, failures = _clean_sold_rows(prepared)
+    _append_sold_discard_log(failures)
+    drop_cols = [column for column in SOLD_REDUNDANT_COLUMNS if column in cleaned.columns]
     if drop_cols:
-        prepared = prepared.drop(columns=drop_cols)
+        cleaned = cleaned.drop(columns=drop_cols)
         print(f"Pruned redundant sold columns: {drop_cols}")
-    if "sale_price" in prepared.columns:
-        prepared = prepared.drop(columns=["sale_price"])
-    return prepared
+    if "sale_price" in cleaned.columns:
+        cleaned = cleaned.drop(columns=["sale_price"])
+    return cleaned
 
 
 def _prepare_referred_rows(frame: pd.DataFrame) -> pd.DataFrame:
@@ -117,6 +390,7 @@ def _merge_preserving_history(
     label: str,
     prepare_fn: Callable[[pd.DataFrame], pd.DataFrame] | None = None,
     ensure_schema: bool = False,
+    validator: Callable[[pd.DataFrame], tuple[pd.DataFrame, dict[str, int]]] | None = None,
 ) -> None:
     existing_raw = _load_dataframe(path)
     prepared_existing = prepare_fn(existing_raw) if prepare_fn else existing_raw
@@ -154,6 +428,11 @@ def _merge_preserving_history(
         combined = pd.concat([prepared_existing, filtered_new], ignore_index=True, sort=False)
         added = len(filtered_new)
 
+    if validator is not None:
+        combined, stats = validator(combined)
+        if stats["rows_dropped"]:
+            print(f"{label.title()} validator dropped {stats['rows_dropped']} row(s) before write.")
+
     _atomic_write(combined, path)
     print(f"{label.title()} listings saved to {path} (total {len(combined)}, +{added}).")
 
@@ -167,6 +446,21 @@ def _remove_excluded_variants(frame: pd.DataFrame) -> pd.DataFrame:
     if removed:
         frame = frame.loc[~mask].copy()
         print(f"Filtered out {removed} listing(s) based on variant keywords: {EXCLUDED_VARIANT_KEYWORDS}.")
+    return frame
+
+
+def _remove_wovr_rows(frame: pd.DataFrame) -> pd.DataFrame:
+    if frame.empty:
+        return frame
+    columns = [col for col in ("variant", "url") if col in frame.columns]
+    if not columns:
+        return frame
+    combined = frame[columns].fillna("").astype(str).agg(" ".join, axis=1)
+    mask = combined.str.contains(WOVR_PATTERN, na=False)
+    removed = int(mask.sum())
+    if removed:
+        frame = frame.loc[~mask].copy()
+        print(f"Filtered out {removed} WOVR listing(s) from active listings.")
     return frame
 
 
@@ -246,7 +540,46 @@ def update_master_database() -> None:
     sold_df = df[df["status"] == "sold"].copy()
     referred_df = df[df["status"].isin(REFERRED_STATUSES)].copy()
     active_df = df[df["status"] == "active"].copy()
+    # Snapshot-missing listings are not treated as sold. We only transition to sold/referred
+    # when a listing is explicitly scraped with a terminal status.
+    snapshot_sold_df = pd.DataFrame()
+    if SNAPSHOT_FILE.exists():
+        snapshots = _load_dataframe(SNAPSHOT_FILE)
+        if not snapshots.empty and "snapshot_ts" in snapshots.columns and "url" in snapshots.columns:
+            snapshots["snapshot_ts"] = pd.to_datetime(snapshots["snapshot_ts"], errors="coerce")
+            snapshots = snapshots.dropna(subset=["snapshot_ts"])
+            if not snapshots.empty:
+                snapshots["snapshot_date"] = snapshots["snapshot_ts"].dt.date
+                dates = sorted(date for date in snapshots["snapshot_date"].unique() if date is not None)
+                if len(dates) >= 2:
+                    latest_date = max(dates)
+                    prev_date = max(date for date in dates if date < latest_date)
+                    prev_day = snapshots[snapshots["snapshot_date"] == prev_date]
+                    latest_day = snapshots[snapshots["snapshot_date"] == latest_date]
+                    missing_urls = set(prev_day["url"].astype(str)) - set(latest_day["url"].astype(str))
+                    if missing_urls:
+                        print(
+                            f"[INFO] snapshot-missing URLs detected (no status change): {len(missing_urls)}"
+                        )
+    active_df = _remove_wovr_rows(active_df)
     existing_active = _load_dataframe(ACTIVE_FILE)
+
+    if not sold_df.empty:
+        sold_df = tag_dataframe(
+            sold_df,
+            source="grays_sold",
+            require_price=True,
+            filter_unclassified=False,
+            append_log=True,
+        )
+    if not active_df.empty:
+        active_df = tag_dataframe(
+            active_df,
+            source="grays_active",
+            require_price=False,
+            filter_unclassified=False,
+            append_log=True,
+        )
 
     if not sold_df.empty:
         prepared_snapshot = _prepare_sold_rows(sold_df)
@@ -268,6 +601,7 @@ def update_master_database() -> None:
         "sold",
         prepare_fn=_prepare_sold_rows,
         ensure_schema=True,
+        validator=validate_sold_cars_df,
     )
     _merge_preserving_history(
         REFERRED_FILE,

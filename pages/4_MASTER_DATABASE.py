@@ -12,7 +12,11 @@ from shared.styling import clean_html, display_banner, inject_global_styles, pag
 st.set_page_config(page_title="MASTER DATABASE", layout="wide")
 inject_global_styles()
 display_banner()
-page_intro("MASTER DATABASE OVERVIEW", "Review every vehicle snapshot - active, sold, and referred - from one command center.")
+page_intro(
+    "MASTER DATABASE OVERVIEW",
+    "Review every vehicle snapshot - active, sold, and referred - from one command center.",
+    show_logo=False,
+)
 
 required_files = [
     "vehicle_static_details.csv",

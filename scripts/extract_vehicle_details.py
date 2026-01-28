@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import re
 import shutil
@@ -26,6 +27,9 @@ if __package__ in (None, ""):
         normalize_listing_fields,
         remove_compliance_markers,
     )
+    from shared.canonical_tagging import tag_dataframe
+    from shared.validators import ValidatorConfig, validate_static_row
+    from shared.validators import validate_vehicle_static_df
 else:
     from shared.data_loader import dataset_path
     from shared.schema import SOLD_RAW_SCRAPE_COLUMNS, STATIC_VEHICLE_SCHEMA
@@ -36,12 +40,16 @@ else:
         normalize_listing_fields,
         remove_compliance_markers,
     )
+    from shared.canonical_tagging import tag_dataframe
+    from shared.validators import ValidatorConfig, validate_static_row
+    from shared.validators import validate_vehicle_static_df
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 ROOT_DIR = SCRIPT_DIR.parent
 INPUT_FILE = dataset_path("all_vehicle_links.csv")
 OUTPUT_FILE = dataset_path("vehicle_static_details.csv")
 ACTIVE_OUTPUT_FILE = dataset_path("active_vehicle_details.csv")
+FAILURES_FILE = dataset_path("scrapers/scrape_failures.csv")
 SKIPPED_LOG = ROOT_DIR / "logs" / "skipped_links.txt"
 
 SCHEMA_FIELDS = SOLD_RAW_SCRAPE_COLUMNS.copy()
@@ -102,9 +110,202 @@ CONDITION_METADATA_FIELDS = {
     "engine turns over",
 }
 
+ALLOWED_BODY_TYPES = {
+    "Wagon",
+    "Sedan",
+    "Hatchback",
+    "Ute",
+    "Van",
+    "Cab Chassis",
+    "Crew Cab Chassis",
+    "Dual Cab",
+    "People Mover",
+    "Coupe",
+    "Convertible",
+    "Bus",
+    "SUV",
+}
+WOVR_PATTERN = re.compile(
+    r"\bwovr\b|wovr[-\s]*(?:inspected|repairable|statutory)|write[-\s]?off",
+    re.IGNORECASE,
+)
+
 
 def clean_joined_fields(text: str) -> str:
     return re.sub(r"([a-z])([A-Z])", r"\1, \2", text)
+
+
+def _is_missing(value: object) -> bool:
+    if value is None:
+        return True
+    if isinstance(value, float) and pd.isna(value):
+        return True
+    if isinstance(value, str) and not value.strip():
+        return True
+    return False
+
+
+def load_make_whitelist(existing_df: pd.DataFrame) -> set[str]:
+    whitelist: set[str] = set()
+    sold_path = dataset_path("sold_cars.csv")
+    if sold_path.exists():
+        try:
+            sold_df = pd.read_csv(sold_path, usecols=["make"])
+            whitelist = {
+                str(make).strip().upper()
+                for make in sold_df["make"].dropna().unique().tolist()
+                if str(make).strip()
+            }
+        except Exception:
+            whitelist = set()
+    if not whitelist and "make" in existing_df.columns:
+        whitelist = {
+            str(make).strip().upper()
+            for make in existing_df["make"].dropna().unique().tolist()
+            if str(make).strip()
+        }
+    return whitelist
+
+
+def append_failure_log(records: list[dict[str, Any]]) -> None:
+    if not records:
+        return
+    FAILURES_FILE.parent.mkdir(parents=True, exist_ok=True)
+    file_exists = FAILURES_FILE.exists()
+    df = pd.DataFrame(records)
+    df.to_csv(FAILURES_FILE, mode="a", header=not file_exists, index=False)
+
+
+def filter_static_rows(df: pd.DataFrame, make_whitelist: set[str]) -> tuple[pd.DataFrame, list[dict[str, Any]]]:
+    if df.empty:
+        return df, []
+    failures: list[dict[str, Any]] = []
+    now_ts = time.strftime("%Y-%m-%d %H:%M:%S")
+    cfg = ValidatorConfig(
+        make_whitelist=make_whitelist,
+        enforce_vic_only=False,
+        allow_suspect_odometer=False,
+        allowed_body_types=ALLOWED_BODY_TYPES,
+    )
+    kept_rows: list[dict[str, Any]] = []
+    for _, row in df.iterrows():
+        row_dict = row.to_dict()
+        is_valid, reason, cleaned = validate_static_row(row_dict, cfg)
+        if is_valid:
+            kept_rows.append(cleaned)
+        else:
+            snapshot = {
+                key: row_dict.get(key, "")
+                for key in (
+                    "year",
+                    "make",
+                    "model",
+                    "variant",
+                    "body_type",
+                    "transmission",
+                    "fuel_type",
+                    "odometer_reading",
+                    "vin",
+                    "location",
+                )
+            }
+            failures.append(
+                {
+                    "timestamp": now_ts,
+                    "url": row_dict.get("url", ""),
+                    "reason_code": reason,
+                    "field_snapshot": json.dumps(snapshot, ensure_ascii=True),
+                }
+            )
+    if not kept_rows:
+        return df.iloc[0:0].copy(), failures
+    filtered = pd.DataFrame(kept_rows)
+    for column in df.columns:
+        if column not in filtered.columns:
+            filtered[column] = pd.NA
+    filtered = filtered.reindex(columns=df.columns)
+    return filtered.reset_index(drop=True), failures
+
+
+def _has_valid_year(value: object) -> bool:
+    if value is None:
+        return False
+    text = str(value).strip()
+    if not text:
+        return False
+    if text.endswith(".0"):
+        text = text[:-2]
+    if YEAR_RE.match(text):
+        return True
+    try:
+        num = float(value)
+    except (TypeError, ValueError):
+        return False
+    if pd.isna(num) or not num.is_integer():
+        return False
+    year = int(num)
+    return 1900 <= year <= 2099
+
+
+def _has_valid_odometer(value: object) -> bool:
+    if value is None:
+        return False
+    text = str(value).strip()
+    if not text:
+        return False
+    lowered = text.lower()
+    if lowered in {"nan", "none"}:
+        return False
+    return text != "0"
+
+
+def select_best_rows(df: pd.DataFrame) -> pd.DataFrame:
+    """Prefer the most complete/valid row per URL to avoid losing listings."""
+    if df.empty or "url" not in df.columns:
+        return df
+
+    working = df.copy()
+    working["_url_norm"] = working["url"].astype(str).str.strip().str.casefold()
+    base_columns = list(df.columns)
+    working["_row_order"] = range(len(working))
+
+    def _non_missing(row: pd.Series) -> int:
+        return sum(not _is_missing(row[col]) for col in base_columns)
+
+    working["_non_missing"] = working.apply(_non_missing, axis=1)
+    if "year" in working.columns:
+        working["_valid_year"] = working["year"].apply(_has_valid_year)
+    else:
+        working["_valid_year"] = False
+    if "odometer_reading" in working.columns:
+        working["_valid_odometer"] = working["odometer_reading"].apply(_has_valid_odometer)
+    else:
+        working["_valid_odometer"] = False
+
+    working["_score"] = (
+        working["_non_missing"]
+        + working["_valid_year"].astype(int) * 100
+        + working["_valid_odometer"].astype(int) * 100
+    )
+
+    working.sort_values(
+        by=["_url_norm", "_score", "_row_order"],
+        ascending=[True, True, True],
+        inplace=True,
+    )
+    best = working.groupby("_url_norm", as_index=False).tail(1)
+    best = best.drop(
+        columns=[
+            "_url_norm",
+            "_row_order",
+            "_non_missing",
+            "_valid_year",
+            "_valid_odometer",
+            "_score",
+        ],
+        errors="ignore",
+    )
+    return best.reset_index(drop=True)
 
 
 def safe_get_text(tag: Tag | None) -> str:
@@ -238,6 +439,11 @@ def extract_title_parts(soup: BeautifulSoup) -> tuple[str, str, str, str]:
     return year, make, model, variant
 
 
+def extract_year_from_url(url: str) -> str:
+    match = re.search(r"/((?:19|20)\\d{2})-", url)
+    return match.group(1) if match else ""
+
+
 def read_general_condition(soup: BeautifulSoup) -> str:
     section = soup.find(attrs={"id": re.compile("ConditionAssessment", re.IGNORECASE)})
     if section:
@@ -287,6 +493,8 @@ def assemble_details(soup: BeautifulSoup, url: str) -> dict[str, Any]:
         match = YEAR_RE.search(details["build_date"])
         if match:
             details["year"] = match.group(1)
+    if not details.get("year"):
+        details["year"] = extract_year_from_url(url)
 
     details["general_condition"] = read_general_condition(soup)
     details["location"] = normalize_state(details.get("location", "") or extract_location(soup))
@@ -377,11 +585,54 @@ def atomic_write(df: pd.DataFrame, path: Path) -> None:
             os.unlink(temp_path)
 
 
+def merge_and_save_static(existing_df: pd.DataFrame, new_df: pd.DataFrame) -> pd.DataFrame:
+    if new_df.empty:
+        return existing_df
+    new_df = normalize_listing_fields(new_df)
+    new_df = drop_invalid_years(new_df, allow_missing=True)
+    new_df = drop_invalid_odometer_rows(new_df, allow_missing=True)
+    new_df = new_df.reindex(columns=SCHEMA_FIELDS)
+
+    if existing_df.empty:
+        combined = new_df
+    else:
+        existing_df = existing_df.reindex(columns=SCHEMA_FIELDS)
+        combined = pd.concat([existing_df, new_df], ignore_index=True, sort=False)
+    combined = combined.reset_index(drop=True)
+    combined = select_best_rows(combined)
+    make_whitelist = load_make_whitelist(existing_df)
+    combined, failures = filter_static_rows(combined, make_whitelist)
+    append_failure_log(failures)
+    static_export = combined.drop_duplicates(subset=["url"], keep="last")
+    static_export = static_export.reindex(columns=STATIC_VEHICLE_SCHEMA, fill_value="")
+    static_export, stats = validate_vehicle_static_df(static_export)
+    if stats["rows_dropped"]:
+        print(f"Validator dropped {stats['rows_dropped']} invalid static rows before write.")
+
+    static_export = tag_dataframe(
+        static_export,
+        source="grays_static",
+        require_price=False,
+        filter_unclassified=False,
+        append_log=False,
+    )
+    atomic_write(static_export, OUTPUT_FILE)
+    seed_active_dataset(static_export)
+    return static_export
+
+
 def seed_active_dataset(static_df: pd.DataFrame) -> None:
     """Create the active listings CSV from the static scrape output."""
     if static_df is None:
         return
     active_df = static_df.copy()
+    active_df = tag_dataframe(
+        active_df,
+        source="grays_active",
+        require_price=False,
+        filter_unclassified=False,
+        append_log=True,
+    )
     base_columns = list(static_df.columns)
     existing_active = pd.read_csv(ACTIVE_OUTPUT_FILE) if ACTIVE_OUTPUT_FILE.exists() else pd.DataFrame()
 
@@ -394,27 +645,28 @@ def seed_active_dataset(static_df: pd.DataFrame) -> None:
 
     if active_df.empty:
         active_df = pd.DataFrame(columns=base_columns)
+    if not active_df.empty:
+        wovr_columns = [col for col in ("variant", "url") if col in active_df.columns]
+        if wovr_columns:
+            combined = active_df[wovr_columns].fillna("").astype(str).agg(" ".join, axis=1)
+            wovr_mask = combined.str.contains(WOVR_PATTERN, na=False)
+            if wovr_mask.any():
+                active_df = active_df.loc[~wovr_mask].copy()
     # Ensure required dynamic columns exist.
-    for column in ("status", "time_remaining_or_date_sold", "price", "bids"):
+    for column in ("time_remaining_or_date_sold", "price", "bids"):
         if column not in active_df.columns:
             active_df[column] = ""
+    active_df["status"] = "active"
 
     # Default every row to active; downstream scripts will refine.
-    active_df["status"] = (
-        active_df["status"]
-        .fillna("")
-        .astype(str)
-        .str.strip()
-        .replace({"": "active"})
-        .str.lower()
-    )
+    active_df["status"] = "active"
 
     if not existing_active.empty and "url" in active_df.columns and "url" in existing_active.columns:
         active_df["_url_norm"] = _normalize_url(active_df["url"])
         existing_active = existing_active.copy()
         existing_active["_url_norm"] = _normalize_url(existing_active["url"])
         lookup = existing_active.set_index("_url_norm")
-        for column in ("status", "time_remaining_or_date_sold", "price", "bids"):
+        for column in ("time_remaining_or_date_sold", "price", "bids"):
             if column not in active_df.columns:
                 active_df[column] = ""
             if column not in lookup.columns:
@@ -423,13 +675,22 @@ def seed_active_dataset(static_df: pd.DataFrame) -> None:
             active_df.loc[blank_mask, column] = active_df.loc[blank_mask, "_url_norm"].map(lookup[column])
         active_df.drop(columns=["_url_norm"], inplace=True, errors="ignore")
 
-    dynamic_columns = [col for col in ("status", "time_remaining_or_date_sold", "price", "bids") if col not in base_columns]
+    dynamic_columns = [
+        col
+        for col in ("status", "time_remaining_or_date_sold", "price", "bids")
+        if col not in base_columns
+    ]
     ordered_columns = base_columns + dynamic_columns
     active_df = active_df.reindex(columns=ordered_columns, fill_value="")
     atomic_write(active_df, ACTIVE_OUTPUT_FILE)
 
 
-def main(batch_size: int | None = None, *, force_all: bool = False) -> None:
+def main(
+    batch_size: int | None = None,
+    *,
+    force_all: bool = False,
+    checkpoint_every: int | None = None,
+) -> None:
     if not INPUT_FILE.exists():
         print(f"Missing input file: {INPUT_FILE}")
         return
@@ -454,27 +715,42 @@ def main(batch_size: int | None = None, *, force_all: bool = False) -> None:
     else:
         print(f"Processing {len(target_links)} listings (pending: {len(pending_links)}).")
 
+    checkpoint_every = checkpoint_every or 0
+    if checkpoint_every > 0:
+        total = len(target_links)
+        total_skipped = 0
+        total_scraped = 0
+        for start in range(0, total, checkpoint_every):
+            batch = target_links[start : start + checkpoint_every]
+            print(f"Checkpoint batch {start + 1}-{start + len(batch)} of {total}.")
+            data, skipped = process_links(batch)
+            total_skipped += len(skipped)
+            write_skipped(skipped)
+            if data:
+                total_scraped += len(data)
+                new_df = pd.DataFrame(data)
+                existing_df = merge_and_save_static(existing_df, new_df)
+                print(
+                    f"Checkpoint saved ({len(new_df)} new rows, total {len(existing_df)})."
+                )
+            else:
+                print("No listings were scraped in this batch.")
+        if total_scraped == 0:
+            print("No listings were scraped.")
+            return
+        print(f"Saved {total_scraped} rows (total {len(existing_df)}). Output: {OUTPUT_FILE}")
+        if total_skipped:
+            print(f"{total_skipped} URLs skipped. See {SKIPPED_LOG}")
+        return
+
     data, skipped = process_links(target_links)
     new_df = pd.DataFrame(data)
     if new_df.empty:
         print("No listings were scraped.")
         return
 
-    combined = pd.concat([existing_df, new_df], ignore_index=True, sort=False)
-    combined.drop_duplicates(subset=["url"], keep="last", inplace=True)
-    combined = combined.reindex(columns=SCHEMA_FIELDS)
-    combined = combined.reset_index(drop=True)
-
-    cleaned = normalize_listing_fields(combined)
-    cleaned = drop_sparse_rows(cleaned)
-    cleaned = drop_invalid_years(cleaned)
-    cleaned = drop_invalid_odometer_rows(cleaned)
-    static_export = cleaned.drop_duplicates(subset=["url"], keep="last")
-    static_export = static_export.reindex(columns=STATIC_VEHICLE_SCHEMA, fill_value="")
-
-    atomic_write(static_export, OUTPUT_FILE)
-    seed_active_dataset(static_export)
-    print(f"Saved {len(new_df)} rows (total {len(static_export)}). Output: {OUTPUT_FILE}")
+    existing_df = merge_and_save_static(existing_df, new_df)
+    print(f"Saved {len(new_df)} rows (total {len(existing_df)}). Output: {OUTPUT_FILE}")
 
     write_skipped(skipped)
     if skipped:
@@ -494,5 +770,15 @@ if __name__ == "__main__":
         action="store_true",
         help="Force a full re-scrape of every stored link (not just pending ones).",
     )
+    parser.add_argument(
+        "--checkpoint-every",
+        type=int,
+        default=50,
+        help="Save progress every N listings (0 = disable).",
+    )
     args = parser.parse_args()
-    main(batch_size=args.batch_size, force_all=args.all)
+    main(
+        batch_size=args.batch_size,
+        force_all=args.all,
+        checkpoint_every=args.checkpoint_every,
+    )

@@ -10,6 +10,7 @@ inject_global_styles()
 page_intro(
     "RE-AUCTION TRACKER",
     "Monitor vehicles that re-appear in the sold dataset with the same VIN and odometer to understand pricing swings.",
+    show_logo=False,
 )
 
 

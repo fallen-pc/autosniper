@@ -16,9 +16,11 @@ if __package__ in (None, ""):
 
     sys.path.append(str(Path(__file__).resolve().parent.parent))
     from shared.data_loader import dataset_path
+    from shared.validators import validate_sold_cars_df
     from scripts.extract_vehicle_details import process_links
 else:  # pragma: no cover
     from shared.data_loader import dataset_path
+    from shared.validators import validate_sold_cars_df
     from scripts.extract_vehicle_details import process_links
 
 
@@ -262,6 +264,9 @@ def main() -> None:
     updated_df, updated, appended = update_sold_records(sold_df, scraped_df, legacy_lookup)
 
     backup_path = _backup_file(SOLD_PATH)
+    updated_df, stats = validate_sold_cars_df(updated_df)
+    if stats["rows_dropped"]:
+        print(f"Validator dropped {stats['rows_dropped']} invalid sold rows before write.")
     updated_df.to_csv(SOLD_PATH, index=False)
     print(f"Sold records updated ({updated} patched, {appended} appended).")
     print(f"Backup created at {backup_path}")

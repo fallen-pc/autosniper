@@ -1,0 +1,736 @@
+year,make,model,variant,body_type,transmission,fuel_type,odometer_reading,no_of_seats,vin,rego_no,rego_expiry,no_of_cylinders,engine_capacity,exterior_colour,interior_colour,key,spare_key,owners_manual,service_history,engine_turns_over,location,url,general_condition,status,time_remaining_or_date_sold,price,bids,date_sold,group_id,reason_code,audit_ts
+2002,HOLDEN,Commodore,Executive VX,Wagon,Automatic,Petrol,354936,5.0,6H8VXK35A2L909362,SML882,03-01-2026,6,3.8,White,Grey,Yes,Yes,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061285/motor-vehicles-motor-cycles/2002-holden-commodore-executive-vx-automatic-wagon,"Engine noise observed, Engine idling rough
+Hood Lining Sagging
+Drivers seat Controls inoperable
+Door card Damaged.
+Front seats torn
+Windscreen Cracked.
+Corrosion visible, Paint cracked Around vehicle
+Large Dents, scratches Around vehicle",active,3d 0h 7m15s,9.0,1.0,3d 0h 7m15s,holden_commodore_wagon_petrol_auto_v6,,2026-01-19T05:05:39
+1997,HOLDEN,Commodore,Executive VS,Sedan,Automatic,Petrol,234415,5.0,6H8VSK19HVL227782,No plates,Unregistered,6,3.8,Silver,Grey,Yes,No,No,No,Yes,VIC,https://www.grays.com/lot/0001-21061708/motor-vehicles-motor-cycles/1997-holden-commodore-executive-vs-automatic-sedan,"Engine noise observed.
+Engine idling rough
+Corrosion visible Around vehicle
+Paint fading Around vehicle
+Brakes require attention, Tilt tray required for collection
+Large Scuff on rear panel
+Paint fading various panels
+Medium Dent on various panels
+Large Scratch on front bumper",active,1d 23h 55m44s,9.0,1.0,1d 23h 55m44s,holden_commodore_sedan_petrol_auto_v6,,2026-01-19T05:05:39
+2014,HYUNDAI,I30,TROPHY GD,Hatchback,Automatic,Petrol,216624,5.0,KMHD351EMEU219762,No plates,Unregistered,4,1.8,White,Black Leather,Yes,No,Yes,Yes,Yes,VIC,https://www.grays.com/lot/0001-21061735/motor-vehicles-motor-cycles/2014-hyundai-i30-trophy-gd-automatic-hatchback,"Medium Scratch on Around vehicle
+Medium Dent on Around vehicle
+Front Seat worn driver side
+Dents or marks on body consistent with age and kilometres.
+Paint fading on roof",active,6m21s,4801.0,49.0,6m21s,hyundai_i30_hatch_petrol_auto_na_active_elite,,2026-01-19T05:05:39
+2007,VOLKSWAGEN,Golf,GT Sport TSI 1k,Hatchback,Automatic,Petrol,189104,5.0,WVWZZZ1KZ8U003848,2DS7UM,30-01-2026,4,1.4,Blue,Black Leather,Yes,No,No,Yes,Yes,VIC,https://www.grays.com/lot/0001-21061747/motor-vehicles-motor-cycles/2007-volkswagen-golf-gt-sport-tsi-1k-automatic-hatchback,"Engine noise observed.
+Dents or marks on body consistent with age and kilometres.
+Hood Lining Sagging",active,23h 42m9s,500.0,3.0,23h 42m9s,volkswagen_golf_hatch_petrol_auto_base,,2026-01-19T05:05:39
+2013,VOLKSWAGEN,Golf,90TSI A7,Hatchback,Automatic,Petrol,190242,5.0,WVWZZZAUZDW131943,AGE686,22-01-2026,4,1.4,Black,Multi,Yes,Yes,Yes,Yes,Yes,VIC,https://www.grays.com/lot/0001-21061754/motor-vehicles-motor-cycles/2013-volkswagen-golf-90tsi-a7-automatic-hatchback,"Front Seat Stains Drivers
+Dents or marks on body consistent with age and kilometres.
+Medium Scratch on Around vehicle",active,1d 23h 39m23s,913.0,10.0,1d 23h 39m23s,volkswagen_golf_hatch_petrol_auto_base,,2026-01-19T05:05:39
+2013,FORD,Ranger,Wildtrak 4x4 PX,Dual Cab,Automatic,Diesel,266198,5.0,MNAUMFF50DW196590,ZWO811,24-01-2026,5,3.2,Black,Black Leather,Yes,No,No,No,Yes,VIC,https://www.grays.com/lot/0001-21061771/motor-vehicles-motor-cycles/2013-ford-ranger-wildtrak-4x4-px-turbo-diesel-automatic-dual-cab,"Controls Broken Drivers seat controls
+Medium Dent on Around vehicle
+Paint fading Bonnet
+Front Cracked bumper.",active,23h 35m5s,7100.0,78.0,23h 35m5s,ford_ranger_dualcab_ute_diesel_auto,,2026-01-19T05:05:39
+2014,HOLDEN,Cruze,SRi-V JH,Hatchback,Automatic,Petrol,275843,5.0,6G1PE6EN4EL962391,2AE7OY,14-02-2026,4,1.6,Orange,Black Leather,Yes,Yes,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061781/motor-vehicles-motor-cycles/2014-holden-cruze-sri-v-jh-automatic-hatchback,"Dents or marks on body consistent with age and kilometres.
+Paint fading Mirrors
+Seat Torn Drivers seat",active,23h 31m20s,309.0,4.0,23h 31m20s,holden_cruze_hatch_petrol_auto_4cyl,,2026-01-19T05:05:39
+2016,HOLDEN,Captiva,7 LTZ AWD CG II,Wagon,Automatic,Diesel,247853,7.0,KL3CD2669GB511367,1HG9AI,27-04-2026,4,2.2,White,Black Leather,Yes,Yes,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061811/motor-vehicles-motor-cycles/2016-holden-captiva-7-ltz-awd-cg-ii-turbo-diesel-automatic-7-seats-wagon,"Dents or marks on body consistent with age and kilometres.
+Seat Torn Drivers
+Damaged Drivers door side light indicator",active,2d 23h 21m17s,409.0,8.0,2d 23h 21m17s,holden_captiva_suv_diesel_auto_4cyl,,2026-01-19T05:05:39
+2016,FORD,Ranger,XLT 4X4 PX II,Dual Cab,Automatic,Diesel,204857,5.0,MNAUMFF50GW538408,1RM7IH,03-04-2026,5,3.2,White,Black,Yes,No,No,No,Yes,VIC,https://www.grays.com/lot/0001-21061869/motor-vehicles-motor-cycles/2016-ford-ranger-xlt-4x4-px-ii-turbo-diesel-automatic-dual-cab,"Medium Dent on Around vehicle
+Medium Scratch on Around vehicle
+Engine light ON
+Other Warning light ON",active,1d 23h 2m14s,7501.0,47.0,1d 23h 2m14s,ford_ranger_dualcab_ute_diesel_auto,,2026-01-19T05:05:39
+2008,HOLDEN,Commodore,Omega Omega VE,Sedan,Automatic,Petrol,334432,5.0,6G1EK55759L311272,YMO985,07-01-2026,6,3.6,Navy Blue,Black,Yes,No,No,No,Yes,VIC,https://www.grays.com/lot/0001-21061878/motor-vehicles-motor-cycles/2008-holden-commodore-omega-omega-ve-automatic-sedan,"Glovebox Would not Open/Close
+Dents or marks on body consistent with age and kilometres.
+Door card Damaged.
+Front Seat worn Drivers seat",active,1d 22h 56m58s,250.0,1.0,1d 22h 56m58s,holden_commodore_sedan_petrol_auto_v6,,2026-01-19T05:05:39
+2016,MAZDA,3,Maxx BN,Hatchback,Automatic,Petrol,176966,5.0,JM0BN547810108453,1WI2WX,28-04-2026,4,2,White,Black,Yes,Yes,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061888/motor-vehicles-motor-cycles/2016-mazda-3-maxx-bn-automatic-hatchback,Dents or marks on body consistent with age and kilometres.,active,1d 22h 46m0s,6500.0,61.0,1d 22h 46m0s,mazda_3_hatch_petrol_auto_20_na,,2026-01-19T05:05:39
+2011,HOLDEN,Commodore,Berlina VE,Wagon,Automatic,Petrol,187191,5.0,6G1EL8E51BL533598,ADT579,15-03-2026,6,3,Blue,Black,Yes,No,Yes,Yes,Yes,VIC,https://www.grays.com/lot/0001-21061902/motor-vehicles-motor-cycles/2011-holden-commodore-berlina-ve-automatic-wagon,"Front Seat Stains Drivers
+Dents or marks on body consistent with age and kilometres.
+Damaged Left side indicator lens
+Medium Scratch on Around vehicle
+Hood Lining Sagging
+rear bumper Cracked bumper.
+Paint fading on various panels",active,2d 22h 35m16s,1100.0,6.0,2d 22h 35m16s,holden_commodore_wagon_petrol_auto_v6,,2026-01-19T05:05:39
+2013,TOYOTA,Corolla,Ascent ZRE182R,Hatchback,CVT,Petrol,264150,5.0,JTNKU3JE90J046473,1MY3PO,22-02-2026,4,1.8,Silver,Black,Yes,No,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061929/motor-vehicles-motor-cycles/2013-toyota-corolla-ascent-zre182r-cvt-hatchback,"Front Seat worn Drivers
+Dents or marks on body consistent with age and kilometres.
+Paint peeling Around vehicle
+Medium Scuff on Front bar",active,2d 22h 22m45s,609.0,7.0,2d 22h 22m45s,toyota_corolla_hatch_petrol_auto,,2026-01-19T05:05:39
+2008,HOLDEN,Commodore,Omega VE,Sedan,Automatic,Petrol,267672,5.0,6G1EK55B49L172577,XVR521,15-01-2026,6,3.6,White,Grey,Yes,Yes,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061943/motor-vehicles-motor-cycles/2008-holden-commodore-omega-ve-automatic-sedan,"Door card Worn.
+Seat Torn Drivers and back seats
+Dents or marks on body consistent with age and kilometres.
+Front Seat worn drivers",active,2d 22h 8m31s,9.0,1.0,2d 22h 8m31s,holden_commodore_sedan_petrol_auto_v6,,2026-01-19T05:05:39
+2010,MAZDA,3,Maxx Sport BL,Hatchback,Automatic,Petrol,122661,5.0,JM0BL10F100205984,YGP878,09-03-2026,4,2,Grey,Black Leather,Yes,Yes,Yes,Yes,Yes,VIC,https://www.grays.com/lot/0001-21061951/motor-vehicles-motor-cycles/2010-mazda-3-maxx-sport-bl-automatic-hatchback,"Door Mirror Broken Both
+Large Scuff on Around vehicle
+Damaged Rhr reflector
+Dents or marks on body consistent with age and kilometres.",active,2d 22h 6m58s,3700.0,35.0,2d 22h 6m58s,mazda_3_hatch_petrol_auto_20_na,,2026-01-19T05:05:39
+2002,HOLDEN,Commodore,Executive VX,Wagon,Automatic,Petrol,354936,5.0,6H8VXK35A2L909362,SML882,03-01-2026,6,3.8,White,Grey,Yes,Yes,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061285/motor-vehicles-motor-cycles/2002-holden-commodore-executive-vx-automatic-wagon,"Engine noise observed, Engine idling rough
+Hood Lining Sagging
+Drivers seat Controls inoperable
+Door card Damaged.
+Front seats torn
+Windscreen Cracked.
+Corrosion visible, Paint cracked Around vehicle
+Large Dents, scratches Around vehicle",active,3d 0h 7m15s,9.0,1.0,3d 0h 7m15s,holden_commodore_wagon_petrol_auto_v6,,2026-01-19T12:42:49
+1997,HOLDEN,Commodore,Executive VS,Sedan,Automatic,Petrol,234415,5.0,6H8VSK19HVL227782,No plates,Unregistered,6,3.8,Silver,Grey,Yes,No,No,No,Yes,VIC,https://www.grays.com/lot/0001-21061708/motor-vehicles-motor-cycles/1997-holden-commodore-executive-vs-automatic-sedan,"Engine noise observed.
+Engine idling rough
+Corrosion visible Around vehicle
+Paint fading Around vehicle
+Brakes require attention, Tilt tray required for collection
+Large Scuff on rear panel
+Paint fading various panels
+Medium Dent on various panels
+Large Scratch on front bumper",active,1d 23h 55m44s,9.0,1.0,1d 23h 55m44s,holden_commodore_sedan_petrol_auto_v6,,2026-01-19T12:42:49
+2014,HYUNDAI,I30,TROPHY GD,Hatchback,Automatic,Petrol,216624,5.0,KMHD351EMEU219762,No plates,Unregistered,4,1.8,White,Black Leather,Yes,No,Yes,Yes,Yes,VIC,https://www.grays.com/lot/0001-21061735/motor-vehicles-motor-cycles/2014-hyundai-i30-trophy-gd-automatic-hatchback,"Medium Scratch on Around vehicle
+Medium Dent on Around vehicle
+Front Seat worn driver side
+Dents or marks on body consistent with age and kilometres.
+Paint fading on roof",active,6m21s,4801.0,49.0,6m21s,hyundai_i30_hatch_petrol_auto_na_active_elite,,2026-01-19T12:42:49
+2007,VOLKSWAGEN,Golf,GT Sport TSI 1k,Hatchback,Automatic,Petrol,189104,5.0,WVWZZZ1KZ8U003848,2DS7UM,30-01-2026,4,1.4,Blue,Black Leather,Yes,No,No,Yes,Yes,VIC,https://www.grays.com/lot/0001-21061747/motor-vehicles-motor-cycles/2007-volkswagen-golf-gt-sport-tsi-1k-automatic-hatchback,"Engine noise observed.
+Dents or marks on body consistent with age and kilometres.
+Hood Lining Sagging",active,23h 42m9s,500.0,3.0,23h 42m9s,volkswagen_golf_hatch_petrol_auto_base,,2026-01-19T12:42:49
+2013,VOLKSWAGEN,Golf,90TSI A7,Hatchback,Automatic,Petrol,190242,5.0,WVWZZZAUZDW131943,AGE686,22-01-2026,4,1.4,Black,Multi,Yes,Yes,Yes,Yes,Yes,VIC,https://www.grays.com/lot/0001-21061754/motor-vehicles-motor-cycles/2013-volkswagen-golf-90tsi-a7-automatic-hatchback,"Front Seat Stains Drivers
+Dents or marks on body consistent with age and kilometres.
+Medium Scratch on Around vehicle",active,1d 23h 39m23s,913.0,10.0,1d 23h 39m23s,volkswagen_golf_hatch_petrol_auto_base,,2026-01-19T12:42:49
+2013,FORD,Ranger,Wildtrak 4x4 PX,Dual Cab,Automatic,Diesel,266198,5.0,MNAUMFF50DW196590,ZWO811,24-01-2026,5,3.2,Black,Black Leather,Yes,No,No,No,Yes,VIC,https://www.grays.com/lot/0001-21061771/motor-vehicles-motor-cycles/2013-ford-ranger-wildtrak-4x4-px-turbo-diesel-automatic-dual-cab,"Controls Broken Drivers seat controls
+Medium Dent on Around vehicle
+Paint fading Bonnet
+Front Cracked bumper.",active,23h 35m5s,7100.0,78.0,23h 35m5s,ford_ranger_dualcab_ute_diesel_auto,,2026-01-19T12:42:49
+2014,HOLDEN,Cruze,SRi-V JH,Hatchback,Automatic,Petrol,275843,5.0,6G1PE6EN4EL962391,2AE7OY,14-02-2026,4,1.6,Orange,Black Leather,Yes,Yes,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061781/motor-vehicles-motor-cycles/2014-holden-cruze-sri-v-jh-automatic-hatchback,"Dents or marks on body consistent with age and kilometres.
+Paint fading Mirrors
+Seat Torn Drivers seat",active,23h 31m20s,309.0,4.0,23h 31m20s,holden_cruze_hatch_petrol_auto_4cyl,,2026-01-19T12:42:49
+2016,HOLDEN,Captiva,7 LTZ AWD CG II,Wagon,Automatic,Diesel,247853,7.0,KL3CD2669GB511367,1HG9AI,27-04-2026,4,2.2,White,Black Leather,Yes,Yes,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061811/motor-vehicles-motor-cycles/2016-holden-captiva-7-ltz-awd-cg-ii-turbo-diesel-automatic-7-seats-wagon,"Dents or marks on body consistent with age and kilometres.
+Seat Torn Drivers
+Damaged Drivers door side light indicator",active,2d 23h 21m17s,409.0,8.0,2d 23h 21m17s,holden_captiva_suv_diesel_auto_4cyl,,2026-01-19T12:42:49
+2016,FORD,Ranger,XLT 4X4 PX II,Dual Cab,Automatic,Diesel,204857,5.0,MNAUMFF50GW538408,1RM7IH,03-04-2026,5,3.2,White,Black,Yes,No,No,No,Yes,VIC,https://www.grays.com/lot/0001-21061869/motor-vehicles-motor-cycles/2016-ford-ranger-xlt-4x4-px-ii-turbo-diesel-automatic-dual-cab,"Medium Dent on Around vehicle
+Medium Scratch on Around vehicle
+Engine light ON
+Other Warning light ON",active,1d 23h 2m14s,7501.0,47.0,1d 23h 2m14s,ford_ranger_dualcab_ute_diesel_auto,,2026-01-19T12:42:49
+2008,HOLDEN,Commodore,Omega Omega VE,Sedan,Automatic,Petrol,334432,5.0,6G1EK55759L311272,YMO985,07-01-2026,6,3.6,Navy Blue,Black,Yes,No,No,No,Yes,VIC,https://www.grays.com/lot/0001-21061878/motor-vehicles-motor-cycles/2008-holden-commodore-omega-omega-ve-automatic-sedan,"Glovebox Would not Open/Close
+Dents or marks on body consistent with age and kilometres.
+Door card Damaged.
+Front Seat worn Drivers seat",active,1d 22h 56m58s,250.0,1.0,1d 22h 56m58s,holden_commodore_sedan_petrol_auto_v6,,2026-01-19T12:42:49
+2016,MAZDA,3,Maxx BN,Hatchback,Automatic,Petrol,176966,5.0,JM0BN547810108453,1WI2WX,28-04-2026,4,2,White,Black,Yes,Yes,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061888/motor-vehicles-motor-cycles/2016-mazda-3-maxx-bn-automatic-hatchback,Dents or marks on body consistent with age and kilometres.,active,1d 22h 46m0s,6500.0,61.0,1d 22h 46m0s,mazda_3_hatch_petrol_auto_20_na,,2026-01-19T12:42:49
+2011,HOLDEN,Commodore,Berlina VE,Wagon,Automatic,Petrol,187191,5.0,6G1EL8E51BL533598,ADT579,15-03-2026,6,3,Blue,Black,Yes,No,Yes,Yes,Yes,VIC,https://www.grays.com/lot/0001-21061902/motor-vehicles-motor-cycles/2011-holden-commodore-berlina-ve-automatic-wagon,"Front Seat Stains Drivers
+Dents or marks on body consistent with age and kilometres.
+Damaged Left side indicator lens
+Medium Scratch on Around vehicle
+Hood Lining Sagging
+rear bumper Cracked bumper.
+Paint fading on various panels",active,2d 22h 35m16s,1100.0,6.0,2d 22h 35m16s,holden_commodore_wagon_petrol_auto_v6,,2026-01-19T12:42:49
+2013,TOYOTA,Corolla,Ascent ZRE182R,Hatchback,CVT,Petrol,264150,5.0,JTNKU3JE90J046473,1MY3PO,22-02-2026,4,1.8,Silver,Black,Yes,No,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061929/motor-vehicles-motor-cycles/2013-toyota-corolla-ascent-zre182r-cvt-hatchback,"Front Seat worn Drivers
+Dents or marks on body consistent with age and kilometres.
+Paint peeling Around vehicle
+Medium Scuff on Front bar",active,2d 22h 22m45s,609.0,7.0,2d 22h 22m45s,toyota_corolla_hatch_petrol_auto,,2026-01-19T12:42:49
+2008,HOLDEN,Commodore,Omega VE,Sedan,Automatic,Petrol,267672,5.0,6G1EK55B49L172577,XVR521,15-01-2026,6,3.6,White,Grey,Yes,Yes,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061943/motor-vehicles-motor-cycles/2008-holden-commodore-omega-ve-automatic-sedan,"Door card Worn.
+Seat Torn Drivers and back seats
+Dents or marks on body consistent with age and kilometres.
+Front Seat worn drivers",active,2d 22h 8m31s,9.0,1.0,2d 22h 8m31s,holden_commodore_sedan_petrol_auto_v6,,2026-01-19T12:42:49
+2010,MAZDA,3,Maxx Sport BL,Hatchback,Automatic,Petrol,122661,5.0,JM0BL10F100205984,YGP878,09-03-2026,4,2,Grey,Black Leather,Yes,Yes,Yes,Yes,Yes,VIC,https://www.grays.com/lot/0001-21061951/motor-vehicles-motor-cycles/2010-mazda-3-maxx-sport-bl-automatic-hatchback,"Door Mirror Broken Both
+Large Scuff on Around vehicle
+Damaged Rhr reflector
+Dents or marks on body consistent with age and kilometres.",active,2d 22h 6m58s,3700.0,35.0,2d 22h 6m58s,mazda_3_hatch_petrol_auto_20_na,,2026-01-19T12:42:49
+2002,HOLDEN,Commodore,Executive VX,Wagon,Automatic,Petrol,354936,5.0,6H8VXK35A2L909362,SML882,03-01-2026,6,3.8,White,Grey,Yes,Yes,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061285/motor-vehicles-motor-cycles/2002-holden-commodore-executive-vx-automatic-wagon,"Engine noise observed, Engine idling rough
+Hood Lining Sagging
+Drivers seat Controls inoperable
+Door card Damaged.
+Front seats torn
+Windscreen Cracked.
+Corrosion visible, Paint cracked Around vehicle
+Large Dents, scratches Around vehicle",active,3d 0h 7m15s,9.0,1.0,3d 0h 7m15s,holden_commodore_wagon_petrol_auto_v6,,2026-01-24T11:38:04
+1997,HOLDEN,Commodore,Executive VS,Sedan,Automatic,Petrol,234415,5.0,6H8VSK19HVL227782,No plates,Unregistered,6,3.8,Silver,Grey,Yes,No,No,No,Yes,VIC,https://www.grays.com/lot/0001-21061708/motor-vehicles-motor-cycles/1997-holden-commodore-executive-vs-automatic-sedan,"Engine noise observed.
+Engine idling rough
+Corrosion visible Around vehicle
+Paint fading Around vehicle
+Brakes require attention, Tilt tray required for collection
+Large Scuff on rear panel
+Paint fading various panels
+Medium Dent on various panels
+Large Scratch on front bumper",active,1d 23h 55m44s,9.0,1.0,1d 23h 55m44s,holden_commodore_sedan_petrol_auto_v6,,2026-01-24T11:38:04
+2014,HYUNDAI,I30,TROPHY GD,Hatchback,Automatic,Petrol,216624,5.0,KMHD351EMEU219762,No plates,Unregistered,4,1.8,White,Black Leather,Yes,No,Yes,Yes,Yes,VIC,https://www.grays.com/lot/0001-21061735/motor-vehicles-motor-cycles/2014-hyundai-i30-trophy-gd-automatic-hatchback,"Medium Scratch on Around vehicle
+Medium Dent on Around vehicle
+Front Seat worn driver side
+Dents or marks on body consistent with age and kilometres.
+Paint fading on roof",active,6m21s,4801.0,49.0,6m21s,hyundai_i30_hatch_petrol_auto_na_active_elite,,2026-01-24T11:38:04
+2007,VOLKSWAGEN,Golf,GT Sport TSI 1k,Hatchback,Automatic,Petrol,189104,5.0,WVWZZZ1KZ8U003848,2DS7UM,30-01-2026,4,1.4,Blue,Black Leather,Yes,No,No,Yes,Yes,VIC,https://www.grays.com/lot/0001-21061747/motor-vehicles-motor-cycles/2007-volkswagen-golf-gt-sport-tsi-1k-automatic-hatchback,"Engine noise observed.
+Dents or marks on body consistent with age and kilometres.
+Hood Lining Sagging",active,23h 42m9s,500.0,3.0,23h 42m9s,volkswagen_golf_hatch_petrol_auto_base,,2026-01-24T11:38:04
+2013,VOLKSWAGEN,Golf,90TSI A7,Hatchback,Automatic,Petrol,190242,5.0,WVWZZZAUZDW131943,AGE686,22-01-2026,4,1.4,Black,Multi,Yes,Yes,Yes,Yes,Yes,VIC,https://www.grays.com/lot/0001-21061754/motor-vehicles-motor-cycles/2013-volkswagen-golf-90tsi-a7-automatic-hatchback,"Front Seat Stains Drivers
+Dents or marks on body consistent with age and kilometres.
+Medium Scratch on Around vehicle",active,1d 23h 39m23s,913.0,10.0,1d 23h 39m23s,volkswagen_golf_hatch_petrol_auto_base,,2026-01-24T11:38:04
+2013,FORD,Ranger,Wildtrak 4x4 PX,Dual Cab,Automatic,Diesel,266198,5.0,MNAUMFF50DW196590,ZWO811,24-01-2026,5,3.2,Black,Black Leather,Yes,No,No,No,Yes,VIC,https://www.grays.com/lot/0001-21061771/motor-vehicles-motor-cycles/2013-ford-ranger-wildtrak-4x4-px-turbo-diesel-automatic-dual-cab,"Controls Broken Drivers seat controls
+Medium Dent on Around vehicle
+Paint fading Bonnet
+Front Cracked bumper.",active,23h 35m5s,7100.0,78.0,23h 35m5s,ford_ranger_dualcab_ute_diesel_auto,,2026-01-24T11:38:04
+2014,HOLDEN,Cruze,SRi-V JH,Hatchback,Automatic,Petrol,275843,5.0,6G1PE6EN4EL962391,2AE7OY,14-02-2026,4,1.6,Orange,Black Leather,Yes,Yes,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061781/motor-vehicles-motor-cycles/2014-holden-cruze-sri-v-jh-automatic-hatchback,"Dents or marks on body consistent with age and kilometres.
+Paint fading Mirrors
+Seat Torn Drivers seat",active,23h 31m20s,309.0,4.0,23h 31m20s,holden_cruze_hatch_petrol_auto_4cyl,,2026-01-24T11:38:04
+2016,HOLDEN,Captiva,7 LTZ AWD CG II,Wagon,Automatic,Diesel,247853,7.0,KL3CD2669GB511367,1HG9AI,27-04-2026,4,2.2,White,Black Leather,Yes,Yes,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061811/motor-vehicles-motor-cycles/2016-holden-captiva-7-ltz-awd-cg-ii-turbo-diesel-automatic-7-seats-wagon,"Dents or marks on body consistent with age and kilometres.
+Seat Torn Drivers
+Damaged Drivers door side light indicator",active,2d 23h 21m17s,409.0,8.0,2d 23h 21m17s,holden_captiva_suv_diesel_auto_4cyl,,2026-01-24T11:38:04
+2016,FORD,Ranger,XLT 4X4 PX II,Dual Cab,Automatic,Diesel,204857,5.0,MNAUMFF50GW538408,1RM7IH,03-04-2026,5,3.2,White,Black,Yes,No,No,No,Yes,VIC,https://www.grays.com/lot/0001-21061869/motor-vehicles-motor-cycles/2016-ford-ranger-xlt-4x4-px-ii-turbo-diesel-automatic-dual-cab,"Medium Dent on Around vehicle
+Medium Scratch on Around vehicle
+Engine light ON
+Other Warning light ON",active,1d 23h 2m14s,7501.0,47.0,1d 23h 2m14s,ford_ranger_dualcab_ute_diesel_auto,,2026-01-24T11:38:04
+2008,HOLDEN,Commodore,Omega Omega VE,Sedan,Automatic,Petrol,334432,5.0,6G1EK55759L311272,YMO985,07-01-2026,6,3.6,Navy Blue,Black,Yes,No,No,No,Yes,VIC,https://www.grays.com/lot/0001-21061878/motor-vehicles-motor-cycles/2008-holden-commodore-omega-omega-ve-automatic-sedan,"Glovebox Would not Open/Close
+Dents or marks on body consistent with age and kilometres.
+Door card Damaged.
+Front Seat worn Drivers seat",active,1d 22h 56m58s,250.0,1.0,1d 22h 56m58s,holden_commodore_sedan_petrol_auto_v6,,2026-01-24T11:38:04
+2016,MAZDA,3,Maxx BN,Hatchback,Automatic,Petrol,176966,5.0,JM0BN547810108453,1WI2WX,28-04-2026,4,2,White,Black,Yes,Yes,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061888/motor-vehicles-motor-cycles/2016-mazda-3-maxx-bn-automatic-hatchback,Dents or marks on body consistent with age and kilometres.,active,1d 22h 46m0s,6500.0,61.0,1d 22h 46m0s,mazda_3_hatch_petrol_auto_20_na,,2026-01-24T11:38:04
+2011,HOLDEN,Commodore,Berlina VE,Wagon,Automatic,Petrol,187191,5.0,6G1EL8E51BL533598,ADT579,15-03-2026,6,3,Blue,Black,Yes,No,Yes,Yes,Yes,VIC,https://www.grays.com/lot/0001-21061902/motor-vehicles-motor-cycles/2011-holden-commodore-berlina-ve-automatic-wagon,"Front Seat Stains Drivers
+Dents or marks on body consistent with age and kilometres.
+Damaged Left side indicator lens
+Medium Scratch on Around vehicle
+Hood Lining Sagging
+rear bumper Cracked bumper.
+Paint fading on various panels",active,2d 22h 35m16s,1100.0,6.0,2d 22h 35m16s,holden_commodore_wagon_petrol_auto_v6,,2026-01-24T11:38:04
+2013,TOYOTA,Corolla,Ascent ZRE182R,Hatchback,CVT,Petrol,264150,5.0,JTNKU3JE90J046473,1MY3PO,22-02-2026,4,1.8,Silver,Black,Yes,No,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061929/motor-vehicles-motor-cycles/2013-toyota-corolla-ascent-zre182r-cvt-hatchback,"Front Seat worn Drivers
+Dents or marks on body consistent with age and kilometres.
+Paint peeling Around vehicle
+Medium Scuff on Front bar",active,2d 22h 22m45s,609.0,7.0,2d 22h 22m45s,toyota_corolla_hatch_petrol_auto,,2026-01-24T11:38:04
+2008,HOLDEN,Commodore,Omega VE,Sedan,Automatic,Petrol,267672,5.0,6G1EK55B49L172577,XVR521,15-01-2026,6,3.6,White,Grey,Yes,Yes,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061943/motor-vehicles-motor-cycles/2008-holden-commodore-omega-ve-automatic-sedan,"Door card Worn.
+Seat Torn Drivers and back seats
+Dents or marks on body consistent with age and kilometres.
+Front Seat worn drivers",active,2d 22h 8m31s,9.0,1.0,2d 22h 8m31s,holden_commodore_sedan_petrol_auto_v6,,2026-01-24T11:38:04
+2010,MAZDA,3,Maxx Sport BL,Hatchback,Automatic,Petrol,122661,5.0,JM0BL10F100205984,YGP878,09-03-2026,4,2,Grey,Black Leather,Yes,Yes,Yes,Yes,Yes,VIC,https://www.grays.com/lot/0001-21061951/motor-vehicles-motor-cycles/2010-mazda-3-maxx-sport-bl-automatic-hatchback,"Door Mirror Broken Both
+Large Scuff on Around vehicle
+Damaged Rhr reflector
+Dents or marks on body consistent with age and kilometres.",active,2d 22h 6m58s,3700.0,35.0,2d 22h 6m58s,mazda_3_hatch_petrol_auto_20_na,,2026-01-24T11:38:04
+2019,TOYOTA,Camry,Ascent ASV70R,Sedan,Automatic,Petrol,102697,5.0,JTNBF3HK703046045,CW77TT,31-10-2026.,4,2.5,Silver,Black,Yes,No,No,No,Yes,NSW,https://www.grays.com/lot/0001-10351876/motor-vehicles-motor-cycles/2019-toyota-camry-ascent-asv70r-automatic-sedan-pinkslip-issued-19-1-26,Please refer to the photos or arrange inspection to view the condition of this vehicle.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,11h 40m56s,16200.0,119.0,11h 40m56s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T07:40:34
+2013,TOYOTA,Corolla,Ascent ZRE182R,Hatchback,CVT,Petrol,264150,5.0,JTNKU3JE90J046473,1MY3PO,22-02-2026,4,1.8,Silver,Black,Yes,No,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061929/motor-vehicles-motor-cycles/2013-toyota-corolla-ascent-zre182r-cvt-hatchback,"Front Seat worn Drivers
+Dents or marks on body consistent with age and kilometres.
+Paint peeling Around vehicle
+Medium Scuff on Front bar",toyota_corolla_hatch_petrol_auto_ascent_fwd_2013_2015,[OK],active,21 January 2026 20:00 AEDT,6000.0,82.0,21 January 2026 20:00 AEDT,toyota_corolla_hatch_petrol_auto_ascent_fwd_2013_2015,[OK],2026-01-25T07:40:34
+2022,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,90639,5.0,JTNB13HK603163386,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714118/motor-vehicles-motor-cycles/2022-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,"Front Seat Stains Lhf
+Dents or marks on body consistent with age and kilometres.",toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,21h 28m35s,19000.0,27.0,21h 28m35s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T07:40:34
+2022,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,91114,5.0,JTNB13HK103163084,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714119/motor-vehicles-motor-cycles/2022-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,21h 28m12s,19000.0,11.0,21h 28m12s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T07:40:34
+2021,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,54708,5.0,JTNB13HK803147898,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Yes,Yes,QLD,https://www.grays.com/lot/0001-50714120/motor-vehicles-motor-cycles/2021-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,21h 27m51s,21000.0,115.0,21h 27m51s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T07:40:34
+2022,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,90639,5.0,JTNB13HK603163386,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714246/motor-vehicles-motor-cycles/2022-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,"Front Seat Stains Lhf
+Dents or marks on body consistent with age and kilometres.",toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 1h 20m55s,20000.0,18.0,2d 1h 20m55s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T07:40:34
+2022,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,91114,5.0,JTNB13HK103163084,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714248/motor-vehicles-motor-cycles/2022-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 1h 20m49s,20000.0,27.0,2d 1h 20m49s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T07:40:34
+2021,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,90022,5.0,JTNB13HK103157463,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,No,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714310/motor-vehicles-motor-cycles/2021-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,"Medium Scuff on RHF door
+Dents or marks on body consistent with age and kilometres.",toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,3d 1h 20m42s,21000.0,7.0,3d 1h 20m42s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T07:40:34
+2021,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,80590,5.0,JTNB13HK403157683,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714311/motor-vehicles-motor-cycles/2021-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,3d 1h 20m36s,20000.0,4.0,3d 1h 20m36s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T07:40:34
+2021,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,75015,5.0,JTNB13HK103157768,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,No,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714312/motor-vehicles-motor-cycles/2021-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,3d 1h 20m28s,21000.0,19.0,3d 1h 20m28s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T07:40:34
+2023,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,60202,5.0,JTNB13HK603219438,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,No,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714313/motor-vehicles-motor-cycles/2023-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,3d 1h 20m22s,21000.0,7.0,3d 1h 20m22s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T07:40:34
+2021,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,108366,5.0,JTNB13HK503157594,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714314/motor-vehicles-motor-cycles/2021-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,3d 1h 20m16s,18000.0,3.0,3d 1h 20m16s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T07:40:34
+2019,TOYOTA,Camry,Ascent ASV70R,Sedan,Automatic,Petrol,102697,5.0,JTNBF3HK703046045,CW77TT,31-10-2026.,4,2.5,Silver,Black,Yes,No,No,No,Yes,NSW,https://www.grays.com/lot/0001-10351876/motor-vehicles-motor-cycles/2019-toyota-camry-ascent-asv70r-automatic-sedan-pinkslip-issued-19-1-26,Please refer to the photos or arrange inspection to view the condition of this vehicle.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,11h 40m56s,16200.0,119.0,11h 40m56s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T07:40:57
+2013,TOYOTA,Corolla,Ascent ZRE182R,Hatchback,CVT,Petrol,264150,5.0,JTNKU3JE90J046473,1MY3PO,22-02-2026,4,1.8,Silver,Black,Yes,No,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21061929/motor-vehicles-motor-cycles/2013-toyota-corolla-ascent-zre182r-cvt-hatchback,"Front Seat worn Drivers
+Dents or marks on body consistent with age and kilometres.
+Paint peeling Around vehicle
+Medium Scuff on Front bar",toyota_corolla_hatch_petrol_auto_ascent_fwd_2013_2015,[OK],active,21 January 2026 20:00 AEDT,6000.0,82.0,21 January 2026 20:00 AEDT,toyota_corolla_hatch_petrol_auto_ascent_fwd_2013_2015,[OK],2026-01-25T07:40:57
+2022,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,90639,5.0,JTNB13HK603163386,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714118/motor-vehicles-motor-cycles/2022-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,"Front Seat Stains Lhf
+Dents or marks on body consistent with age and kilometres.",toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,21h 28m35s,19000.0,27.0,21h 28m35s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T07:40:57
+2022,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,91114,5.0,JTNB13HK103163084,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714119/motor-vehicles-motor-cycles/2022-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,21h 28m12s,19000.0,11.0,21h 28m12s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T07:40:57
+2021,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,54708,5.0,JTNB13HK803147898,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Yes,Yes,QLD,https://www.grays.com/lot/0001-50714120/motor-vehicles-motor-cycles/2021-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,21h 27m51s,21000.0,115.0,21h 27m51s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T07:40:57
+2022,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,90639,5.0,JTNB13HK603163386,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714246/motor-vehicles-motor-cycles/2022-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,"Front Seat Stains Lhf
+Dents or marks on body consistent with age and kilometres.",toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 1h 20m55s,20000.0,18.0,2d 1h 20m55s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T07:40:57
+2022,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,91114,5.0,JTNB13HK103163084,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714248/motor-vehicles-motor-cycles/2022-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 1h 20m49s,20000.0,27.0,2d 1h 20m49s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T07:40:57
+2021,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,90022,5.0,JTNB13HK103157463,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,No,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714310/motor-vehicles-motor-cycles/2021-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,"Medium Scuff on RHF door
+Dents or marks on body consistent with age and kilometres.",toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,3d 1h 20m42s,21000.0,7.0,3d 1h 20m42s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T07:40:57
+2021,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,80590,5.0,JTNB13HK403157683,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714311/motor-vehicles-motor-cycles/2021-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,3d 1h 20m36s,20000.0,4.0,3d 1h 20m36s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T07:40:57
+2021,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,75015,5.0,JTNB13HK103157768,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,No,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714312/motor-vehicles-motor-cycles/2021-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,3d 1h 20m28s,21000.0,19.0,3d 1h 20m28s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T07:40:57
+2023,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,60202,5.0,JTNB13HK603219438,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,No,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714313/motor-vehicles-motor-cycles/2023-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,3d 1h 20m22s,21000.0,7.0,3d 1h 20m22s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T07:40:57
+2021,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,108366,5.0,JTNB13HK503157594,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714314/motor-vehicles-motor-cycles/2021-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,3d 1h 20m16s,18000.0,3.0,3d 1h 20m16s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T07:40:57
+2022,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,90639,5.0,JTNB13HK603163386,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714246/motor-vehicles-motor-cycles/2022-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,"Front Seat Stains Lhf
+Dents or marks on body consistent with age and kilometres.",toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,1d 23h 48m25s,20000.0,18.0,1d 23h 48m25s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T09:12:41
+2022,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,91114,5.0,JTNB13HK103163084,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714248/motor-vehicles-motor-cycles/2022-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,1d 23h 48m19s,20000.0,27.0,1d 23h 48m19s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T09:12:41
+2021,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,90022,5.0,JTNB13HK103157463,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,No,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714310/motor-vehicles-motor-cycles/2021-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,"Medium Scuff on RHF door
+Dents or marks on body consistent with age and kilometres.",toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 23h 48m5s,21000.0,7.0,2d 23h 48m5s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T09:12:41
+2021,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,80590,5.0,JTNB13HK403157683,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714311/motor-vehicles-motor-cycles/2021-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 23h 47m57s,20000.0,4.0,2d 23h 47m57s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T09:12:41
+2021,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,75015,5.0,JTNB13HK103157768,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,No,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714312/motor-vehicles-motor-cycles/2021-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 23h 47m51s,21000.0,19.0,2d 23h 47m51s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T09:12:41
+2023,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,60202,5.0,JTNB13HK603219438,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,No,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714313/motor-vehicles-motor-cycles/2023-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 23h 47m43s,21000.0,7.0,2d 23h 47m43s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T09:12:41
+2021,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,108366,5.0,JTNB13HK503157594,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714314/motor-vehicles-motor-cycles/2021-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 23h 47m37s,18000.0,3.0,2d 23h 47m37s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T09:12:41
+2015,TOYOTA,Hilux,4x4 SR KUN26R-PRADYQ,Dual Cab,Automatic,Diesel,346761,5.0,MR0FZ22G201093993,"Unregistered, no plates",Unregistered,4,3,White,Black,Yes,Yes,Yes,Yes,Yes,NSW,https://www.grays.com/lot/0001-10352288/motor-vehicles-motor-cycles/2015-toyota-hilux-4x4-sr-kun26r-pradyq-turbo-diesel-automatic-dual-cab,"Dents or marks on body consistent with age and kilometres.
+Dents or marks on body consistent with age and kilometres.
+Large Dent on Passenger side rear door
+Large Dent on Passenger side B pillar
+Large Dent on Drivers side of tub
+Dents or marks on body consistent with age and kilometres.
+Large Scratch on Paint damage on front bumper
+Corrosion visible Surface rust on bonnet, driver side A pillar, Passenger side A pillar, roof, passenger side doors, cab rear panel, tub
+Windscreen Chipped or Cracked.
+Large Scratch on Paint damage on driver and passenger side doors
+Large Scratch on Scratches around inside and outside of tub
+Large Dent on Drivers door
+Damaged Both rear light covers cracked
+Large Dent on Passenger side front quarter panel",toyota_hilux_dualcab_ute_diesel_auto_sr_4x4_2015_2023,[OK],active,2d 23h 41m11s,4100.0,58.0,2d 23h 41m11s,toyota_hilux_dualcab_ute_diesel_auto_sr_4x4_2015_2023,[OK],2026-01-25T09:21:22
+2020,TOYOTA,Corolla,SX MZEA12R,Sedan,CVT,Petrol,55626,5.0,JTDB43CEX0J060996,EKJ76U,Unregistered,4,2,Silver,Grey,Yes,Yes,Yes,Partial,Yes,NSW,https://www.grays.com/lot/0001-10352295/motor-vehicles-motor-cycles/2020-toyota-corolla-sx-mzea12r-cvt-sedan,"Hail damage visible.
+Large Dent on Drivers door
+Large Scratch on Passenger quarter panel, Front and rear bars",toyota_corolla_sedan_petrol_auto_ascent_sport_fwd_2019_2023,[OK],active,1d 23h 40m52s,13100.0,47.0,1d 23h 40m52s,toyota_corolla_sedan_petrol_auto_ascent_sport_fwd_2019_2023,[OK],2026-01-25T09:21:22
+2009,TOYOTA,Hilux,SR (4x4) KUN26R,Dual Cab,Automatic,Diesel,334056,5.0,MR0FZ22GX01025232,1CX1FE,17-09-2026,4,3,White,Grey,Yes,No,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21062206/motor-vehicles-motor-cycles/2009-toyota-hilux-sr-4x4-kun26r-turbo-diesel-automatic-dual-cab,"Medium Dent on Tub
+Paint cracked Tub
+Dents or marks on body consistent with age and kilometres.",toyota_hilux_dualcab_ute_diesel_auto_sr_4x4_2005_2014,[OK],active,2d 23h 40m32s,2300.0,33.0,2d 23h 40m32s,toyota_hilux_dualcab_ute_diesel_auto_sr_4x4_2005_2014,[OK],2026-01-25T09:21:22
+2022,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,90639,5.0,JTNB13HK603163386,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714246/motor-vehicles-motor-cycles/2022-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,"Front Seat Stains Lhf
+Dents or marks on body consistent with age and kilometres.",toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,1d 23h 40m16s,20000.0,18.0,1d 23h 40m16s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T09:21:22
+2020,TOYOTA,Camry,ASCENT HYBRID AXVH71R,Sedan,CVT,Hybrid,121821,5.0,JTNB23HK303082360,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714247/motor-vehicles-motor-cycles/2020-toyota-camry-ascent-hybrid-axvh71r-cvt-sedan,"Front Seat Stains Both
+Dents or marks on body consistent with age and kilometres.
+Large Scratch on various panels",toyota_camry_sedan_hybrid_auto_ascent_fwd_2018_2023,[OK],active,1d 23h 40m11s,21500.0,27.0,1d 23h 40m11s,toyota_camry_sedan_hybrid_auto_ascent_fwd_2018_2023,[OK],2026-01-25T09:21:22
+2022,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,91114,5.0,JTNB13HK103163084,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714248/motor-vehicles-motor-cycles/2022-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,1d 23h 40m3s,20000.0,27.0,1d 23h 40m3s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T09:21:22
+2021,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,90022,5.0,JTNB13HK103157463,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,No,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714310/motor-vehicles-motor-cycles/2021-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,"Medium Scuff on RHF door
+Dents or marks on body consistent with age and kilometres.",toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 23h 39m38s,21000.0,7.0,2d 23h 39m38s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T09:21:22
+2021,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,80590,5.0,JTNB13HK403157683,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714311/motor-vehicles-motor-cycles/2021-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 23h 39m31s,20000.0,4.0,2d 23h 39m31s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T09:21:22
+2021,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,75015,5.0,JTNB13HK103157768,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,No,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714312/motor-vehicles-motor-cycles/2021-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 23h 39m22s,21000.0,19.0,2d 23h 39m22s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T09:21:22
+2023,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,60202,5.0,JTNB13HK603219438,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,No,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714313/motor-vehicles-motor-cycles/2023-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 23h 39m14s,21000.0,7.0,2d 23h 39m14s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T09:21:22
+2021,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,108366,5.0,JTNB13HK503157594,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714314/motor-vehicles-motor-cycles/2021-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 23h 39m4s,18000.0,3.0,2d 23h 39m4s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T09:21:22
+2015,TOYOTA,Hilux,4x4 SR KUN26R-PRADYQ,Dual Cab,Automatic,Diesel,346761,5.0,MR0FZ22G201093993,"Unregistered, no plates",Unregistered,4,3,White,Black,Yes,Yes,Yes,Yes,Yes,NSW,https://www.grays.com/lot/0001-10352288/motor-vehicles-motor-cycles/2015-toyota-hilux-4x4-sr-kun26r-pradyq-turbo-diesel-automatic-dual-cab,"Dents or marks on body consistent with age and kilometres.
+Dents or marks on body consistent with age and kilometres.
+Large Dent on Passenger side rear door
+Large Dent on Passenger side B pillar
+Large Dent on Drivers side of tub
+Dents or marks on body consistent with age and kilometres.
+Large Scratch on Paint damage on front bumper
+Corrosion visible Surface rust on bonnet, driver side A pillar, Passenger side A pillar, roof, passenger side doors, cab rear panel, tub
+Windscreen Chipped or Cracked.
+Large Scratch on Paint damage on driver and passenger side doors
+Large Scratch on Scratches around inside and outside of tub
+Large Dent on Drivers door
+Damaged Both rear light covers cracked
+Large Dent on Passenger side front quarter panel",toyota_hilux_dualcab_ute_diesel_auto_sr_4x4_2015_2023,[OK],active,2d 23h 29m47s,4100,58.0,2d 23h 29m47s,toyota_hilux_dualcab_ute_diesel_auto_sr_4x4_2015_2023,[OK],2026-01-25T09:31:39
+2020,TOYOTA,Corolla,SX MZEA12R,Sedan,CVT,Petrol,55626,5.0,JTDB43CEX0J060996,EKJ76U,Unregistered,4,2,Silver,Grey,Yes,Yes,Yes,Partial,Yes,NSW,https://www.grays.com/lot/0001-10352295/motor-vehicles-motor-cycles/2020-toyota-corolla-sx-mzea12r-cvt-sedan,"Hail damage visible.
+Large Dent on Drivers door
+Large Scratch on Passenger quarter panel, Front and rear bars",toyota_corolla_sedan_petrol_auto_ascent_sport_fwd_2019_2023,[OK],active,1d 23h 29m38s,13100,47.0,1d 23h 29m38s,toyota_corolla_sedan_petrol_auto_ascent_sport_fwd_2019_2023,[OK],2026-01-25T09:31:39
+2009,TOYOTA,Hilux,SR (4x4) KUN26R,Dual Cab,Automatic,Diesel,334056,5.0,MR0FZ22GX01025232,1CX1FE,17-09-2026,4,3,White,Grey,Yes,No,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21062206/motor-vehicles-motor-cycles/2009-toyota-hilux-sr-4x4-kun26r-turbo-diesel-automatic-dual-cab,"Medium Dent on Tub
+Paint cracked Tub
+Dents or marks on body consistent with age and kilometres.",toyota_hilux_dualcab_ute_diesel_auto_sr_4x4_2005_2014,[OK],active,2d 23h 29m27s,2400,34.0,2d 23h 29m27s,toyota_hilux_dualcab_ute_diesel_auto_sr_4x4_2005_2014,[OK],2026-01-25T09:31:39
+2022,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,90639,5.0,JTNB13HK603163386,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714246/motor-vehicles-motor-cycles/2022-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,"Front Seat Stains Lhf
+Dents or marks on body consistent with age and kilometres.",toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,1d 23h 29m20s,20000,18.0,1d 23h 29m20s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T09:31:39
+2020,TOYOTA,Camry,ASCENT HYBRID AXVH71R,Sedan,CVT,Hybrid,121821,5.0,JTNB23HK303082360,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714247/motor-vehicles-motor-cycles/2020-toyota-camry-ascent-hybrid-axvh71r-cvt-sedan,"Front Seat Stains Both
+Dents or marks on body consistent with age and kilometres.
+Large Scratch on various panels",toyota_camry_sedan_hybrid_auto_ascent_fwd_2018_2023,[OK],active,1d 23h 29m14s,21500,27.0,1d 23h 29m14s,toyota_camry_sedan_hybrid_auto_ascent_fwd_2018_2023,[OK],2026-01-25T09:31:39
+2022,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,91114,5.0,JTNB13HK103163084,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714248/motor-vehicles-motor-cycles/2022-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,1d 23h 29m7s,20000,27.0,1d 23h 29m7s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T09:31:39
+2021,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,90022,5.0,JTNB13HK103157463,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,No,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714310/motor-vehicles-motor-cycles/2021-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,"Medium Scuff on RHF door
+Dents or marks on body consistent with age and kilometres.",toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 23h 29m0s,21000,7.0,2d 23h 29m0s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T09:31:39
+2021,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,80590,5.0,JTNB13HK403157683,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714311/motor-vehicles-motor-cycles/2021-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 23h 28m53s,20000,4.0,2d 23h 28m53s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T09:31:39
+2021,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,75015,5.0,JTNB13HK103157768,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,No,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714312/motor-vehicles-motor-cycles/2021-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 23h 28m46s,21000,19.0,2d 23h 28m46s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T09:31:39
+2023,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,60202,5.0,JTNB13HK603219438,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,No,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714313/motor-vehicles-motor-cycles/2023-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 23h 28m39s,21000,7.0,2d 23h 28m39s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T09:31:39
+2021,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,108366,5.0,JTNB13HK503157594,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714314/motor-vehicles-motor-cycles/2021-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 23h 28m33s,18000,3.0,2d 23h 28m33s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T09:31:39
+2015,TOYOTA,Hilux,4x4 SR KUN26R-PRADYQ,Dual Cab,Automatic,Diesel,346761,5.0,MR0FZ22G201093993,"Unregistered, no plates",Unregistered,4,3,White,Black,Yes,Yes,Yes,Yes,Yes,NSW,https://www.grays.com/lot/0001-10352288/motor-vehicles-motor-cycles/2015-toyota-hilux-4x4-sr-kun26r-pradyq-turbo-diesel-automatic-dual-cab,"Dents or marks on body consistent with age and kilometres.
+Dents or marks on body consistent with age and kilometres.
+Large Dent on Passenger side rear door
+Large Dent on Passenger side B pillar
+Large Dent on Drivers side of tub
+Dents or marks on body consistent with age and kilometres.
+Large Scratch on Paint damage on front bumper
+Corrosion visible Surface rust on bonnet, driver side A pillar, Passenger side A pillar, roof, passenger side doors, cab rear panel, tub
+Windscreen Chipped or Cracked.
+Large Scratch on Paint damage on driver and passenger side doors
+Large Scratch on Scratches around inside and outside of tub
+Large Dent on Drivers door
+Damaged Both rear light covers cracked
+Large Dent on Passenger side front quarter panel",toyota_hilux_dualcab_ute_diesel_auto_sr_4x4_2015_2023,[OK],active,2d 23h 29m47s,4100,58.0,2d 23h 29m47s,toyota_hilux_dualcab_ute_diesel_auto_sr_4x4_2015_2023,[OK],2026-01-25T09:44:04
+2020,TOYOTA,Corolla,SX MZEA12R,Sedan,CVT,Petrol,55626,5.0,JTDB43CEX0J060996,EKJ76U,Unregistered,4,2,Silver,Grey,Yes,Yes,Yes,Partial,Yes,NSW,https://www.grays.com/lot/0001-10352295/motor-vehicles-motor-cycles/2020-toyota-corolla-sx-mzea12r-cvt-sedan,"Hail damage visible.
+Large Dent on Drivers door
+Large Scratch on Passenger quarter panel, Front and rear bars",toyota_corolla_sedan_petrol_auto_ascent_sport_fwd_2019_2023,[OK],active,1d 23h 29m38s,13100,47.0,1d 23h 29m38s,toyota_corolla_sedan_petrol_auto_ascent_sport_fwd_2019_2023,[OK],2026-01-25T09:44:04
+2009,TOYOTA,Hilux,SR (4x4) KUN26R,Dual Cab,Automatic,Diesel,334056,5.0,MR0FZ22GX01025232,1CX1FE,17-09-2026,4,3,White,Grey,Yes,No,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21062206/motor-vehicles-motor-cycles/2009-toyota-hilux-sr-4x4-kun26r-turbo-diesel-automatic-dual-cab,"Medium Dent on Tub
+Paint cracked Tub
+Dents or marks on body consistent with age and kilometres.",toyota_hilux_dualcab_ute_diesel_auto_sr_4x4_2005_2014,[OK],active,2d 23h 29m27s,2400,34.0,2d 23h 29m27s,toyota_hilux_dualcab_ute_diesel_auto_sr_4x4_2005_2014,[OK],2026-01-25T09:44:04
+2022,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,90639,5.0,JTNB13HK603163386,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714246/motor-vehicles-motor-cycles/2022-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,"Front Seat Stains Lhf
+Dents or marks on body consistent with age and kilometres.",toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,1d 23h 29m20s,20000,18.0,1d 23h 29m20s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T09:44:04
+2020,TOYOTA,Camry,ASCENT HYBRID AXVH71R,Sedan,CVT,Hybrid,121821,5.0,JTNB23HK303082360,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714247/motor-vehicles-motor-cycles/2020-toyota-camry-ascent-hybrid-axvh71r-cvt-sedan,"Front Seat Stains Both
+Dents or marks on body consistent with age and kilometres.
+Large Scratch on various panels",toyota_camry_sedan_hybrid_auto_ascent_fwd_2018_2023,[OK],active,1d 23h 29m14s,21500,27.0,1d 23h 29m14s,toyota_camry_sedan_hybrid_auto_ascent_fwd_2018_2023,[OK],2026-01-25T09:44:04
+2022,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,91114,5.0,JTNB13HK103163084,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714248/motor-vehicles-motor-cycles/2022-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,1d 23h 29m7s,20000,27.0,1d 23h 29m7s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T09:44:04
+2021,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,90022,5.0,JTNB13HK103157463,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,No,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714310/motor-vehicles-motor-cycles/2021-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,"Medium Scuff on RHF door
+Dents or marks on body consistent with age and kilometres.",toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 23h 29m0s,21000,7.0,2d 23h 29m0s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T09:44:04
+2021,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,80590,5.0,JTNB13HK403157683,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714311/motor-vehicles-motor-cycles/2021-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 23h 28m53s,20000,4.0,2d 23h 28m53s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T09:44:04
+2021,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,75015,5.0,JTNB13HK103157768,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,No,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714312/motor-vehicles-motor-cycles/2021-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 23h 28m46s,21000,19.0,2d 23h 28m46s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T09:44:04
+2023,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,60202,5.0,JTNB13HK603219438,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,No,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714313/motor-vehicles-motor-cycles/2023-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 23h 28m39s,21000,7.0,2d 23h 28m39s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T09:44:04
+2021,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,108366,5.0,JTNB13HK503157594,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714314/motor-vehicles-motor-cycles/2021-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 23h 28m33s,18000,3.0,2d 23h 28m33s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T09:44:04
+2015,TOYOTA,Hilux,4x4 SR KUN26R-PRADYQ,Dual Cab,Automatic,Diesel,346761,5.0,MR0FZ22G201093993,"Unregistered, no plates",Unregistered,4,3,White,Black,Yes,Yes,Yes,Yes,Yes,NSW,https://www.grays.com/lot/0001-10352288/motor-vehicles-motor-cycles/2015-toyota-hilux-4x4-sr-kun26r-pradyq-turbo-diesel-automatic-dual-cab,"Dents or marks on body consistent with age and kilometres.
+Dents or marks on body consistent with age and kilometres.
+Large Dent on Passenger side rear door
+Large Dent on Passenger side B pillar
+Large Dent on Drivers side of tub
+Dents or marks on body consistent with age and kilometres.
+Large Scratch on Paint damage on front bumper
+Corrosion visible Surface rust on bonnet, driver side A pillar, Passenger side A pillar, roof, passenger side doors, cab rear panel, tub
+Windscreen Chipped or Cracked.
+Large Scratch on Paint damage on driver and passenger side doors
+Large Scratch on Scratches around inside and outside of tub
+Large Dent on Drivers door
+Damaged Both rear light covers cracked
+Large Dent on Passenger side front quarter panel",toyota_hilux_dualcab_ute_diesel_auto_sr_4x4_2015_2023,[OK],active,2d 22h 58m21s,4100,58.0,2d 22h 58m21s,toyota_hilux_dualcab_ute_diesel_auto_sr_4x4_2015_2023,[OK],2026-01-25T10:03:02
+2020,TOYOTA,Corolla,SX MZEA12R,Sedan,CVT,Petrol,55626,5.0,JTDB43CEX0J060996,EKJ76U,Unregistered,4,2,Silver,Grey,Yes,Yes,Yes,Partial,Yes,NSW,https://www.grays.com/lot/0001-10352295/motor-vehicles-motor-cycles/2020-toyota-corolla-sx-mzea12r-cvt-sedan,"Hail damage visible.
+Large Dent on Drivers door
+Large Scratch on Passenger quarter panel, Front and rear bars",toyota_corolla_sedan_petrol_auto_ascent_sport_fwd_2019_2023,[OK],active,1d 22h 58m13s,13100,47.0,1d 22h 58m13s,toyota_corolla_sedan_petrol_auto_ascent_sport_fwd_2019_2023,[OK],2026-01-25T10:03:02
+2009,TOYOTA,Hilux,SR (4x4) KUN26R,Dual Cab,Automatic,Diesel,334056,5.0,MR0FZ22GX01025232,1CX1FE,17-09-2026,4,3,White,Grey,Yes,No,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21062206/motor-vehicles-motor-cycles/2009-toyota-hilux-sr-4x4-kun26r-turbo-diesel-automatic-dual-cab,"Medium Dent on Tub
+Paint cracked Tub
+Dents or marks on body consistent with age and kilometres.",toyota_hilux_dualcab_ute_diesel_auto_sr_4x4_2005_2014,[OK],active,2d 22h 58m4s,2500,35.0,2d 22h 58m4s,toyota_hilux_dualcab_ute_diesel_auto_sr_4x4_2005_2014,[OK],2026-01-25T10:03:02
+2022,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,90639,5.0,JTNB13HK603163386,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714246/motor-vehicles-motor-cycles/2022-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,"Front Seat Stains Lhf
+Dents or marks on body consistent with age and kilometres.",toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,1d 22h 57m57s,20000,18.0,1d 22h 57m57s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T10:03:02
+2020,TOYOTA,Camry,ASCENT HYBRID AXVH71R,Sedan,CVT,Hybrid,121821,5.0,JTNB23HK303082360,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714247/motor-vehicles-motor-cycles/2020-toyota-camry-ascent-hybrid-axvh71r-cvt-sedan,"Front Seat Stains Both
+Dents or marks on body consistent with age and kilometres.
+Large Scratch on various panels",toyota_camry_sedan_hybrid_auto_ascent_fwd_2018_2023,[OK],active,1d 22h 57m49s,21500,27.0,1d 22h 57m49s,toyota_camry_sedan_hybrid_auto_ascent_fwd_2018_2023,[OK],2026-01-25T10:03:02
+2022,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,91114,5.0,JTNB13HK103163084,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714248/motor-vehicles-motor-cycles/2022-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,1d 22h 57m42s,20000,27.0,1d 22h 57m42s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T10:03:02
+2021,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,90022,5.0,JTNB13HK103157463,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,No,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714310/motor-vehicles-motor-cycles/2021-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,"Medium Scuff on RHF door
+Dents or marks on body consistent with age and kilometres.",toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 22h 57m31s,21000,7.0,2d 22h 57m31s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T10:03:02
+2021,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,80590,5.0,JTNB13HK403157683,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714311/motor-vehicles-motor-cycles/2021-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 22h 57m25s,20000,4.0,2d 22h 57m25s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T10:03:02
+2021,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,75015,5.0,JTNB13HK103157768,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,No,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714312/motor-vehicles-motor-cycles/2021-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 22h 57m17s,21000,19.0,2d 22h 57m17s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T10:03:02
+2023,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,60202,5.0,JTNB13HK603219438,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,No,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714313/motor-vehicles-motor-cycles/2023-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 22h 57m10s,21000,7.0,2d 22h 57m10s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T10:03:02
+2021,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,108366,5.0,JTNB13HK503157594,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714314/motor-vehicles-motor-cycles/2021-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 22h 57m4s,18000,3.0,2d 22h 57m4s,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],2026-01-25T10:03:02
+2015,TOYOTA,Hilux,4x4 SR KUN26R-PRADYQ,Dual Cab,Automatic,Diesel,346761,5.0,MR0FZ22G201093993,"Unregistered, no plates",Unregistered,4,3,White,Black,Yes,Yes,Yes,Yes,Yes,NSW,https://www.grays.com/lot/0001-10352288/motor-vehicles-motor-cycles/2015-toyota-hilux-4x4-sr-kun26r-pradyq-turbo-diesel-automatic-dual-cab,"Dents or marks on body consistent with age and kilometres.
+Dents or marks on body consistent with age and kilometres.
+Large Dent on Passenger side rear door
+Large Dent on Passenger side B pillar
+Large Dent on Drivers side of tub
+Dents or marks on body consistent with age and kilometres.
+Large Scratch on Paint damage on front bumper
+Corrosion visible Surface rust on bonnet, driver side A pillar, Passenger side A pillar, roof, passenger side doors, cab rear panel, tub
+Windscreen Chipped or Cracked.
+Large Scratch on Paint damage on driver and passenger side doors
+Large Scratch on Scratches around inside and outside of tub
+Large Dent on Drivers door
+Damaged Both rear light covers cracked
+Large Dent on Passenger side front quarter panel",toyota_hilux_dualcab_ute_diesel_auto_sr_4x4_2015_2023,[OK],Active,2d 19h 57m10s,4200.0,59.0,2d 19h 57m10s,hilux | dualcab_ute_diesel_auto | NA | 2015,[OK],2026-01-25T13:46:45
+2020,TOYOTA,Corolla,SX MZEA12R,Sedan,CVT,Petrol,55626,5.0,JTDB43CEX0J060996,EKJ76U,Unregistered,4,2,Silver,Grey,Yes,Yes,Yes,Partial,Yes,NSW,https://www.grays.com/lot/0001-10352295/motor-vehicles-motor-cycles/2020-toyota-corolla-sx-mzea12r-cvt-sedan,"Hail damage visible.
+Large Dent on Drivers door
+Large Scratch on Passenger quarter panel, Front and rear bars",toyota_corolla_sedan_petrol_auto_ascent_sport_fwd_2019_2023,[OK],Active,1d 19h 57m2s,13300.0,49.0,1d 19h 57m2s,corolla | sedan_petrol_auto | NA | 2020,[OK],2026-01-25T13:46:45
+2009,TOYOTA,Hilux,SR (4x4) KUN26R,Dual Cab,Automatic,Diesel,334056,5.0,MR0FZ22GX01025232,1CX1FE,17-09-2026,4,3,White,Grey,Yes,No,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21062206/motor-vehicles-motor-cycles/2009-toyota-hilux-sr-4x4-kun26r-turbo-diesel-automatic-dual-cab,"Medium Dent on Tub
+Paint cracked Tub
+Dents or marks on body consistent with age and kilometres.",toyota_hilux_dualcab_ute_diesel_auto_sr_4x4_2005_2014,[OK],active,2d 22h 58m4s,2500.0,35.0,2d 22h 58m4s,hilux | dualcab_ute_diesel_auto | NA | 2009,[OK],2026-01-25T13:46:45
+2022,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,90639,5.0,JTNB13HK603163386,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714246/motor-vehicles-motor-cycles/2022-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,"Front Seat Stains Lhf
+Dents or marks on body consistent with age and kilometres.",toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,1d 22h 57m57s,20000.0,18.0,1d 22h 57m57s,camry | sedan_petrol_auto | ASV70R | 2020,[OK],2026-01-25T13:46:45
+2020,TOYOTA,Camry,ASCENT HYBRID AXVH71R,Sedan,CVT,Hybrid,121821,5.0,JTNB23HK303082360,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714247/motor-vehicles-motor-cycles/2020-toyota-camry-ascent-hybrid-axvh71r-cvt-sedan,"Front Seat Stains Both
+Dents or marks on body consistent with age and kilometres.
+Large Scratch on various panels",toyota_camry_sedan_hybrid_auto_ascent_fwd_2018_2023,[OK],active,1d 22h 57m49s,21500.0,27.0,1d 22h 57m49s,camry | sedan_hybrid_auto | NA | 2020,[OK],2026-01-25T13:46:45
+2022,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,91114,5.0,JTNB13HK103163084,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714248/motor-vehicles-motor-cycles/2022-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,1d 22h 57m42s,20000.0,27.0,1d 22h 57m42s,camry | sedan_petrol_auto | ASV70R | 2020,[OK],2026-01-25T13:46:45
+2021,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,90022,5.0,JTNB13HK103157463,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,No,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714310/motor-vehicles-motor-cycles/2021-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,"Medium Scuff on RHF door
+Dents or marks on body consistent with age and kilometres.",toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 22h 57m31s,21000.0,7.0,2d 22h 57m31s,camry | sedan_petrol_auto | ASV70R | 2020,[OK],2026-01-25T13:46:45
+2021,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,80590,5.0,JTNB13HK403157683,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714311/motor-vehicles-motor-cycles/2021-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 22h 57m25s,20000.0,4.0,2d 22h 57m25s,camry | sedan_petrol_auto | ASV70R | 2020,[OK],2026-01-25T13:46:45
+2021,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,75015,5.0,JTNB13HK103157768,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,No,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714312/motor-vehicles-motor-cycles/2021-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 22h 57m17s,21000.0,19.0,2d 22h 57m17s,camry | sedan_petrol_auto | ASV70R | 2020,[OK],2026-01-25T13:46:45
+2023,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,60202,5.0,JTNB13HK603219438,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,No,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714313/motor-vehicles-motor-cycles/2023-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 22h 57m10s,21000.0,7.0,2d 22h 57m10s,camry | sedan_petrol_auto | ASV70R | 2020,[OK],2026-01-25T13:46:45
+2021,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,108366,5.0,JTNB13HK503157594,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714314/motor-vehicles-motor-cycles/2021-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 22h 57m4s,18000.0,3.0,2d 22h 57m4s,camry | sedan_petrol_auto | ASV70R | 2020,[OK],2026-01-25T13:46:45
+2015,TOYOTA,Hilux,4x4 SR KUN26R-PRADYQ,Dual Cab,Automatic,Diesel,346761,5.0,MR0FZ22G201093993,"Unregistered, no plates",Unregistered,4,3,White,Black,Yes,Yes,Yes,Yes,Yes,NSW,https://www.grays.com/lot/0001-10352288/motor-vehicles-motor-cycles/2015-toyota-hilux-4x4-sr-kun26r-pradyq-turbo-diesel-automatic-dual-cab,"Dents or marks on body consistent with age and kilometres.
+Dents or marks on body consistent with age and kilometres.
+Large Dent on Passenger side rear door
+Large Dent on Passenger side B pillar
+Large Dent on Drivers side of tub
+Dents or marks on body consistent with age and kilometres.
+Large Scratch on Paint damage on front bumper
+Corrosion visible Surface rust on bonnet, driver side A pillar, Passenger side A pillar, roof, passenger side doors, cab rear panel, tub
+Windscreen Chipped or Cracked.
+Large Scratch on Paint damage on driver and passenger side doors
+Large Scratch on Scratches around inside and outside of tub
+Large Dent on Drivers door
+Damaged Both rear light covers cracked
+Large Dent on Passenger side front quarter panel",toyota_hilux_dualcab_ute_diesel_auto_sr_4x4_2015_2023,[OK],Active,2d 19h 57m10s,4200.0,59.0,2d 19h 57m10s,hilux | dualcab_ute_diesel_auto | KE | 2015,[OK],2026-01-25T13:49:55
+2020,TOYOTA,Corolla,SX MZEA12R,Sedan,CVT,Petrol,55626,5.0,JTDB43CEX0J060996,EKJ76U,Unregistered,4,2,Silver,Grey,Yes,Yes,Yes,Partial,Yes,NSW,https://www.grays.com/lot/0001-10352295/motor-vehicles-motor-cycles/2020-toyota-corolla-sx-mzea12r-cvt-sedan,"Hail damage visible.
+Large Dent on Drivers door
+Large Scratch on Passenger quarter panel, Front and rear bars",toyota_corolla_sedan_petrol_auto_ascent_sport_fwd_2019_2023,[OK],Active,1d 19h 57m2s,13300.0,49.0,1d 19h 57m2s,corolla | sedan_petrol_auto | E210 | 2022,[OK],2026-01-25T13:49:55
+2009,TOYOTA,Hilux,SR (4x4) KUN26R,Dual Cab,Automatic,Diesel,334056,5.0,MR0FZ22GX01025232,1CX1FE,17-09-2026,4,3,White,Grey,Yes,No,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21062206/motor-vehicles-motor-cycles/2009-toyota-hilux-sr-4x4-kun26r-turbo-diesel-automatic-dual-cab,"Medium Dent on Tub
+Paint cracked Tub
+Dents or marks on body consistent with age and kilometres.",toyota_hilux_dualcab_ute_diesel_auto_sr_4x4_2005_2014,[OK],active,2d 22h 58m4s,2500.0,35.0,2d 22h 58m4s,hilux | dualcab_ute_diesel_auto | NA | 2009,[OK],2026-01-25T13:49:55
+2022,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,90639,5.0,JTNB13HK603163386,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714246/motor-vehicles-motor-cycles/2022-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,"Front Seat Stains Lhf
+Dents or marks on body consistent with age and kilometres.",toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,1d 22h 57m57s,20000.0,18.0,1d 22h 57m57s,camry | sedan_petrol_auto | ASV70R | 2020,[OK],2026-01-25T13:49:55
+2020,TOYOTA,Camry,ASCENT HYBRID AXVH71R,Sedan,CVT,Hybrid,121821,5.0,JTNB23HK303082360,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714247/motor-vehicles-motor-cycles/2020-toyota-camry-ascent-hybrid-axvh71r-cvt-sedan,"Front Seat Stains Both
+Dents or marks on body consistent with age and kilometres.
+Large Scratch on various panels",toyota_camry_sedan_hybrid_auto_ascent_fwd_2018_2023,[OK],active,1d 22h 57m49s,21500.0,27.0,1d 22h 57m49s,camry | sedan_hybrid_auto | KF | 2020,[OK],2026-01-25T13:49:55
+2022,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,91114,5.0,JTNB13HK103163084,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714248/motor-vehicles-motor-cycles/2022-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,1d 22h 57m42s,20000.0,27.0,1d 22h 57m42s,camry | sedan_petrol_auto | ASV70R | 2020,[OK],2026-01-25T13:49:55
+2021,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,90022,5.0,JTNB13HK103157463,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,No,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714310/motor-vehicles-motor-cycles/2021-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,"Medium Scuff on RHF door
+Dents or marks on body consistent with age and kilometres.",toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 22h 57m31s,21000.0,7.0,2d 22h 57m31s,camry | sedan_petrol_auto | ASV70R | 2020,[OK],2026-01-25T13:49:55
+2021,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,80590,5.0,JTNB13HK403157683,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714311/motor-vehicles-motor-cycles/2021-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 22h 57m25s,20000.0,4.0,2d 22h 57m25s,camry | sedan_petrol_auto | ASV70R | 2020,[OK],2026-01-25T13:49:55
+2021,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,75015,5.0,JTNB13HK103157768,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,No,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714312/motor-vehicles-motor-cycles/2021-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 22h 57m17s,21000.0,19.0,2d 22h 57m17s,camry | sedan_petrol_auto | ASV70R | 2020,[OK],2026-01-25T13:49:55
+2023,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,60202,5.0,JTNB13HK603219438,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,No,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714313/motor-vehicles-motor-cycles/2023-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 22h 57m10s,21000.0,7.0,2d 22h 57m10s,camry | sedan_petrol_auto | ASV70R | 2020,[OK],2026-01-25T13:49:55
+2021,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,108366,5.0,JTNB13HK503157594,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714314/motor-vehicles-motor-cycles/2021-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 22h 57m4s,18000.0,3.0,2d 22h 57m4s,camry | sedan_petrol_auto | ASV70R | 2020,[OK],2026-01-25T13:49:55
+2015,TOYOTA,Hilux,4x4 SR KUN26R-PRADYQ,Dual Cab,Automatic,Diesel,346761,5.0,MR0FZ22G201093993,"Unregistered, no plates",Unregistered,4,3,White,Black,Yes,Yes,Yes,Yes,Yes,NSW,https://www.grays.com/lot/0001-10352288/motor-vehicles-motor-cycles/2015-toyota-hilux-4x4-sr-kun26r-pradyq-turbo-diesel-automatic-dual-cab,"Dents or marks on body consistent with age and kilometres.
+Dents or marks on body consistent with age and kilometres.
+Large Dent on Passenger side rear door
+Large Dent on Passenger side B pillar
+Large Dent on Drivers side of tub
+Dents or marks on body consistent with age and kilometres.
+Large Scratch on Paint damage on front bumper
+Corrosion visible Surface rust on bonnet, driver side A pillar, Passenger side A pillar, roof, passenger side doors, cab rear panel, tub
+Windscreen Chipped or Cracked.
+Large Scratch on Paint damage on driver and passenger side doors
+Large Scratch on Scratches around inside and outside of tub
+Large Dent on Drivers door
+Damaged Both rear light covers cracked
+Large Dent on Passenger side front quarter panel",toyota_hilux_dualcab_ute_diesel_auto_sr_4x4_2015_2023,[OK],Active,2d 19h 57m10s,4200.0,59.0,2d 19h 57m10s,hilux | dualcab_ute_diesel_auto | NA | 2015,[OK],2026-01-25T13:51:08
+2020,TOYOTA,Corolla,SX MZEA12R,Sedan,CVT,Petrol,55626,5.0,JTDB43CEX0J060996,EKJ76U,Unregistered,4,2,Silver,Grey,Yes,Yes,Yes,Partial,Yes,NSW,https://www.grays.com/lot/0001-10352295/motor-vehicles-motor-cycles/2020-toyota-corolla-sx-mzea12r-cvt-sedan,"Hail damage visible.
+Large Dent on Drivers door
+Large Scratch on Passenger quarter panel, Front and rear bars",toyota_corolla_sedan_petrol_auto_ascent_sport_fwd_2019_2023,[OK],Active,1d 19h 57m2s,13300.0,49.0,1d 19h 57m2s,corolla | sedan_petrol_auto | E210 | 2022,[OK],2026-01-25T13:51:08
+2009,TOYOTA,Hilux,SR (4x4) KUN26R,Dual Cab,Automatic,Diesel,334056,5.0,MR0FZ22GX01025232,1CX1FE,17-09-2026,4,3,White,Grey,Yes,No,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21062206/motor-vehicles-motor-cycles/2009-toyota-hilux-sr-4x4-kun26r-turbo-diesel-automatic-dual-cab,"Medium Dent on Tub
+Paint cracked Tub
+Dents or marks on body consistent with age and kilometres.",toyota_hilux_dualcab_ute_diesel_auto_sr_4x4_2005_2014,[OK],active,2d 22h 58m4s,2500.0,35.0,2d 22h 58m4s,hilux | dualcab_ute_diesel_auto | NA | 2009,[OK],2026-01-25T13:51:08
+2022,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,90639,5.0,JTNB13HK603163386,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714246/motor-vehicles-motor-cycles/2022-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,"Front Seat Stains Lhf
+Dents or marks on body consistent with age and kilometres.",toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,1d 22h 57m57s,20000.0,18.0,1d 22h 57m57s,camry | sedan_petrol_auto | ASV70R | 2020,[OK],2026-01-25T13:51:08
+2020,TOYOTA,Camry,ASCENT HYBRID AXVH71R,Sedan,CVT,Hybrid,121821,5.0,JTNB23HK303082360,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714247/motor-vehicles-motor-cycles/2020-toyota-camry-ascent-hybrid-axvh71r-cvt-sedan,"Front Seat Stains Both
+Dents or marks on body consistent with age and kilometres.
+Large Scratch on various panels",toyota_camry_sedan_hybrid_auto_ascent_fwd_2018_2023,[OK],active,1d 22h 57m49s,21500.0,27.0,1d 22h 57m49s,camry | sedan_hybrid_auto | NA | 2020,[OK],2026-01-25T13:51:08
+2022,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,91114,5.0,JTNB13HK103163084,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714248/motor-vehicles-motor-cycles/2022-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,1d 22h 57m42s,20000.0,27.0,1d 22h 57m42s,camry | sedan_petrol_auto | ASV70R | 2020,[OK],2026-01-25T13:51:08
+2021,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,90022,5.0,JTNB13HK103157463,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,No,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714310/motor-vehicles-motor-cycles/2021-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,"Medium Scuff on RHF door
+Dents or marks on body consistent with age and kilometres.",toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 22h 57m31s,21000.0,7.0,2d 22h 57m31s,camry | sedan_petrol_auto | ASV70R | 2020,[OK],2026-01-25T13:51:08
+2021,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,80590,5.0,JTNB13HK403157683,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714311/motor-vehicles-motor-cycles/2021-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 22h 57m25s,20000.0,4.0,2d 22h 57m25s,camry | sedan_petrol_auto | ASV70R | 2020,[OK],2026-01-25T13:51:08
+2021,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,75015,5.0,JTNB13HK103157768,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,No,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714312/motor-vehicles-motor-cycles/2021-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 22h 57m17s,21000.0,19.0,2d 22h 57m17s,camry | sedan_petrol_auto | ASV70R | 2020,[OK],2026-01-25T13:51:08
+2023,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,60202,5.0,JTNB13HK603219438,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,No,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714313/motor-vehicles-motor-cycles/2023-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 22h 57m10s,21000.0,7.0,2d 22h 57m10s,camry | sedan_petrol_auto | ASV70R | 2020,[OK],2026-01-25T13:51:08
+2021,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,108366,5.0,JTNB13HK503157594,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714314/motor-vehicles-motor-cycles/2021-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 22h 57m4s,18000.0,3.0,2d 22h 57m4s,camry | sedan_petrol_auto | ASV70R | 2020,[OK],2026-01-25T13:51:08
+2015,TOYOTA,Hilux,4x4 SR KUN26R-PRADYQ,Dual Cab,Automatic,Diesel,346761,5.0,MR0FZ22G201093993,"Unregistered, no plates",Unregistered,4,3,White,Black,Yes,Yes,Yes,Yes,Yes,NSW,https://www.grays.com/lot/0001-10352288/motor-vehicles-motor-cycles/2015-toyota-hilux-4x4-sr-kun26r-pradyq-turbo-diesel-automatic-dual-cab,"Dents or marks on body consistent with age and kilometres.
+Dents or marks on body consistent with age and kilometres.
+Large Dent on Passenger side rear door
+Large Dent on Passenger side B pillar
+Large Dent on Drivers side of tub
+Dents or marks on body consistent with age and kilometres.
+Large Scratch on Paint damage on front bumper
+Corrosion visible Surface rust on bonnet, driver side A pillar, Passenger side A pillar, roof, passenger side doors, cab rear panel, tub
+Windscreen Chipped or Cracked.
+Large Scratch on Paint damage on driver and passenger side doors
+Large Scratch on Scratches around inside and outside of tub
+Large Dent on Drivers door
+Damaged Both rear light covers cracked
+Large Dent on Passenger side front quarter panel",toyota_hilux_dualcab_ute_diesel_auto_sr_4x4_2015_2023,[OK],Active,2d 19h 57m10s,4200.0,59.0,2d 19h 57m10s,hilux | dualcab_ute_diesel_auto | GUN126R | 2021,[OK],2026-01-25T13:52:35
+2020,TOYOTA,Corolla,SX MZEA12R,Sedan,CVT,Petrol,55626,5.0,JTDB43CEX0J060996,EKJ76U,Unregistered,4,2,Silver,Grey,Yes,Yes,Yes,Partial,Yes,NSW,https://www.grays.com/lot/0001-10352295/motor-vehicles-motor-cycles/2020-toyota-corolla-sx-mzea12r-cvt-sedan,"Hail damage visible.
+Large Dent on Drivers door
+Large Scratch on Passenger quarter panel, Front and rear bars",toyota_corolla_sedan_petrol_auto_ascent_sport_fwd_2019_2023,[OK],Active,1d 19h 57m2s,13300.0,49.0,1d 19h 57m2s,corolla | sedan_petrol_auto | E210 | 2022,[OK],2026-01-25T13:52:35
+2009,TOYOTA,Hilux,SR (4x4) KUN26R,Dual Cab,Automatic,Diesel,334056,5.0,MR0FZ22GX01025232,1CX1FE,17-09-2026,4,3,White,Grey,Yes,No,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21062206/motor-vehicles-motor-cycles/2009-toyota-hilux-sr-4x4-kun26r-turbo-diesel-automatic-dual-cab,"Medium Dent on Tub
+Paint cracked Tub
+Dents or marks on body consistent with age and kilometres.",toyota_hilux_dualcab_ute_diesel_auto_sr_4x4_2005_2014,[OK],active,2d 22h 58m4s,2500.0,35.0,2d 22h 58m4s,hilux | dualcab_ute_diesel_auto | KUN26R | 2006,[OK],2026-01-25T13:52:35
+2022,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,90639,5.0,JTNB13HK603163386,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714246/motor-vehicles-motor-cycles/2022-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,"Front Seat Stains Lhf
+Dents or marks on body consistent with age and kilometres.",toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,1d 22h 57m57s,20000.0,18.0,1d 22h 57m57s,camry | sedan_petrol_auto | ASV70R | 2020,[OK],2026-01-25T13:52:35
+2020,TOYOTA,Camry,ASCENT HYBRID AXVH71R,Sedan,CVT,Hybrid,121821,5.0,JTNB23HK303082360,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714247/motor-vehicles-motor-cycles/2020-toyota-camry-ascent-hybrid-axvh71r-cvt-sedan,"Front Seat Stains Both
+Dents or marks on body consistent with age and kilometres.
+Large Scratch on various panels",toyota_camry_sedan_hybrid_auto_ascent_fwd_2018_2023,[OK],active,1d 22h 57m49s,21500.0,27.0,1d 22h 57m49s,camry | sedan_hybrid_auto | NA | 2020,[OK],2026-01-25T13:52:35
+2022,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,91114,5.0,JTNB13HK103163084,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714248/motor-vehicles-motor-cycles/2022-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,1d 22h 57m42s,20000.0,27.0,1d 22h 57m42s,camry | sedan_petrol_auto | ASV70R | 2020,[OK],2026-01-25T13:52:35
+2021,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,90022,5.0,JTNB13HK103157463,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,No,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714310/motor-vehicles-motor-cycles/2021-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,"Medium Scuff on RHF door
+Dents or marks on body consistent with age and kilometres.",toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 22h 57m31s,21000.0,7.0,2d 22h 57m31s,camry | sedan_petrol_auto | ASV70R | 2020,[OK],2026-01-25T13:52:35
+2021,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,80590,5.0,JTNB13HK403157683,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714311/motor-vehicles-motor-cycles/2021-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 22h 57m25s,20000.0,4.0,2d 22h 57m25s,camry | sedan_petrol_auto | ASV70R | 2020,[OK],2026-01-25T13:52:35
+2021,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,75015,5.0,JTNB13HK103157768,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,No,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714312/motor-vehicles-motor-cycles/2021-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 22h 57m17s,21000.0,19.0,2d 22h 57m17s,camry | sedan_petrol_auto | ASV70R | 2020,[OK],2026-01-25T13:52:35
+2023,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,60202,5.0,JTNB13HK603219438,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,No,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714313/motor-vehicles-motor-cycles/2023-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 22h 57m10s,21000.0,7.0,2d 22h 57m10s,camry | sedan_petrol_auto | ASV70R | 2020,[OK],2026-01-25T13:52:35
+2021,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,108366,5.0,JTNB13HK503157594,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714314/motor-vehicles-motor-cycles/2021-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 22h 57m4s,18000.0,3.0,2d 22h 57m4s,camry | sedan_petrol_auto | ASV70R | 2020,[OK],2026-01-25T13:52:35
+2015,TOYOTA,Hilux,4x4 SR KUN26R-PRADYQ,Dual Cab,Automatic,Diesel,346761,5.0,MR0FZ22G201093993,"Unregistered, no plates",Unregistered,4,3,White,Black,Yes,Yes,Yes,Yes,Yes,NSW,https://www.grays.com/lot/0001-10352288/motor-vehicles-motor-cycles/2015-toyota-hilux-4x4-sr-kun26r-pradyq-turbo-diesel-automatic-dual-cab,"Dents or marks on body consistent with age and kilometres.
+Dents or marks on body consistent with age and kilometres.
+Large Dent on Passenger side rear door
+Large Dent on Passenger side B pillar
+Large Dent on Drivers side of tub
+Dents or marks on body consistent with age and kilometres.
+Large Scratch on Paint damage on front bumper
+Corrosion visible Surface rust on bonnet, driver side A pillar, Passenger side A pillar, roof, passenger side doors, cab rear panel, tub
+Windscreen Chipped or Cracked.
+Large Scratch on Paint damage on driver and passenger side doors
+Large Scratch on Scratches around inside and outside of tub
+Large Dent on Drivers door
+Damaged Both rear light covers cracked
+Large Dent on Passenger side front quarter panel",toyota_hilux_dualcab_ute_diesel_auto_sr_4x4_2015_2023,[OK],active,2d 19h 57m10s,4200.0,59.0,2d 19h 57m10s,hilux | dualcab_ute_diesel_auto | GUN126R | 2021,[OK],2026-01-26T02:41:54
+2020,TOYOTA,Corolla,SX MZEA12R,Sedan,CVT,Petrol,55626,5.0,JTDB43CEX0J060996,EKJ76U,Unregistered,4,2,Silver,Grey,Yes,Yes,Yes,Partial,Yes,NSW,https://www.grays.com/lot/0001-10352295/motor-vehicles-motor-cycles/2020-toyota-corolla-sx-mzea12r-cvt-sedan,"Hail damage visible.
+Large Dent on Drivers door
+Large Scratch on Passenger quarter panel, Front and rear bars",toyota_corolla_sedan_petrol_auto_ascent_sport_fwd_2019_2023,[OK],active,1d 19h 57m2s,13300.0,49.0,1d 19h 57m2s,corolla | sedan_petrol_auto | E210 | 2022,[OK],2026-01-26T02:41:54
+2009,TOYOTA,Hilux,SR (4x4) KUN26R,Dual Cab,Automatic,Diesel,334056,5.0,MR0FZ22GX01025232,1CX1FE,17-09-2026,4,3,White,Grey,Yes,No,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21062206/motor-vehicles-motor-cycles/2009-toyota-hilux-sr-4x4-kun26r-turbo-diesel-automatic-dual-cab,"Medium Dent on Tub
+Paint cracked Tub
+Dents or marks on body consistent with age and kilometres.",toyota_hilux_dualcab_ute_diesel_auto_sr_4x4_2005_2014,[OK],active,2d 16h 48m15s,2500.0,35.0,2d 16h 48m15s,hilux | dualcab_ute_diesel_auto | KUN26R | 2006,[OK],2026-01-26T02:41:54
+2022,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,90639,5.0,JTNB13HK603163386,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714246/motor-vehicles-motor-cycles/2022-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,"Front Seat Stains Lhf
+Dents or marks on body consistent with age and kilometres.",toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,1d 22h 57m57s,20000.0,18.0,1d 22h 57m57s,camry | sedan_petrol_auto | ASV70R | 2020,[OK],2026-01-26T02:41:54
+2020,TOYOTA,Camry,ASCENT HYBRID AXVH71R,Sedan,CVT,Hybrid,121821,5.0,JTNB23HK303082360,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714247/motor-vehicles-motor-cycles/2020-toyota-camry-ascent-hybrid-axvh71r-cvt-sedan,"Front Seat Stains Both
+Dents or marks on body consistent with age and kilometres.
+Large Scratch on various panels",toyota_camry_sedan_hybrid_auto_ascent_fwd_2018_2023,[OK],active,1d 22h 57m49s,21500.0,27.0,1d 22h 57m49s,camry | sedan_hybrid_auto | NA | 2020,[OK],2026-01-26T02:41:54
+2022,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,91114,5.0,JTNB13HK103163084,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714248/motor-vehicles-motor-cycles/2022-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,1d 22h 57m42s,20000.0,27.0,1d 22h 57m42s,camry | sedan_petrol_auto | ASV70R | 2020,[OK],2026-01-26T02:41:54
+2021,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,90022,5.0,JTNB13HK103157463,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,No,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714310/motor-vehicles-motor-cycles/2021-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,"Medium Scuff on RHF door
+Dents or marks on body consistent with age and kilometres.",toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 22h 57m31s,21000.0,7.0,2d 22h 57m31s,camry | sedan_petrol_auto | ASV70R | 2020,[OK],2026-01-26T02:41:54
+2021,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,80590,5.0,JTNB13HK403157683,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714311/motor-vehicles-motor-cycles/2021-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 22h 57m25s,20000.0,4.0,2d 22h 57m25s,camry | sedan_petrol_auto | ASV70R | 2020,[OK],2026-01-26T02:41:54
+2021,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,75015,5.0,JTNB13HK103157768,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,No,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714312/motor-vehicles-motor-cycles/2021-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 22h 57m17s,21000.0,19.0,2d 22h 57m17s,camry | sedan_petrol_auto | ASV70R | 2020,[OK],2026-01-26T02:41:54
+2023,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,60202,5.0,JTNB13HK603219438,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,No,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714313/motor-vehicles-motor-cycles/2023-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 22h 57m10s,21000.0,7.0,2d 22h 57m10s,camry | sedan_petrol_auto | ASV70R | 2020,[OK],2026-01-26T02:41:54
+2021,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,108366,5.0,JTNB13HK503157594,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714314/motor-vehicles-motor-cycles/2021-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,2d 22h 57m4s,18000.0,3.0,2d 22h 57m4s,camry | sedan_petrol_auto | ASV70R | 2020,[OK],2026-01-26T02:41:54
+2015,TOYOTA,Hilux,4x4 SR KUN26R-PRADYQ,Dual Cab,Automatic,Diesel,346761,5,MR0FZ22G201093993,"Unregistered, no plates",Unregistered,4,3,White,Black,Yes,Yes,Yes,Yes,Yes,NSW,https://www.grays.com/lot/0001-10352288/motor-vehicles-motor-cycles/2015-toyota-hilux-4x4-sr-kun26r-pradyq-turbo-diesel-automatic-dual-cab,"Dents or marks on body consistent with age and kilometres.
+Dents or marks on body consistent with age and kilometres.
+Large Dent on Passenger side rear door
+Large Dent on Passenger side B pillar
+Large Dent on Drivers side of tub
+Dents or marks on body consistent with age and kilometres.
+Large Scratch on Paint damage on front bumper
+Corrosion visible Surface rust on bonnet, driver side A pillar, Passenger side A pillar, roof, passenger side doors, cab rear panel, tub
+Windscreen Chipped or Cracked.
+Large Scratch on Paint damage on driver and passenger side doors
+Large Scratch on Scratches around inside and outside of tub
+Large Dent on Drivers door
+Damaged Both rear light covers cracked
+Large Dent on Passenger side front quarter panel",toyota_hilux_dualcab_ute_diesel_auto_sr_4x4_2015_2023,[OK],active,,,,,hilux | dualcab_ute_diesel_auto | GUN126R | 2021,[OK],2026-01-26T14:44:08
+2017,TOYOTA,Rav,4 FWD GXL ZSA42R,Wagon,CVT,Petrol,188044,5,JTMWDREVX0J100527,CL84KV,Unregistered,4,2,White,Black,Yes,Yes,Yes,Partial,Yes,NSW,https://www.grays.com/lot/0001-10352357/motor-vehicles-motor-cycles/2017-toyota-rav-4-fwd-gxl-zsa42r-cvt-wagon,Please refer to the photos or arrange inspection to view the condition of this vehicle.,toyota_rav4_suv_petrol_auto_gxl_fwd_2013_2023,[OK],active,,,,,rav4 | suv_petrol_auto | NA | 2017,[OK],2026-01-26T14:44:08
+2009,TOYOTA,Hilux,SR (4x4) KUN26R,Dual Cab,Automatic,Diesel,334056,5,MR0FZ22GX01025232,1CX1FE,17-09-2026,4,3,White,Grey,Yes,No,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21062206/motor-vehicles-motor-cycles/2009-toyota-hilux-sr-4x4-kun26r-turbo-diesel-automatic-dual-cab,"Medium Dent on Tub
+Paint cracked Tub
+Dents or marks on body consistent with age and kilometres.",toyota_hilux_dualcab_ute_diesel_auto_sr_4x4_2005_2014,[OK],active,,,,,hilux | dualcab_ute_diesel_auto | KUN26R | 2006,[OK],2026-01-26T14:44:08
+2020,TOYOTA,Rav,4 FWD GX MXAA52R,Wagon,CVT,Petrol,100916,5,JTMZ43FV50D061451,No plates,Unregistered,4,2,White,Black,Yes,Yes,Yes,Yes,Yes,QLD,https://www.grays.com/lot/0001-50714306/motor-vehicles-motor-cycles/2020-toyota-rav-4-fwd-gx-mxaa52r-cvt-wagon,"Dents or marks on body consistent with age and kilometres.
+Hail damage visible.",toyota_rav4_suv_petrol_auto_gx_fwd_2013_2023,[OK],active,,,,,rav4 | suv_petrol_auto | NA | 2020,[OK],2026-01-26T14:44:08
+2020,TOYOTA,Rav,4 FWD GX MXAA52R,Wagon,CVT,Petrol,70347,5,JTMZ43FV90D061775,1HCS418,22-05-2026,4,2,White,Charcoal,Yes,Yes,Yes,Yes,Yes,WA,https://www.grays.com/lot/0001-9066659/motor-vehicles-motor-cycles/2020-toyota-rav-4-fwd-gx-mxaa52r-cvt-wagon,Dents or marks on body consistent with age and kilometres.,toyota_rav4_suv_petrol_auto_gx_fwd_2013_2023,[OK],active,,,,,rav4 | suv_petrol_auto | NA | 2020,[OK],2026-01-26T14:44:08
+2015,TOYOTA,Hilux,4x4 SR KUN26R-PRADYQ,Dual Cab,Automatic,Diesel,346761,5,MR0FZ22G201093993,"Unregistered, no plates",Unregistered,4,3,White,Black,Yes,Yes,Yes,Yes,Yes,NSW,https://www.grays.com/lot/0001-10352288/motor-vehicles-motor-cycles/2015-toyota-hilux-4x4-sr-kun26r-pradyq-turbo-diesel-automatic-dual-cab,"Dents or marks on body consistent with age and kilometres.
+Dents or marks on body consistent with age and kilometres.
+Large Dent on Passenger side rear door
+Large Dent on Passenger side B pillar
+Large Dent on Drivers side of tub
+Dents or marks on body consistent with age and kilometres.
+Large Scratch on Paint damage on front bumper
+Corrosion visible Surface rust on bonnet, driver side A pillar, Passenger side A pillar, roof, passenger side doors, cab rear panel, tub
+Windscreen Chipped or Cracked.
+Large Scratch on Paint damage on driver and passenger side doors
+Large Scratch on Scratches around inside and outside of tub
+Large Dent on Drivers door
+Damaged Both rear light covers cracked
+Large Dent on Passenger side front quarter panel",toyota_hilux_dualcab_ute_diesel_auto_sr_4x4_2015_2023,[OK],active,,,,,hilux | dualcab_ute_diesel_auto | GUN126R | 2021,[OK],2026-01-27T02:45:35
+2017,TOYOTA,Rav,4 FWD GXL ZSA42R,Wagon,CVT,Petrol,188044,5,JTMWDREVX0J100527,CL84KV,Unregistered,4,2,White,Black,Yes,Yes,Yes,Partial,Yes,NSW,https://www.grays.com/lot/0001-10352357/motor-vehicles-motor-cycles/2017-toyota-rav-4-fwd-gxl-zsa42r-cvt-wagon,Please refer to the photos or arrange inspection to view the condition of this vehicle.,toyota_rav4_suv_petrol_auto_gxl_fwd_2013_2023,[OK],active,,,,,rav4 | suv_petrol_auto | NA | 2017,[OK],2026-01-27T02:45:35
+2009,TOYOTA,Hilux,SR (4x4) KUN26R,Dual Cab,Automatic,Diesel,334056,5,MR0FZ22GX01025232,1CX1FE,17-09-2026,4,3,White,Grey,Yes,No,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21062206/motor-vehicles-motor-cycles/2009-toyota-hilux-sr-4x4-kun26r-turbo-diesel-automatic-dual-cab,"Medium Dent on Tub
+Paint cracked Tub
+Dents or marks on body consistent with age and kilometres.",toyota_hilux_dualcab_ute_diesel_auto_sr_4x4_2005_2014,[OK],active,1d 16h 19m51s,5100.0,66.0,1d 16h 19m51s,hilux | dualcab_ute_diesel_auto | KUN26R | 2006,[OK],2026-01-27T02:45:35
+2020,TOYOTA,Rav,4 FWD GX MXAA52R,Wagon,CVT,Petrol,100916,5,JTMZ43FV50D061451,No plates,Unregistered,4,2,White,Black,Yes,Yes,Yes,Yes,Yes,QLD,https://www.grays.com/lot/0001-50714306/motor-vehicles-motor-cycles/2020-toyota-rav-4-fwd-gx-mxaa52r-cvt-wagon,"Dents or marks on body consistent with age and kilometres.
+Hail damage visible.",toyota_rav4_suv_petrol_auto_gx_fwd_2013_2023,[OK],active,,,,,rav4 | suv_petrol_auto | NA | 2020,[OK],2026-01-27T02:45:35
+2020,TOYOTA,Rav,4 FWD GX MXAA52R,Wagon,CVT,Petrol,70347,5,JTMZ43FV90D061775,1HCS418,22-05-2026,4,2,White,Charcoal,Yes,Yes,Yes,Yes,Yes,WA,https://www.grays.com/lot/0001-9066659/motor-vehicles-motor-cycles/2020-toyota-rav-4-fwd-gx-mxaa52r-cvt-wagon,Dents or marks on body consistent with age and kilometres.,toyota_rav4_suv_petrol_auto_gx_fwd_2013_2023,[OK],active,,,,,rav4 | suv_petrol_auto | NA | 2020,[OK],2026-01-27T02:45:35
+2015,TOYOTA,Hilux,4x4 SR KUN26R-PRADYQ,Dual Cab,Automatic,Diesel,346761,5.0,MR0FZ22G201093993,"Unregistered, no plates",Unregistered,4,3,White,Black,Yes,Yes,Yes,Yes,Yes,NSW,https://www.grays.com/lot/0001-10352288/motor-vehicles-motor-cycles/2015-toyota-hilux-4x4-sr-kun26r-pradyq-turbo-diesel-automatic-dual-cab,"Dents or marks on body consistent with age and kilometres.
+Dents or marks on body consistent with age and kilometres.
+Large Dent on Passenger side rear door
+Large Dent on Passenger side B pillar
+Large Dent on Drivers side of tub
+Dents or marks on body consistent with age and kilometres.
+Large Scratch on Paint damage on front bumper
+Corrosion visible Surface rust on bonnet, driver side A pillar, Passenger side A pillar, roof, passenger side doors, cab rear panel, tub
+Windscreen Chipped or Cracked.
+Large Scratch on Paint damage on driver and passenger side doors
+Large Scratch on Scratches around inside and outside of tub
+Large Dent on Drivers door
+Damaged Both rear light covers cracked
+Large Dent on Passenger side front quarter panel",toyota_hilux_dualcab_ute_diesel_auto_sr_4x4_2015_2023,[OK],active,,,,,hilux | dualcab_ute_diesel_auto | GUN126R | 2021,[OK],2026-01-27T03:02:39
+2017,TOYOTA,Rav,4 FWD GXL ZSA42R,Wagon,CVT,Petrol,188044,5.0,JTMWDREVX0J100527,CL84KV,Unregistered,4,2,White,Black,Yes,Yes,Yes,Partial,Yes,NSW,https://www.grays.com/lot/0001-10352357/motor-vehicles-motor-cycles/2017-toyota-rav-4-fwd-gxl-zsa42r-cvt-wagon,Please refer to the photos or arrange inspection to view the condition of this vehicle.,toyota_rav4_suv_petrol_auto_gxl_fwd_2013_2023,[OK],active,,,,,rav4 | suv_petrol_auto | NA | 2017,[OK],2026-01-27T03:02:39
+2009,TOYOTA,Hilux,SR (4x4) KUN26R,Dual Cab,Automatic,Diesel,334056,5.0,MR0FZ22GX01025232,1CX1FE,17-09-2026,4,3,White,Grey,Yes,No,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21062206/motor-vehicles-motor-cycles/2009-toyota-hilux-sr-4x4-kun26r-turbo-diesel-automatic-dual-cab,"Medium Dent on Tub
+Paint cracked Tub
+Dents or marks on body consistent with age and kilometres.",toyota_hilux_dualcab_ute_diesel_auto_sr_4x4_2005_2014,[OK],active,1d 16h 19m51s,5100.0,66.0,1d 16h 19m51s,hilux | dualcab_ute_diesel_auto | KUN26R | 2006,[OK],2026-01-27T03:02:39
+2020,TOYOTA,Rav,4 FWD GX MXAA52R,Wagon,CVT,Petrol,100916,5.0,JTMZ43FV50D061451,No plates,Unregistered,4,2,White,Black,Yes,Yes,Yes,Yes,Yes,QLD,https://www.grays.com/lot/0001-50714306/motor-vehicles-motor-cycles/2020-toyota-rav-4-fwd-gx-mxaa52r-cvt-wagon,"Dents or marks on body consistent with age and kilometres.
+Hail damage visible.",toyota_rav4_suv_petrol_auto_gx_fwd_2013_2023,[OK],active,,,,,rav4 | suv_petrol_auto | NA | 2020,[OK],2026-01-27T03:02:39
+2020,TOYOTA,Rav,4 FWD GX MXAA52R,Wagon,CVT,Petrol,70347,5.0,JTMZ43FV90D061775,1HCS418,22-05-2026,4,2,White,Charcoal,Yes,Yes,Yes,Yes,Yes,WA,https://www.grays.com/lot/0001-9066659/motor-vehicles-motor-cycles/2020-toyota-rav-4-fwd-gx-mxaa52r-cvt-wagon,Dents or marks on body consistent with age and kilometres.,toyota_rav4_suv_petrol_auto_gx_fwd_2013_2023,[OK],active,,,,,rav4 | suv_petrol_auto | NA | 2020,[OK],2026-01-27T03:02:39
+2015,TOYOTA,Hilux,4x4 SR KUN26R-PRADYQ,Dual Cab,Automatic,Diesel,346761,5.0,MR0FZ22G201093993,"Unregistered, no plates",Unregistered,4,3,White,Black,Yes,Yes,Yes,Yes,Yes,NSW,https://www.grays.com/lot/0001-10352288/motor-vehicles-motor-cycles/2015-toyota-hilux-4x4-sr-kun26r-pradyq-turbo-diesel-automatic-dual-cab,"Dents or marks on body consistent with age and kilometres.
+Dents or marks on body consistent with age and kilometres.
+Large Dent on Passenger side rear door
+Large Dent on Passenger side B pillar
+Large Dent on Drivers side of tub
+Dents or marks on body consistent with age and kilometres.
+Large Scratch on Paint damage on front bumper
+Corrosion visible Surface rust on bonnet, driver side A pillar, Passenger side A pillar, roof, passenger side doors, cab rear panel, tub
+Windscreen Chipped or Cracked.
+Large Scratch on Paint damage on driver and passenger side doors
+Large Scratch on Scratches around inside and outside of tub
+Large Dent on Drivers door
+Damaged Both rear light covers cracked
+Large Dent on Passenger side front quarter panel",toyota_hilux_dualcab_ute_diesel_auto_sr_4x4_2015_2023,[OK],active,,,,,hilux | dualcab_ute_diesel_auto | GUN126R | 2021,[OK],2026-01-27T06:24:30
+2017,TOYOTA,Rav,4 FWD GXL ZSA42R,Wagon,CVT,Petrol,188044,5.0,JTMWDREVX0J100527,CL84KV,Unregistered,4,2,White,Black,Yes,Yes,Yes,Partial,Yes,NSW,https://www.grays.com/lot/0001-10352357/motor-vehicles-motor-cycles/2017-toyota-rav-4-fwd-gxl-zsa42r-cvt-wagon,Please refer to the photos or arrange inspection to view the condition of this vehicle.,toyota_rav4_suv_petrol_auto_gxl_fwd_2013_2023,[OK],active,,,,,rav4 | suv_petrol_auto | NA | 2017,[OK],2026-01-27T06:24:30
+2009,TOYOTA,Hilux,SR (4x4) KUN26R,Dual Cab,Automatic,Diesel,334056,5.0,MR0FZ22GX01025232,1CX1FE,17-09-2026,4,3,White,Grey,Yes,No,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21062206/motor-vehicles-motor-cycles/2009-toyota-hilux-sr-4x4-kun26r-turbo-diesel-automatic-dual-cab,"Medium Dent on Tub
+Paint cracked Tub
+Dents or marks on body consistent with age and kilometres.",toyota_hilux_dualcab_ute_diesel_auto_sr_4x4_2005_2014,[OK],active,1d 3h 31m37s,5200.0,67.0,1d 3h 31m37s,hilux | dualcab_ute_diesel_auto | KUN26R | 2006,[OK],2026-01-27T06:24:30
+2020,TOYOTA,Rav,4 FWD GX MXAA52R,Wagon,CVT,Petrol,100916,5.0,JTMZ43FV50D061451,No plates,Unregistered,4,2,White,Black,Yes,Yes,Yes,Yes,Yes,QLD,https://www.grays.com/lot/0001-50714306/motor-vehicles-motor-cycles/2020-toyota-rav-4-fwd-gx-mxaa52r-cvt-wagon,"Dents or marks on body consistent with age and kilometres.
+Hail damage visible.",toyota_rav4_suv_petrol_auto_gx_fwd_2013_2023,[OK],active,,,,,rav4 | suv_petrol_auto | NA | 2020,[OK],2026-01-27T06:24:30
+2020,TOYOTA,Rav,4 FWD GX MXAA52R,Wagon,CVT,Petrol,70347,5.0,JTMZ43FV90D061775,1HCS418,22-05-2026,4,2,White,Charcoal,Yes,Yes,Yes,Yes,Yes,WA,https://www.grays.com/lot/0001-9066659/motor-vehicles-motor-cycles/2020-toyota-rav-4-fwd-gx-mxaa52r-cvt-wagon,Dents or marks on body consistent with age and kilometres.,toyota_rav4_suv_petrol_auto_gx_fwd_2013_2023,[OK],active,,,,,rav4 | suv_petrol_auto | NA | 2020,[OK],2026-01-27T06:24:30
+2015,TOYOTA,Hilux,4x4 SR KUN26R-PRADYQ,Dual Cab,Automatic,Diesel,346761,5.0,MR0FZ22G201093993,"Unregistered, no plates",Unregistered,4,3,White,Black,Yes,Yes,Yes,Yes,Yes,NSW,https://www.grays.com/lot/0001-10352288/motor-vehicles-motor-cycles/2015-toyota-hilux-4x4-sr-kun26r-pradyq-turbo-diesel-automatic-dual-cab,"Dents or marks on body consistent with age and kilometres.
+Dents or marks on body consistent with age and kilometres.
+Large Dent on Passenger side rear door
+Large Dent on Passenger side B pillar
+Large Dent on Drivers side of tub
+Dents or marks on body consistent with age and kilometres.
+Large Scratch on Paint damage on front bumper
+Corrosion visible Surface rust on bonnet, driver side A pillar, Passenger side A pillar, roof, passenger side doors, cab rear panel, tub
+Windscreen Chipped or Cracked.
+Large Scratch on Paint damage on driver and passenger side doors
+Large Scratch on Scratches around inside and outside of tub
+Large Dent on Drivers door
+Damaged Both rear light covers cracked
+Large Dent on Passenger side front quarter panel",toyota_hilux_dualcab_ute_diesel_auto_sr_4x4_2015_2023,[OK],active,22h 50m45s,5200.0,74.0,,22h 50m45s,hilux | dualcab_ute_diesel_auto | GUN126R | 2021,[OK],2026-01-27T12:52:19
+2009,TOYOTA,Hilux,SR (4x4) KUN26R,Dual Cab,Automatic,Diesel,334056,5.0,MR0FZ22GX01025232,1CX1FE,17-09-2026,4,3,White,Grey,Yes,No,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21062206/motor-vehicles-motor-cycles/2009-toyota-hilux-sr-4x4-kun26r-turbo-diesel-automatic-dual-cab,"Medium Dent on Tub
+Paint cracked Tub
+Dents or marks on body consistent with age and kilometres.",toyota_hilux_dualcab_ute_diesel_auto_sr_4x4_2005_2014,[OK],active,21h 39m20s,5200.0,67.0,,21h 39m20s,hilux | dualcab_ute_diesel_auto | KUN26R | 2006,[OK],2026-01-27T12:52:19
+2022,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,90639,5.0,JTNB13HK603163386,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714246/motor-vehicles-motor-cycles/2022-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,"Front Seat Stains Lhf
+Dents or marks on body consistent with age and kilometres.",toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,32m8s,20100.0,19.0,POLICY_IMPLICIT_FWD_AU,32m8s,camry | sedan_petrol_auto | ASV70R | 2020,[OK],2026-01-27T12:52:19
+2020,TOYOTA,Camry,ASCENT HYBRID AXVH71R,Sedan,CVT,Hybrid,121821,5.0,JTNB23HK303082360,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714247/motor-vehicles-motor-cycles/2020-toyota-camry-ascent-hybrid-axvh71r-cvt-sedan,"Front Seat Stains Both
+Dents or marks on body consistent with age and kilometres.
+Large Scratch on various panels",toyota_camry_sedan_hybrid_auto_ascent_fwd_2018_2023,[OK],active,31m56s,21500.0,27.0,POLICY_IMPLICIT_FWD_AU,31m56s,camry | sedan_hybrid_auto | NA | 2020,[OK],2026-01-27T12:52:19
+2022,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,91114,5.0,JTNB13HK103163084,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714248/motor-vehicles-motor-cycles/2022-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,31m46s,20100.0,28.0,POLICY_IMPLICIT_FWD_AU,31m46s,camry | sedan_petrol_auto | ASV70R | 2020,[OK],2026-01-27T12:52:19
+2020,TOYOTA,Rav,4 FWD GX MXAA52R,Wagon,CVT,Petrol,100916,5.0,JTMZ43FV50D061451,No plates,Unregistered,4,2,White,Black,Yes,Yes,Yes,Yes,Yes,QLD,https://www.grays.com/lot/0001-50714306/motor-vehicles-motor-cycles/2020-toyota-rav-4-fwd-gx-mxaa52r-cvt-wagon,"Dents or marks on body consistent with age and kilometres.
+Hail damage visible.",toyota_rav4_suv_petrol_auto_gx_fwd_2013_2023,[OK],active,13m8s,16000.0,164.0,,13m8s,rav4 | suv_petrol_auto | NA | 2020,[OK],2026-01-27T12:52:19
+2020,TOYOTA,Rav,4 FWD GX MXAA52R,Wagon,CVT,Petrol,70347,5.0,JTMZ43FV90D061775,1HCS418,22-05-2026,4,2,White,Charcoal,Yes,Yes,Yes,Yes,Yes,WA,https://www.grays.com/lot/0001-9066659/motor-vehicles-motor-cycles/2020-toyota-rav-4-fwd-gx-mxaa52r-cvt-wagon,Dents or marks on body consistent with age and kilometres.,toyota_rav4_suv_petrol_auto_gx_fwd_2013_2023,[OK],active,,,,,,rav4 | suv_petrol_auto | NA | 2020,[OK],2026-01-27T12:52:19
+2015,TOYOTA,Hilux,4x4 SR KUN26R-PRADYQ,Dual Cab,Automatic,Diesel,346761,5.0,MR0FZ22G201093993,"Unregistered, no plates",Unregistered,4,3,White,Black,Yes,Yes,Yes,Yes,Yes,NSW,https://www.grays.com/lot/0001-10352288/motor-vehicles-motor-cycles/2015-toyota-hilux-4x4-sr-kun26r-pradyq-turbo-diesel-automatic-dual-cab,"Dents or marks on body consistent with age and kilometres.
+Dents or marks on body consistent with age and kilometres.
+Large Dent on Passenger side rear door
+Large Dent on Passenger side B pillar
+Large Dent on Drivers side of tub
+Dents or marks on body consistent with age and kilometres.
+Large Scratch on Paint damage on front bumper
+Corrosion visible Surface rust on bonnet, driver side A pillar, Passenger side A pillar, roof, passenger side doors, cab rear panel, tub
+Windscreen Chipped or Cracked.
+Large Scratch on Paint damage on driver and passenger side doors
+Large Scratch on Scratches around inside and outside of tub
+Large Dent on Drivers door
+Damaged Both rear light covers cracked
+Large Dent on Passenger side front quarter panel",toyota_hilux_dualcab_ute_diesel_auto_sr_4x4_2015_2023,[OK],active,22h 50m45s,5200.0,74.0,22h 50m45s,hilux | dualcab_ute_diesel_auto | GUN126R | 2021,[OK],2026-01-27T13:13:00
+2009,TOYOTA,Hilux,SR (4x4) KUN26R,Dual Cab,Automatic,Diesel,334056,5.0,MR0FZ22GX01025232,1CX1FE,17-09-2026,4,3,White,Grey,Yes,No,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21062206/motor-vehicles-motor-cycles/2009-toyota-hilux-sr-4x4-kun26r-turbo-diesel-automatic-dual-cab,"Medium Dent on Tub
+Paint cracked Tub
+Dents or marks on body consistent with age and kilometres.",toyota_hilux_dualcab_ute_diesel_auto_sr_4x4_2005_2014,[OK],active,21h 39m20s,5200.0,67.0,21h 39m20s,hilux | dualcab_ute_diesel_auto | KUN26R | 2006,[OK],2026-01-27T13:13:00
+2020,TOYOTA,Rav,4 FWD GX MXAA52R,Wagon,CVT,Petrol,100916,5.0,JTMZ43FV50D061451,No plates,Unregistered,4,2,White,Black,Yes,Yes,Yes,Yes,Yes,QLD,https://www.grays.com/lot/0001-50714306/motor-vehicles-motor-cycles/2020-toyota-rav-4-fwd-gx-mxaa52r-cvt-wagon,"Dents or marks on body consistent with age and kilometres.
+Hail damage visible.",toyota_rav4_suv_petrol_auto_gx_fwd_2013_2023,[OK],active,13m8s,16000.0,164.0,13m8s,rav4 | suv_petrol_auto | NA | 2020,[OK],2026-01-27T13:13:00
+2015,TOYOTA,Hilux,4x4 SR KUN26R-PRADYQ,Dual Cab,Automatic,Diesel,346761,5.0,MR0FZ22G201093993,"Unregistered, no plates",Unregistered,4,3,White,Black,Yes,Yes,Yes,Yes,Yes,NSW,https://www.grays.com/lot/0001-10352288/motor-vehicles-motor-cycles/2015-toyota-hilux-4x4-sr-kun26r-pradyq-turbo-diesel-automatic-dual-cab,"Dents or marks on body consistent with age and kilometres.
+Dents or marks on body consistent with age and kilometres.
+Large Dent on Passenger side rear door
+Large Dent on Passenger side B pillar
+Large Dent on Drivers side of tub
+Dents or marks on body consistent with age and kilometres.
+Large Scratch on Paint damage on front bumper
+Corrosion visible Surface rust on bonnet, driver side A pillar, Passenger side A pillar, roof, passenger side doors, cab rear panel, tub
+Windscreen Chipped or Cracked.
+Large Scratch on Paint damage on driver and passenger side doors
+Large Scratch on Scratches around inside and outside of tub
+Large Dent on Drivers door
+Damaged Both rear light covers cracked
+Large Dent on Passenger side front quarter panel",toyota_hilux_dualcab_ute_diesel_auto_sr_4x4_2015_2023,[OK],active,22h 50m45s,5200.0,74.0,,22h 50m45s,hilux | dualcab_ute_diesel_auto | GUN126R | 2021,[OK],2026-01-27T13:29:41
+2009,TOYOTA,Hilux,SR (4x4) KUN26R,Dual Cab,Automatic,Diesel,334056,5.0,MR0FZ22GX01025232,1CX1FE,17-09-2026,4,3,White,Grey,Yes,No,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21062206/motor-vehicles-motor-cycles/2009-toyota-hilux-sr-4x4-kun26r-turbo-diesel-automatic-dual-cab,"Medium Dent on Tub
+Paint cracked Tub
+Dents or marks on body consistent with age and kilometres.",toyota_hilux_dualcab_ute_diesel_auto_sr_4x4_2005_2014,[OK],active,21h 39m20s,5200.0,67.0,,21h 39m20s,hilux | dualcab_ute_diesel_auto | KUN26R | 2006,[OK],2026-01-27T13:29:41
+2022,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,90639,5.0,JTNB13HK603163386,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714246/motor-vehicles-motor-cycles/2022-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,"Front Seat Stains Lhf
+Dents or marks on body consistent with age and kilometres.",toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,32m8s,20100.0,19.0,POLICY_IMPLICIT_FWD_AU,32m8s,camry | sedan_petrol_auto | ASV70R | 2020,[OK],2026-01-27T13:29:41
+2020,TOYOTA,Camry,ASCENT HYBRID AXVH71R,Sedan,CVT,Hybrid,121821,5.0,JTNB23HK303082360,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714247/motor-vehicles-motor-cycles/2020-toyota-camry-ascent-hybrid-axvh71r-cvt-sedan,"Front Seat Stains Both
+Dents or marks on body consistent with age and kilometres.
+Large Scratch on various panels",toyota_camry_sedan_hybrid_auto_ascent_fwd_2018_2023,[OK],active,31m56s,21500.0,27.0,POLICY_IMPLICIT_FWD_AU,31m56s,camry | sedan_hybrid_auto | NA | 2020,[OK],2026-01-27T13:29:41
+2022,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,91114,5.0,JTNB13HK103163084,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714248/motor-vehicles-motor-cycles/2022-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,31m46s,20100.0,28.0,POLICY_IMPLICIT_FWD_AU,31m46s,camry | sedan_petrol_auto | ASV70R | 2020,[OK],2026-01-27T13:29:41
+2020,TOYOTA,Rav,4 FWD GX MXAA52R,Wagon,CVT,Petrol,100916,5.0,JTMZ43FV50D061451,No plates,Unregistered,4,2,White,Black,Yes,Yes,Yes,Yes,Yes,QLD,https://www.grays.com/lot/0001-50714306/motor-vehicles-motor-cycles/2020-toyota-rav-4-fwd-gx-mxaa52r-cvt-wagon,"Dents or marks on body consistent with age and kilometres.
+Hail damage visible.",toyota_rav4_suv_petrol_auto_gx_fwd_2013_2023,[OK],active,13m8s,16000.0,164.0,,13m8s,rav4 | suv_petrol_auto | NA | 2020,[OK],2026-01-27T13:29:41
+2015,TOYOTA,Hilux,4x4 SR KUN26R-PRADYQ,Dual Cab,Automatic,Diesel,346761,5.0,MR0FZ22G201093993,"Unregistered, no plates",Unregistered,4,3,White,Black,Yes,Yes,Yes,Yes,Yes,NSW,https://www.grays.com/lot/0001-10352288/motor-vehicles-motor-cycles/2015-toyota-hilux-4x4-sr-kun26r-pradyq-turbo-diesel-automatic-dual-cab,"Dents or marks on body consistent with age and kilometres.
+Dents or marks on body consistent with age and kilometres.
+Large Dent on Passenger side rear door
+Large Dent on Passenger side B pillar
+Large Dent on Drivers side of tub
+Dents or marks on body consistent with age and kilometres.
+Large Scratch on Paint damage on front bumper
+Corrosion visible Surface rust on bonnet, driver side A pillar, Passenger side A pillar, roof, passenger side doors, cab rear panel, tub
+Windscreen Chipped or Cracked.
+Large Scratch on Paint damage on driver and passenger side doors
+Large Scratch on Scratches around inside and outside of tub
+Large Dent on Drivers door
+Damaged Both rear light covers cracked
+Large Dent on Passenger side front quarter panel",toyota_hilux_dualcab_ute_diesel_auto_sr_4x4_2015_2023,[OK],active,22h 50m45s,5200.0,74.0,,22h 50m45s,hilux | dualcab_ute_diesel_auto | GUN126R | 2021,[OK],2026-01-27T19:56:46
+2009,TOYOTA,Hilux,SR (4x4) KUN26R,Dual Cab,Automatic,Diesel,334056,5.0,MR0FZ22GX01025232,1CX1FE,17-09-2026,4,3,White,Grey,Yes,No,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21062206/motor-vehicles-motor-cycles/2009-toyota-hilux-sr-4x4-kun26r-turbo-diesel-automatic-dual-cab,"Medium Dent on Tub
+Paint cracked Tub
+Dents or marks on body consistent with age and kilometres.",toyota_hilux_dualcab_ute_diesel_auto_sr_4x4_2005_2014,[OK],active,13h 40m12s,5400.0,70.0,,13h 40m12s,hilux | dualcab_ute_diesel_auto | KUN26R | 2006,[OK],2026-01-27T19:56:46
+2022,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,90639,5.0,JTNB13HK603163386,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714246/motor-vehicles-motor-cycles/2022-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,"Front Seat Stains Lhf
+Dents or marks on body consistent with age and kilometres.",toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,32m8s,20100.0,19.0,POLICY_IMPLICIT_FWD_AU,32m8s,camry | sedan_petrol_auto_ascent | ASV70R | 2020,[OK],2026-01-27T19:56:46
+2020,TOYOTA,Camry,ASCENT HYBRID AXVH71R,Sedan,CVT,Hybrid,121821,5.0,JTNB23HK303082360,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714247/motor-vehicles-motor-cycles/2020-toyota-camry-ascent-hybrid-axvh71r-cvt-sedan,"Front Seat Stains Both
+Dents or marks on body consistent with age and kilometres.
+Large Scratch on various panels",toyota_camry_sedan_hybrid_auto_ascent_fwd_2018_2023,[OK],active,31m56s,21500.0,27.0,POLICY_IMPLICIT_FWD_AU,31m56s,camry | sedan_hybrid_auto | NA | 2020,[OK],2026-01-27T19:56:46
+2022,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,91114,5.0,JTNB13HK103163084,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714248/motor-vehicles-motor-cycles/2022-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,31m46s,20100.0,28.0,POLICY_IMPLICIT_FWD_AU,31m46s,camry | sedan_petrol_auto_ascent | ASV70R | 2020,[OK],2026-01-27T19:56:46
+2020,TOYOTA,Rav,4 FWD GX MXAA52R,Wagon,CVT,Petrol,100916,5.0,JTMZ43FV50D061451,No plates,Unregistered,4,2,White,Black,Yes,Yes,Yes,Yes,Yes,QLD,https://www.grays.com/lot/0001-50714306/motor-vehicles-motor-cycles/2020-toyota-rav-4-fwd-gx-mxaa52r-cvt-wagon,"Dents or marks on body consistent with age and kilometres.
+Hail damage visible.",toyota_rav4_suv_petrol_auto_gx_fwd_2013_2023,[OK],active,13m8s,16000.0,164.0,,13m8s,rav4 | suv_petrol_auto | NA | 2020,[OK],2026-01-27T19:56:46
+2015,TOYOTA,Hilux,4x4 SR KUN26R-PRADYQ,Dual Cab,Automatic,Diesel,346761,5.0,MR0FZ22G201093993,"Unregistered, no plates",Unregistered,4,3,White,Black,Yes,Yes,Yes,Yes,Yes,NSW,https://www.grays.com/lot/0001-10352288/motor-vehicles-motor-cycles/2015-toyota-hilux-4x4-sr-kun26r-pradyq-turbo-diesel-automatic-dual-cab,"Dents or marks on body consistent with age and kilometres.
+Dents or marks on body consistent with age and kilometres.
+Large Dent on Passenger side rear door
+Large Dent on Passenger side B pillar
+Large Dent on Drivers side of tub
+Dents or marks on body consistent with age and kilometres.
+Large Scratch on Paint damage on front bumper
+Corrosion visible Surface rust on bonnet, driver side A pillar, Passenger side A pillar, roof, passenger side doors, cab rear panel, tub
+Windscreen Chipped or Cracked.
+Large Scratch on Paint damage on driver and passenger side doors
+Large Scratch on Scratches around inside and outside of tub
+Large Dent on Drivers door
+Damaged Both rear light covers cracked
+Large Dent on Passenger side front quarter panel",toyota_hilux_dualcab_ute_diesel_auto_sr_4x4_2015_2023,[OK],active,22h 50m45s,5200.0,74.0,,22h 50m45s,hilux | dualcab_ute_diesel_auto | GUN126R | 2021,[OK],2026-01-28T01:13:35
+2009,TOYOTA,Hilux,SR (4x4) KUN26R,Dual Cab,Automatic,Diesel,334056,5.0,MR0FZ22GX01025232,1CX1FE,17-09-2026,4,3,White,Grey,Yes,No,Yes,Partial,Yes,VIC,https://www.grays.com/lot/0001-21062206/motor-vehicles-motor-cycles/2009-toyota-hilux-sr-4x4-kun26r-turbo-diesel-automatic-dual-cab,"Medium Dent on Tub
+Paint cracked Tub
+Dents or marks on body consistent with age and kilometres.",toyota_hilux_dualcab_ute_diesel_auto_sr_4x4_2005_2014,[OK],active,7h 56m46s,5500.0,72.0,,7h 56m46s,hilux | dualcab_ute_diesel_auto | KUN26R | 2006,[OK],2026-01-28T01:13:35
+2022,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,90639,5.0,JTNB13HK603163386,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714246/motor-vehicles-motor-cycles/2022-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,"Front Seat Stains Lhf
+Dents or marks on body consistent with age and kilometres.",toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,32m8s,20100.0,19.0,POLICY_IMPLICIT_FWD_AU,32m8s,camry | sedan_petrol_auto_ascent | ASV70R | 2020,[OK],2026-01-28T01:13:35
+2020,TOYOTA,Camry,ASCENT HYBRID AXVH71R,Sedan,CVT,Hybrid,121821,5.0,JTNB23HK303082360,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714247/motor-vehicles-motor-cycles/2020-toyota-camry-ascent-hybrid-axvh71r-cvt-sedan,"Front Seat Stains Both
+Dents or marks on body consistent with age and kilometres.
+Large Scratch on various panels",toyota_camry_sedan_hybrid_auto_ascent_fwd_2018_2023,[OK],active,31m56s,21500.0,27.0,POLICY_IMPLICIT_FWD_AU,31m56s,camry | sedan_hybrid_auto | NA | 2020,[OK],2026-01-28T01:13:35
+2022,TOYOTA,Camry,Ascent AXVA70R,Sedan,Automatic,Petrol,91114,5.0,JTNB13HK103163084,No plates,Unregistered,4,2.5,White,Black,Yes,Yes,Yes,Partial,Yes,QLD,https://www.grays.com/lot/0001-50714248/motor-vehicles-motor-cycles/2022-toyota-camry-ascent-axva70r-automatic-8-speed-sedan,Dents or marks on body consistent with age and kilometres.,toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023,[OK],active,31m46s,20100.0,28.0,POLICY_IMPLICIT_FWD_AU,31m46s,camry | sedan_petrol_auto_ascent | ASV70R | 2020,[OK],2026-01-28T01:13:35
+2020,TOYOTA,Rav,4 FWD GX MXAA52R,Wagon,CVT,Petrol,100916,5.0,JTMZ43FV50D061451,No plates,Unregistered,4,2,White,Black,Yes,Yes,Yes,Yes,Yes,QLD,https://www.grays.com/lot/0001-50714306/motor-vehicles-motor-cycles/2020-toyota-rav-4-fwd-gx-mxaa52r-cvt-wagon,"Dents or marks on body consistent with age and kilometres.
+Hail damage visible.",toyota_rav4_suv_petrol_auto_gx_fwd_2013_2023,[OK],active,13m8s,16000.0,164.0,,13m8s,rav4 | suv_petrol_auto | NA | 2020,[OK],2026-01-28T01:13:35

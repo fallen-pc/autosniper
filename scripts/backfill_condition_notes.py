@@ -13,9 +13,11 @@ if __package__ in (None, ""):
 
     sys.path.append(str(Path(__file__).resolve().parent.parent))
     from shared.data_loader import dataset_path
+    from shared.validators import validate_sold_cars_df, validate_vehicle_static_df
     from scripts.extract_vehicle_details import process_links
 else:  # pragma: no cover
     from shared.data_loader import dataset_path
+    from shared.validators import validate_sold_cars_df, validate_vehicle_static_df
     from scripts.extract_vehicle_details import process_links
 
 
@@ -245,6 +247,14 @@ def main() -> None:
     for path, df in datasets:
         if path not in touched_paths:
             continue
+        if path.name == "vehicle_static_details.csv":
+            df, stats = validate_vehicle_static_df(df)
+            if stats["rows_dropped"]:
+                print(f"Validator dropped {stats['rows_dropped']} invalid static rows before write.")
+        elif path.name == "sold_cars.csv":
+            df, stats = validate_sold_cars_df(df)
+            if stats["rows_dropped"]:
+                print(f"Validator dropped {stats['rows_dropped']} invalid sold rows before write.")
         atomic_write(df, path)
         print(f"Updated {path.relative_to(Path.cwd()) if path.is_absolute() else path}")
 

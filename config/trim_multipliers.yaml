@@ -1,0 +1,20 @@
+# Deterministic trim adjustments applied after base curve lookup.
+
+version: v1
+
+groups:
+  ford_ranger_dualcab_ute_diesel_auto:
+    wildtrak:
+      method: multiplier_by_km
+      by_km:
+        - max_km: 80000
+          multiplier: 1.05
+        - max_km: 150000
+          multiplier: 1.03
+        - max_km: 220000
+          multiplier: 1.02
+        - max_km: 999999
+          multiplier: 1.00
+      notes: >
+        Wildtrak carries a cosmetic/trim premium that decays with km.
+        At high km buyers no longer pay for trim.

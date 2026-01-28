@@ -1,4 +1,4 @@
 @echo off
 set ROOT=%~dp0..
-set PYTHON=C:\Users\ewanf\AppData\Local\Programs\Python\Python311\python.exe
+set PYTHON=%ROOT%\.venv\Scripts\python.exe
 "%PYTHON%" "%ROOT%\scripts\scheduled_jobs.py" --job vic-hourly

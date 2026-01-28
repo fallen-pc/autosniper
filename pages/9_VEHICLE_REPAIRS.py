@@ -5,7 +5,7 @@ import pandas as pd
 import streamlit as st
 
 from shared.data_loader import dataset_path, ensure_datasets_available
-from shared.styling import clean_html, display_banner, inject_global_styles, page_intro, render_logo_centered
+from shared.styling import clean_html, display_banner, inject_global_styles, page_intro
 
 st.set_page_config(page_title="Vehicle Repairs Library", layout="wide")
 inject_global_styles()
@@ -14,6 +14,7 @@ display_banner()
 page_intro(
     "VEHICLE REPAIRS",
     "Catalog repeated reconditioning items directly from the scraped inspection notes, then add ballpark pricing for each fix.",
+    show_logo=False,
 )
 
 missing = ensure_datasets_available(["vehicle_static_details.csv"])

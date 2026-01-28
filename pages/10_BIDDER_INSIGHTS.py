@@ -10,6 +10,7 @@ inject_global_styles()
 page_intro(
     "BIDDER INSIGHTS",
     "Analyze bid history for repeat bidders, multi-vehicle activity, and reserve met patterns.",
+    show_logo=False,
 )
 
 

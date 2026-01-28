@@ -18,6 +18,8 @@ REPAIR_CATEGORIES: dict[str, Sequence[str]] = {
         "oil leak",
         "overheat",
         "overheating",
+        "engine noise observed",
+        "engine idling rough",
         "knock",
         "mechanical",
         "drivetrain",

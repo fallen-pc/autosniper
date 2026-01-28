@@ -11,9 +11,11 @@ if __package__ in (None, ""):
     sys.path.append(str(Path(__file__).resolve().parent.parent))
     from shared.data_loader import dataset_path
     from shared.sold_cleaning import normalize_listing_fields
+    from shared.validators import validate_sold_cars_df, validate_vehicle_static_df
 else:  # pragma: no cover
     from shared.data_loader import dataset_path
     from shared.sold_cleaning import normalize_listing_fields
+    from shared.validators import validate_sold_cars_df, validate_vehicle_static_df
 
 
 TARGET_FILES = (
@@ -33,6 +35,14 @@ def _normalize_file(path: Path) -> None:
         print(f"Skip empty file: {path}")
         return
     normalized = normalize_listing_fields(df)
+    if path.name == "vehicle_static_details.csv":
+        normalized, stats = validate_vehicle_static_df(normalized)
+        if stats["rows_dropped"]:
+            print(f"Validator dropped {stats['rows_dropped']} invalid static rows before write.")
+    if path.name == "sold_cars.csv":
+        normalized, stats = validate_sold_cars_df(normalized)
+        if stats["rows_dropped"]:
+            print(f"Validator dropped {stats['rows_dropped']} invalid sold rows before write.")
     normalized.to_csv(path, index=False)
     print(f"Normalized {path} ({len(normalized)} rows).")
 

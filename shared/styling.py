@@ -943,10 +943,11 @@ def render_logo_centered(width: int = 340) -> None:
     )
 
 
-def page_intro(title: str, subtitle: str | None = None) -> None:
+def page_intro(title: str, subtitle: str | None = None, *, show_logo: bool = True) -> None:
     """Render a standard page intro panel."""
     inject_global_styles()
-    render_logo_centered()
+    if show_logo:
+        render_logo_centered()
     subtitle_html = f"<p>{subtitle}</p>" if subtitle else ""
     st.markdown(
         clean_html(

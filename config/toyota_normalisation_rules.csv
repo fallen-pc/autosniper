@@ -1,0 +1,35 @@
+field,raw,normalised
+model,rav,rav4
+model,rav-4,rav4
+model,rav 4,rav4
+body,hatchback,hatch
+body,dual cab,dualcab_ute
+body,sedan,sedan
+body,wagon,wagon
+body,suv,wagon
+body,ute,ute
+body,cab chassis,cab_chassis
+body,crew cab chassis,cab_chassis
+transmission,automatic,auto
+transmission,cvt,auto
+transmission,sports automatic,auto
+transmission,spts auto,auto
+drivetrain,4wd,4x4
+drivetrain,4x4,4x4
+drivetrain,awd,awd
+drivetrain,2wd,fwd
+badge,ascent 2.5i,ascent
+badge,ascent-sport,ascent sport
+badge,ascent sport hybrid,ascent sport
+badge,zr hybrid,zr
+badge,sx hybrid,sx
+badge,gxl hybrid,gxl
+badge,sr5 td,sr5
+badge,gx (2wd),gx
+badge,sr 4x4,sr
+badge,4x4 sr,sr
+badge,sr5 4x4,sr5
+badge,4x4 sr5,sr5
+badge,sr5 hi rider,sr5 hi-rider
+badge,hi rider,hi-rider
+badge,work mate,workmate

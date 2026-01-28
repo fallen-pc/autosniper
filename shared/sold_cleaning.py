@@ -241,11 +241,16 @@ def clean_rego_expiry(value: object) -> str:
     if value is None or (isinstance(value, float) and pd.isna(value)):
         return ""
     text = str(value).strip()
-    removal = (
-        "Registration will only be transferred to the registered bidder who must hold a valid VIC Drivers Licence "
-        "otherwise vehicle will be sold unregistered."
-    )
-    text = text.replace(removal, "").strip()
+    text = re.sub(
+        r"Registration will only be transferred.*$",
+        "",
+        text,
+        flags=re.IGNORECASE,
+    ).strip()
+    text = re.sub(r"\s*-\s*$", "", text).strip()
+    lowered = text.lower()
+    if "sold unregistered" in lowered or "unregistered" in lowered or "without plates" in lowered:
+        return "Unregistered"
     return text
 
 
@@ -302,7 +307,7 @@ def normalize_listing_fields(df: pd.DataFrame) -> pd.DataFrame:
     if "rego_expiry" in working.columns:
         working["rego_expiry"] = working["rego_expiry"].apply(clean_rego_expiry)
         working["rego_expiry"] = working["rego_expiry"].apply(
-            lambda v: v if v else "Sold Unregistered, Without Plates"
+            lambda v: v if v else "Unregistered"
         )
     if "rego_no" in working.columns:
         working["rego_no"] = working["rego_no"].apply(lambda v: str(v).strip() if v not in (None, "") else "No plates")
@@ -397,19 +402,59 @@ def drop_sparse_rows(df: pd.DataFrame, threshold: int = SPARSE_THRESHOLD) -> pd.
     return df[mask].reset_index(drop=True)
 
 
-def drop_invalid_years(df: pd.DataFrame) -> pd.DataFrame:
+def drop_invalid_years(df: pd.DataFrame, *, allow_missing: bool = False) -> pd.DataFrame:
     if "year" not in df.columns:
         return df
-    mask = df["year"].apply(lambda v: bool(YEAR_RE.match(str(v).strip())) if v not in (None, "") else False)
+    def _parse_year(value: object) -> int | None:
+        if value is None:
+            return None
+        if isinstance(value, str):
+            text = value.strip()
+            if not text:
+                return None
+            if text.endswith(".0"):
+                text = text[:-2]
+            if not YEAR_RE.match(text):
+                return None
+            try:
+                return int(text)
+            except ValueError:
+                return None
+        try:
+            num = float(value)
+        except (TypeError, ValueError):
+            return None
+        if pd.isna(num) or not num.is_integer():
+            return None
+        year = int(num)
+        if 1900 <= year <= 2099:
+            return year
+        return None
+
+    def _is_missing(value: object) -> bool:
+        if value is None:
+            return True
+        text = str(value).strip().lower()
+        return text in {"", "nan", "none"}
+
+    def _is_valid(value: object) -> bool:
+        if allow_missing and _is_missing(value):
+            return True
+        return _parse_year(value) is not None
+
+    mask = df["year"].apply(_is_valid)
     return df[mask].reset_index(drop=True)
 
 
-def drop_invalid_odometer_rows(df: pd.DataFrame) -> pd.DataFrame:
+def drop_invalid_odometer_rows(df: pd.DataFrame, *, allow_missing: bool = False) -> pd.DataFrame:
     if "odometer_reading" not in df.columns:
         return df
     series = df["odometer_reading"].astype(str).str.strip()
     mask = series.str.len() > 0
     mask &= series != "0"
+    if allow_missing:
+        missing_mask = series.eq("") | series.str.lower().isin({"nan", "none", "0"})
+        mask = mask | missing_mask
     return df[mask].reset_index(drop=True)
 
 

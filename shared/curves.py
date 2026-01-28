@@ -9,7 +9,9 @@ from typing import Iterable, List, Optional, Sequence, Tuple
 
 import pandas as pd
 
+from shared.audit import append_audit_snapshot
 from shared.data_loader import dataset_path
+from shared.validators import compute_price_per_km_bucket, validate_curves_df
 
 CURVE_COLUMNS: Sequence[str] = (
     "group_id",
@@ -19,6 +21,7 @@ CURVE_COLUMNS: Sequence[str] = (
     "price_low",
     "price_high",
     "price_median",
+    "price_per_km_bucket",
     "source",
     "created_at",
 )
@@ -73,13 +76,17 @@ def load_curves(path: Path | None = None) -> pd.DataFrame:
     df["price_high"] = df["price_high"].apply(_to_int)
     df["price_median"] = df["price_median"].apply(_to_int)
     df = df.apply(_fill_median_row, axis=1)
+    df["price_per_km_bucket"] = df.apply(
+        lambda row: compute_price_per_km_bucket(row.get("price_median"), row.get("km_anchor")),
+        axis=1,
+    )
     return df
 
 
 def save_curves(df: pd.DataFrame, path: Path | None = None) -> None:
     curve_path = path or dataset_path("curves.csv")
     curve_path.parent.mkdir(parents=True, exist_ok=True)
-    working = df.copy()
+    working, _ = validate_curves_df(df)
     for column in CURVE_COLUMNS:
         if column not in working.columns:
             working[column] = None
@@ -89,6 +96,7 @@ def save_curves(df: pd.DataFrame, path: Path | None = None) -> None:
         )
     working = working[list(CURVE_COLUMNS)]
     working.to_csv(curve_path, index=False)
+    append_audit_snapshot(working, curve_path)
 
 
 def get_curve_points(

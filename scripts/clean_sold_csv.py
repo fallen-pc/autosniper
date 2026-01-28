@@ -12,9 +12,11 @@ if __package__ in (None, ""):
     sys.path.append(str(Path(__file__).resolve().parent.parent))
     from shared.data_loader import dataset_path
     from shared.sold_cleaning import normalize_listing_fields
+    from shared.validators import validate_sold_cars_df
 else:  # pragma: no cover
     from shared.data_loader import dataset_path
     from shared.sold_cleaning import normalize_listing_fields
+    from shared.validators import validate_sold_cars_df
 
 
 CSV_PATH = dataset_path("sold_cars.csv")
@@ -83,14 +85,19 @@ def main() -> None:
         df = normalize_listing_fields(df)
 
     deduped = deduplicate_sold(df)
+    deduped_count = len(deduped)
+    deduped, stats = validate_sold_cars_df(deduped)
     after_count = len(deduped)
-    removed = before_count - after_count
+    removed = before_count - deduped_count
+    validator_removed = stats["rows_dropped"]
 
     deduped.to_csv(CSV_PATH, index=False)
 
     print(f"Rows before: {before_count}")
     print(f"Rows after:  {after_count}")
     print(f"Removed:     {removed}")
+    if validator_removed:
+        print(f"Validator removed: {validator_removed}")
     if removed > 0:
         print("Backup saved to", DEDUP_BACKUP_PATH)
 

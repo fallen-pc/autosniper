@@ -27,6 +27,7 @@ MODEL_ALIASES = {
     "territory": "territory",
     "i30": "i30",
     "corolla": "corolla",
+    "camry": "camry",
     "3series": "3series",
     "3seriesbmw": "3series",
     "3series3": "3series",
@@ -46,6 +47,7 @@ TOP_12_MODELS = {
     ("ford", "territory"),
     ("hyundai", "i30"),
     ("toyota", "corolla"),
+    ("toyota", "camry"),
     ("bmw", "3series"),
     ("holden", "captiva"),
     ("ford", "ranger"),
@@ -55,15 +57,21 @@ TOP_12_MODELS = {
 }
 
 GROUP_IDS = [
-    "toyota_hilux_dualcab_ute_diesel_auto_sr5_4x4",
     "volkswagen_golf_hatch_petrol_auto_base",
     "holden_commodore_sedan_petrol_auto_v6",
     "holden_commodore_wagon_petrol_auto_v6",
     "holden_cruze_hatch_petrol_auto_4cyl",
     "ford_territory_suv_diesel_auto_4cyl",
     "hyundai_i30_hatch_petrol_auto_na_active_elite",
-    "toyota_corolla_hatch_petrol_auto",
-    "toyota_corolla_sedan_petrol_auto",
+    "toyota_corolla_hatch_petrol_auto_ascent_fwd_2013_2015",
+    "toyota_corolla_hatch_petrol_auto_ascent_fwd_2016_2018",
+    "toyota_corolla_hatch_petrol_auto_ascent_fwd_2019_2023",
+    "toyota_corolla_sedan_petrol_auto_ascent_fwd_2013_2015",
+    "toyota_corolla_sedan_petrol_auto_ascent_fwd_2016_2018",
+    "toyota_corolla_sedan_petrol_auto_ascent_fwd_2019_2023",
+    "toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023",
+    "toyota_hilux_dualcab_ute_diesel_auto_sr5_4x4_2005_2014",
+    "toyota_hilux_dualcab_ute_diesel_auto_sr5_4x4_2015_2023",
     "bmw_3series_sedan_petrol_auto_4cyl_20",
     "holden_captiva_suv_diesel_auto_4cyl",
     "ford_ranger_dualcab_ute_diesel_auto",
@@ -457,6 +465,18 @@ def _assign_corolla(row: object, text: str, body_text: str) -> Tuple[str | None,
     return None, "BAD_GROUP:BODY_MISMATCH"
 
 
+def _assign_camry(row: object, text: str, body_text: str) -> Tuple[str | None, str]:
+    if not _is_sedan(text, body_text):
+        return None, "BAD_GROUP:BODY_MISMATCH"
+    if _fuel_type(row, text) != "petrol":
+        return None, "BAD_GROUP:FUEL_MISMATCH"
+    if _match_regex(text, r"\bhybrid\b"):
+        return None, "BAD_GROUP:FUEL_MISMATCH"
+    if not _is_auto(row, text):
+        return None, "BAD_GROUP:TRANS_MISMATCH"
+    return "toyota_camry_sedan_petrol_auto", ""
+
+
 def _assign_bmw_3series(row: object, text: str, body_text: str) -> Tuple[str | None, str]:
     if not _is_sedan(text, body_text):
         return None, "BAD_GROUP:BODY_MISMATCH"
@@ -600,6 +620,8 @@ def assign_group_id(row: object) -> Tuple[str | None, str]:
         return _assign_i30(row, text, body_text)
     if (make, model) == ("toyota", "corolla"):
         return _assign_corolla(row, text, body_text)
+    if (make, model) == ("toyota", "camry"):
+        return _assign_camry(row, text, body_text)
     if (make, model) == ("bmw", "3series"):
         return _assign_bmw_3series(row, text, body_text)
     if (make, model) == ("holden", "captiva"):

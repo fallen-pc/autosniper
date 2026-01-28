@@ -30,9 +30,11 @@ if missing:
 CSV_FILE = dataset_path("vehicle_static_details.csv")
 VALUATIONS_FILE = dataset_path("ai_listing_valuations.csv")
 LINKS_FILE = dataset_path("all_vehicle_links.csv")
+ACTIVE_FILE = dataset_path("active_vehicle_details.csv")
 SOLD_FILE = dataset_path("sold_cars.csv")
 REFERRED_FILE = dataset_path("referred_cars.csv")
 SCORED_FILE = dataset_path("scored_listings.csv")
+AUTOTRADER_FILE = Path("autotrader_isolated/output/first_page_results.csv")
 
 df = pd.read_csv(CSV_FILE)
 
@@ -196,6 +198,17 @@ def safe_read_csv(path: "os.PathLike[str] | str", parse_dates: list[str] | None 
     except Exception as exc:  # noqa: BLE001
         st.warning(f"Could not read {file_path}: {exc}")
         return pd.DataFrame()
+
+
+def count_csv_rows(path: Path) -> int | None:
+    if not path.exists():
+        return None
+    try:
+        with path.open("r", encoding="utf-8", errors="ignore") as handle:
+            row_count = sum(1 for _ in handle)
+        return max(row_count - 1, 0)
+    except OSError:
+        return None
 
 
 def parse_currency_value(value: object) -> float | None:
@@ -472,6 +485,10 @@ scored_df = safe_read_csv(SCORED_FILE)
 
 links_last_text, _ = describe_last_run(LINKS_FILE)
 details_last_text, _ = describe_last_run(CSV_FILE)
+active_last_text, _ = describe_last_run(ACTIVE_FILE)
+sold_last_text, _ = describe_last_run(SOLD_FILE)
+referred_last_text, _ = describe_last_run(REFERRED_FILE)
+autotrader_last_text, _ = describe_last_run(AUTOTRADER_FILE)
 master_last_text = describe_latest_run(CSV_FILE, SOLD_FILE, REFERRED_FILE)
 
 ai_latest_ts: datetime | None = None
@@ -525,6 +542,92 @@ if not scored_df.empty and "hit" in scored_df.columns:
     if settled_count:
         accuracy = valid_hits.astype(float).mean()
         accuracy_display = f"{accuracy * 100:,.1f}%"
+
+def _format_rows(value: int | None) -> str:
+    if value is None:
+        return "N/A"
+    return f"{value:,}"
+
+
+active_rows = count_csv_rows(Path(ACTIVE_FILE))
+autotrader_rows = count_csv_rows(AUTOTRADER_FILE)
+
+scraper_cards = [
+    {
+        "title": "Link Extractor",
+        "meta": links_last_text,
+        "summary": f"{len(links_df):,} links captured." if len(links_df) else "No links captured yet.",
+        "metrics": [("Rows", f"{len(links_df):,}")],
+    },
+    {
+        "title": "Vehicle Details",
+        "meta": details_last_text,
+        "summary": f"{len(df):,} listings enriched." if len(df) else "No vehicle details found.",
+        "metrics": [("Rows", f"{len(df):,}")],
+    },
+    {
+        "title": "Active Snapshot",
+        "meta": active_last_text,
+        "summary": f"{_format_rows(active_rows)} active listings."
+        if active_rows
+        else "Active snapshot missing.",
+        "metrics": [("Rows", _format_rows(active_rows))],
+    },
+    {
+        "title": "Sold Cars",
+        "meta": sold_last_text,
+        "summary": f"{len(sold_df):,} sold records." if len(sold_df) else "No sold records yet.",
+        "metrics": [("Rows", f"{len(sold_df):,}")],
+    },
+    {
+        "title": "Referred Cars",
+        "meta": referred_last_text,
+        "summary": f"{len(referred_df):,} referred records."
+        if len(referred_df)
+        else "No referred records yet.",
+        "metrics": [("Rows", f"{len(referred_df):,}")],
+    },
+]
+if AUTOTRADER_FILE.exists():
+    scraper_cards.append(
+        {
+            "title": "Autotrader Snapshot",
+            "meta": autotrader_last_text,
+            "summary": f"{_format_rows(autotrader_rows)} listings scraped."
+            if autotrader_rows
+            else "Autotrader snapshot empty.",
+            "metrics": [("Rows", _format_rows(autotrader_rows))],
+        }
+    )
+
+
+section_heading("Scraper Runs", "Last output timestamps and row counts for each scraper feed.")
+if not scraper_cards:
+    st.info("No scraper activity detected yet.")
+else:
+    for start in range(0, len(scraper_cards), 3):
+        row_cards = scraper_cards[start : start + 3]
+        columns = st.columns(len(row_cards))
+        for column, card in zip(columns, row_cards):
+            metrics_html = "".join(
+                f"""
+                <div class="page-status-metric">
+                    <div class="page-status-label">{clean_html(label)}</div>
+                    <div class="page-status-value">{value}</div>
+                </div>
+                """
+                for label, value in card["metrics"]
+            )
+            card_html = f"""
+                <div class="page-status-card">
+                    <h4>{card['title']}</h4>
+                    <div class="page-status-meta">{card['meta']}</div>
+                    <div class="page-status-highlight">{card['summary']}</div>
+                    <div class="page-status-metrics">{metrics_html}</div>
+                </div>
+            """
+            column.markdown(clean_html(card_html), unsafe_allow_html=True)
+
 
 workflow_cards = [
     {

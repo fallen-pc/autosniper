@@ -51,16 +51,50 @@ global_excludes:
 
 groups:
   # -----------------------------
-  # TOYOTA COROLLA (CORE)
+  # TOYOTA COROLLA + CAMRY (CORE)
   # -----------------------------
-  - group_id: toyota_corolla_hatch_petrol_auto
+  - group_id: toyota_corolla_hatch_petrol_auto_ascent_fwd_2013_2015
     status: CORE
-    pipe_mappings:
-      - "corolla|hatch_petrol_auto"
-    series_allowed: [E170, E180, E210]
+    series_allowed: [E170]
     series_year_guard:
       E170: {year_min: 2013, year_max: 2015}
+    rules:
+      make: TOYOTA
+      model: COROLLA
+      body: [HATCH]
+      fuel: [PETROL]
+      transmission: [AUTO]
+    hard_excludes:
+      title_tokens_any: ["ascent sport", "sx", "zr", "levin", "gr"]
+      fuel_tokens_any: ["hybrid"]
+      transmission_tokens_any: ["manual"]
+    curve_requirements:
+      anchor_years: [2013]
+      km_anchors: [50000, 120000, 200000, 260000]
+
+  - group_id: toyota_corolla_hatch_petrol_auto_ascent_fwd_2016_2018
+    status: CORE
+    series_allowed: [E180]
+    series_year_guard:
       E180: {year_min: 2016, year_max: 2018}
+    rules:
+      make: TOYOTA
+      model: COROLLA
+      body: [HATCH]
+      fuel: [PETROL]
+      transmission: [AUTO]
+    hard_excludes:
+      title_tokens_any: ["ascent sport", "sx", "zr", "levin", "gr"]
+      fuel_tokens_any: ["hybrid"]
+      transmission_tokens_any: ["manual"]
+    curve_requirements:
+      anchor_years: [2017]
+      km_anchors: [50000, 120000, 200000, 260000]
+
+  - group_id: toyota_corolla_hatch_petrol_auto_ascent_fwd_2019_2023
+    status: CORE
+    series_allowed: [E210]
+    series_year_guard:
       E210: {year_min: 2019, year_max: 2023}
     rules:
       make: TOYOTA
@@ -69,20 +103,55 @@ groups:
       fuel: [PETROL]
       transmission: [AUTO]
     hard_excludes:
+      title_tokens_any: ["ascent sport", "sx", "zr", "levin", "gr"]
       fuel_tokens_any: ["hybrid"]
       transmission_tokens_any: ["manual"]
     curve_requirements:
-      anchor_years: [2013, 2017, 2022]
+      anchor_years: [2022]
       km_anchors: [50000, 120000, 200000, 260000]
 
-  - group_id: toyota_corolla_sedan_petrol_auto
+  - group_id: toyota_corolla_sedan_petrol_auto_ascent_fwd_2013_2015
     status: CORE
-    pipe_mappings:
-      - "corolla|sedan_petrol_auto"
-    series_allowed: [E170, E180, E210]
+    series_allowed: [E170]
     series_year_guard:
       E170: {year_min: 2013, year_max: 2015}
+    rules:
+      make: TOYOTA
+      model: COROLLA
+      body: [SEDAN]
+      fuel: [PETROL]
+      transmission: [AUTO]
+    hard_excludes:
+      title_tokens_any: ["ascent sport", "sx", "zr", "levin", "gr"]
+      fuel_tokens_any: ["hybrid"]
+      transmission_tokens_any: ["manual"]
+    curve_requirements:
+      anchor_years: [2013]
+      km_anchors: [50000, 120000, 200000, 260000]
+
+  - group_id: toyota_corolla_sedan_petrol_auto_ascent_fwd_2016_2018
+    status: CORE
+    series_allowed: [E180]
+    series_year_guard:
       E180: {year_min: 2016, year_max: 2018}
+    rules:
+      make: TOYOTA
+      model: COROLLA
+      body: [SEDAN]
+      fuel: [PETROL]
+      transmission: [AUTO]
+    hard_excludes:
+      title_tokens_any: ["ascent sport", "sx", "zr", "levin", "gr"]
+      fuel_tokens_any: ["hybrid"]
+      transmission_tokens_any: ["manual"]
+    curve_requirements:
+      anchor_years: [2017]
+      km_anchors: [50000, 120000, 200000, 260000]
+
+  - group_id: toyota_corolla_sedan_petrol_auto_ascent_fwd_2019_2023
+    status: CORE
+    series_allowed: [E210]
+    series_year_guard:
       E210: {year_min: 2019, year_max: 2023}
     rules:
       make: TOYOTA
@@ -91,10 +160,30 @@ groups:
       fuel: [PETROL]
       transmission: [AUTO]
     hard_excludes:
+      title_tokens_any: ["ascent sport", "sx", "zr", "levin", "gr"]
       fuel_tokens_any: ["hybrid"]
       transmission_tokens_any: ["manual"]
     curve_requirements:
-      anchor_years: [2013, 2017, 2022]
+      anchor_years: [2022]
+      km_anchors: [50000, 120000, 200000, 260000]
+
+  - group_id: toyota_camry_sedan_petrol_auto_ascent_fwd_2018_2023
+    status: CORE
+    series_allowed: [ASV70R]
+    series_year_guard:
+      ASV70R: {year_min: 2018, year_max: 2023}
+    rules:
+      make: TOYOTA
+      model: CAMRY
+      body: [SEDAN]
+      fuel: [PETROL]
+      transmission: [AUTO]
+    hard_excludes:
+      title_tokens_any: ["ascent sport", "sx", "sl", "atara", "gr"]
+      fuel_tokens_any: ["hybrid"]
+      transmission_tokens_any: ["manual"]
+    curve_requirements:
+      anchor_years: [2020]
       km_anchors: [50000, 120000, 200000, 260000]
 
   # -----------------------------
@@ -127,13 +216,40 @@ groups:
   # -----------------------------
   # TOYOTA HILUX (CORE) - SR5 curve, SR derived
   # -----------------------------
-  - group_id: toyota_hilux_dualcab_ute_diesel_auto_sr5_4x4
+  - group_id: toyota_hilux_dualcab_ute_diesel_auto_sr5_4x4_2005_2014
     status: CORE
-    pipe_mappings:
-      - "hilux|dualcab_ute_sr5"
-    series_allowed: [KUN26R, GUN126R]
+    series_allowed: [KUN26R]
     series_year_guard:
-      KUN26R: {year_min: 2005, year_max: 2015}
+      KUN26R: {year_min: 2005, year_max: 2014}
+    rules:
+      make: TOYOTA
+      model: HILUX
+      body: [DUAL_CAB_UTE]
+      fuel: [DIESEL]
+      transmission: [AUTO]
+      drivetrain: [4X4]
+      trim: [SR5]
+    hard_excludes:
+      title_tokens_any: ["hi-rider", "hi rider"]
+      drivetrain_tokens_any: ["4x2", "2wd"]
+      body_tokens_any: ["cab chassis", "single cab", "extra cab", "space cab"]
+    curve_requirements:
+      anchor_years: [2006, 2012]
+      km_anchors: [50000, 120000, 200000, 260000]
+    pricing:
+      derived_trim_adjustments:
+        - trim: SR
+          derived_from_group_id: toyota_hilux_dualcab_ute_diesel_auto_sr5_4x4_2005_2014
+          method: percentage_discount_by_series
+          discount_by_series:
+            KUN26R: 0.08
+          clamp:
+            min_price: 0
+
+  - group_id: toyota_hilux_dualcab_ute_diesel_auto_sr5_4x4_2015_2023
+    status: CORE
+    series_allowed: [GUN126R]
+    series_year_guard:
       GUN126R: {year_min: 2015, year_max: 2023}
     rules:
       make: TOYOTA
@@ -148,15 +264,14 @@ groups:
       drivetrain_tokens_any: ["4x2", "2wd"]
       body_tokens_any: ["cab chassis", "single cab", "extra cab", "space cab"]
     curve_requirements:
-      anchor_years: [2006, 2012, 2021]
+      anchor_years: [2021]
       km_anchors: [50000, 120000, 200000, 260000]
     pricing:
       derived_trim_adjustments:
         - trim: SR
-          derived_from_group_id: toyota_hilux_dualcab_ute_diesel_auto_sr5_4x4
+          derived_from_group_id: toyota_hilux_dualcab_ute_diesel_auto_sr5_4x4_2015_2023
           method: percentage_discount_by_series
           discount_by_series:
-            KUN26R: 0.08
             GUN126R: 0.15
           clamp:
             min_price: 0
@@ -168,8 +283,9 @@ groups:
     status: CORE
     pipe_mappings:
       - "mazda3|hatch_petrol_auto"
-    series_allowed: [BM, BN, BP]
+    series_allowed: [BL, BM, BN, BP]
     series_year_guard:
+      BL: {year_min: 2010, year_max: 2013}
       BM: {year_min: 2014, year_max: 2016}
       BN: {year_min: 2017, year_max: 2018}
       BP: {year_min: 2019, year_max: 2023}
@@ -188,8 +304,25 @@ groups:
       body_tokens_any: ["sedan"]
       transmission_tokens_any: ["manual"]
     curve_requirements:
-      anchor_years: [2015, 2017, 2022]
+      anchor_years: [2010, 2015, 2017, 2022]
       km_anchors: [50000, 120000, 200000, 260000]
+
+  # -----------------------------
+  # MAZDA CX-5 (CORE) - SUV Petrol Auto 2.0
+  # -----------------------------
+  - group_id: mazda_cx5_suv_petrol_auto_20
+    series_allowed: [KE, KF]
+    series_year_guard:
+      KE: {year_min: 2014, year_max: 2017}
+      KF: {year_min: 2018, year_max: 2021}
+
+  # -----------------------------
+  # MAZDA BT-50 (RESTRICTED) - Dual Cab Diesel Auto 3.2 4x4
+  # -----------------------------
+  - group_id: mazda_bt50_dualcab_ute_diesel_auto_32_4x4
+    status: RESTRICTED
+    pipe_mappings:
+      - "bt50|dualcab_ute_diesel_auto_32_4x4"
 
   # -----------------------------
   # FORD RANGER (CORE) - Dual Cab Diesel Auto
@@ -199,15 +332,22 @@ groups:
     pipe_mappings:
       - "ranger|dualcab_ute_diesel_auto"
       - "ranger|dualcab_ute_diesel_auto_xlt_4x4"
-    series_allowed: [PX_MKII]
+      - "ranger|dualcab_ute_diesel_auto_wildtrak_4x4"
+    series_allowed: [PX_MKI, PX_MKII, PXIII]
     series_year_guard:
+      PX_MKI: {year_min: 2012, year_max: 2015}
       PX_MKII: {year_min: 2015, year_max: 2018}
+      PXIII: {year_min: 2018, year_max: 2022}
+    series_aliases:
+      PX: PX_MKI
     rules:
       make: FORD
       model: RANGER
       body: [DUAL_CAB_UTE]
       fuel: [DIESEL]
       transmission: [AUTO]
+    notes:
+      - "Wildtrak trim derives from XLT/base curve via trim multipliers (no separate curves)."
     hard_excludes:
       fuel_tokens_any: ["petrol"]
       transmission_tokens_any: ["manual"]

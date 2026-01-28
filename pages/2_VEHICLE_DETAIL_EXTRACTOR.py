@@ -9,7 +9,6 @@ from shared.styling import (
     display_banner,
     hero_action_card,
     inject_global_styles,
-    render_logo_centered,
 )
 
 
@@ -17,7 +16,6 @@ st.set_page_config(page_title="EXTRACT VEHICLE DETAILS", layout="wide")
 inject_global_styles()
 
 display_banner()
-render_logo_centered()
 run_details_clicked = hero_action_card(
     "EXTRACT VEHICLE DETAILS",
     "Compile the latest specs, condition notes, and pricing signals for every tracked vehicle.",

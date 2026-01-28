@@ -11,7 +11,6 @@ from shared.styling import (
     display_banner,
     hero_action_card,
     inject_global_styles,
-    render_logo_centered,
 )
 
 
@@ -19,7 +18,6 @@ st.set_page_config(page_title="COLLECT VEHICLE LINKS", layout="wide")
 inject_global_styles()
 
 display_banner()
-render_logo_centered()
 
 run_clicked = hero_action_card(
     "COLLECT VEHICLE LINKS",

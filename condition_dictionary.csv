@@ -1,0 +1,7 @@
+raw_line,canonical_key,group,severity,panel_equiv,fixed_cost,auto_avoid
+Dents or marks on body consistent with age and kilometres.,COSMETIC_GENERIC,COSMETIC_PANEL,LOW,1,0,0
+Windscreen Chipped or Cracked.,GLASS_WINDSCREEN,GLASS,MED,0,350,0
+Please refer to the photos or arrange an inspection for the condition of this item.,UNKNOWN_PHOTOS,UNKNOWN,MED,0,0,0
+Engine light ON.,MECH_ENGINE_LIGHT,MECHANICAL,HIGH,0,0,1
+Other Warning light ON.,MECH_OTHER_LIGHT,MECHANICAL,HIGH,0,0,1
+Engine noise observed.,MECH_ENGINE_NOISE,MECHANICAL,HIGH,0,0,1

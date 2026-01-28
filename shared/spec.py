@@ -62,16 +62,34 @@ def build_pipe_mapping(spec: Dict[str, Any]) -> Dict[str, str]:
     return mapping
 
 
+def normalize_series(group_spec: Dict[str, Any] | None, series: str | None) -> str | None:
+    if series is None:
+        return None
+    text = str(series).strip()
+    if not text:
+        return None
+    if not group_spec:
+        return text
+    aliases = group_spec.get("series_aliases") or {}
+    if aliases:
+        alias_map = {str(key).strip().lower(): str(val).strip() for key, val in aliases.items()}
+        mapped = alias_map.get(text.lower())
+        if mapped:
+            return mapped
+    return text
+
+
 def is_series_allowed(group_spec: Dict[str, Any] | None, series: str | None) -> bool:
     if not group_spec:
         return True
     allowed = group_spec.get("series_allowed")
     if not allowed:
         return True
-    if series is None:
+    normalized = normalize_series(group_spec, series)
+    if normalized is None:
         return False
     allowed_norm = {str(item).strip().lower() for item in allowed}
-    return str(series).strip().lower() in allowed_norm
+    return str(normalized).strip().lower() in allowed_norm
 
 
 def resolve_series_for_year(
@@ -111,11 +129,11 @@ def validate_curve_requirements(spec: Dict[str, Any], curves_df: Any) -> list[st
         allowed_series = group.get("series_allowed") or []
         if allowed_series:
             allowed_norm = {str(val).strip().lower() for val in allowed_series}
-            present_series = {
-                str(val).strip().lower()
-                for val in subset["series"].dropna().unique().tolist()
-                if str(val).strip()
-            }
+            present_series = set()
+            for val in subset["series"].dropna().unique().tolist():
+                normalized = normalize_series(group, val)
+                if normalized:
+                    present_series.add(str(normalized).strip().lower())
             unexpected = sorted(series for series in present_series if series not in allowed_norm)
             if unexpected:
                 issues.append(f"{group_id}: unexpected series {', '.join(unexpected)}")
