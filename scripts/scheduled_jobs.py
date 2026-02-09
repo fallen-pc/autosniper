@@ -156,6 +156,7 @@ def run_vic_refresh_12h() -> None:
     df = _filter_active_status(df)
     urls = _extract_urls(df)
     _run_update_bids(urls)
+    update_master.update_master_database()
 
 
 def run_vic_refresh_hourly() -> None:
@@ -165,6 +166,7 @@ def run_vic_refresh_hourly() -> None:
     df = _filter_under_24h(df)
     urls = _extract_urls(df)
     _run_update_bids(urls)
+    update_master.update_master_database()
 
 
 def main() -> None:

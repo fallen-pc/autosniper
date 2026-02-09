@@ -137,9 +137,19 @@ def _append_sold_discard_log(records: list[dict[str, object]]) -> None:
     df.to_csv(SOLD_DISCARD_LOG, mode="a", header=not file_exists, index=False)
 
 
-def _clean_sold_rows(frame: pd.DataFrame) -> tuple[pd.DataFrame, list[dict[str, object]]]:
+def _clean_sold_rows(
+    frame: pd.DataFrame,
+    *,
+    static_df: pd.DataFrame | None = None,
+) -> tuple[pd.DataFrame, list[dict[str, object]]]:
     if frame.empty:
         return frame, []
+    static_lookup = {}
+    if static_df is not None and not static_df.empty and "url" in static_df.columns:
+        static_vin = static_df[["url", "vin"]].copy()
+        static_vin["url"] = static_vin["url"].astype(str).str.strip()
+        static_vin["vin"] = static_vin["vin"].astype(str).str.strip().str.upper()
+        static_lookup = static_vin.set_index("url")["vin"].to_dict()
     cleaned_rows: list[dict[str, object]] = []
     failures: list[dict[str, object]] = []
     timestamp = datetime.utcnow().isoformat()
@@ -202,6 +212,11 @@ def _clean_sold_rows(frame: pd.DataFrame) -> tuple[pd.DataFrame, list[dict[str, 
         bids = _parse_bids(row_dict.get("bids"))
         odometer, odo_suspect = _normalize_odometer(row_dict.get("odometer_reading"))
         vin = str(row_dict.get("vin", "") or "").strip().upper()
+        if (not vin or vin.lower() in {"nan", "none"}) and url in static_lookup:
+            fallback = static_lookup.get(url, "")
+            if fallback and fallback.lower() not in {"nan", "none"}:
+                vin = fallback
+                row_dict["vin"] = vin
         if vin and not VIN_RE.match(vin):
             failures.append(
                 {
@@ -345,7 +360,7 @@ def _blank_mask(series: pd.Series) -> pd.Series:
     return series.isna() | text.eq("") | text.str.lower().eq("nan")
 
 
-def _prepare_sold_rows(frame: pd.DataFrame) -> pd.DataFrame:
+def _prepare_sold_rows(frame: pd.DataFrame, *, static_df: pd.DataFrame | None = None) -> pd.DataFrame:
     if frame is None:
         return pd.DataFrame()
     prepared = frame.copy()
@@ -359,7 +374,7 @@ def _prepare_sold_rows(frame: pd.DataFrame) -> pd.DataFrame:
             if not mask.any():
                 break
     prepared["price"] = prepared["price"].fillna("")
-    cleaned, failures = _clean_sold_rows(prepared)
+    cleaned, failures = _clean_sold_rows(prepared, static_df=static_df)
     _append_sold_discard_log(failures)
     drop_cols = [column for column in SOLD_REDUNDANT_COLUMNS if column in cleaned.columns]
     if drop_cols:
@@ -374,6 +389,13 @@ def _prepare_referred_rows(frame: pd.DataFrame) -> pd.DataFrame:
     if frame is None:
         return pd.DataFrame()
     prepared = frame.copy()
+    for col in ("price", "bids"):
+        if col in prepared.columns:
+            prepared[col] = pd.NA
+    if "date_sold" in prepared.columns:
+        prepared["date_sold"] = pd.NaT
+    if "time_remaining_or_date_sold" in prepared.columns:
+        prepared["time_remaining_or_date_sold"] = pd.NA
     if "referral_reason" not in prepared.columns:
         prepared["referral_reason"] = ""
     mask = _blank_mask(prepared["referral_reason"])
@@ -388,13 +410,16 @@ def _merge_preserving_history(
     path: Path,
     new_rows: pd.DataFrame,
     label: str,
-    prepare_fn: Callable[[pd.DataFrame], pd.DataFrame] | None = None,
+    prepare_fn: Callable[..., pd.DataFrame] | None = None,
     ensure_schema: bool = False,
     validator: Callable[[pd.DataFrame], tuple[pd.DataFrame, dict[str, int]]] | None = None,
+    *,
+    prepare_kwargs: dict[str, object] | None = None,
 ) -> None:
     existing_raw = _load_dataframe(path)
-    prepared_existing = prepare_fn(existing_raw) if prepare_fn else existing_raw
-    prepared_new = prepare_fn(new_rows) if prepare_fn else new_rows
+    prepare_kwargs = prepare_kwargs or {}
+    prepared_existing = prepare_fn(existing_raw, **prepare_kwargs) if prepare_fn else existing_raw
+    prepared_new = prepare_fn(new_rows, **prepare_kwargs) if prepare_fn else new_rows
 
     schema_changed = False
     if prepare_fn is not None:
@@ -435,6 +460,8 @@ def _merge_preserving_history(
 
     _atomic_write(combined, path)
     print(f"{label.title()} listings saved to {path} (total {len(combined)}, +{added}).")
+    if label == "sold":
+        print(f"[INFO] sold_added={added}")
 
 
 def _remove_excluded_variants(frame: pd.DataFrame) -> pd.DataFrame:
@@ -500,6 +527,23 @@ def _restore_active_columns(active_target: pd.DataFrame, existing_active: pd.Dat
     return enriched
 
 
+def _prune_urls_from_dataset(path: Path, urls: set[str], label: str) -> None:
+    if not urls or not path.exists():
+        return
+    existing = _load_dataframe(path)
+    if existing.empty or "url" not in existing.columns:
+        return
+    existing["_url_norm"] = _normalize_url(existing["url"])
+    norm_urls = {_normalize_url(pd.Series([url])).iloc[0] for url in urls if url}
+    mask = existing["_url_norm"].isin(norm_urls)
+    removed = int(mask.sum())
+    if removed:
+        existing = existing.loc[~mask].copy()
+        existing.drop(columns=["_url_norm"], inplace=True)
+        _atomic_write(existing, path)
+        print(f"Removed {removed} {label} listing(s) now marked as referred.")
+
+
 def _prune_static_dataset(urls_to_remove: set[str]) -> None:
     """Drop completed listings (sold/referred) from the static vehicle dataset."""
     if not urls_to_remove:
@@ -532,6 +576,8 @@ def update_master_database() -> None:
 
     df = _remove_excluded_variants(df)
     df["status"] = df["status"].astype(str).str.strip().str.lower()
+    valid_statuses = {"active", "sold", "referred", "canceled", "cancelled", "closed"}
+    df.loc[~df["status"].isin(valid_statuses), "status"] = "active"
 
     for column in optional_dynamic_columns:
         if column in df.columns and df[column].dtype == object:
@@ -561,6 +607,13 @@ def update_master_database() -> None:
                         print(
                             f"[INFO] snapshot-missing URLs detected (no status change): {len(missing_urls)}"
                         )
+                        snapshot_sold_df = _build_snapshot_sold_candidates(SNAPSHOT_FILE, STATIC_FILE)
+
+    if not snapshot_sold_df.empty:
+        sold_df = pd.concat([sold_df, snapshot_sold_df], ignore_index=True, sort=False)
+        if "url" in sold_df.columns:
+            sold_df = sold_df.drop_duplicates(subset=["url"], keep="last")
+        print(f"[INFO] Added {len(snapshot_sold_df)} snapshot-missing listing(s) to sold candidates.")
     active_df = _remove_wovr_rows(active_df)
     existing_active = _load_dataframe(ACTIVE_FILE)
 
@@ -594,7 +647,17 @@ def update_master_database() -> None:
                 referred_df = pd.concat([referred_df, moved_rows], ignore_index=True, sort=False)
                 sold_df = sold_df.loc[~blank_sale_mask].copy()
                 print(f"Moved {len(moved_rows)} sold listing(s) without sale price into referred dataset.")
+    referred_urls: set[str] = set()
+    if "url" in referred_df.columns and not referred_df.empty:
+        referred_urls = {url.strip() for url in referred_df["url"].dropna().tolist() if str(url).strip()}
+    existing_referred = _load_dataframe(REFERRED_FILE)
+    if not existing_referred.empty and "url" in existing_referred.columns:
+        referred_urls.update(
+            {url.strip() for url in existing_referred["url"].dropna().tolist() if str(url).strip()}
+        )
+    # Do not purge sold based on referred URLs; sold history is authoritative.
 
+    static_df = _load_dataframe(STATIC_FILE)
     _merge_preserving_history(
         SOLD_FILE,
         sold_df,
@@ -602,6 +665,7 @@ def update_master_database() -> None:
         prepare_fn=_prepare_sold_rows,
         ensure_schema=True,
         validator=validate_sold_cars_df,
+        prepare_kwargs={"static_df": static_df},
     )
     _merge_preserving_history(
         REFERRED_FILE,
@@ -620,6 +684,10 @@ def update_master_database() -> None:
         completed_urls.update(sold_df["url"].dropna().tolist())
     if "url" in referred_df.columns:
         completed_urls.update(referred_df["url"].dropna().tolist())
+    if "url" in active_target.columns:
+        active_urls = {url.strip() for url in active_target["url"].dropna().tolist() if str(url).strip()}
+        if active_urls:
+            _prune_urls_from_dataset(SOLD_FILE, active_urls, "sold (now active)")
     _prune_static_dataset({url.strip() for url in completed_urls if url})
     try:
         build_restricted_datasets()

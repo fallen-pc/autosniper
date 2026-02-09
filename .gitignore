@@ -15,6 +15,7 @@ CSV_data/**
 !CSV_data/archives/**
 !CSV_data/repairs/
 !CSV_data/repairs/**
+CSV_data/restricted/audit/restricted_group_map_audit.csv
 CSV_data/.remote_sync.json
 __pycache__/
 *.pyc

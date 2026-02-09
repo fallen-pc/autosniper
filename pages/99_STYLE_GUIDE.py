@@ -177,7 +177,6 @@ st.markdown(
     clean_html(
         """
         <div class="autosniper-section">
-            <div class="section-title">Manual Carsales</div>
             <div class="section-subtitle">Enter resale and instant-buy ranges, then save each row.</div>
         </div>
         """
@@ -185,6 +184,5 @@ st.markdown(
     unsafe_allow_html=True,
 )
 st.code(
-    """section_heading("Manual Carsales", "Enter resale and instant-buy ranges, then save each row.")""",
     language="python",
 )

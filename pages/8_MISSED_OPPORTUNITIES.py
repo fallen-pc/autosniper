@@ -7,7 +7,7 @@ import streamlit as st
 
 from shared.comps_engine import parse_currency, parse_numeric
 from shared.canonical_tagging import is_canonical_eligible
-from shared.curves import load_curves, interpolate_base_by_year
+from shared.curves import curve_dataset_name, curve_model, load_curves, interpolate_base_by_year
 from shared.data_loader import dataset_path, ensure_datasets_available
 from shared.parts_cost import estimate_parts_cost
 from shared.repair_features import build_repair_features, serialize_tags
@@ -36,14 +36,14 @@ page_intro(
 required_files = [
     "sold_cars_restricted.csv",
     "restricted_group_map.csv",
-    "curves.csv",
+    curve_dataset_name(),
 ]
 missing = ensure_datasets_available(required_files)
 if missing:
     st.error(
         "Missing required datasets: "
         + ", ".join(missing)
-        + ". Run the restricted dataset build and ensure curves.csv exists."
+        + ". Run the restricted dataset build and ensure curve data exists."
     )
     st.stop()
 
@@ -165,6 +165,8 @@ def load_group_map() -> pd.DataFrame:
     path = dataset_path("restricted_group_map.csv")
     df = pd.read_csv(path)
     df["url"] = df["url"].astype(str).str.strip()
+    if curve_model() == "v2" and "canonical_tag" in df.columns:
+        df["group_id"] = df["canonical_tag"]
     return df
 
 
@@ -198,7 +200,8 @@ sold_groups = (
     .drop_duplicates("url")
 )
 sold_df = sold_df.merge(sold_groups, on="url", how="left")
-sold_df = sold_df.dropna(subset=["group_id", "price_numeric"]).copy()
+curve_key_col = "canonical_tag" if curve_model() == "v2" else "group_id"
+sold_df = sold_df.dropna(subset=[curve_key_col, "price_numeric"]).copy()
 
 st.markdown(
     clean_html(
@@ -374,7 +377,10 @@ st.markdown(
 
 allow_repairs = "general_condition" in sold_df.columns
 group_ids = ["All"]
-if "group_id" in sold_df.columns:
+if curve_model() == "v2" and "canonical_tag" in sold_df.columns:
+    group_values = sorted({str(value).strip() for value in sold_df["canonical_tag"].dropna().tolist()})
+    group_ids.extend([value for value in group_values if value])
+elif "group_id" in sold_df.columns:
     group_values = sorted({str(value).strip() for value in sold_df["group_id"].dropna().tolist()})
     group_ids.extend([value for value in group_values if value])
 
@@ -384,7 +390,8 @@ st.caption("Compare sold results against curve-based estimates for the restricte
 
 left, right = st.columns([1.2, 1], gap="large")
 with left:
-    group_choice = st.selectbox("Universe (Group ID)", group_ids, index=0)
+    group_label = "Universe (Canonical tag)" if curve_model() == "v2" else "Universe (Group ID)"
+    group_choice = st.selectbox(group_label, group_ids, index=0)
     include_repairs = st.checkbox(
         "Hypothesis: repairs matter (estimate costs)",
         value=allow_repairs,
@@ -430,6 +437,7 @@ for _, row in sold_df.iterrows():
     group_id_value = row.get("group_id")
     group_id = safe_text(group_id_value, "")
     canonical_tag = row.get("canonical_tag")
+    curve_key = safe_text(canonical_tag, "") if curve_model() == "v2" else group_id
     canonical_reason = safe_text(row.get("canonical_reason"), "")
     year_val = safe_int(row.get("year"))
     odo_val = row.get("odometer_numeric")
@@ -444,35 +452,36 @@ for _, row in sold_df.iterrows():
         curve_estimate = None
         curve_base = None
         trim_multiplier = None
-    parsed = parse_pipe_key(group_id)
-    if parsed:
-        _, _, series_key, _ = parsed
-    elif not spec_reason:
-        lookup_id = canonical_tag or group_id
-        spec_group = get_group_spec(spec, lookup_id) if spec else None
-        if spec and not spec_group:
-            spec_reason = "UNKNOWN_GROUP_MAPPING"
-        elif spec_group:
-            series_key, spec_reason = resolve_series_for_year(spec, lookup_id, year_val)
-            if not spec_reason and series_key and not is_series_allowed(spec_group, series_key):
-                spec_reason = "SERIES_NOT_COVERED"
+    if curve_model() != "v2":
+        parsed = parse_pipe_key(group_id)
+        if parsed:
+            _, _, series_key, _ = parsed
+        elif not spec_reason:
+            lookup_id = canonical_tag or group_id
+            spec_group = get_group_spec(spec, lookup_id) if spec else None
+            if spec and not spec_group:
+                spec_reason = "UNKNOWN_GROUP_MAPPING"
+            elif spec_group:
+                series_key, spec_reason = resolve_series_for_year(spec, lookup_id, year_val)
+                if not spec_reason and series_key and not is_series_allowed(spec_group, series_key):
+                    spec_reason = "SERIES_NOT_COVERED"
 
     curve_subset = curves_df
-    if group_id:
-        curve_subset = curve_subset[curve_subset["group_id"] == group_id]
+    if curve_key:
+        curve_subset = curve_subset[curve_subset["group_id"] == curve_key]
     if series_key and not curve_subset.empty:
         curve_subset = curve_subset[curve_subset["series"] == series_key]
         if curve_subset.empty and not spec_reason:
             spec_reason = "SERIES_NOT_COVERED"
 
     if not spec_reason:
-        curve_estimate = interpolate_base_by_year(curve_subset, group_id, year_val, odo_val)
+        curve_estimate = interpolate_base_by_year(curve_subset, curve_key, year_val, odo_val)
         curve_base = curve_estimate
         if curve_estimate is not None:
             trim_text = first_text(row, ["trim", "variant", "series", "model"])
             curve_estimate, trim_multiplier = apply_trim_multiplier(
                 curve_estimate,
-                group_id,
+                curve_key,
                 trim_text,
                 odo_val,
                 trim_config,
@@ -507,7 +516,7 @@ for _, row in sold_df.iterrows():
             "odometer_reading": row.get("odometer_reading"),
             "odometer_numeric": row.get("odometer_numeric"),
             "sold_price": sold_price,
-            "group_id": group_id,
+            "group_id": curve_key,
             "spec_series": series_key,
             "spec_reason": spec_reason,
             "curve_base": curve_base,

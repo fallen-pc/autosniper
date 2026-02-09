@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime
+import os
 from pathlib import Path
 from typing import Iterable, List, Optional, Sequence, Tuple
 
@@ -11,9 +12,16 @@ import pandas as pd
 
 from shared.audit import append_audit_snapshot
 from shared.data_loader import dataset_path
-from shared.validators import compute_price_per_km_bucket, validate_curves_df
+from shared.pipe_keys import looks_like_pipe_key, parse_pipe_key
+from shared.validators import (
+    compute_price_per_km_bucket,
+    validate_curves_df,
+    validate_curves_v2_df,
+)
 
-CURVE_COLUMNS: Sequence[str] = (
+CURVE_MODEL = os.getenv("CURVE_MODEL", "v2").strip().lower()
+
+CURVE_COLUMNS_V1: Sequence[str] = (
     "group_id",
     "series",
     "anchor_year",
@@ -25,6 +33,25 @@ CURVE_COLUMNS: Sequence[str] = (
     "source",
     "created_at",
 )
+
+CURVE_COLUMNS_V2: Sequence[str] = (
+    "canonical_tag",
+    "anchor_year",
+    "km_bucket",
+    "price_low",
+    "price_mid",
+    "price_high",
+)
+
+CURVE_COLUMNS = CURVE_COLUMNS_V2 if CURVE_MODEL == "v2" else CURVE_COLUMNS_V1
+
+
+def curve_model() -> str:
+    return CURVE_MODEL
+
+
+def curve_dataset_name() -> str:
+    return "curves_v2.csv" if CURVE_MODEL == "v2" else "curves.csv"
 
 
 def _to_numeric(value: object) -> float | None:
@@ -61,15 +88,60 @@ def _fill_median_row(row: pd.Series) -> pd.Series:
     return row
 
 
-def load_curves(path: Path | None = None) -> pd.DataFrame:
-    curve_path = path or dataset_path("curves.csv")
-    if not curve_path.exists():
-        return pd.DataFrame(columns=list(CURVE_COLUMNS))
-    df = pd.read_csv(curve_path)
-    for column in CURVE_COLUMNS:
+def _ensure_v1_columns(df: pd.DataFrame) -> pd.DataFrame:
+    for column in CURVE_COLUMNS_V1:
         if column not in df.columns:
             df[column] = None
-    df = df[list(CURVE_COLUMNS)].copy()
+    return df[list(CURVE_COLUMNS_V1)].copy()
+
+
+def _ensure_v2_columns(df: pd.DataFrame) -> pd.DataFrame:
+    for column in CURVE_COLUMNS_V2:
+        if column not in df.columns:
+            df[column] = None
+    return df[list(CURVE_COLUMNS_V2)].copy()
+
+
+def _normalize_v2_for_compat(df: pd.DataFrame) -> pd.DataFrame:
+    """Add v1-compatible columns so existing readers keep working."""
+    working = df.copy()
+    working["canonical_tag"] = working.get("canonical_tag", "").astype(str).str.strip()
+    working["anchor_year"] = working["anchor_year"].apply(_to_int)
+    working["km_bucket"] = working["km_bucket"].apply(_to_int)
+    working["price_low"] = working["price_low"].apply(_to_int)
+    working["price_high"] = working["price_high"].apply(_to_int)
+    working["price_mid"] = working["price_mid"].apply(_to_int)
+
+    fill_mask = working["price_mid"].isna()
+    if fill_mask.any():
+        low = working["price_low"]
+        high = working["price_high"]
+        working.loc[fill_mask, "price_mid"] = ((low + high) / 2.0).round()
+
+    working["group_id"] = working["canonical_tag"]
+    working["series"] = ""
+    working["km_anchor"] = working["km_bucket"]
+    working["price_median"] = working["price_mid"]
+    working["price_per_km_bucket"] = working.apply(
+        lambda row: compute_price_per_km_bucket(row.get("price_median"), row.get("km_anchor")),
+        axis=1,
+    )
+    return working
+
+
+def load_curves(path: Path | None = None) -> pd.DataFrame:
+    curve_path = path or dataset_path(curve_dataset_name())
+    if not curve_path.exists():
+        columns = CURVE_COLUMNS_V2 if CURVE_MODEL == "v2" else CURVE_COLUMNS_V1
+        return pd.DataFrame(columns=list(columns))
+    df = pd.read_csv(curve_path)
+
+    if CURVE_MODEL == "v2":
+        df = _ensure_v2_columns(df)
+        df = _normalize_v2_for_compat(df)
+        return df
+
+    df = _ensure_v1_columns(df)
     df["anchor_year"] = df["anchor_year"].apply(_to_int)
     df["km_anchor"] = df["km_anchor"].apply(_to_int)
     df["price_low"] = df["price_low"].apply(_to_int)
@@ -84,17 +156,22 @@ def load_curves(path: Path | None = None) -> pd.DataFrame:
 
 
 def save_curves(df: pd.DataFrame, path: Path | None = None) -> None:
-    curve_path = path or dataset_path("curves.csv")
+    curve_path = path or dataset_path(curve_dataset_name())
     curve_path.parent.mkdir(parents=True, exist_ok=True)
+
+    if CURVE_MODEL == "v2":
+        working, _ = validate_curves_v2_df(df)
+        working = _ensure_v2_columns(working)
+        working.to_csv(curve_path, index=False)
+        append_audit_snapshot(working, curve_path)
+        return
+
     working, _ = validate_curves_df(df)
-    for column in CURVE_COLUMNS:
-        if column not in working.columns:
-            working[column] = None
+    working = _ensure_v1_columns(working)
     if "created_at" in working.columns:
         working["created_at"] = working["created_at"].fillna(
             datetime.utcnow().isoformat(timespec="seconds")
         )
-    working = working[list(CURVE_COLUMNS)]
     working.to_csv(curve_path, index=False)
     append_audit_snapshot(working, curve_path)
 
@@ -148,6 +225,23 @@ def interpolate_base_by_year(
     if curves_df.empty or not group_id or year is None or km is None:
         return None
     subset = curves_df[curves_df["group_id"] == group_id].copy()
+    if looks_like_pipe_key(group_id):
+        parsed = parse_pipe_key(group_id)
+        if parsed:
+            target_model, target_group_key, target_series, _ = parsed
+            def _same_base_group(value: object) -> bool:
+                if not isinstance(value, str):
+                    return False
+                parts = parse_pipe_key(value)
+                if not parts:
+                    return False
+                model, group_key, series, _ = parts
+                return (
+                    model == target_model
+                    and group_key == target_group_key
+                    and series == target_series
+                )
+            subset = curves_df[curves_df["group_id"].apply(_same_base_group)].copy()
     subset = subset.dropna(subset=["anchor_year"])
     if subset.empty:
         return None
@@ -156,7 +250,12 @@ def interpolate_base_by_year(
         return None
 
     def _price_for_anchor(anchor_year: int) -> Optional[float]:
-        points = get_curve_points(subset, group_id, anchor_year)
+        anchor_group_id = group_id
+        if looks_like_pipe_key(group_id):
+            matched = subset[subset["anchor_year"] == anchor_year]
+            if not matched.empty and "group_id" in matched.columns:
+                anchor_group_id = str(matched.iloc[0]["group_id"])
+        points = get_curve_points(subset, anchor_group_id, anchor_year)
         return interpolate_price_by_km(points, km)
 
     if year <= anchor_years[0]:

@@ -524,4 +524,16 @@ async def update_bids(
 
 # ─── Entry point ────────────────────────────────────────────────
 if __name__ == "__main__":
-    asyncio.run(update_bids())
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Update active listing bids/status.")
+    parser.add_argument("--limit", type=int, default=None, help="Limit number of listings to update.")
+    parser.add_argument(
+        "--batch-interval",
+        type=int,
+        default=None,
+        help="Checkpoint save interval override.",
+    )
+    args = parser.parse_args()
+
+    asyncio.run(update_bids(limit=args.limit, batch_interval=args.batch_interval))

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Any, Dict, Iterable, Tuple
+import os
 
 SPEC_PATH = Path(__file__).resolve().parent.parent / "config" / "spec_v1.yaml"
 
@@ -115,6 +116,8 @@ def resolve_series_for_year(
 
 
 def validate_curve_requirements(spec: Dict[str, Any], curves_df: Any) -> list[str]:
+    if os.getenv("CURVE_MODEL", "v2").strip().lower() == "v2":
+        return []
     if not spec or curves_df is None or getattr(curves_df, "empty", True):
         return []
     issues: list[str] = []
