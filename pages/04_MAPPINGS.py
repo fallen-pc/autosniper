@@ -100,7 +100,7 @@ edited_allowed = st.data_editor(
 if st.button("Save allowed variants", key="save_allowed_variants"):
     working = edited_allowed.copy()
     for col in working.columns:
-        if col in {"year_min", "year_max", "listings_matching"}:
+        if col in {"listings_matching"}:
             continue
         working[col] = working[col].apply(_normalize_text)
     if "listings_matching" in working.columns:

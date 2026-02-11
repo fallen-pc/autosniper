@@ -13,7 +13,6 @@ import pandas as pd
 from shared.canonical_tagging import UNCLASSIFIED
 from shared.curves import curve_model, load_curves
 from shared.data_loader import dataset_path, ensure_datasets_available
-from shared.spec import load_spec
 
 
 QUALITY_DIR = "quality"
@@ -53,7 +52,6 @@ class CurveMeta:
     group_id: str
     last_updated: datetime | None
     anchor_years: list[int]
-    km_anchors: list[int]
 
 
 def _is_blank(value: object) -> bool:
@@ -285,18 +283,15 @@ def build_curve_meta(curves_df: pd.DataFrame) -> dict[str, CurveMeta]:
     if working.empty:
         return {}
     working["anchor_year"] = pd.to_numeric(working.get("anchor_year"), errors="coerce")
-    working["km_anchor"] = pd.to_numeric(working.get("km_anchor"), errors="coerce")
     working["created_at"] = pd.to_datetime(working.get("created_at"), errors="coerce")
     meta: dict[str, CurveMeta] = {}
     for group_id, subset in working.groupby("group_id"):
         anchor_years = sorted({int(val) for val in subset["anchor_year"].dropna().tolist()})
-        km_anchors = sorted({int(val) for val in subset["km_anchor"].dropna().tolist()})
         last_updated = subset["created_at"].dropna().max() if "created_at" in subset.columns else None
         meta[group_id] = CurveMeta(
             group_id=str(group_id),
             last_updated=last_updated.to_pydatetime() if pd.notna(last_updated) else None,
             anchor_years=anchor_years,
-            km_anchors=km_anchors,
         )
     return meta
 
@@ -433,32 +428,11 @@ def issue_hint(code: str) -> str:
 
 
 def load_spec_data() -> dict:
-    return load_spec()
+    return {}
 
 
 def list_missing_curve_anchors(spec: dict, curves_df: pd.DataFrame) -> pd.DataFrame:
-    if curve_model() == "v2":
-        return pd.DataFrame()
-    if not spec or curves_df is None or curves_df.empty:
-        return pd.DataFrame()
-    issues = []
-    for group in spec.get("groups") or []:
-        group_id = group.get("group_id")
-        if not group_id:
-            continue
-        subset = curves_df[curves_df["group_id"] == group_id]
-        requirements = group.get("curve_requirements") or {}
-        anchor_years = requirements.get("anchor_years") or []
-        km_anchors = requirements.get("km_anchors") or []
-        missing = []
-        for anchor_year in anchor_years:
-            for km_anchor in km_anchors:
-                mask = (subset["anchor_year"] == anchor_year) & (subset["km_anchor"] == km_anchor)
-                if not mask.any():
-                    missing.append(f"{anchor_year}@{km_anchor}")
-        if missing:
-            issues.append({"group_id": group_id, "missing_anchors": ", ".join(missing)})
-    return pd.DataFrame(issues)
+    return pd.DataFrame()
 
 
 def apply_global_filters(

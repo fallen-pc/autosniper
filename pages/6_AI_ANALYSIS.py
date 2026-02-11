@@ -34,16 +34,7 @@ from shared.repair_pricing import (
     WINDSCREEN_STD,
     assess_repairs,
 )
-from shared.spec import (
-    get_spec_error,
-    get_group_spec,
-    is_series_allowed,
-    load_spec,
-    resolve_series_for_year,
-    validate_curve_requirements,
-)
 from shared.styling import clean_html, display_banner, inject_global_styles, page_intro
-from shared.trim_multipliers import apply_trim_multiplier, load_trim_multipliers
 
 
 st.set_page_config(page_title="AI Analysis (Curve)", layout="wide")
@@ -1592,26 +1583,7 @@ live_df = load_live_active_data()
 group_map_df = load_group_map()
 sold_df = load_sold_data()
 autotrader_df = load_autotrader_data(_autotrader_cache_key())
-spec = load_spec()
-spec_error = get_spec_error(spec)
-if spec_error == "pyyaml_missing":
-    st.warning("Spec checks disabled: install `pyyaml` to enable config/spec_v1.yaml validation.")
-    spec = {}
 
-trim_config = load_trim_multipliers()
-if trim_config.get("_error") == "pyyaml_missing":
-    st.warning("Trim multipliers disabled: install `pyyaml` to enable config/trim_multipliers.yaml.")
-    trim_config = {}
-
-spec_issues = []
-if spec and not curves_df.empty:
-    sample_group = curves_df["group_id"].dropna().iloc[0] if "group_id" in curves_df.columns else None
-    if not looks_like_pipe_key(sample_group):
-        spec_issues = validate_curve_requirements(spec, curves_df)
-if spec_issues:
-    issue_preview = "\n".join(spec_issues[:10])
-    extra = "" if len(spec_issues) <= 10 else f"\n...and {len(spec_issues) - 10} more"
-    st.warning(f"Spec/curve issues detected:\n{issue_preview}{extra}")
 
 active_groups = group_map_df[group_map_df["source"] == "active"][
     ["url", "group_id", "canonical_tag", "reason_code"]
@@ -1644,6 +1616,28 @@ sold_groups = group_map_df[group_map_df["source"] == "sold"][
     ["url", "group_id", "canonical_tag", "reason_code"]
 ].rename(columns={"reason_code": "canonical_reason"})
 sold_df = sold_df.merge(sold_groups, on="url", how="left")
+
+allowed_tags: set[str] | None = None
+if curve_model() == "v2":
+    allowed_tags = set(
+        curves_df.get("canonical_tag", pd.Series(dtype=str))
+        .dropna()
+        .astype(str)
+        .str.strip()
+        .tolist()
+    )
+    if not allowed_tags:
+        st.warning("curves_v2.csv has no canonical tags; showing all tags.")
+        allowed_tags = None
+    else:
+        if "canonical_tag" in active_df.columns:
+            active_df = active_df[
+                active_df["canonical_tag"].astype(str).str.strip().isin(allowed_tags)
+            ].copy()
+        if "canonical_tag" in sold_df.columns:
+            sold_df = sold_df[
+                sold_df["canonical_tag"].astype(str).str.strip().isin(allowed_tags)
+            ].copy()
 sold_df = _exclude_corolla_sport_comps(sold_df)
 sold_df = _exclude_major_engine_defects(sold_df)
 sold_df["year_int"] = sold_df["year"].apply(_safe_int) if "year" in sold_df.columns else None
@@ -1683,13 +1677,16 @@ sold_stats_year = (
 
 st.sidebar.header("Filters")
 if curve_model() == "v2":
-    group_values = sorted(
-        {
-            str(val).strip()
-            for val in active_df.get("canonical_tag", pd.Series(dtype=str)).dropna().tolist()
-            if str(val).strip() and str(val).strip() != UNCLASSIFIED
-        }
-    )
+    if allowed_tags:
+        group_values = sorted({tag for tag in allowed_tags if tag and tag != UNCLASSIFIED})
+    else:
+        group_values = sorted(
+            {
+                str(val).strip()
+                for val in active_df.get("canonical_tag", pd.Series(dtype=str)).dropna().tolist()
+                if str(val).strip() and str(val).strip() != UNCLASSIFIED
+            }
+        )
     group_filter = st.sidebar.selectbox("Canonical tag", ["All"] + group_values)
 else:
     group_values = sorted(
@@ -2089,15 +2086,6 @@ for _, row in filtered.iterrows():
         parsed = parse_pipe_key(group_id)
         if parsed:
             _, _, series_key, _ = parsed
-        else:
-            lookup_id = canonical_tag or group_id
-            spec_group = get_group_spec(spec, lookup_id) if spec else None
-            if spec and not spec_group:
-                spec_reason = "UNKNOWN_GROUP_MAPPING"
-            elif spec_group:
-                series_key, spec_reason = resolve_series_for_year(spec, lookup_id, year_val)
-                if not spec_reason and series_key and not is_series_allowed(spec_group, series_key):
-                    spec_reason = "SERIES_NOT_COVERED"
 
     curve_subset = curves_df
     if curve_key:
@@ -2134,15 +2122,6 @@ for _, row in filtered.iterrows():
         base_estimate = interpolate_base_by_year(curve_subset, curve_key, year_val, odo_val)
     trim_multiplier = None
     adjusted_estimate = base_estimate
-    if base_estimate is not None:
-        trim_text = _extract_trim_text(row)
-        adjusted_estimate, trim_multiplier = apply_trim_multiplier(
-            base_estimate,
-            curve_key,
-            trim_text,
-            odo_val,
-            trim_config,
-        )
     stats = None
     if year_val is not None and (curve_key, year_val) in sold_stats_year.index:
         stats = sold_stats_year.loc[(curve_key, year_val)]
@@ -2307,7 +2286,10 @@ output["verdict_class"] = output["computed_verdict"].apply(lambda value: _map_ve
 
 filtered_output = output.copy()
 if group_filter != "All":
-    filtered_output = filtered_output[filtered_output["group_id"] == group_filter]
+    if curve_model() == "v2":
+        filtered_output = filtered_output[filtered_output["canonical_tag"] == group_filter]
+    else:
+        filtered_output = filtered_output[filtered_output["group_id"] == group_filter]
 
 if hide_avoid:
     filtered_output = filtered_output[filtered_output["verdict_label"] != "Avoid"]
@@ -2463,8 +2445,12 @@ def render_listing_card(row: pd.Series) -> None:
 
     group_id = _safe_text(row.get("group_id"), fallback="")
     header_meta_parts = []
-    if group_id and group_id != "N/A":
-        header_meta_parts.append(f"Group {group_id}")
+    if curve_model() == "v2":
+        if canonical_tag:
+            header_meta_parts.append(f"Tag {canonical_tag}")
+    else:
+        if group_id and group_id != "N/A":
+            header_meta_parts.append(f"Group {group_id}")
     header_meta = " | ".join(header_meta_parts)
 
     risk_chip_class = "chip"

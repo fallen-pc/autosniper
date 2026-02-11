@@ -1,6 +1,7 @@
 import pandas as pd
 import streamlit as st
 
+from shared.curves import curve_model
 from shared.ops_utils import (
     apply_global_filters,
     build_curve_meta,
@@ -52,9 +53,14 @@ if "verdict" not in radar_df.columns and "computed_verdict" in radar_df.columns:
 radar_df["time_remaining_hours"] = radar_df["time_remaining_or_date_sold"].apply(parse_time_remaining_hours)
 radar_df["time_bucket"] = radar_df["time_remaining_hours"].apply(time_bucket)
 radar_df["confidence_bucket"] = radar_df["confidence"].apply(confidence_bucket)
-radar_df["has_curve"] = radar_df["canonical_tag"].apply(
-    lambda tag: bool(tag) and tag_group_map.get(str(tag).strip()) in curve_meta
-)
+if curve_model() == "v2":
+    radar_df["has_curve"] = radar_df["canonical_tag"].apply(
+        lambda tag: bool(tag) and str(tag).strip() in curve_meta
+    )
+else:
+    radar_df["has_curve"] = radar_df["canonical_tag"].apply(
+        lambda tag: bool(tag) and tag_group_map.get(str(tag).strip()) in curve_meta
+    )
 
 radar_df["profit_margin_value"] = radar_df.get("profit_margin_percent", pd.Series(dtype=float)).apply(parse_percent)
 radar_df["recommended_max_bid_value"] = radar_df.get("recommended_max_bid", pd.Series(dtype=float)).apply(parse_currency)

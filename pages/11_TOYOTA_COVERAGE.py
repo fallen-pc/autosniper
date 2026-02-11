@@ -6,6 +6,7 @@ import pandas as pd
 import streamlit as st
 
 from shared.canonical_tagging import is_canonical_eligible
+from shared.curves import curve_model, load_curves
 from shared.data_loader import dataset_path
 from shared.styling import clean_html, display_banner, inject_global_styles, page_intro
 
@@ -152,13 +153,6 @@ include_grays_active = st.checkbox("Include Grays active", value=True)
 include_grays_sold = st.checkbox("Include Grays sold", value=False)
 include_autotrader = st.checkbox("Include Autotrader snapshot", value=True)
 
-default_carsales_path = Path("CSV_data/carsales/carsales_tagged.csv")
-carsales_path_text = st.text_input(
-    "Carsales tagged CSV path (optional)",
-    value=str(default_carsales_path),
-)
-include_carsales = st.checkbox("Include Carsales", value=False)
-
 toyota_only = st.checkbox("Toyota only", value=True)
 split_eligibility = st.checkbox("Split eligible vs ineligible", value=False)
 
@@ -169,8 +163,6 @@ if include_grays_sold:
     sources.append(_load_source(dataset_path("sold_cars.csv"), "grays"))
 if include_autotrader:
     sources.append(_load_source(Path("autotrader_isolated/output/first_page_results.csv"), "autotrader"))
-if include_carsales and carsales_path_text:
-    sources.append(_load_source(Path(carsales_path_text), "carsales"))
 
 if sources:
     combined = pd.concat(sources, ignore_index=True, sort=False)
@@ -179,6 +171,21 @@ else:
 
 if toyota_only:
     combined = _toyota_filter(combined)
+
+if curve_model() == "v2":
+    curves_df = load_curves()
+    if curves_df.empty or "canonical_tag" not in curves_df.columns:
+        st.warning("curves_v2.csv is empty or missing canonical_tag; showing all tags.")
+    else:
+        allowed_tags = set(
+            curves_df["canonical_tag"].dropna().astype(str).str.strip().tolist()
+        )
+        if not allowed_tags:
+            st.warning("No canonical tags found in curves_v2.csv; showing all tags.")
+        else:
+            combined = combined[
+                combined["canonical_tag"].astype(str).str.strip().isin(allowed_tags)
+            ].copy()
 
 summary_df, pivot_df = _build_summary(combined, split_eligibility=split_eligibility)
 audit_df = _build_policy_audit(combined)

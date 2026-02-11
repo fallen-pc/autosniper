@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 
 from shared.data_loader import dataset_path
 from shared.curves import curve_dataset_name, curve_model, load_curves, save_curves
-from shared.spec import load_spec, get_group_spec
 
 # ----------------------------
 # CONFIG
@@ -84,14 +83,7 @@ def _upsert_curve_rows(curves: pd.DataFrame, rows: list[dict]) -> pd.DataFrame:
 
 
 def _expected_years(spec_data: dict, canonical_tag: str) -> list[int]:
-    if not spec_data or not canonical_tag:
-        return []
-    spec_group = get_group_spec(spec_data, canonical_tag)
-    if not spec_group:
-        return []
-    requirements = spec_group.get("curve_requirements") or {}
-    years = requirements.get("anchor_years") or []
-    return [int(y) for y in years if y]
+    return []
 
 
 def _get_existing_points(curves: pd.DataFrame, group_id: str, series: str, anchor_year: int) -> pd.DataFrame:
@@ -160,16 +152,9 @@ if curve_model() == "v2":
     st.caption("Curve model: v2 (canonical_tag, anchor_year, km_bucket).")
     curves = load_curves()
 
-    if GROUP_MAP_PATH.exists():
-        map_df = pd.read_csv(GROUP_MAP_PATH)
-        map_df["canonical_tag"] = map_df.get("canonical_tag", "").astype(str).str.strip()
-        map_df = map_df[map_df["canonical_tag"] != ""]
-        tag_candidates = map_df["canonical_tag"].dropna().unique().tolist()
-    else:
-        tag_candidates = []
-
+    tag_candidates: list[str] = []
     if "canonical_tag" in curves.columns:
-        tag_candidates.extend(curves["canonical_tag"].dropna().astype(str).str.strip().tolist())
+        tag_candidates = curves["canonical_tag"].dropna().astype(str).str.strip().tolist()
 
     canonical_tags = sorted({tag for tag in tag_candidates if tag and tag != "UNCLASSIFIED"})
     if not canonical_tags:
@@ -216,9 +201,18 @@ if curve_model() == "v2":
     )
 
     if st.button("Save curves_v2.csv", type="primary"):
-        merged = pd.concat([curves, edited], ignore_index=True)
+        key_cols = ["canonical_tag", "anchor_year", "km_bucket"]
+        incoming = edited.copy()
+        incoming["_key"] = incoming[key_cols].astype(str).agg("|".join, axis=1)
+        base = curves.copy()
+        if not base.empty:
+            base["_key"] = base[key_cols].astype(str).agg("|".join, axis=1)
+            base = base[~base["_key"].isin(set(incoming["_key"]))].copy()
+            base = base.drop(columns=["_key"])
+        incoming = incoming.drop(columns=["_key"])
+        merged = pd.concat([base, incoming], ignore_index=True)
         save_curves(merged)
-        st.success(f"Saved {len(edited)} rows to {CURVES_PATH}")
+        st.success(f"Saved {len(incoming)} rows to {CURVES_PATH}")
         curves = load_curves()
 
     st.markdown("### Completeness")
@@ -260,11 +254,8 @@ if curve_model() == "v2":
     else:
         st.info("No data to plot.")
 
-    st.markdown("### Raw rows (this tag)")
-    st.dataframe(tag_rows, use_container_width=True, hide_index=True)
     st.stop()
 
-spec_data = load_spec()
 curves = _load_curves()
 
 if not GROUP_MAP_PATH.exists():
@@ -302,7 +293,7 @@ c3.markdown("**series**")
 c3.code(series_val if series_val else "(empty)")
 
 # Anchor years
-years = _expected_years(spec_data, selected_tag)
+years = _expected_years({}, selected_tag)
 if not years:
     st.info("No anchor years found in spec. Enter three years manually.")
     y1, y2, y3 = st.columns(3)

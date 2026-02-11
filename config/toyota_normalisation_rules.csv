@@ -6,7 +6,6 @@ body,hatchback,hatch
 body,dual cab,dualcab_ute
 body,sedan,sedan
 body,wagon,wagon
-body,suv,wagon
 body,ute,ute
 body,cab chassis,cab_chassis
 body,crew cab chassis,cab_chassis
@@ -14,16 +13,9 @@ transmission,automatic,auto
 transmission,cvt,auto
 transmission,sports automatic,auto
 transmission,spts auto,auto
-drivetrain,4wd,4x4
-drivetrain,4x4,4x4
-drivetrain,awd,awd
-drivetrain,2wd,fwd
 badge,ascent 2.5i,ascent
 badge,ascent-sport,ascent sport
 badge,ascent sport hybrid,ascent sport
-badge,zr hybrid,zr
-badge,sx hybrid,sx
-badge,gxl hybrid,gxl
 badge,sr5 td,sr5
 badge,gx (2wd),gx
 badge,sr 4x4,sr

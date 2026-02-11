@@ -8,8 +8,6 @@ from shared.ops_utils import (
     load_active_df,
     load_curves_df,
     load_group_map_df,
-    load_spec_data,
-    list_missing_curve_anchors,
 )
 from shared.styling import display_banner, inject_global_styles, page_intro, section_heading
 
@@ -34,11 +32,7 @@ if not active_df.empty and "canonical_tag" in active_df.columns:
         active_df["canonical_tag"].astype(str).str.strip().value_counts().to_dict()
     )
 
-spec_data = load_spec_data()
-missing_df = list_missing_curve_anchors(spec_data, curves_df)
 missing_map = {}
-if not missing_df.empty:
-    missing_map = missing_df.set_index("group_id")["missing_anchors"].to_dict()
 
 rows = []
 tag_sources = set(active_counts.keys())
@@ -56,13 +50,14 @@ for tag in canonical_tags:
             "active_count": active_counts.get(tag, 0),
             "curve_rows": len(curve_rows),
             "anchor_years": ", ".join(str(val) for val in meta.anchor_years) if meta else "",
-            "km_anchors": ", ".join(str(val) for val in meta.km_anchors) if meta else "",
             "last_updated": meta.last_updated if meta else None,
             "missing_anchors": missing_map.get(group_id, ""),
         }
     )
 
 library_df = pd.DataFrame(rows)
+if curve_model() == "v2" and "group_id" in library_df.columns:
+    library_df = library_df.drop(columns=["group_id"])
 
 section_heading("Curves Library", "Search by canonical_tag and jump into the editor.")
 search = st.text_input("Search canonical_tag", value="")
@@ -105,11 +100,10 @@ with right:
             st.write(
                 {
                     "canonical_tag": row.get("canonical_tag"),
-                    "group_id": row.get("group_id"),
+                    "curve_key": row.get("canonical_tag") if curve_model() == "v2" else row.get("group_id"),
                     "active_count": row.get("active_count"),
                     "curve_rows": row.get("curve_rows"),
                     "anchor_years": row.get("anchor_years"),
-                    "km_anchors": row.get("km_anchors"),
                     "last_updated": row.get("last_updated"),
                     "missing_anchors": row.get("missing_anchors"),
                 }
@@ -120,9 +114,3 @@ with right:
                     st.switch_page("pages/13_CURVE_BUILDER.py")
                 except Exception:
                     st.info("Open the Curve Builder page from the sidebar to edit curves.")
-
-section_heading("Missing Bucket Warnings", "Groups missing required anchors from the spec.")
-if missing_df.empty:
-    st.success("No missing anchor warnings detected.")
-else:
-    st.dataframe(missing_df, use_container_width=True, hide_index=True)

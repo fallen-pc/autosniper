@@ -1,6 +1,7 @@
 import pandas as pd
 import streamlit as st
 
+from shared.curves import curve_model
 from shared.ops_utils import (
     apply_global_filters,
     ISSUE_DEFINITIONS,
@@ -124,9 +125,14 @@ with left:
         subset["time_remaining_hours"] = pd.Series([None] * len(subset), index=subset.index)
     subset["time_bucket"] = subset["time_remaining_hours"].apply(time_bucket)
     subset["confidence_bucket"] = subset.get("confidence", pd.Series(dtype=float)).apply(confidence_bucket)
-    subset["has_curve"] = subset["canonical_tag"].apply(
-        lambda tag: bool(tag) and tag_group_map.get(str(tag).strip()) in curve_meta
-    )
+    if curve_model() == "v2":
+        subset["has_curve"] = subset["canonical_tag"].apply(
+            lambda tag: bool(tag) and str(tag).strip() in curve_meta
+        )
+    else:
+        subset["has_curve"] = subset["canonical_tag"].apply(
+            lambda tag: bool(tag) and tag_group_map.get(str(tag).strip()) in curve_meta
+        )
     subset["is_flagged"] = subset["url"].map(lambda url: bool(flag_lookup.get(url)))
     subset = apply_global_filters(
         subset,

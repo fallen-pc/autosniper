@@ -111,9 +111,7 @@ class AllowedVariant:
     fuel: str
     transmission: str
     badge: str
-    drivetrain: str
-    year_min: int
-    year_max: int
+    series: str
     badge_aliases: Tuple[str, ...]
     body_aliases: Tuple[str, ...]
     excluded_keywords: Tuple[str, ...]
@@ -337,8 +335,6 @@ def _validate_required_fields(row: Mapping[str, object]) -> str:
         return AMBIG_TRANS
     if not row.get("badge"):
         return AMBIG_BADGE
-    if not row.get("drivetrain"):
-        return AMBIG_DRIVETRAIN
     if not row.get("body_type"):
         return R.BAD_PARSE
     return R.OK
@@ -384,9 +380,7 @@ def load_allowed_variants(path: Path | None = None) -> Tuple[AllowedVariant, ...
         fuel = _normalize_text(row.get("fuel"))
         transmission = _normalize_text(row.get("transmission"))
         badge = _normalize_text(row.get("badge"))
-        drivetrain = _normalize_text(row.get("drivetrain"))
-        year_min = _to_int(row.get("year_min"))
-        year_max = _to_int(row.get("year_max"))
+        series = _normalize_text(row.get("series"))
         badge_aliases = _split_pipe(row.get("allowed_badge_aliases")) or (badge,)
         body_aliases = _split_pipe(row.get("allowed_body_aliases")) or (body,)
         excluded = _split_pipe(row.get("excluded_keywords"))
@@ -399,9 +393,7 @@ def load_allowed_variants(path: Path | None = None) -> Tuple[AllowedVariant, ...
                 fuel=fuel,
                 transmission=transmission,
                 badge=badge,
-                drivetrain=drivetrain,
-                year_min=year_min,
-                year_max=year_max,
+                series=series,
                 badge_aliases=badge_aliases,
                 body_aliases=body_aliases,
                 excluded_keywords=excluded,
@@ -452,7 +444,6 @@ def assign_canonical_tag(
     normalized_row["transmission"] = normaliser.norm("transmission", normalized_row.get("transmission"))
     normalized_row["fuel_type"] = normaliser.norm("fuel", normalized_row.get("fuel_type"))
     normalized_row["badge"] = normaliser.norm("badge", normalized_row.get("badge"))
-    normalized_row["drivetrain"] = normaliser.norm("drivetrain", normalized_row.get("drivetrain"))
 
     make = _normalize_make(normalized_row.get("make"))
     if make != "toyota":
@@ -471,9 +462,6 @@ def assign_canonical_tag(
     year = _parse_year(normalized_row.get("year"), text_blob)
     if year is None:
         return UNCLASSIFIED, R.BAD_PARSE, ""
-    candidates = [v for v in candidates if v.year_min <= year <= v.year_max]
-    if not candidates:
-        return UNCLASSIFIED, OUT_OF_SCOPE, ""
 
     body_value = _normalize_body(normalized_row.get("body_type"), text_blob)
     if not body_value:
@@ -497,17 +485,6 @@ def assign_canonical_tag(
         return UNCLASSIFIED, OUT_OF_SCOPE, ""
 
     drivetrain_source = ""
-    drivetrain = normalized_row.get("drivetrain") or _derive_drivetrain(normalized_row)
-    if drivetrain == "__AMBIG__":
-        return UNCLASSIFIED, AMBIG_DRIVETRAIN, ""
-    if not drivetrain and model in IMPLICIT_FWD_MODELS_AU:
-        drivetrain = "fwd"
-        drivetrain_source = POLICY_IMPLICIT_FWD_AU
-    if not drivetrain:
-        return UNCLASSIFIED, AMBIG_DRIVETRAIN, ""
-    candidates = [v for v in candidates if v.drivetrain == drivetrain]
-    if not candidates:
-        return UNCLASSIFIED, OUT_OF_SCOPE, ""
 
     candidates = [v for v in candidates if not _has_excluded_keyword(text_blob, v.excluded_keywords)]
     if not candidates:
@@ -525,7 +502,6 @@ def assign_canonical_tag(
             "fuel_type": fuel,
             "transmission": transmission,
             "badge": badge_matches[0].badge,
-            "drivetrain": drivetrain,
             "body_type": body_value,
         }
     )

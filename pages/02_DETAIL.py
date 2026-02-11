@@ -1,6 +1,7 @@
 import pandas as pd
 import streamlit as st
 
+from shared.curves import curve_model
 from shared.ops_utils import (
     append_curve_queue,
     append_flag,
@@ -128,20 +129,19 @@ if not static_row.empty:
 if not canonical_tag:
     st.info("No canonical tag available for this URL.")
 else:
-    group_id = tag_group_map.get(canonical_tag)
+    group_id = canonical_tag if curve_model() == "v2" else tag_group_map.get(canonical_tag)
     if not group_id:
-        st.warning("No group_id mapping found for this canonical tag.")
+        st.warning("No curve key found for this canonical tag.")
     else:
         meta = curve_meta.get(group_id)
         if not meta:
-            st.warning("No curve rows found for this group_id.")
+            st.warning("No curve rows found for this curve key.")
         else:
             st.write(
                 {
                     "canonical_tag": canonical_tag,
-                    "group_id": group_id,
+                    "curve_key": group_id,
                     "anchor_years": meta.anchor_years,
-                    "km_anchors": meta.km_anchors,
                     "last_updated": meta.last_updated,
                 }
             )

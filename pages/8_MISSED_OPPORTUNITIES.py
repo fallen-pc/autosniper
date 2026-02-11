@@ -11,17 +11,8 @@ from shared.curves import curve_dataset_name, curve_model, load_curves, interpol
 from shared.data_loader import dataset_path, ensure_datasets_available
 from shared.parts_cost import estimate_parts_cost
 from shared.repair_features import build_repair_features, serialize_tags
-from shared.spec import (
-    get_group_spec,
-    get_spec_error,
-    is_series_allowed,
-    load_spec,
-    resolve_series_for_year,
-    validate_curve_requirements,
-)
 from shared.pipe_keys import looks_like_pipe_key, parse_pipe_key
 from shared.styling import clean_html, display_banner, inject_global_styles, page_intro
-from shared.trim_multipliers import apply_trim_multiplier, load_trim_multipliers
 
 
 st.set_page_config(page_title="MISSED OPPORTUNITIES", layout="wide")
@@ -173,26 +164,6 @@ def load_group_map() -> pd.DataFrame:
 curves_df = load_curves()
 sold_df = load_sold_data()
 group_map_df = load_group_map()
-spec = load_spec()
-spec_error = get_spec_error(spec)
-if spec_error == "pyyaml_missing":
-    st.warning("Spec checks disabled: install `pyyaml` to enable config/spec_v1.yaml validation.")
-    spec = {}
-
-trim_config = load_trim_multipliers()
-if trim_config.get("_error") == "pyyaml_missing":
-    st.warning("Trim multipliers disabled: install `pyyaml` to enable config/trim_multipliers.yaml.")
-    trim_config = {}
-
-spec_issues = []
-if spec and not curves_df.empty:
-    sample_group = curves_df["group_id"].dropna().iloc[0] if "group_id" in curves_df.columns else None
-    if not looks_like_pipe_key(sample_group):
-        spec_issues = validate_curve_requirements(spec, curves_df)
-if spec_issues:
-    issue_preview = "\n".join(spec_issues[:10])
-    extra = "" if len(spec_issues) <= 10 else f"\n...and {len(spec_issues) - 10} more"
-    st.warning(f"Spec/curve issues detected:\n{issue_preview}{extra}")
 
 sold_groups = (
     group_map_df[group_map_df["source"] == "sold"][["url", "group_id", "canonical_tag", "reason_code"]]
@@ -378,8 +349,27 @@ st.markdown(
 allow_repairs = "general_condition" in sold_df.columns
 group_ids = ["All"]
 if curve_model() == "v2" and "canonical_tag" in sold_df.columns:
-    group_values = sorted({str(value).strip() for value in sold_df["canonical_tag"].dropna().tolist()})
-    group_ids.extend([value for value in group_values if value])
+    curves_df = load_curves()
+    allowed_tags = set(
+        curves_df.get("canonical_tag", pd.Series(dtype=str))
+        .dropna()
+        .astype(str)
+        .str.strip()
+        .tolist()
+    )
+    if not allowed_tags:
+        st.warning("curves_v2.csv has no canonical tags; showing all sold tags.")
+        group_values = sorted({str(value).strip() for value in sold_df["canonical_tag"].dropna().tolist()})
+        group_ids.extend([value for value in group_values if value])
+    else:
+        group_values = sorted(
+            {
+                str(value).strip()
+                for value in sold_df["canonical_tag"].dropna().tolist()
+                if str(value).strip() in allowed_tags
+            }
+        )
+        group_ids.extend([value for value in group_values if value])
 elif "group_id" in sold_df.columns:
     group_values = sorted({str(value).strip() for value in sold_df["group_id"].dropna().tolist()})
     group_ids.extend([value for value in group_values if value])
@@ -456,15 +446,6 @@ for _, row in sold_df.iterrows():
         parsed = parse_pipe_key(group_id)
         if parsed:
             _, _, series_key, _ = parsed
-        elif not spec_reason:
-            lookup_id = canonical_tag or group_id
-            spec_group = get_group_spec(spec, lookup_id) if spec else None
-            if spec and not spec_group:
-                spec_reason = "UNKNOWN_GROUP_MAPPING"
-            elif spec_group:
-                series_key, spec_reason = resolve_series_for_year(spec, lookup_id, year_val)
-                if not spec_reason and series_key and not is_series_allowed(spec_group, series_key):
-                    spec_reason = "SERIES_NOT_COVERED"
 
     curve_subset = curves_df
     if curve_key:
@@ -477,15 +458,6 @@ for _, row in sold_df.iterrows():
     if not spec_reason:
         curve_estimate = interpolate_base_by_year(curve_subset, curve_key, year_val, odo_val)
         curve_base = curve_estimate
-        if curve_estimate is not None:
-            trim_text = first_text(row, ["trim", "variant", "series", "model"])
-            curve_estimate, trim_multiplier = apply_trim_multiplier(
-                curve_estimate,
-                curve_key,
-                trim_text,
-                odo_val,
-                trim_config,
-            )
     if curve_estimate is None and not spec_reason:
         spec_reason = "NOT_COVERED"
 
@@ -542,7 +514,10 @@ results_df = pd.DataFrame(results)
 
 view = results_df.copy()
 if group_choice != "All":
-    view = view[view["group_id"] == group_choice]
+    if curve_model() == "v2":
+        view = view[view["group_id"] == group_choice]
+    else:
+        view = view[view["group_id"] == group_choice]
 if only_sold_below:
     view = view[view["delta"].fillna(0) > 0]
 if min_delta > 0:

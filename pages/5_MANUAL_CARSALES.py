@@ -6,10 +6,7 @@ import pandas as pd
 import streamlit as st
 
 from shared.curves import CURVE_COLUMNS, curve_model, load_curves, save_curves
-from shared.pipe_keys import parse_pipe_key
-from shared.spec import get_group_spec, load_spec
 from shared.canonical_tagging import load_allowed_variants
-from shared.spec import get_spec_error, load_spec
 from shared.pipe_keys import format_pipe_key, parse_pipe_key
 from shared.styling import clean_html, display_banner, inject_global_styles, page_intro
 
@@ -127,7 +124,7 @@ def _toyota_group_key_allowed(model_key: str, group_key: str, year_val: int | No
     candidates = [
         variant
         for variant in load_allowed_variants()
-        if variant.model == model_key and variant.year_min <= year_val <= variant.year_max
+        if variant.model == model_key
     ]
     if body:
         candidates = [variant for variant in candidates if variant.body == body]
@@ -137,12 +134,6 @@ def _toyota_group_key_allowed(model_key: str, group_key: str, year_val: int | No
         candidates = [variant for variant in candidates if variant.transmission == transmission]
     return bool(candidates)
 
-
-SPEC_DATA = load_spec()
-spec_error = get_spec_error(SPEC_DATA)
-if spec_error == "pyyaml_missing":
-    st.warning("Spec checks disabled: install `pyyaml` to enable config/spec_v1.yaml validation.")
-    SPEC_DATA = {}
 
 curves_df = _ensure_columns(load_curves())
 
@@ -169,15 +160,6 @@ def _base_group_key(group_id: str) -> tuple[str, str, str]:
     return (model, group_key, series)
 
 
-def _expected_km_anchors(spec_data: dict, group_id: str) -> list[int]:
-    if not spec_data or not group_id:
-        return []
-    # try canonical tag via spec lookup, else pipe group
-    spec_group = get_group_spec(spec_data, group_id)
-    if not spec_group:
-        return []
-    requirements = spec_group.get("curve_requirements") or {}
-    return [int(km) for km in requirements.get("km_anchors", []) if km]
 
 
 def _plot_curve_group(curves_df: pd.DataFrame, base_group: tuple[str, str, str]) -> None:
@@ -205,9 +187,7 @@ def _plot_curve_group(curves_df: pd.DataFrame, base_group: tuple[str, str, str])
         plt.plot(x, y, linewidth=2, color=colors[idx % len(colors)], label=str(year))
         plt.scatter(x, y, s=28, color=colors[idx % len(colors)])
 
-    expected = _expected_km_anchors(SPEC_DATA, subset.iloc[0]["group_id"])
-    if not expected:
-        expected = sorted({int(km) for km in subset["km_anchor"].dropna()})
+    expected = sorted({int(km) for km in subset["km_anchor"].dropna()})
     for km in expected:
         plt.axvline(x=km, color="#d0d0d0", linewidth=0.8, linestyle=":")
 
@@ -226,9 +206,7 @@ def _curve_completeness(curves_df: pd.DataFrame, base_group: tuple[str, str, str
     subset = subset[subset["base_key"] == base_group].copy()
     if subset.empty:
         return pd.DataFrame()
-    expected = _expected_km_anchors(SPEC_DATA, subset.iloc[0]["group_id"])
-    if not expected:
-        expected = sorted({int(km) for km in subset["km_anchor"].dropna()})
+    expected = sorted({int(km) for km in subset["km_anchor"].dropna()})
     rows = []
     for year in sorted({int(y) for y in subset["anchor_year"].dropna()}):
         year_km = set(subset[subset["anchor_year"] == year]["km_anchor"].dropna().astype(int).tolist())

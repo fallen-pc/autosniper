@@ -7,7 +7,6 @@ import re
 from typing import Optional, Tuple
 
 from shared.canonical_tagging import load_allowed_variants
-from shared.spec import get_group_spec, load_spec, resolve_series_for_year
 
 PIPE_DELIM = " | "
 PIPE_PARTS = 4
@@ -142,11 +141,6 @@ def _allowed_variants_by_tag() -> dict[str, object]:
     return {variant.canonical_tag: variant for variant in load_allowed_variants()}
 
 
-@lru_cache(maxsize=1)
-def _spec_cache() -> dict:
-    return load_spec()
-
-
 def pipe_key_from_canonical(
     canonical_tag: object,
     year: Optional[int],
@@ -178,22 +172,15 @@ def pipe_key_from_canonical(
         if "2.5i" in tag:
             group_key = f"{group_key}_2_5i"
 
-    spec_data = spec if spec is not None else _spec_cache()
-    spec_group_id = tag if get_group_spec(spec_data, tag) else _find_matching_spec_group_id(
-        spec_data, variant, year
-    )
     series_key = _normalize_series(series_override)
     if not series_key:
-        series_key, _ = resolve_series_for_year(spec_data, spec_group_id, year)
-        series_key = _normalize_series(series_key) if series_key else ""
+        series_key = ""
     if not series_key:
         series_key = SERIES_FALLBACK
 
     anchor_year_val = _normalize_year(anchor_year_override)
     if anchor_year_val is None:
-        group_spec = get_group_spec(spec_data, spec_group_id)
-        anchor_years = (group_spec or {}).get("curve_requirements", {}).get("anchor_years") or []
-        anchor_year_val = _pick_anchor_year(anchor_years, year)
+        anchor_year_val = _pick_anchor_year([], year)
     if anchor_year_val is None:
         anchor_year_val = year
 

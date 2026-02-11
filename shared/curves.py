@@ -258,10 +258,9 @@ def interpolate_base_by_year(
         points = get_curve_points(subset, anchor_group_id, anchor_year)
         return interpolate_price_by_km(points, km)
 
-    if year <= anchor_years[0]:
-        return _price_for_anchor(anchor_years[0])
-    if year >= anchor_years[-1]:
-        return _price_for_anchor(anchor_years[-1])
+    # Do not extrapolate outside anchor year band.
+    if year < anchor_years[0] or year > anchor_years[-1]:
+        return None
 
     lower_year = anchor_years[0]
     upper_year = anchor_years[-1]

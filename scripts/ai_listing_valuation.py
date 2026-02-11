@@ -70,6 +70,7 @@ STANDARD_UNCERTAINTY_BUFFER = 800
 TOP_BUY_UNCERTAINTY_BUFFER = 400
 WORST_CASE_DOWNSIDE = 0.17  # 17% downside band used for worst-case resale
 NO_EDGE_MESSAGE = "No edge left at current bid — do not bid above {amount}."
+ENABLE_LEGACY_LLM_PRICING = False
 
 
 def _round_to_10(value: Optional[float]) -> Optional[float]:
@@ -626,6 +627,9 @@ The score must be numeric between 0 and 10 (inclusive) and align with your state
 
 
 def run_ai_listing_analysis(listing_row: pd.Series, force_refresh: bool = False) -> Dict[str, Any]:
+    url = listing_row.get("url")
+    if not ENABLE_LEGACY_LLM_PRICING:
+        return {"url": url, "error": "Legacy LLM pricing disabled: curve-first policy."}
     cached_df = load_cached_results()
     url = listing_row.get("url")
 
@@ -994,10 +998,42 @@ def run_curve_listing_analysis(
         return existing
 
     if resale_mid is None or resale_mid <= 0:
-        return {
+        result_row = {
             "url": url,
-            "error": "No curve estimate available.",
+            "analysis_timestamp": datetime.now(tz=timezone.utc).isoformat(),
+            "analysis_context": analysis_context,
+            "carsales_price_estimate": None,
+            "carsales_price_range": None,
+            "recommended_max_bid": _format_currency(0),
+            "expected_profit": None,
+            "profit_margin_percent": None,
+            "score_out_of_10": None,
+            "confidence_notes": None,
+            "fees_estimate": None,
+            "transport_estimate": None,
+            "rego_estimate": None,
+            "prep_estimate": None,
+            "resale_low": None,
+            "resale_mid": None,
+            "resale_high": None,
+            "net_profit_mid": None,
+            "net_profit_worst": None,
+            "confidence": None,
+            "risk_flags": "NO_CURVE",
+            "computed_verdict": "Not Covered",
+            "verdict": "Not Covered",
+            "no_edge": False,
+            "edge_note": "",
+            "no_edge_at_current_bid": False,
+            "edge_buffer": EDGE_BUFFER,
+            "is_top_buy": None,
+            "top_buy_badge": None,
+            "top_buy_failed_reasons": None,
+            "top_buy_passed_reasons": None,
         }
+        _save_result_row(result_row)
+        result_row["cached"] = False
+        return result_row
 
     listing_data = listing_row.to_dict()
     if comps_count is not None:
@@ -1025,9 +1061,12 @@ def run_curve_listing_analysis(
     recommended_max_bid_val = _solve_max_bid(resale_low_val, min_net_profit, listing_data)
 
     current_price_val = _parse_currency(listing_row.get("price"))
-    if current_price_val is not None and recommended_max_bid_val is not None:
-        if recommended_max_bid_val < current_price_val:
-            recommended_max_bid_val = current_price_val
+    if (
+        current_price_val is not None
+        and recommended_max_bid_val is not None
+        and recommended_max_bid_val < current_price_val
+    ):
+        pass
 
     repair_assessment = assess_repairs(listing_row.get("general_condition", ""))
     repair_verdict = None
@@ -1082,7 +1121,7 @@ def run_curve_listing_analysis(
         ai_new_risks.append("NO_EDGE")
     ai_status = "PASS" if not ai_new_risks else "FAIL"
 
-    curve_resale_estimate = carsales_estimate if carsales_estimate is not None else resale_mid_val
+    curve_resale_estimate = resale_mid_val
     top_buy_payload = {
         "pills": pill_summary,
         "damage": damage_summary,
@@ -1094,7 +1133,7 @@ def run_curve_listing_analysis(
         },
         "market": {
             "autotrader_median": autotrader_median,
-            "carsales_estimate": curve_resale_estimate,
+            "carsales_estimate": carsales_estimate,
             "listings_cluster_ok": bool(cluster_ok),
         },
         "historical": {"matches": matches_payload},
