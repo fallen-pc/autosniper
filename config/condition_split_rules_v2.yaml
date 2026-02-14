@@ -1,0 +1,43 @@
+﻿version: 2
+
+splitters:
+  - "\n"
+  - ";"
+  - ","
+  - "."
+  - " and "
+  - " & "
+  - " + "
+
+cleanup:
+  lowercase: true
+  strip_punctuation: true
+  trim_whitespace: true
+
+remove_words:
+  - visible
+  - minor
+  - areas
+  - some
+  - noted
+  - present
+  - consistent
+  - age
+  - kilometres
+
+synonyms:
+  windscreen: windscreen
+  windshield: windscreen
+  scrathes: scratches
+  paintwork: paint
+  dint: dent
+  dents: dent
+
+regex_rules:
+  - name: split_engine_and_body
+    pattern: "(engine.*?)(paint|dent|scratch|hail)"
+    action: split
+
+  - name: split_glass_and_body
+    pattern: "(windscreen.*?)(dent|hail|scratch)"
+    action: split

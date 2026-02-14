@@ -748,6 +748,32 @@ def atomic_write(df: pd.DataFrame, path: Path) -> None:
             os.unlink(temp_path)
 
 
+def _normalize_text_columns(df: pd.DataFrame) -> pd.DataFrame:
+    if df.empty:
+        return df
+    columns = {
+        "make",
+        "model",
+        "variant",
+        "body_type",
+        "fuel_type",
+        "transmission",
+        "location",
+        "general_condition",
+        "canonical_tag",
+        "canonical_reason",
+        "drivetrain_source",
+        "series",
+        "badge",
+    }
+    out = df.copy()
+    for col in columns:
+        if col in out.columns:
+            out[col] = out[col].astype(str).str.lower()
+            out[col] = out[col].replace({"nan": ""})
+    return out
+
+
 def merge_and_save_static(existing_df: pd.DataFrame, new_df: pd.DataFrame) -> pd.DataFrame:
     if new_df.empty:
         return existing_df
@@ -779,6 +805,7 @@ def merge_and_save_static(existing_df: pd.DataFrame, new_df: pd.DataFrame) -> pd
         filter_unclassified=False,
         append_log=False,
     )
+    static_export = _normalize_text_columns(static_export)
     atomic_write(static_export, OUTPUT_FILE)
     seed_active_dataset(static_export)
     return static_export
@@ -796,6 +823,7 @@ def seed_active_dataset(static_df: pd.DataFrame) -> None:
         filter_unclassified=False,
         append_log=True,
     )
+    active_df = _normalize_text_columns(active_df)
     base_columns = list(static_df.columns)
     existing_active = pd.read_csv(ACTIVE_OUTPUT_FILE) if ACTIVE_OUTPUT_FILE.exists() else pd.DataFrame()
 

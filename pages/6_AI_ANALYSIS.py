@@ -11,7 +11,7 @@ from typing import Any, Dict, Optional
 import pandas as pd
 import streamlit as st
 
-from scripts.ai_listing_valuation import run_curve_listing_analysis
+from scripts.ai_listing_valuation import load_cached_results, run_curve_listing_analysis
 from scripts.ai_price_analysis import _extract_hours_remaining
 from shared.comps_engine import parse_currency, parse_numeric
 from shared.canonical_tagging import UNCLASSIFIED, is_canonical_eligible, tag_dataframe
@@ -96,6 +96,12 @@ REPLACEMENT_KEYWORDS = [
     "requires replacement",
     "hole",
 ]
+BOILERPLATE_PATTERNS = [
+    r"\bplease refer to (the )?photos\b",
+    r"\brefer to (the )?photos\b",
+    r"\barrange inspection\b",
+    r"\bview the condition of this vehicle\b",
+]
 
 DEFECT_PATTERNS: list[tuple[str, str, int]] = [
     # Mechanical (red)
@@ -120,10 +126,14 @@ DEFECT_PATTERNS: list[tuple[str, str, int]] = [
     (r"\bdoor\b.*\b(large dent|major dent)\b", "replacement", 2),
     (r"\bquarter panel\b", "replacement", 2),
     # Cosmetic (green)
-    (r"\b(scratch(es)?|scrape(s)?|scuff(s)?|dent(s)?|stone chip(s)?|paint damage)\b", "cosmetic", 1),
+    (r"\b(scratch(es)?|scrape(s)?|scuff(s)?|dent(s)?|stone chip(s)?|paint damage|mark(s)?)\b", "cosmetic", 1),
+    (r"\b(paint|clear coat).*(peel|peeling|bubble|bubbling|sun damage|oxid|fade|fading)\b", "cosmetic", 1),
+    (r"\b(peel(ing)?|bubble|bubbling|sun damage|oxidation)\b", "cosmetic", 1),
     # Interior (green/orange)
     (r"\bsteering wheel worn\b|\bworn steering wheel\b", "interior", 1),
     (r"\bgear knob\b.*\b(broken|missing)\b", "interior", 2),
+    (r"\bseat\b.*\b(stain|stains|stained)\b|\b(stain|stains|stained)\b.*\bseat\b", "interior", 1),
+    (r"\bseat\b.*\b(torn|tear|ripped)\b|\b(torn|tear|ripped)\b.*\bseat\b", "interior", 1),
 ]
 
 
@@ -255,6 +265,7 @@ def _render_interpolated_curve_plot(
     km: Optional[float],
     lower_year: int,
     upper_year: int,
+    autotrader_points: list[tuple[float, float]] | None = None,
 ) -> bool:
     if km is None:
         return False
@@ -314,7 +325,44 @@ def _render_interpolated_curve_plot(
         plt.scatter([km], [upper_val], color="#5f6368", s=25)
     if interp_val is not None:
         plt.scatter([km], [interp_val], color="#1f77b4", s=50, label=f"{year} (interp)")
+    if autotrader_points:
+        auto_km = [pt[0] for pt in autotrader_points]
+        auto_price = [pt[1] for pt in autotrader_points]
+        plt.scatter(auto_km, auto_price, color="#ff7f0e", s=35, label="Autotrader (year match)")
 
+    plt.xlabel("Kilometres")
+    plt.ylabel("Resale price ($)")
+    plt.grid(alpha=0.2)
+    plt.legend(loc="best", frameon=False)
+    plt.tight_layout()
+    st.pyplot(plt.gcf(), clear_figure=True, use_container_width=True)
+    return True
+
+
+def _render_single_curve_plot(
+    curves_df: pd.DataFrame,
+    group_id: str,
+    year: int,
+    km: Optional[float],
+    autotrader_points: list[tuple[float, float]] | None = None,
+) -> bool:
+    if km is None:
+        return False
+    points = get_curve_points(curves_df, group_id, year)
+    if not points:
+        return False
+    import matplotlib.pyplot as plt
+    x = [pt[0] for pt in points]
+    y = [pt[1] for pt in points]
+    val = interpolate_price_by_km(points, km)
+    plt.figure(figsize=(10, 4))
+    plt.plot(x, y, color="#5f6368", linewidth=2, label=str(year))
+    if val is not None:
+        plt.scatter([km], [val], color="#1f77b4", s=50, label=f"{year}")
+    if autotrader_points:
+        auto_km = [pt[0] for pt in autotrader_points]
+        auto_price = [pt[1] for pt in autotrader_points]
+        plt.scatter(auto_km, auto_price, color="#ff7f0e", s=35, label="Autotrader (year match)")
     plt.xlabel("Kilometres")
     plt.ylabel("Resale price ($)")
     plt.grid(alpha=0.2)
@@ -474,6 +522,13 @@ def _detect_condition_flags(condition_text: object) -> list[str]:
     return flags
 
 
+def _get_condition_text(row: pd.Series) -> str:
+    normalized = _safe_text(row.get("normalized_condition_text"), fallback="").strip()
+    if normalized:
+        return normalized
+    return _safe_text(row.get("general_condition"), fallback="").strip()
+
+
 def _shorten_text(value: object, width: int = 72) -> str:
     text = _safe_text(value, fallback="")
     if not text:
@@ -540,6 +595,12 @@ def _bucket_details_from_notes(
     }
     bucket_lines = {key: [] for key in severities}
     lines = _split_condition_notes(notes)
+    if lines:
+        lines = [
+            line
+            for line in lines
+            if not any(re.search(pattern, line, flags=re.IGNORECASE) for pattern in BOILERPLATE_PATTERNS)
+        ]
     if not lines:
         return severities, bucket_lines, []
     for pattern, bucket, level in DEFECT_PATTERNS:
@@ -566,7 +627,7 @@ def _rego_ok(row: dict[str, object]) -> bool:
 
 
 def build_defect_profile(row: dict[str, object]) -> dict[str, object]:
-    notes = row.get("general_condition", "") or ""
+    notes = row.get("normalized_condition_text") or row.get("general_condition", "") or ""
     severities, bucket_lines, unmatched = _bucket_details_from_notes(notes)
     profile: dict[str, object] = {
         "rego_ok": _rego_ok(row),
@@ -633,6 +694,19 @@ def _severity_pill_html(value: int, tooltip: str = "") -> str:
     return f'<span class="{cls}"{title}>{label}</span>'
 
 
+def _severity_label_pill_html(label: str, value: int, tooltip: str = "") -> str:
+    if value <= 0:
+        cls = "chip"
+    elif value == 1:
+        cls = "chip good"
+    elif value == 2:
+        cls = "chip warn"
+    else:
+        cls = "chip danger"
+    title = f' title="{html.escape(tooltip)}"' if tooltip else ""
+    return f'<span class="{cls}"{title}>{html.escape(label)}</span>'
+
+
 def _bool_pill_html(value: object, tooltip: str = "") -> str:
     cls = "chip good" if _truthy(value) else "chip danger"
     label = "yes" if _truthy(value) else "no"
@@ -655,12 +729,28 @@ def _token_match(left: object, right: object) -> bool:
 def _fuel_match(left: object, right: object) -> bool:
     def _norm_fuel(value: object) -> str:
         key = _norm_key(value)
-        if key in {"petrol", "unleaded", "unleadedpetrol"}:
+        if key in {"petrol", "unleaded", "unleadedpetrol", "premium"}:
             return "petrol"
         return key
 
     left_key = _norm_fuel(left)
     right_key = _norm_fuel(right)
+    if not left_key or not right_key:
+        return True
+    return left_key == right_key or left_key in right_key or right_key in left_key
+
+
+def _trans_match(left: object, right: object) -> bool:
+    def _norm_trans(value: object) -> str:
+        key = _norm_key(value)
+        if key in {"auto", "automatic", "cvt", "sportsautomatic", "sptsauto"}:
+            return "auto"
+        if key in {"manual"}:
+            return "manual"
+        return key
+
+    left_key = _norm_trans(left)
+    right_key = _norm_trans(right)
     if not left_key or not right_key:
         return True
     return left_key == right_key or left_key in right_key or right_key in left_key
@@ -682,6 +772,8 @@ def _autotrader_group_id(row: pd.Series, curve_group_id: str) -> str:
 def _score_autotrader_matches(
     listing_row: pd.Series,
     curve_group_id: str,
+    *,
+    limit: int = 3,
 ) -> tuple[pd.DataFrame, dict[str, int]]:
     if autotrader_df.empty or not curve_group_id:
         return pd.DataFrame(), {"total": 0}
@@ -737,7 +829,7 @@ def _score_autotrader_matches(
         stats["group_match"] += 1
         if not _fuel_match(listing_fuel, candidate.get("fuel_type")):
             continue
-        if not _token_match(listing_trans, candidate.get("transmission")):
+        if not _trans_match(listing_trans, candidate.get("transmission")):
             continue
         if not _token_match(listing_body, candidate.get("body_type")):
             continue
@@ -746,11 +838,11 @@ def _score_autotrader_matches(
         candidate_km = candidate.get("odometer_value")
         if candidate_km is None or pd.isna(candidate_km):
             continue
-        km_ratio = abs(float(candidate_km) - float(target_km)) / float(target_km)
-        if km_ratio > 0.25:
+        km_diff = abs(float(candidate_km) - float(target_km))
+        if km_diff > 100000:
             continue
         stats["km_window"] += 1
-        km_score = min(km_ratio, 1.0)
+        km_score = min(km_diff / 100000.0, 1.0)
 
         candidate_state = extract_state(candidate.get("location"))
         state_penalty = 0.05 if listing_state and candidate_state and listing_state != candidate_state else 0.0
@@ -781,6 +873,7 @@ def _score_autotrader_matches(
                 "variant": candidate.get("variant"),
                 "price": candidate.get("price"),
                 "odometer": candidate.get("odometer"),
+                "odometer_value": candidate.get("odometer_value"),
                 "location": candidate.get("location"),
                 "transmission": candidate.get("transmission"),
                 "fuel_type": candidate.get("fuel_type"),
@@ -795,15 +888,17 @@ def _score_autotrader_matches(
     if not rows:
         return pd.DataFrame(), stats
     scored = pd.DataFrame(rows).sort_values(by=["match_score"], ascending=True)
-    return scored.head(3).reset_index(drop=True), stats
+    return scored.head(max(1, int(limit))).reset_index(drop=True), stats
 
 
 def _condition_summary_sections(row: pd.Series) -> tuple[list[dict[str, object]], str]:
     raw_notes = _safe_text(row.get("general_condition"), fallback="").strip()
+    display_notes = _safe_text(row.get("normalized_condition_text"), fallback="").strip() or raw_notes
     adas_windscreen = bool(
         row.get("adas_windscreen") or row.get("windscreen_adas") or row.get("windshield_adas")
     )
-    assessment = assess_repairs(raw_notes, adas_windscreen=adas_windscreen)
+    assessment = assess_repairs(display_notes, adas_windscreen=adas_windscreen)
+    _, bucket_lines, _ = _bucket_details_from_notes(display_notes)
     sections: list[dict[str, object]] = []
 
     cosmetic_panels = max(int(assessment.cosmetic_panels or 0), 0)
@@ -811,13 +906,12 @@ def _condition_summary_sections(row: pd.Series) -> tuple[list[dict[str, object]]
     if cosmetic_panels_capped > 0:
         panels_label = "panel" if cosmetic_panels_capped == 1 else "panels"
         cosmetic_cost = cosmetic_panels_capped * PANEL_RATE
+        cosmetic_lines = bucket_lines.get("cosmetic", [])
         sections.append(
             {
                 "title": "Cosmetic damage",
-                "bullets": [
-                    "Multiple dents/scratches/scuffs (summarised from notes)",
-                    f"Assumed {panels_label}: {cosmetic_panels_capped} (cap {PANEL_CAP})",
-                ],
+                "bullets": (cosmetic_lines or ["Multiple dents/scratches/scuffs (summarised from notes)"])
+                + [f"Assumed {panels_label}: {cosmetic_panels_capped} (cap {PANEL_CAP})"],
                 "cost_line": f"Cost applied: ${cosmetic_cost:,} (panel rate ${PANEL_RATE:,})",
             }
         )
@@ -825,12 +919,12 @@ def _condition_summary_sections(row: pd.Series) -> tuple[list[dict[str, object]]
         sections.append(
             {
                 "title": "Cosmetic damage",
-                "bullets": ["No cosmetic issues flagged."],
+                "bullets": bucket_lines.get("cosmetic", []) or ["No cosmetic issues flagged."],
             }
         )
 
-    structural_hits = _detect_keywords(raw_notes, STRUCTURAL_KEYWORDS)
-    replacement_hits = _detect_keywords(raw_notes, REPLACEMENT_KEYWORDS)
+    structural_hits = _detect_keywords(display_notes, STRUCTURAL_KEYWORDS)
+    replacement_hits = _detect_keywords(display_notes, REPLACEMENT_KEYWORDS)
     replacement_present = bool(assessment.replacement_cost > 0) or "PANEL_REPLACE" in assessment.pills
     structural_bullets: list[str] = []
     if structural_hits:
@@ -839,6 +933,12 @@ def _condition_summary_sections(row: pd.Series) -> tuple[list[dict[str, object]]
         structural_bullets.append("Replacement indicators: " + ", ".join(replacement_hits))
     if replacement_present and "Replacement indicators" not in " ".join(structural_bullets):
         structural_bullets.append("Replacement flagged by condition parser")
+    structural_lines = bucket_lines.get("structural", [])
+    replacement_lines = bucket_lines.get("replacement", [])
+    if structural_lines:
+        structural_bullets.extend(structural_lines)
+    if replacement_lines:
+        structural_bullets.extend(replacement_lines)
     if structural_bullets:
         sections.append(
             {
@@ -858,10 +958,11 @@ def _condition_summary_sections(row: pd.Series) -> tuple[list[dict[str, object]]
     glass_present = bool(assessment.glass_cost > 0) or "GLASS" in assessment.pills
     if glass_present:
         glass_cost = WINDSCREEN_ADAS if adas_windscreen else WINDSCREEN_STD
+        glass_lines = bucket_lines.get("glass", [])
         sections.append(
             {
                 "title": "Glass",
-                "bullets": ["Windscreen issue flagged (chip/crack)."],
+                "bullets": glass_lines or ["Windscreen issue flagged (chip/crack)."],
                 "cost_line": f"Cost applied: ${glass_cost:,}" + (" (ADAS)" if adas_windscreen else ""),
             }
         )
@@ -869,16 +970,17 @@ def _condition_summary_sections(row: pd.Series) -> tuple[list[dict[str, object]]
         sections.append(
             {
                 "title": "Glass",
-                "bullets": ["No glass issues flagged."],
+                "bullets": bucket_lines.get("glass", []) or ["No glass issues flagged."],
             }
         )
 
     mechanical_hit = assessment.hard_avoid or "MECHANICAL" in assessment.pills
     if mechanical_hit:
+        mechanical_lines = bucket_lines.get("mechanical", [])
         sections.append(
             {
                 "title": "Mechanical",
-                "bullets": ["Mechanical fault detected."],
+                "bullets": mechanical_lines or ["Mechanical fault detected."],
                 "impact_line": "Impact: HARD AVOID.",
             }
         )
@@ -886,7 +988,23 @@ def _condition_summary_sections(row: pd.Series) -> tuple[list[dict[str, object]]
         sections.append(
             {
                 "title": "Mechanical",
-                "bullets": ["No mechanical faults reported (does not guarantee none)."],
+                "bullets": bucket_lines.get("mechanical", []) or ["No mechanical faults reported (does not guarantee none)."],
+            }
+        )
+
+    interior_lines = bucket_lines.get("interior", [])
+    if interior_lines:
+        sections.append(
+            {
+                "title": "Interior",
+                "bullets": interior_lines,
+            }
+        )
+    else:
+        sections.append(
+            {
+                "title": "Interior",
+                "bullets": ["No interior issues flagged."],
             }
         )
 
@@ -944,7 +1062,14 @@ def _render_condition_summary(row: pd.Series) -> None:
             st.write(f"*{impact_line}*")
         st.write("")
     with st.expander("Source condition notes (verbatim)", expanded=False):
-        st.write(raw_notes if raw_notes else "(none)")
+        if not raw_notes:
+            st.write("(none)")
+        else:
+            lines = _split_condition_notes(raw_notes)
+            if not lines:
+                st.write(raw_notes)
+            else:
+                st.markdown("\n".join(f"- {line}" for line in lines))
 
 
 def _render_curve_section(row: pd.Series) -> None:
@@ -954,6 +1079,7 @@ def _render_curve_section(row: pd.Series) -> None:
     km_display = _format_odometer(row.get("odometer_reading"))
     confidence_label = _curve_confidence_label(row.get("confidence"))
     listing_year = _safe_int(row.get("year"))
+    autotrader_points: list[tuple[float, float]] = []
 
     st.markdown("**Resale Curve (Carsales)**")
     if curve_id:
@@ -963,6 +1089,18 @@ def _render_curve_section(row: pd.Series) -> None:
     if not curve_id:
         st.info("Curve image not available (missing curve key).")
         return
+
+    if listing_year is not None:
+        matches, _ = _score_autotrader_matches(row, curve_id, limit=50)
+        if not matches.empty and "year" in matches.columns:
+            year_matches = matches[pd.to_numeric(matches["year"], errors="coerce") == listing_year]
+            for _, m in year_matches.iterrows():
+                km_val = m.get("odometer_value")
+                if km_val is None or pd.isna(km_val):
+                    km_val = parse_numeric(m.get("odometer"))
+                price_val = m.get("price_value")
+                if km_val is not None and price_val is not None and not pd.isna(km_val) and not pd.isna(price_val):
+                    autotrader_points.append((float(km_val), float(price_val)))
 
     lower_year, upper_year = _find_curve_year_bounds(curves_df, curve_id, listing_year)
     if lower_year is not None and upper_year is not None and lower_year != upper_year:
@@ -974,10 +1112,22 @@ def _render_curve_section(row: pd.Series) -> None:
             parse_numeric(row.get("odometer_reading")),
             lower_year,
             upper_year,
+            autotrader_points=autotrader_points if autotrader_points else None,
         )
         if not plotted:
             st.info("Curve image not available for this group.")
         return
+
+    if listing_year is not None and autotrader_points:
+        plotted = _render_single_curve_plot(
+            curves_df,
+            curve_id,
+            listing_year,
+            parse_numeric(row.get("odometer_reading")),
+            autotrader_points=autotrader_points,
+        )
+        if plotted:
+            return
 
     image_name = _curve_image_filename(curve_id)
     image_path = CURVE_IMAGE_DIR / image_name if image_name else None
@@ -1011,11 +1161,11 @@ def _render_autotrader_confirmation(row: pd.Series) -> None:
             f"{stats.get('toyota', 0)} Toyota → "
             f"{stats.get('group_match', 0)} group → "
             f"{stats.get('fuel_trans_body', 0)} fuel/trans/body → "
-            f"{stats.get('km_window', 0)} within ±25% km"
+        f"{stats.get('km_window', 0)} within ±100,000 km"
         )
     st.caption(f"Debug: {len(matches)} Autotrader matches after filtering.")
     if matches.empty:
-        st.caption("No qualifying Autotrader matches found within the km window.")
+        st.caption("No qualifying Autotrader matches found within the km window (±100,000 km).")
         return
 
     median_price = None
@@ -1302,6 +1452,23 @@ def load_sold_data() -> pd.DataFrame:
     return df
 
 
+@st.cache_data(ttl=300)
+def load_normalized_conditions() -> pd.DataFrame:
+    path = Path("CSV_data/reports/normalized_conditions.csv")
+    if not path.exists():
+        return pd.DataFrame()
+    df = pd.read_csv(path)
+    if "component_normalized" not in df.columns or "url" not in df.columns:
+        return pd.DataFrame()
+    if "category_tags" in df.columns:
+        tag_series = df["category_tags"].fillna("").astype(str).str.lower()
+        df = df[~tag_series.str.contains(r"\bboilerplate\b", na=False)]
+    df["url"] = df["url"].astype(str).str.strip()
+    df["component_normalized"] = df["component_normalized"].astype(str).str.strip()
+    df = df[df["component_normalized"] != ""]
+    return df
+
+
 def _select_sold_subset(
     sold_df: pd.DataFrame,
     group_id: object,
@@ -1458,6 +1625,21 @@ def load_autotrader_data(raw_mtime: float | None = None) -> pd.DataFrame:
             df["canonical_reason"] = tagged_df["canonical_reason"].where(reason_series.eq(""), df["canonical_reason"])
         tagged_path.parent.mkdir(parents=True, exist_ok=True)
         df.to_csv(tagged_path, index=False)
+    # Enforce v2 tags only (strip v1 tags in autotrader data)
+    if curve_model() == "v2":
+        allowed_tags = set(
+            load_curves()
+            .get("canonical_tag", pd.Series(dtype=str))
+            .dropna()
+            .astype(str)
+            .str.strip()
+            .tolist()
+        )
+        if allowed_tags:
+            df["canonical_tag"] = df["canonical_tag"].fillna("").astype(str).str.strip()
+            df["canonical_tag"] = df["canonical_tag"].where(df["canonical_tag"].isin(allowed_tags), "UNCLASSIFIED")
+            tagged_path.parent.mkdir(parents=True, exist_ok=True)
+            df.to_csv(tagged_path, index=False)
     return df
 
 
@@ -1583,6 +1765,16 @@ live_df = load_live_active_data()
 group_map_df = load_group_map()
 sold_df = load_sold_data()
 autotrader_df = load_autotrader_data(_autotrader_cache_key())
+normalized_conditions = load_normalized_conditions()
+cached_results = load_cached_results()
+cached_verdicts = {}
+if not cached_results.empty and "url" in cached_results.columns:
+    cached_verdicts = (
+        cached_results[["url", "computed_verdict"]]
+        .dropna(subset=["url"])
+        .set_index("url")["computed_verdict"]
+        .to_dict()
+    )
 
 
 active_groups = group_map_df[group_map_df["source"] == "active"][
@@ -1612,6 +1804,16 @@ else:
 if "price" in active_df.columns:
     active_df["price_numeric"] = active_df["price"].apply(parse_currency)
 
+if not normalized_conditions.empty and "url" in active_df.columns:
+    grouped = (
+        normalized_conditions.groupby("url")["component_normalized"]
+        .apply(lambda s: "\n".join(dict.fromkeys(s.tolist())))
+        .to_dict()
+    )
+    active_df["normalized_condition_text"] = active_df["url"].map(grouped).fillna("")
+    if "url" in sold_df.columns:
+        sold_df["normalized_condition_text"] = sold_df["url"].map(grouped).fillna("")
+
 sold_groups = group_map_df[group_map_df["source"] == "sold"][
     ["url", "group_id", "canonical_tag", "reason_code"]
 ].rename(columns={"reason_code": "canonical_reason"})
@@ -1630,14 +1832,64 @@ if curve_model() == "v2":
         st.warning("curves_v2.csv has no canonical tags; showing all tags.")
         allowed_tags = None
     else:
-        if "canonical_tag" in active_df.columns:
+        if "canonical_tag" not in active_df.columns:
+            active_df["canonical_tag"] = ""
+        active_df["canonical_tag"] = active_df["canonical_tag"].astype(str).str.strip()
+        active_df = active_df[active_df["canonical_tag"].isin(allowed_tags)].copy()
+
+        if "canonical_tag" not in sold_df.columns:
+            sold_df["canonical_tag"] = ""
+        sold_df["canonical_tag"] = sold_df["canonical_tag"].astype(str).str.strip()
+        sold_df = sold_df[sold_df["canonical_tag"].isin(allowed_tags)].copy()
+    if "canonical_tag" in active_df.columns:
+        active_df = active_df[
+            active_df.apply(
+                lambda r: is_canonical_eligible(r.get("canonical_tag"), r.get("canonical_reason")),
+                axis=1,
+            )
+        ].copy()
+        if "year" in active_df.columns and "anchor_year" in curves_df.columns:
+            year_band = (
+                curves_df.dropna(subset=["canonical_tag", "anchor_year"])
+                .assign(anchor_year=lambda d: d["anchor_year"].apply(_safe_int))
+                .dropna(subset=["anchor_year"])
+                .groupby("canonical_tag")["anchor_year"]
+                .agg(["min", "max"])
+                .rename(columns={"min": "min_year", "max": "max_year"})
+            )
+            active_df = active_df.merge(
+                year_band, left_on="canonical_tag", right_index=True, how="left"
+            )
+            active_df["year_int"] = active_df["year"].apply(_safe_int)
             active_df = active_df[
-                active_df["canonical_tag"].astype(str).str.strip().isin(allowed_tags)
+                active_df["year_int"].notna()
+                & active_df["min_year"].notna()
+                & active_df["max_year"].notna()
+                & (active_df["year_int"] >= active_df["min_year"])
+                & (active_df["year_int"] <= active_df["max_year"])
             ].copy()
-        if "canonical_tag" in sold_df.columns:
-            sold_df = sold_df[
-                sold_df["canonical_tag"].astype(str).str.strip().isin(allowed_tags)
+            active_df = active_df.drop(columns=["min_year", "max_year"])
+        if "odometer_reading" in active_df.columns and "km_bucket" in curves_df.columns:
+            km_band = (
+                curves_df.dropna(subset=["canonical_tag", "km_bucket"])
+                .assign(km_bucket=lambda d: d["km_bucket"].apply(_safe_int))
+                .dropna(subset=["km_bucket"])
+                .groupby("canonical_tag")["km_bucket"]
+                .agg(["min", "max"])
+                .rename(columns={"min": "min_km", "max": "max_km"})
+            )
+            active_df = active_df.merge(
+                km_band, left_on="canonical_tag", right_index=True, how="left"
+            )
+            active_df["odometer_numeric"] = active_df["odometer_reading"].apply(parse_numeric)
+            active_df = active_df[
+                active_df["odometer_numeric"].notna()
+                & active_df["min_km"].notna()
+                & active_df["max_km"].notna()
+                & (active_df["odometer_numeric"] >= active_df["min_km"])
+                & (active_df["odometer_numeric"] <= active_df["max_km"])
             ].copy()
+            active_df = active_df.drop(columns=["min_km", "max_km"])
 sold_df = _exclude_corolla_sport_comps(sold_df)
 sold_df = _exclude_major_engine_defects(sold_df)
 sold_df["year_int"] = sold_df["year"].apply(_safe_int) if "year" in sold_df.columns else None
@@ -2039,7 +2291,12 @@ if group_filter != "All":
         filtered = filtered[filtered["group_id"] == group_filter]
 
 if curve_model() == "v2":
-    filtered = filtered.dropna(subset=["canonical_tag"]).copy()
+    if "canonical_tag" not in filtered.columns:
+        filtered["canonical_tag"] = ""
+    filtered["canonical_tag"] = filtered["canonical_tag"].astype(str).str.strip()
+    filtered = filtered[filtered["canonical_tag"] != ""].copy()
+    if allowed_tags:
+        filtered = filtered[filtered["canonical_tag"].isin(allowed_tags)].copy()
 else:
     filtered = filtered.dropna(subset=["group_id"]).copy()
 
@@ -2059,6 +2316,8 @@ for _, row in filtered.iterrows():
     spec_reason = ""
     series_key = None
     if not is_canonical_eligible(canonical_tag, canonical_reason):
+        if curve_model() == "v2":
+            continue
         spec_reason = canonical_reason or "NOT_ELIGIBLE"
         results.append(
             {
@@ -2181,6 +2440,11 @@ for _, row in filtered.iterrows():
         )
         continue
 
+    url_value = row.get("url")
+    cached_verdict = _safe_text(cached_verdicts.get(url_value), fallback="")
+    force_refresh_row = force_refresh or (
+        curve_model() == "v2" and cached_verdict and "not eligible" in cached_verdict.lower()
+    )
     analysis = run_curve_listing_analysis(
         row,
         adjusted_estimate,
@@ -2192,7 +2456,7 @@ for _, row in filtered.iterrows():
         autotrader_median=autotrader_median,
         carsales_estimate=adjusted_estimate,
         listings_cluster_ok=listings_cluster_ok,
-        force_refresh=force_refresh,
+        force_refresh=force_refresh_row,
     )
     analysis["curve_base"] = base_estimate
     analysis["curve_adjusted"] = adjusted_estimate
@@ -2422,7 +2686,7 @@ def render_listing_card(row: pd.Series) -> None:
         row.get("location_state") or row.get("rego_state") or row.get("location")
     )
     risk_flags = _parse_risk_flags(row.get("risk_flags"))
-    condition_flags = _detect_condition_flags(row.get("general_condition"))
+    condition_flags = _detect_condition_flags(_get_condition_text(row))
     combined_flags = []
     for flag in risk_flags + condition_flags:
         if flag and flag not in combined_flags:
@@ -2448,14 +2712,26 @@ def render_listing_card(row: pd.Series) -> None:
     if curve_model() == "v2":
         if canonical_tag:
             header_meta_parts.append(f"Tag {canonical_tag}")
+        normalized_text = _safe_text(row.get("normalized_condition_text"), fallback="").strip()
+        if normalized_text:
+            header_meta_parts.append("Normalized: Yes")
+        else:
+            header_meta_parts.append("Normalized: No")
     else:
         if group_id and group_id != "N/A":
             header_meta_parts.append(f"Group {group_id}")
     header_meta = " | ".join(header_meta_parts)
 
-    risk_chip_class = "chip"
-    if combined_flags:
-        risk_chip_class = "chip warn"
+    defect_profile = build_defect_profile(row.to_dict())
+    bucket_lines = defect_profile.get("bucket_lines", {})
+    bucket_defs = [
+        ("Cosmetic", "cosmetic"),
+        ("Glass", "glass"),
+        ("Replacement", "replacement"),
+        ("Structural", "structural"),
+        ("Mechanical", "mechanical"),
+        ("Interior", "interior"),
+    ]
 
     rego_chip_class = "chip good" if rego_status == "Registered" else "chip danger"
     keys_label, keys_chip_class = _keys_pill(row)
@@ -2501,7 +2777,14 @@ def render_listing_card(row: pd.Series) -> None:
             f'<span class="{keys_chip_class}">{html.escape(keys_label)}</span>',
             f'<span class="{manual_chip_class}">{html.escape(manual_label)}</span>',
             f'<span class="{service_chip_class}">{html.escape(service_label)}</span>',
-            f'<span class="{risk_chip_class}">Risk: {html.escape(risk_summary)}</span>',
+            "".join(
+                _severity_label_pill_html(
+                    label,
+                    int(defect_profile.get(key, 0) or 0),
+                    tooltip="; ".join(bucket_lines.get(key, [])),
+                )
+                for label, key in bucket_defs
+            ),
             f'<span class="chip warn">AMBIG_DRIVETRAIN</span>' if drivetrain_warning else "",
             "</div>",
             "</div>",
@@ -2577,9 +2860,7 @@ def render_listing_card(row: pd.Series) -> None:
             comps_df = sold_df[sold_df["group_id"] == group_id_value].copy()
             listing_year = _safe_int(row.get("year"))
             if listing_year is not None and "year_int" in comps_df.columns:
-                comps_df = comps_df[
-                    comps_df["year_int"].between(listing_year - 1, listing_year + 1)
-                ]
+                comps_df = comps_df[comps_df["year_int"] == listing_year]
             if not comps_df.empty:
                 active_profile = build_defect_profile(row.to_dict())
                 comp_profiles: list[dict[str, object]] = []
@@ -2740,10 +3021,8 @@ def render_listing_card(row: pd.Series) -> None:
 
         _render_bullets("AI reasoning", ai_notes[:4])
         _render_bullets("Calculation breakdown", calc_items[:6])
-        if top_buy_passed:
-            _render_bullets("Top Buy passes", top_buy_passed[:6])
-        if top_buy_failed:
-            _render_bullets("Top Buy blockers", top_buy_failed[:6])
+        top_buy_flag = "Yes" if row.get("is_top_buy") else "No"
+        _render_bullets("Top Buy", [f"Top Buy: {top_buy_flag}"])
         _render_bullets("Notes / risks", risk_items[:4])
 
         listing_url = _safe_text(row.get("url"), fallback="")

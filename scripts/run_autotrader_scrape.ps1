@@ -11,6 +11,17 @@ if (-not (Test-Path $logDir)) {
     New-Item -Path $logDir -ItemType Directory | Out-Null
 }
 
+$storageState = Join-Path $repoRoot "autotrader_isolated\\output\\storage_state.json"
+$cookieFile = Join-Path $repoRoot "autotrader_isolated\\output\\autotrader_cookie.txt"
+if (-not (Test-Path $storageState)) {
+    Write-Error "Missing storage_state.json at $storageState. Autotrader scrape requires a logged-in storage state."
+    exit 1
+}
+if (-not (Test-Path $cookieFile)) {
+    Write-Error "Missing autotrader_cookie.txt at $cookieFile. Autotrader scrape requires a valid cookie file."
+    exit 1
+}
+
 $timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
 $logFile = Join-Path $logDir ("autotrader_scrape_{0}.log" -f $timestamp)
 
@@ -19,8 +30,8 @@ $argsList = @(
     "--all-pages",
     "--playwright-headful",
     "--playwright-browser", "chrome",
-    "--storage-state", "autotrader_isolated/output/storage_state.json",
-    "--cookie-file", "autotrader_isolated/output/autotrader_cookie.txt",
+    "--storage-state", $storageState,
+    "--cookie-file", $cookieFile,
     "--page-retries", "3",
     "--page-retry-delay", "10"
 )

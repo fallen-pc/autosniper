@@ -1,0 +1,117 @@
+version: 2
+
+# ---------------------------------------------------
+# Repair job definitions
+# ---------------------------------------------------
+
+repair_jobs:
+
+  cosmetic_minor_job:
+    description: "Light cosmetic repair such as scratches or paint fade"
+    includes_clusters:
+      - paint_repair
+
+  cosmetic_major_job:
+    description: "Multi-panel cosmetic or hail repair"
+    includes_clusters:
+      - hail_repair
+      - body_panel
+      - paint_repair
+
+  glass_standard_job:
+    description: "Single glass replacement"
+    includes_clusters:
+      - glass_replace
+
+  interior_refurb_job:
+    description: "Interior trim or minor component replacement"
+    includes_clusters:
+      - interior_trim
+
+  structural_body_job:
+    description: "Panel or body structural repair"
+    includes_clusters:
+      - structural_body
+
+  mechanical_engine_job:
+    description: "Engine-related repair risk"
+    includes_clusters:
+      - engine_fault
+
+  mechanical_drivetrain_job:
+    description: "Transmission or drivetrain issues"
+    includes_clusters:
+      - drivetrain_fault
+
+  mechanical_suspension_job:
+    description: "Suspension or steering repair"
+    includes_clusters:
+      - suspension_fault
+
+
+# ---------------------------------------------------
+# Cluster Combination Rules
+# These determine escalation logic.
+# ---------------------------------------------------
+
+cluster_rules:
+
+  - name: cosmetic_escalation
+    when_clusters_present:
+      - hail_repair
+      - paint_repair
+    escalate_to: cosmetic_major_job
+
+  - name: structural_plus_paint
+    when_clusters_present:
+      - structural_body
+      - paint_repair
+    escalate_to: structural_body_job
+
+  - name: engine_and_suspension_risk
+    when_clusters_present:
+      - engine_fault
+      - suspension_fault
+    escalate_to: mechanical_engine_job
+
+  - name: glass_and_body_bundle
+    when_clusters_present:
+      - glass_replace
+      - body_panel
+    escalate_to: cosmetic_major_job
+
+
+# ---------------------------------------------------
+# Severity Overrides
+# ---------------------------------------------------
+
+severity_overrides:
+
+  high_risk_clusters:
+    - engine_fault
+    - structural_body
+
+  medium_risk_clusters:
+    - hail_repair
+    - glass_replace
+
+  low_risk_clusters:
+    - interior_trim
+    - paint_repair
+
+
+# ---------------------------------------------------
+# Aggregation Behaviour
+# ---------------------------------------------------
+
+aggregation:
+
+  allow_multiple_jobs: true
+
+  priority_order:
+    - mechanical_engine_job
+    - structural_body_job
+    - cosmetic_major_job
+    - cosmetic_minor_job
+    - glass_standard_job
+    - interior_refurb_job

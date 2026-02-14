@@ -1,9 +1,10 @@
 canonical_tag,make,model,body,fuel,transmission,badge,series,allowed_body_aliases,excluded_keywords
-toyota_corolla_ascent_petrol_auto_hatch_zre18x,toyota,corolla,hatch,petrol,auto,ascent,zre18x,hatch|hatchback,hybrid|ascent sport|sx|zr|levin|gr|manual
-toyota_corolla_ascent_sport_petrol_auto_hatch_zre18x,toyota,corolla,hatch,petrol,auto,ascent sport,zre18x,hatch|hatchback,hybrid|sx|zr|levin|gr|manual
-toyota_corolla_ascent_sport_petrol_auto_hatch_mzea12r,toyota,corolla,hatch,petrol,auto,ascent sport,mzea12r,hatch|hatchback,hybrid|sx|zr|levin|gr|manual
-toyota_corolla_ascent_sport_hybrid_auto_hatch_zwe211r,toyota,corolla,hatch,hybrid,auto,ascent sport,zwe211r,hatch|hatchback,petrol|sx|zr|levin|gr|manual
-toyota_corolla_ascent_sport_hybrid_auto_hatch_zwe219r,toyota,corolla,hatch,hybrid,auto,ascent sport,zwe219r,hatch|hatchback,petrol|sx|zr|levin|gr|manual
-toyota_corolla_ascent_petrol_auto_sedan_zre152r,toyota,corolla,sedan,petrol,auto,ascent,zre152r,sedan|saloon,hybrid|ascent sport|sx|zr|levin|gr|manual
-toyota_corolla_ascent_petrol_auto_sedan_zre172r,toyota,corolla,sedan,petrol,auto,ascent,zre172r,sedan|saloon,hybrid|ascent sport|sx|zr|levin|gr|manual
-toyota_camry_ascent_hybrid_auto_sedan_axvh71r,toyota,camry,sedan,hybrid,auto,ascent,axvh71r,sedan|saloon,petrol|ascent sport|sx|sl|atara|gr|manual
+toyota_corolla_ascent_petrol_auto_hatch_zre18x,toyota,corolla,hatch,petrol,auto,ascent,zre18x,hatch|hatchback,hybrid|ascent sport|sx|zr|levin|gr|manual|axio|hybrid ex
+toyota_corolla_ascent_sport_petrol_auto_hatch_zre18x,toyota,corolla,hatch,petrol,auto,ascent sport,zre18x,hatch|hatchback,hybrid|sx|zr|levin|gr|manual|axio|hybrid ex
+toyota_corolla_ascent_sport_petrol_auto_hatch_mzea12r,toyota,corolla,hatch,petrol,auto,ascent sport,mzea12r,hatch|hatchback,hybrid|sx|zr|levin|gr|manual|axio|hybrid ex
+toyota_corolla_ascent_sport_hybrid_auto_hatch_zwe211r,toyota,corolla,hatch,hybrid,auto,ascent sport,zwe211r,hatch|hatchback,petrol|sx|zr|levin|gr|manual|axio|hybrid ex
+toyota_corolla_ascent_sport_hybrid_auto_hatch_zwe219r,toyota,corolla,hatch,hybrid,auto,ascent sport,zwe219r,hatch|hatchback,petrol|sx|zr|levin|gr|manual|axio|hybrid ex
+toyota_corolla_ascent_petrol_auto_sedan_zre152r,toyota,corolla,sedan,petrol,auto,ascent,zre152r,sedan|saloon,hybrid|ascent sport|sx|zr|levin|gr|manual|axio|hybrid ex
+toyota_corolla_ascent_petrol_auto_sedan_zre172r,toyota,corolla,sedan,petrol,auto,ascent,zre172r,sedan|saloon,hybrid|ascent sport|sx|zr|levin|gr|manual|axio|hybrid ex
+toyota_camry_ascent_hybrid_auto_sedan_axvh71r,toyota,camry,sedan,hybrid,auto,ascent,axvh71r,sedan|saloon,petrol|ascent sport|sx|sl|atara|gr|manual|axio|hybrid ex
+toyota_camry_ascent_petrol_auto_sedan_asv70r,toyota,camry,sedan,petrol,auto,ascent,asv70r,sedan|saloon,hybrid|ascent sport|sx|sl|atara|gr|manual|axio|hybrid ex

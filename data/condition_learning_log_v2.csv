@@ -1,0 +1,4 @@
+timestamp,vehicle_url,raw_phrase,normalised_phrase,canonical_defect,category,repair_cluster,match_confidence,unmatched_flag,notes
+2026-02-15T09:01:12Z,https://grays.com/lot123,"Hail damage visible","hail damage",hail_damage,cosmetic,hail_repair,1.0,false,
+2026-02-15T09:01:12Z,https://grays.com/lot123,"Steering wheel worn","steering wheel worn",steering_wheel_wear,interior,interior_trim,1.0,false,
+2026-02-15T09:01:12Z,https://grays.com/lot124,"Engine making loud ticking noise","engine ticking noise",,mechanical,,0.0,true,needs dictionary entry

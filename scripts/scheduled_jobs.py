@@ -8,6 +8,7 @@ import sys
 import time
 from pathlib import Path
 from typing import Iterable
+import subprocess
 
 import pandas as pd
 import requests
@@ -147,6 +148,7 @@ def run_daily_pipeline() -> None:
     extract_links.extract_all_vehicle_links()
     extract_vehicle_details.main()
     asyncio.run(update_bids.update_bids())
+    _run_autotrader_scrape()
     update_master.update_master_database()
 
 
@@ -167,6 +169,27 @@ def run_vic_refresh_hourly() -> None:
     urls = _extract_urls(df)
     _run_update_bids(urls)
     update_master.update_master_database()
+
+
+def _run_autotrader_scrape() -> None:
+    script_path = ROOT_DIR / "scripts" / "run_autotrader_scrape.ps1"
+    if not script_path.exists():
+        print(f"Autotrader scrape script not found: {script_path}")
+        return
+    try:
+        subprocess.run(
+            [
+                "powershell",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                str(script_path),
+            ],
+            check=True,
+        )
+        print("Autotrader scrape completed.")
+    except subprocess.CalledProcessError as exc:
+        print(f"Autotrader scrape failed: {exc}")
 
 
 def main() -> None:

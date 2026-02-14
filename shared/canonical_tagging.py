@@ -22,6 +22,8 @@ AMBIG_FUEL = "[AMBIG_FUEL]"
 AMBIG_TRANS = "[AMBIG_TRANS]"
 AMBIG_DRIVETRAIN = "[AMBIG_DRIVETRAIN]"
 OUT_OF_SCOPE = "[OUT_OF_SCOPE]"
+OUT_OF_SCOPE_YEAR = "[OUT_OF_SCOPE_YEAR]"
+DISALLOWED_VARIANT = "[DISALLOWED_VARIANT]"
 POLICY_IMPLICIT_FWD_AU = "POLICY_IMPLICIT_FWD_AU"
 
 ALLOWED_VARIANTS_PATH = Path(__file__).resolve().parent.parent / "config" / "toyota_allowed_variants.csv"
@@ -77,7 +79,7 @@ BODY_ALIASES: Tuple[Tuple[str, str], ...] = (
 
 FUEL_PATTERNS: Tuple[Tuple[str, Tuple[str, ...]], ...] = (
     ("diesel", (r"\bdiesel\b",)),
-    ("petrol", (r"\bpetrol\b", r"\bunleaded\b", r"\bulp\b", r"\bgasoline\b")),
+    ("petrol", (r"\bpetrol\b", r"\bunleaded\b", r"\bulp\b", r"\bgasoline\b", r"\bpremium\b")),
     ("hybrid", (r"\bhybrid\b",)),
     ("electric", (r"\belectric\b", r"\bev\b")),
 )
@@ -347,6 +349,26 @@ def _badge_matches(text: str, aliases: Iterable[str]) -> bool:
     return False
 
 
+def _extract_series_code(text: str) -> str:
+    if not text:
+        return ""
+    # series codes are like ZRE152R, ZRE18x, MZEA12R, ZWE211R, etc.
+    match = re.search(r"\b([A-Z]{2,4}\d{2,3}[A-Z]?)\b", text, re.IGNORECASE)
+    if not match:
+        return ""
+    return match.group(1).lower()
+
+
+def _normalize_series_code(series_code: str) -> str:
+    code = (series_code or "").lower()
+    if not code:
+        return ""
+    # Map common series codes to canonical v2 series buckets.
+    if code in {"zre182r"}:
+        return "zre18x"
+    return code
+
+
 def _body_matches(row_body: str, body_aliases: Iterable[str], body_value: str, text: str) -> bool:
     if row_body and body_value == row_body:
         return True
@@ -359,6 +381,67 @@ def _body_matches(row_body: str, body_aliases: Iterable[str], body_value: str, t
 def _has_excluded_keyword(text: str, keywords: Iterable[str]) -> bool:
     for keyword in keywords:
         if _alias_in_text(text, keyword):
+            return True
+    return False
+
+
+def _disambiguate_by_year(candidates: Sequence[AllowedVariant], year: int | None) -> AllowedVariant | None:
+    if year is None or not candidates:
+        return None
+    curve_path = dataset_path("curves_v2.csv")
+    if not curve_path.exists():
+        return None
+    try:
+        curves_df = pd.read_csv(curve_path)
+    except Exception:
+        return None
+    if "canonical_tag" not in curves_df.columns or "anchor_year" not in curves_df.columns:
+        return None
+    year_band = (
+        curves_df.dropna(subset=["canonical_tag", "anchor_year"])
+        .assign(anchor_year=lambda d: d["anchor_year"].apply(_to_int))
+        .dropna(subset=["anchor_year"])
+        .groupby("canonical_tag")["anchor_year"]
+        .agg(["min", "max"])
+        .rename(columns={"min": "min_year", "max": "max_year"})
+    )
+    matches = []
+    for variant in candidates:
+        band = year_band.loc[variant.canonical_tag] if variant.canonical_tag in year_band.index else None
+        if band is None or pd.isna(band["min_year"]) or pd.isna(band["max_year"]):
+            continue
+        if int(band["min_year"]) <= year <= int(band["max_year"]):
+            matches.append(variant)
+    if len(matches) == 1:
+        return matches[0]
+    return None
+
+
+def _year_in_any_band(candidates: Sequence[AllowedVariant], year: int | None) -> bool:
+    if year is None or not candidates:
+        return False
+    curve_path = dataset_path("curves_v2.csv")
+    if not curve_path.exists():
+        return False
+    try:
+        curves_df = pd.read_csv(curve_path)
+    except Exception:
+        return False
+    if "canonical_tag" not in curves_df.columns or "anchor_year" not in curves_df.columns:
+        return False
+    year_band = (
+        curves_df.dropna(subset=["canonical_tag", "anchor_year"])
+        .assign(anchor_year=lambda d: d["anchor_year"].apply(_to_int))
+        .dropna(subset=["anchor_year"])
+        .groupby("canonical_tag")["anchor_year"]
+        .agg(["min", "max"])
+        .rename(columns={"min": "min_year", "max": "max_year"})
+    )
+    for variant in candidates:
+        if variant.canonical_tag not in year_band.index:
+            continue
+        band = year_band.loc[variant.canonical_tag]
+        if int(band["min_year"]) <= year <= int(band["max_year"]):
             return True
     return False
 
@@ -488,13 +571,44 @@ def assign_canonical_tag(
 
     candidates = [v for v in candidates if not _has_excluded_keyword(text_blob, v.excluded_keywords)]
     if not candidates:
-        return UNCLASSIFIED, OUT_OF_SCOPE, ""
+        return UNCLASSIFIED, DISALLOWED_VARIANT, ""
+
+    # Series code fallback (e.g. ZRE152R / ZRE172R / MZEA12R / ZWE211R)
+    series_text = " ".join(
+        str(normalized_row.get(key, "") or "")
+        for key in ("variant", "series", "model", "_blob")
+    ).upper()
+    series_code = _extract_series_code(series_text)
+    if series_code:
+        series_code = _normalize_series_code(series_code)
+        series_matches = [v for v in candidates if v.series and v.series == series_code]
+        unique_series_tags = {v.canonical_tag for v in series_matches}
+        if len(unique_series_tags) == 1:
+            return series_matches[0].canonical_tag, R.OK, ""
+        if len(series_matches) == 0:
+            return UNCLASSIFIED, DISALLOWED_VARIANT, ""
 
     badge_matches = [v for v in candidates if _badge_matches(text_blob, v.badge_aliases)]
     if not badge_matches:
         return UNCLASSIFIED, AMBIG_BADGE, ""
     unique_tags = {v.canonical_tag for v in badge_matches}
     if len(unique_tags) > 1:
+        year_choice = _disambiguate_by_year(badge_matches, year)
+        if year_choice is not None:
+            required_reason = _validate_required_fields(
+                {
+                    "year": year,
+                    "fuel_type": fuel,
+                    "transmission": transmission,
+                    "badge": year_choice.badge,
+                    "body_type": body_value,
+                }
+            )
+            if required_reason != R.OK:
+                return UNCLASSIFIED, required_reason, ""
+            return year_choice.canonical_tag, R.OK, drivetrain_source
+        if not _year_in_any_band(badge_matches, year):
+            return UNCLASSIFIED, OUT_OF_SCOPE_YEAR, ""
         return UNCLASSIFIED, AMBIG_BADGE, ""
     required_reason = _validate_required_fields(
         {

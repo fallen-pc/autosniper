@@ -1,0 +1,121 @@
+version: 2
+
+# ---------------------------------------------------
+# Core philosophy
+# ---------------------------------------------------
+# This file assigns deterministic weights to repair_jobs.
+# AI should read weights — not raw condition text.
+#
+# risk_weight:
+#   0.0 → no risk
+#   1.0 → moderate risk
+#   2.0+ → high risk / profit suppression
+#
+# confidence_modifier:
+#   affects curve confidence
+#
+# profit_adjustment_signal:
+#   later used by pricing engine (NOT actual cost)
+
+# ---------------------------------------------------
+# Repair Job Weights
+# ---------------------------------------------------
+
+repair_job_weights:
+
+  cosmetic_minor_job:
+    risk_weight: 0.25
+    confidence_modifier: -0.02
+    profit_adjustment_signal: minor_negative
+
+  cosmetic_major_job:
+    risk_weight: 0.75
+    confidence_modifier: -0.06
+    profit_adjustment_signal: medium_negative
+
+  glass_standard_job:
+    risk_weight: 0.35
+    confidence_modifier: -0.03
+    profit_adjustment_signal: small_negative
+
+  interior_refurb_job:
+    risk_weight: 0.20
+    confidence_modifier: -0.01
+    profit_adjustment_signal: neutral
+
+  structural_body_job:
+    risk_weight: 1.40
+    confidence_modifier: -0.15
+    profit_adjustment_signal: high_negative
+
+  mechanical_engine_job:
+    risk_weight: 2.20
+    confidence_modifier: -0.25
+    profit_adjustment_signal: severe_negative
+
+  mechanical_drivetrain_job:
+    risk_weight: 1.60
+    confidence_modifier: -0.18
+    profit_adjustment_signal: high_negative
+
+  mechanical_suspension_job:
+    risk_weight: 1.10
+    confidence_modifier: -0.10
+    profit_adjustment_signal: medium_negative
+
+
+# ---------------------------------------------------
+# Escalation Logic
+# ---------------------------------------------------
+
+escalation_rules:
+
+  - name: multiple_mechanical_jobs
+    when_jobs_present:
+      - mechanical_engine_job
+      - mechanical_drivetrain_job
+    escalate_risk_by: 0.40
+
+  - name: structural_plus_mechanical
+    when_jobs_present:
+      - structural_body_job
+      - mechanical_engine_job
+    escalate_risk_by: 0.60
+
+  - name: cosmetic_stack
+    when_jobs_present:
+      - cosmetic_major_job
+      - glass_standard_job
+    escalate_risk_by: 0.15
+
+
+# ---------------------------------------------------
+# Risk Bands (used by UI pills + AI)
+# ---------------------------------------------------
+
+risk_bands:
+
+  low:
+    max_score: 0.40
+
+  medium:
+    max_score: 1.20
+
+  high:
+    max_score: 2.00
+
+  critical:
+    max_score: 999
+
+
+# ---------------------------------------------------
+# Aggregation Behaviour
+# ---------------------------------------------------
+
+aggregation:
+
+  combine_method: sum
+
+  cap_total_risk: 3.00
+
+  confidence_floor: -0.35

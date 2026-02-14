@@ -1,0 +1,33 @@
+rule_id,pattern,category,severity,priority
+boilerplate_photos,refer to (the )?photos|see photos|see images|arrange inspection,boilerplate,0,1
+boilerplate_inspection,inspection (required|recommended)|view the condition,boilerplate,0,2
+boilerplate_location,location:|location\\b,boilerplate,0,3
+boilerplate_key_no,key no\\b|key number\\b|key\\s*no[:\\s]*\\d+,boilerplate,0,4
+boilerplate_crash_rating,crash test star rating,boilerplate,0,5
+boilerplate_features,air conditioning|cd player|central locking|driver airbag|park distance control rear|power steering,boilerplate,0,6
+mechanical_warning,engine light|warning light|abs light|airbag light|traction control light,mechanical,1,10
+mechanical_overheat,overheating|tow advisable|not running|no start|does not run,mechanical,1,11
+mechanical_battery,flat battery|jump start|towing required,mechanical,1,13
+mechanical_noise,engine rattle|engine noise|rough idle|idling rough|misfire,mechanical,1,12
+mechanical_smoke,engine smoke|smoke visible,mechanical,1,14
+mechanical_leak,engine leak|oil leak|water leak|coolant leak,mechanical,1,15
+structural_hail,hail damage|hail affected,structural,1,20
+structural_frame,chassis|frame|pillar|structural|rail|apron,structural,1,21
+structural_rust,corrosion|rust,structural,1,22
+glass_windscreen,windscreen|windshield,glass,1,30
+glass_window,window|glass|mirror cracked|mirror broken,glass,1,31
+interior_seat,seat tear|seat torn|seat worn|seat ripped|seat damaged,interior,0,40
+interior_trim,door card|trim damaged|headliner|carpet|dash,interior,0,41
+interior_stain,seat stain|seat stains|stained seat|stained seats,interior,0,42
+replacement_missing,missing|needs replacing|requires replacement|fallen off,replacement,1,50
+replacement_bumper,bumper cracked|cracked bumper|broken bumper|torn bumper,replacement,1,51
+replacement_tail_light,tail light|tail lights|taillight|taillights,replacement,1,52
+replacement_indicator,indicator|turn signal|indicator light|signal light,replacement,1,53
+cosmetic_scratch,scratch|scratched|scuff|scuffed|mark|marks,cosmetic,0,60
+cosmetic_dent,dent|dented|crease,cosmetic,0,61
+cosmetic_panel_damage,body/panel damage|panel damage|panel damaged,cosmetic,0,64
+cosmetic_panel_multi,various parts on panels|multiple panels|numerous panels,cosmetic,0,65
+confirm_damage_location,damaged (rear|front|driver|passenger) (side )?(front|rear|side)?|damaged (driver|passenger) side,cosmetic,0,66
+replacement_panel_cracked,cracked\\s+\\w*\\s*panels?|panel\\s+cracked,replacement,1,66
+cosmetic_paint,paint peeling|paint fading|clear coat|peeling paint|faded paint,cosmetic,0,62
+cosmetic_paint_cracked,paint cracked|cracked paint,cosmetic,0,63

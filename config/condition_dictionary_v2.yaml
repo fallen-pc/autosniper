@@ -1,0 +1,177 @@
+﻿version: 2
+
+categories:
+  - cosmetic
+  - glass
+  - replacement
+  - structural
+  - mechanical
+  - interior
+  - boilerplate
+
+repair_clusters:
+  - body_panel
+  - paint_repair
+  - hail_repair
+  - glass_replace
+  - interior_trim
+  - structural_body
+  - engine_fault
+  - drivetrain_fault
+  - suspension_fault
+
+entries:
+  - raw_phrase: "refer to photos"
+    canonical_defect: boilerplate_refer_photos
+    category: boilerplate
+    severity_hint: low
+
+  - raw_phrase: "arrange inspection"
+    canonical_defect: boilerplate_arrange_inspection
+    category: boilerplate
+    severity_hint: low
+
+  - pattern: "\\b(location|address)\\b"
+    canonical_defect: boilerplate_location
+    category: boilerplate
+    severity_hint: low
+
+  - pattern: "\\b(vic|nsw|qld|sa|wa|tas|act|nt)\\b"
+    canonical_defect: boilerplate_state
+    category: boilerplate
+    severity_hint: low
+
+  - pattern: "^\\d{4}$"
+    canonical_defect: boilerplate_postcode
+    category: boilerplate
+    severity_hint: low
+
+  - pattern: "\\b(dandenong south)\\b"
+    canonical_defect: boilerplate_suburb
+    category: boilerplate
+    severity_hint: low
+
+  - pattern: "\\b(key no|key number)\\b"
+    canonical_defect: boilerplate_key_no
+    category: boilerplate
+    severity_hint: low
+
+  - pattern: "\\b(crash test|ancap)\\b"
+    canonical_defect: boilerplate_crash_rating
+    category: boilerplate
+    severity_hint: low
+
+  - pattern: "\\b(air conditioning|cd player|central locking|power steering|driver airbag|park distance control)\\b"
+    canonical_defect: boilerplate_feature_list
+    category: boilerplate
+    severity_hint: low
+
+  - pattern: "\\b(windscreen|windshield).*(crack|cracked|chip|chipped)"
+    canonical_defect: windscreen_damage
+    category: glass
+    severity_hint: medium
+
+  - pattern: "\\b(window|glass).*(crack|cracked|chip|chipped|broken)"
+    canonical_defect: window_damage
+    category: glass
+    severity_hint: medium
+
+  - pattern: "\\b(hail)\\b"
+    canonical_defect: hail_damage
+    category: structural
+    severity_hint: high
+
+  - pattern: "\\b(chassis|frame|rail|pillar|structural)\\b"
+    canonical_defect: structural_damage
+    category: structural
+    severity_hint: high
+
+  - pattern: "\\b(engine).*(rattle|knock|smoke|leak|overheat|overheating)"
+    canonical_defect: engine_fault
+    category: mechanical
+    severity_hint: high
+
+  - pattern: "\\b(transmission|gearbox).*(slip|slipping|fault|issue)"
+    canonical_defect: transmission_fault
+    category: mechanical
+    severity_hint: high
+
+  - pattern: "\\b(flat battery|jump start|towing required)\\b"
+    canonical_defect: battery_issue
+    category: mechanical
+    severity_hint: medium
+
+  - pattern: "\\b(controls broken|heater control|heater broken)\\b"
+    canonical_defect: control_damage
+    category: interior
+    severity_hint: medium
+
+  - pattern: "\\b(warning light|engine light|abs|airbag).*(on|warning)"
+    canonical_defect: warning_light
+    category: mechanical
+    severity_hint: high
+
+  - pattern: "\\b(seat).*(torn|tear|worn|stain|stained)"
+    canonical_defect: seat_damage
+    category: interior
+    severity_hint: low
+
+  - pattern: "\\bseats?\\b"
+    canonical_defect: seat_issue
+    category: interior
+    severity_hint: low
+
+  - pattern: "\\b(steering wheel|gear knob).*(worn|broken|missing)"
+    canonical_defect: interior_trim_damage
+    category: interior
+    severity_hint: low
+
+  - pattern: "\\b(tail light|taillight|indicator).*(crack|cracked|broken|missing|damaged)"
+    canonical_defect: lighting_damage
+    category: replacement
+    severity_hint: medium
+
+  - pattern: "\\b(mirror|headlight|head light).*(crack|cracked|broken|missing|damaged)"
+    canonical_defect: mirror_light_damage
+    category: replacement
+    severity_hint: medium
+
+  - pattern: "\\b(bumper|bar).*(crack|cracked|broken|torn|missing|damaged)"
+    canonical_defect: bumper_damage
+    category: replacement
+    severity_hint: medium
+
+  - pattern: "\\b(missing|needs replacing|requires replacement)"
+    canonical_defect: replacement_required
+    category: replacement
+    severity_hint: medium
+
+  - pattern: "\\b(paint).*(fade|fading|peel|peeling|crack|cracked)"
+    canonical_defect: paint_damage
+    category: cosmetic
+    severity_hint: low
+
+  - pattern: "\\b(bubbling|peeling all over|peeling various panels)\\b"
+    canonical_defect: paint_surface_issue
+    category: cosmetic
+    severity_hint: low
+
+  - pattern: "\\b(dent|dented|scratch|scratched|scuff|scuffed|mark|marks|chip|chipped)"
+    canonical_defect: cosmetic_surface_damage
+    category: cosmetic
+    severity_hint: low
+
+  - pattern: "\\b(damage|damaged)\\b"
+    canonical_defect: generic_damage
+    category: cosmetic
+    severity_hint: low
+
+  - pattern: "\\b(guard|bootlid|door|panel|bumper|bar)s?\\b"
+    canonical_defect: body_location_list
+    category: cosmetic
+    severity_hint: low
+
+  - pattern: "\\b(body/panel damage|panel damage|panel repairs)"
+    canonical_defect: panel_damage
+    category: cosmetic
+    severity_hint: low
