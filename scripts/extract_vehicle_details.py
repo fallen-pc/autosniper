@@ -48,9 +48,11 @@ else:
 SCRIPT_DIR = Path(__file__).resolve().parent
 ROOT_DIR = SCRIPT_DIR.parent
 INPUT_FILE = dataset_path("all_vehicle_links.csv")
+RAW_OUTPUT_FILE = dataset_path("raw_vehicle_data.csv")
+NORMALIZED_OUTPUT_FILE = dataset_path("normalised_data.csv")
 OUTPUT_FILE = dataset_path("vehicle_static_details.csv")
 ACTIVE_OUTPUT_FILE = dataset_path("active_vehicle_details.csv")
-FAILURES_FILE = dataset_path("scrapers/scrape_failures.csv")
+FAILURES_FILE = dataset_path("excluded_listings.csv")
 SKIPPED_LOG = ROOT_DIR / "logs" / "skipped_links.txt"
 
 SCHEMA_FIELDS = SOLD_RAW_SCRAPE_COLUMNS.copy()
@@ -144,6 +146,67 @@ def _is_missing(value: object) -> bool:
     if isinstance(value, str) and not value.strip():
         return True
     return False
+
+
+def _normalize_url_value(value: object) -> str:
+    if value is None:
+        return ""
+    return str(value).strip().lower()
+
+
+def _load_url_set(path: Path) -> set[str]:
+    if not path.exists():
+        return set()
+    try:
+        df = pd.read_csv(path, usecols=["url"])
+    except (ValueError, pd.errors.EmptyDataError):
+        df = pd.read_csv(path) if path.exists() else pd.DataFrame()
+    if "url" not in df.columns:
+        return set()
+    urls = df["url"].dropna().apply(_normalize_url_value)
+    return {url for url in urls if url}
+
+
+def _merge_pipeline_snapshot(path: Path, new_df: pd.DataFrame) -> pd.DataFrame:
+    if new_df.empty:
+        return pd.DataFrame()
+    if path.exists():
+        try:
+            existing_df = pd.read_csv(path, low_memory=False)
+        except (ValueError, pd.errors.EmptyDataError):
+            existing_df = pd.DataFrame()
+    else:
+        existing_df = pd.DataFrame()
+    combined = pd.concat([existing_df, new_df], ignore_index=True, sort=False)
+    if "url" in combined.columns:
+        combined["_url_norm"] = combined["url"].astype(str).str.strip().str.lower()
+        combined = combined.drop_duplicates(subset=["_url_norm"], keep="last")
+        combined = combined.drop(columns=["_url_norm"], errors="ignore")
+    else:
+        combined = combined.drop_duplicates()
+    return combined.reset_index(drop=True)
+
+
+def _prepare_raw_snapshot(df: pd.DataFrame) -> pd.DataFrame:
+    if df.empty:
+        return df
+    snapshot = df.copy()
+    for column in SCHEMA_FIELDS:
+        if column not in snapshot.columns:
+            snapshot[column] = ""
+    return snapshot.reindex(columns=SCHEMA_FIELDS)
+
+
+def _prepare_normalised_snapshot(df: pd.DataFrame) -> pd.DataFrame:
+    if df.empty:
+        return df
+    working = normalize_listing_fields(df)
+    working = drop_invalid_years(working, allow_missing=True)
+    working = drop_invalid_odometer_rows(working, allow_missing=True)
+    for column in SCHEMA_FIELDS:
+        if column not in working.columns:
+            working[column] = ""
+    return working.reindex(columns=SCHEMA_FIELDS)
 
 
 def load_make_whitelist(existing_df: pd.DataFrame) -> set[str]:
@@ -889,14 +952,35 @@ def main(
         return
 
     links_df = pd.read_csv(INPUT_FILE)
-    all_links = links_df.get("url", pd.Series(dtype=str)).dropna().drop_duplicates().tolist()
+    raw_links = links_df.get("url", pd.Series(dtype=str)).dropna().astype(str).tolist()
+    all_links: list[str] = []
+    seen_links: set[str] = set()
+    for url in raw_links:
+        normalized = _normalize_url_value(url)
+        if not normalized or normalized in seen_links:
+            continue
+        all_links.append(url)
+        seen_links.add(normalized)
     if not all_links:
         print("No URLs found in the links CSV.")
         return
 
     existing_df = pd.read_csv(OUTPUT_FILE) if OUTPUT_FILE.exists() else pd.DataFrame(columns=SCHEMA_FIELDS)
-    processed_urls = set(existing_df.get("url", pd.Series(dtype=str)).dropna().tolist())
-    pending_links = [url for url in all_links if url not in processed_urls]
+    processed_urls = {
+        _normalize_url_value(url)
+        for url in existing_df.get("url", pd.Series(dtype=str)).dropna().tolist()
+    }
+    sold_urls = _load_url_set(dataset_path("sold_cars.csv"))
+    referred_urls = _load_url_set(dataset_path("referred_cars.csv"))
+    completed_urls = sold_urls | referred_urls
+    if completed_urls:
+        before = len(all_links)
+        all_links = [url for url in all_links if _normalize_url_value(url) not in completed_urls]
+        skipped = before - len(all_links)
+        if skipped:
+            print(f"Skipping {skipped} sold/referred listing(s) from link queue.")
+
+    pending_links = [url for url in all_links if _normalize_url_value(url) not in processed_urls]
 
     target_links = all_links if force_all else (pending_links or all_links)
     if batch_size is not None and batch_size > 0:
@@ -922,6 +1006,19 @@ def main(
             if data:
                 total_scraped += len(data)
                 new_df = pd.DataFrame(data)
+                raw_snapshot = _prepare_raw_snapshot(new_df)
+                raw_merged = _merge_pipeline_snapshot(RAW_OUTPUT_FILE, raw_snapshot)
+                if not raw_merged.empty:
+                    atomic_write(raw_merged, RAW_OUTPUT_FILE)
+
+                normalized_snapshot = _prepare_normalised_snapshot(new_df)
+                normalized_merged = _merge_pipeline_snapshot(
+                    NORMALIZED_OUTPUT_FILE,
+                    normalized_snapshot,
+                )
+                if not normalized_merged.empty:
+                    atomic_write(normalized_merged, NORMALIZED_OUTPUT_FILE)
+
                 existing_df = merge_and_save_static(existing_df, new_df)
                 print(
                     f"Checkpoint saved ({len(new_df)} new rows, total {len(existing_df)})."
@@ -941,6 +1038,16 @@ def main(
     if new_df.empty:
         print("No listings were scraped.")
         return
+
+    raw_snapshot = _prepare_raw_snapshot(new_df)
+    raw_merged = _merge_pipeline_snapshot(RAW_OUTPUT_FILE, raw_snapshot)
+    if not raw_merged.empty:
+        atomic_write(raw_merged, RAW_OUTPUT_FILE)
+
+    normalized_snapshot = _prepare_normalised_snapshot(new_df)
+    normalized_merged = _merge_pipeline_snapshot(NORMALIZED_OUTPUT_FILE, normalized_snapshot)
+    if not normalized_merged.empty:
+        atomic_write(normalized_merged, NORMALIZED_OUTPUT_FILE)
 
     existing_df = merge_and_save_static(existing_df, new_df)
     print(f"Saved {len(new_df)} rows (total {len(existing_df)}). Output: {OUTPUT_FILE}")

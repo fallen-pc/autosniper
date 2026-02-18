@@ -24,7 +24,6 @@ BASE_URL = (
 )
 OUTPUT_FILE = dataset_path("all_vehicle_links.csv")
 SUMMARY_FILE = Path("logs") / "link_scrape_summary.json"
-ACTIVE_FILE = dataset_path("active_vehicle_details.csv")
 SOLD_FILE = dataset_path("sold_cars.csv")
 REFERRED_FILE = dataset_path("referred_cars.csv")
 
@@ -72,6 +71,27 @@ def _load_existing_urls(paths: tuple[Path, ...]) -> set[str]:
         urls = df["url"].dropna().astype(str).map(_normalize_url)
         known.update(url for url in urls if url)
     return known
+
+
+def _load_pipeline_urls(path: Path) -> tuple[list[str], set[str]]:
+    if not path.exists():
+        return [], set()
+    try:
+        df = pd.read_csv(path, usecols=["url"])
+    except (ValueError, pd.errors.EmptyDataError):
+        df = pd.read_csv(path) if path.exists() else pd.DataFrame()
+    if "url" not in df.columns:
+        return [], set()
+    raw_urls = df["url"].dropna().astype(str).map(_clean_url)
+    pipeline_urls: list[str] = []
+    normalized: set[str] = set()
+    for url in raw_urls:
+        norm = _normalize_url(url)
+        if not norm or norm in normalized:
+            continue
+        pipeline_urls.append(url)
+        normalized.add(norm)
+    return pipeline_urls, normalized
 
 
 def extract_links_from_content(content: str) -> list[str]:
@@ -170,27 +190,47 @@ def extract_all_vehicle_links() -> None:
         page += 1
 
     OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
-    existing_urls = _load_existing_urls((ACTIVE_FILE, SOLD_FILE, REFERRED_FILE))
-    filtered_links = [
-        link for link in all_links if _normalize_url(link) not in existing_urls
-    ]
-    compliance_dropped = [link for link in filtered_links if is_compliance_slug(link)]
-    if compliance_dropped:
-        print(f"Dropped {len(compliance_dropped)} compliance-tagged link(s).")
-    filtered_links = [link for link in filtered_links if link not in compliance_dropped]
-    filtered_links = sorted(filtered_links)
-    pruned_count = len(all_links) - len(filtered_links) - len(compliance_dropped)
-    if pruned_count:
-        print(f"Skipped {pruned_count} link(s) already tracked in active/sold/referred datasets.")
-    df = pd.DataFrame(filtered_links, columns=["url"])
+    pipeline_urls, pipeline_norm = _load_pipeline_urls(OUTPUT_FILE)
+    sold_referred_norm = _load_existing_urls((SOLD_FILE, REFERRED_FILE))
+
+    skipped_existing = 0
+    skipped_sold = 0
+    skipped_compliance = 0
+    new_links: list[str] = []
+    for link in sorted(all_links):
+        norm = _normalize_url(link)
+        if not norm:
+            continue
+        if norm in pipeline_norm:
+            skipped_existing += 1
+            continue
+        if norm in sold_referred_norm:
+            skipped_sold += 1
+            continue
+        if is_compliance_slug(link):
+            skipped_compliance += 1
+            continue
+        cleaned = _clean_url(link)
+        new_links.append(cleaned)
+        pipeline_norm.add(norm)
+
+    if skipped_compliance:
+        print(f"Dropped {skipped_compliance} compliance-tagged link(s).")
+
+    new_links = sorted(new_links)
+    final_links = pipeline_urls + new_links
+    df = pd.DataFrame(final_links, columns=["url"])
     df.to_csv(OUTPUT_FILE, index=False)
-    print(f"Saved {len(df)} vehicle links to {OUTPUT_FILE}")
+    print(f"Saved {len(df)} vehicle links to {OUTPUT_FILE} ({len(new_links)} new).")
 
     summary = {
         "generated_at": datetime.utcnow().isoformat(),
         "total_links_found": len(all_links),
-        "filtered_new_links": len(filtered_links),
-        "skipped_existing": pruned_count,
+        "pipeline_before": len(pipeline_urls),
+        "pipeline_after": len(final_links),
+        "new_added": len(new_links),
+        "skipped_existing": skipped_existing,
+        "skipped_sold": skipped_sold,
     }
     SUMMARY_FILE.parent.mkdir(parents=True, exist_ok=True)
     SUMMARY_FILE.write_text(json.dumps(summary, indent=2), encoding="utf-8")

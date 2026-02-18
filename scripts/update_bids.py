@@ -348,6 +348,8 @@ async def update_bids(
     input_links: list[str] | None = None,
     limit: int | None = None,
     batch_interval: int | None = None,
+    *,
+    skip_master: bool = False,
 ):
     skipped_urls = []
     try:
@@ -512,6 +514,14 @@ async def update_bids(
             print(f"Cleared progress file {PROGRESS_FILE}")
         clear_resume_queue()
 
+        if not skip_master:
+            try:
+                from scripts import update_master
+
+                update_master.update_master_database()
+            except Exception as exc:
+                logger.error(f"Failed to run update_master after update_bids: {exc}")
+
         return df, skipped_urls
     except Exception as e:
         logger.error(f"Unexpected error in update_bids: {e}")
@@ -534,6 +544,17 @@ if __name__ == "__main__":
         default=None,
         help="Checkpoint save interval override.",
     )
+    parser.add_argument(
+        "--skip-master",
+        action="store_true",
+        help="Skip running update_master after bids update completes.",
+    )
     args = parser.parse_args()
 
-    asyncio.run(update_bids(limit=args.limit, batch_interval=args.batch_interval))
+    asyncio.run(
+        update_bids(
+            limit=args.limit,
+            batch_interval=args.batch_interval,
+            skip_master=args.skip_master,
+        )
+    )

@@ -388,7 +388,7 @@ def _has_excluded_keyword(text: str, keywords: Iterable[str]) -> bool:
 def _disambiguate_by_year(candidates: Sequence[AllowedVariant], year: int | None) -> AllowedVariant | None:
     if year is None or not candidates:
         return None
-    curve_path = dataset_path("curves_v2.csv")
+    curve_path = dataset_path("curves.csv")
     if not curve_path.exists():
         return None
     try:
@@ -420,7 +420,7 @@ def _disambiguate_by_year(candidates: Sequence[AllowedVariant], year: int | None
 def _year_in_any_band(candidates: Sequence[AllowedVariant], year: int | None) -> bool:
     if year is None or not candidates:
         return False
-    curve_path = dataset_path("curves_v2.csv")
+    curve_path = dataset_path("curves.csv")
     if not curve_path.exists():
         return False
     try:

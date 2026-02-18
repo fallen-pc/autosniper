@@ -2,9 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from datetime import datetime
-import os
 from pathlib import Path
 from typing import Iterable, List, Optional, Sequence, Tuple
 
@@ -12,29 +10,9 @@ import pandas as pd
 
 from shared.audit import append_audit_snapshot
 from shared.data_loader import dataset_path
-from shared.pipe_keys import looks_like_pipe_key, parse_pipe_key
-from shared.validators import (
-    compute_price_per_km_bucket,
-    validate_curves_df,
-    validate_curves_v2_df,
-)
 
-CURVE_MODEL = os.getenv("CURVE_MODEL", "v2").strip().lower()
 
-CURVE_COLUMNS_V1: Sequence[str] = (
-    "group_id",
-    "series",
-    "anchor_year",
-    "km_anchor",
-    "price_low",
-    "price_high",
-    "price_median",
-    "price_per_km_bucket",
-    "source",
-    "created_at",
-)
-
-CURVE_COLUMNS_V2: Sequence[str] = (
+CURVE_COLUMNS: Sequence[str] = (
     "canonical_tag",
     "anchor_year",
     "km_bucket",
@@ -43,15 +21,21 @@ CURVE_COLUMNS_V2: Sequence[str] = (
     "price_high",
 )
 
-CURVE_COLUMNS = CURVE_COLUMNS_V2 if CURVE_MODEL == "v2" else CURVE_COLUMNS_V1
+LEGACY_COLUMNS = {"group_id", "series", "km_anchor", "price_median"}
 
 
-def curve_model() -> str:
-    return CURVE_MODEL
+def detect_legacy_columns(df: pd.DataFrame) -> None:
+    if LEGACY_COLUMNS.intersection(set(df.columns)):
+        raise RuntimeError(
+            "Legacy curve format detected. Migrate to canonical_tag curves."
+        )
 
 
-def curve_dataset_name() -> str:
-    return "curves_v2.csv" if CURVE_MODEL == "v2" else "curves.csv"
+def validate_curve_columns(df: pd.DataFrame) -> None:
+    if list(df.columns) != list(CURVE_COLUMNS):
+        raise ValueError(
+            "Invalid curve schema. Curves must use canonical_tag format only."
+        )
 
 
 def _to_numeric(value: object) -> float | None:
@@ -78,125 +62,70 @@ def _to_int(value: object) -> int | None:
         return None
 
 
-def _fill_median_row(row: pd.Series) -> pd.Series:
-    if pd.notna(row.get("price_median")):
+def _fill_mid_price(row: pd.Series) -> pd.Series:
+    if pd.notna(row.get("price_mid")):
         return row
     low = _to_numeric(row.get("price_low"))
     high = _to_numeric(row.get("price_high"))
     if low is not None and high is not None:
-        row["price_median"] = round((low + high) / 2.0)
+        row["price_mid"] = round((low + high) / 2.0)
     return row
 
 
-def _ensure_v1_columns(df: pd.DataFrame) -> pd.DataFrame:
-    for column in CURVE_COLUMNS_V1:
-        if column not in df.columns:
-            df[column] = None
-    return df[list(CURVE_COLUMNS_V1)].copy()
-
-
-def _ensure_v2_columns(df: pd.DataFrame) -> pd.DataFrame:
-    for column in CURVE_COLUMNS_V2:
-        if column not in df.columns:
-            df[column] = None
-    return df[list(CURVE_COLUMNS_V2)].copy()
-
-
-def _normalize_v2_for_compat(df: pd.DataFrame) -> pd.DataFrame:
-    """Add v1-compatible columns so existing readers keep working."""
-    working = df.copy()
-    working["canonical_tag"] = working.get("canonical_tag", "").astype(str).str.strip()
-    working["anchor_year"] = working["anchor_year"].apply(_to_int)
-    working["km_bucket"] = working["km_bucket"].apply(_to_int)
-    working["price_low"] = working["price_low"].apply(_to_int)
-    working["price_high"] = working["price_high"].apply(_to_int)
-    working["price_mid"] = working["price_mid"].apply(_to_int)
-
-    fill_mask = working["price_mid"].isna()
-    if fill_mask.any():
-        low = working["price_low"]
-        high = working["price_high"]
-        working.loc[fill_mask, "price_mid"] = ((low + high) / 2.0).round()
-
-    working["group_id"] = working["canonical_tag"]
-    working["series"] = ""
-    working["km_anchor"] = working["km_bucket"]
-    working["price_median"] = working["price_mid"]
-    working["price_per_km_bucket"] = working.apply(
-        lambda row: compute_price_per_km_bucket(row.get("price_median"), row.get("km_anchor")),
-        axis=1,
-    )
-    return working
-
-
 def load_curves(path: Path | None = None) -> pd.DataFrame:
-    curve_path = path or dataset_path(curve_dataset_name())
+    curve_path = path or dataset_path("curves.csv")
     if not curve_path.exists():
-        columns = CURVE_COLUMNS_V2 if CURVE_MODEL == "v2" else CURVE_COLUMNS_V1
-        return pd.DataFrame(columns=list(columns))
+        return pd.DataFrame(columns=list(CURVE_COLUMNS))
     df = pd.read_csv(curve_path)
-
-    if CURVE_MODEL == "v2":
-        df = _ensure_v2_columns(df)
-        df = _normalize_v2_for_compat(df)
-        return df
-
-    df = _ensure_v1_columns(df)
+    detect_legacy_columns(df)
+    validate_curve_columns(df)
+    df["canonical_tag"] = df["canonical_tag"].astype(str).str.strip()
     df["anchor_year"] = df["anchor_year"].apply(_to_int)
-    df["km_anchor"] = df["km_anchor"].apply(_to_int)
+    df["km_bucket"] = df["km_bucket"].apply(_to_int)
     df["price_low"] = df["price_low"].apply(_to_int)
+    df["price_mid"] = df["price_mid"].apply(_to_int)
     df["price_high"] = df["price_high"].apply(_to_int)
-    df["price_median"] = df["price_median"].apply(_to_int)
-    df = df.apply(_fill_median_row, axis=1)
-    df["price_per_km_bucket"] = df.apply(
-        lambda row: compute_price_per_km_bucket(row.get("price_median"), row.get("km_anchor")),
-        axis=1,
-    )
-    return df
+    df = df.apply(_fill_mid_price, axis=1)
+    return df[list(CURVE_COLUMNS)].copy()
 
 
 def save_curves(df: pd.DataFrame, path: Path | None = None) -> None:
-    curve_path = path or dataset_path(curve_dataset_name())
+    detect_legacy_columns(df)
+    validate_curve_columns(df)
+    curve_path = path or dataset_path("curves.csv")
     curve_path.parent.mkdir(parents=True, exist_ok=True)
-
-    if CURVE_MODEL == "v2":
-        working, _ = validate_curves_v2_df(df)
-        working = _ensure_v2_columns(working)
-        working.to_csv(curve_path, index=False)
-        append_audit_snapshot(working, curve_path)
-        return
-
-    working, _ = validate_curves_df(df)
-    working = _ensure_v1_columns(working)
-    if "created_at" in working.columns:
-        working["created_at"] = working["created_at"].fillna(
-            datetime.utcnow().isoformat(timespec="seconds")
-        )
+    working = df[list(CURVE_COLUMNS)].copy()
+    working = working.apply(_fill_mid_price, axis=1)
     working.to_csv(curve_path, index=False)
     append_audit_snapshot(working, curve_path)
 
 
 def get_curve_points(
-    curves_df: pd.DataFrame, group_id: str, anchor_year: int
+    curves_df: pd.DataFrame, canonical_tag: str, anchor_year: int
 ) -> List[Tuple[int, int]]:
     if curves_df.empty:
         return []
     subset = curves_df[
-        (curves_df["group_id"] == group_id) & (curves_df["anchor_year"] == anchor_year)
+        (curves_df["canonical_tag"] == canonical_tag)
+        & (curves_df["anchor_year"] == anchor_year)
     ].copy()
-    subset = subset.dropna(subset=["km_anchor", "price_median"])
+    subset = subset.dropna(subset=["km_bucket", "price_mid"])
     if subset.empty:
         return []
-    subset["km_anchor"] = subset["km_anchor"].apply(_to_int)
-    subset["price_median"] = subset["price_median"].apply(_to_int)
-    subset = subset.dropna(subset=["km_anchor", "price_median"])
+    subset["km_bucket"] = subset["km_bucket"].apply(_to_int)
+    subset["price_mid"] = subset["price_mid"].apply(_to_int)
+    subset = subset.dropna(subset=["km_bucket", "price_mid"])
     points = list(
-        subset.sort_values("km_anchor")[["km_anchor", "price_median"]].itertuples(index=False, name=None)
+        subset.sort_values("km_bucket")[["km_bucket", "price_mid"]].itertuples(
+            index=False, name=None
+        )
     )
     return [(int(km), int(price)) for km, price in points]
 
 
-def interpolate_price_by_km(points: Iterable[Tuple[int, int]], km: float | int | None) -> Optional[float]:
+def interpolate_price_by_km(
+    points: Iterable[Tuple[int, int]], km: float | int | None
+) -> Optional[float]:
     if km is None:
         return None
     points_list = sorted(points, key=lambda p: p[0])
@@ -218,30 +147,13 @@ def interpolate_price_by_km(points: Iterable[Tuple[int, int]], km: float | int |
 
 def interpolate_base_by_year(
     curves_df: pd.DataFrame,
-    group_id: str,
+    canonical_tag: str,
     year: int | None,
     km: float | int | None,
 ) -> Optional[float]:
-    if curves_df.empty or not group_id or year is None or km is None:
+    if curves_df.empty or not canonical_tag or year is None or km is None:
         return None
-    subset = curves_df[curves_df["group_id"] == group_id].copy()
-    if looks_like_pipe_key(group_id):
-        parsed = parse_pipe_key(group_id)
-        if parsed:
-            target_model, target_group_key, target_series, _ = parsed
-            def _same_base_group(value: object) -> bool:
-                if not isinstance(value, str):
-                    return False
-                parts = parse_pipe_key(value)
-                if not parts:
-                    return False
-                model, group_key, series, _ = parts
-                return (
-                    model == target_model
-                    and group_key == target_group_key
-                    and series == target_series
-                )
-            subset = curves_df[curves_df["group_id"].apply(_same_base_group)].copy()
+    subset = curves_df[curves_df["canonical_tag"] == canonical_tag].copy()
     subset = subset.dropna(subset=["anchor_year"])
     if subset.empty:
         return None
@@ -250,15 +162,9 @@ def interpolate_base_by_year(
         return None
 
     def _price_for_anchor(anchor_year: int) -> Optional[float]:
-        anchor_group_id = group_id
-        if looks_like_pipe_key(group_id):
-            matched = subset[subset["anchor_year"] == anchor_year]
-            if not matched.empty and "group_id" in matched.columns:
-                anchor_group_id = str(matched.iloc[0]["group_id"])
-        points = get_curve_points(subset, anchor_group_id, anchor_year)
+        points = get_curve_points(subset, canonical_tag, anchor_year)
         return interpolate_price_by_km(points, km)
 
-    # Do not extrapolate outside anchor year band.
     if year < anchor_years[0] or year > anchor_years[-1]:
         return None
 

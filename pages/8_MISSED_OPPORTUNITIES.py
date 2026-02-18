@@ -7,12 +7,23 @@ import streamlit as st
 
 from shared.comps_engine import parse_currency, parse_numeric
 from shared.canonical_tagging import is_canonical_eligible
-from shared.curves import curve_dataset_name, curve_model, load_curves, interpolate_base_by_year
+from shared.curves import load_curves, interpolate_base_by_year, interpolate_price_by_km
 from shared.data_loader import dataset_path, ensure_datasets_available
 from shared.parts_cost import estimate_parts_cost
+from shared.repair_pricing import assess_repairs, apply_repairs_to_max_bid
 from shared.repair_features import build_repair_features, serialize_tags
-from shared.pipe_keys import looks_like_pipe_key, parse_pipe_key
 from shared.styling import clean_html, display_banner, inject_global_styles, page_intro
+from scripts.ai_listing_valuation import (
+    MIN_NET_PROFIT_ABSOLUTE,
+    MIN_NET_PROFIT_RATIO,
+    _calculate_confidence,
+    _calculate_downside_percent,
+    _detect_risk_flags,
+    _estimate_costs as estimate_costs,
+    _round_to_10,
+    _solve_max_bid as solve_max_bid,
+    apply_platform_risk_adjustments,
+)
 
 
 st.set_page_config(page_title="MISSED OPPORTUNITIES", layout="wide")
@@ -27,7 +38,7 @@ page_intro(
 required_files = [
     "sold_cars_restricted.csv",
     "restricted_group_map.csv",
-    curve_dataset_name(),
+    "curves.csv",
 ]
 missing = ensure_datasets_available(required_files)
 if missing:
@@ -117,6 +128,146 @@ def glow_tier(delta: object) -> str:
     return "tier-neutral"
 
 
+def _to_float(value: object) -> float | None:
+    if value is None or (isinstance(value, float) and pd.isna(value)):
+        return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def interpolate_curve_value(
+    curves_df: pd.DataFrame,
+    canonical_tag: str,
+    year: int | None,
+    km: float | int | None,
+    value_col: str,
+) -> float | None:
+    if curves_df.empty or not canonical_tag or year is None or km is None:
+        return None
+    subset = curves_df[curves_df["canonical_tag"] == canonical_tag].copy()
+    subset = subset.dropna(subset=["anchor_year"])
+    if subset.empty:
+        return None
+    anchor_years = sorted({int(y) for y in subset["anchor_year"].dropna()})
+    if not anchor_years or year < anchor_years[0] or year > anchor_years[-1]:
+        return None
+
+    def _price_for_anchor(anchor_year: int) -> float | None:
+        segment = subset[subset["anchor_year"] == anchor_year].copy()
+        segment = segment.dropna(subset=["km_bucket", value_col])
+        if segment.empty:
+            return None
+        segment["km_bucket"] = pd.to_numeric(segment["km_bucket"], errors="coerce")
+        segment[value_col] = pd.to_numeric(segment[value_col], errors="coerce")
+        segment = segment.dropna(subset=["km_bucket", value_col])
+        if segment.empty:
+            return None
+        points = list(
+            segment.sort_values("km_bucket")[["km_bucket", value_col]].itertuples(
+                index=False, name=None
+            )
+        )
+        return interpolate_price_by_km(points, km)
+
+    lower_year = anchor_years[0]
+    upper_year = anchor_years[-1]
+    for start, end in zip(anchor_years, anchor_years[1:]):
+        if start <= year <= end:
+            lower_year = start
+            upper_year = end
+            break
+
+    lower_price = _price_for_anchor(lower_year)
+    upper_price = _price_for_anchor(upper_year)
+    if lower_price is None and upper_price is None:
+        return None
+    if lower_price is None:
+        return upper_price
+    if upper_price is None:
+        return lower_price
+    if upper_year == lower_year:
+        return lower_price
+    ratio = (year - lower_year) / float(upper_year - lower_year)
+    return lower_price + ratio * (upper_price - lower_price)
+
+
+def compute_decision_metrics(
+    row: pd.Series,
+    resale_mid: float | None,
+    *,
+    include_repairs: bool,
+    repair_cost_estimate: float | None,
+) -> dict[str, object]:
+    if resale_mid is None or resale_mid <= 0:
+        return {
+            "max_bid": None,
+            "projected_profit_at_sold": None,
+            "profit_margin_pct": None,
+            "total_costs": None,
+            "platform_fees": None,
+            "transport": None,
+            "admin_costs": None,
+            "risk_buffer": None,
+        }
+
+    listing_data = row.to_dict()
+    risk_flags = _detect_risk_flags(listing_data)
+    downside_pct = _calculate_downside_percent(risk_flags)
+    confidence_val = _calculate_confidence(listing_data, risk_flags)
+    notes: list[str] = []
+    downside_pct, confidence_val, risk_flags, notes = apply_platform_risk_adjustments(
+        listing_data, downside_pct, confidence_val, risk_flags, notes
+    )
+
+    resale_low_val = _round_to_10(resale_mid * (1.0 - downside_pct))
+    min_net_profit = max(
+        MIN_NET_PROFIT_ABSOLUTE,
+        MIN_NET_PROFIT_RATIO * (resale_low_val or resale_mid),
+    )
+    max_bid_val = solve_max_bid(resale_low_val, min_net_profit, listing_data)
+
+    repair_assessment = assess_repairs(listing_data.get("general_condition", ""))
+    if max_bid_val is not None:
+        adjusted_bid, _ = apply_repairs_to_max_bid(
+            int(round(max_bid_val)),
+            repair_assessment,
+        )
+        max_bid_val = float(adjusted_bid)
+    if repair_assessment.hard_avoid:
+        max_bid_val = 0.0
+
+    sold_price = _to_float(row.get("price_numeric"))
+    platform_fees = transport = admin_costs = total_costs = None
+    projected_profit = None
+    profit_margin = None
+    risk_buffer = float(repair_assessment.risk_buffer or 0)
+    if sold_price is not None:
+        costs_map = estimate_costs(float(sold_price), listing_data)
+        platform_fees = float(costs_map.get("fees_estimate", 0.0))
+        transport = float(costs_map.get("transport_estimate", 0.0))
+        admin_costs = float(costs_map.get("rego_estimate", 0.0)) + float(
+            costs_map.get("prep_estimate", 0.0)
+        )
+        repair_cost_value = float(repair_cost_estimate or 0.0) if include_repairs else 0.0
+        total_costs = platform_fees + transport + admin_costs + repair_cost_value + risk_buffer
+        projected_profit = resale_mid - sold_price - total_costs
+        if resale_mid:
+            profit_margin = (projected_profit / resale_mid) * 100
+
+    return {
+        "max_bid": max_bid_val,
+        "projected_profit_at_sold": projected_profit,
+        "profit_margin_pct": profit_margin,
+        "total_costs": total_costs,
+        "platform_fees": platform_fees,
+        "transport": transport,
+        "admin_costs": admin_costs,
+        "risk_buffer": risk_buffer,
+    }
+
+
 @st.cache_data(ttl=300)
 def enrich_repair_estimates(df: pd.DataFrame, include_cost: bool) -> pd.DataFrame:
     if df.empty:
@@ -156,8 +307,6 @@ def load_group_map() -> pd.DataFrame:
     path = dataset_path("restricted_group_map.csv")
     df = pd.read_csv(path)
     df["url"] = df["url"].astype(str).str.strip()
-    if curve_model() == "v2" and "canonical_tag" in df.columns:
-        df["group_id"] = df["canonical_tag"]
     return df
 
 
@@ -166,13 +315,12 @@ sold_df = load_sold_data()
 group_map_df = load_group_map()
 
 sold_groups = (
-    group_map_df[group_map_df["source"] == "sold"][["url", "group_id", "canonical_tag", "reason_code"]]
+    group_map_df[group_map_df["source"] == "sold"][["url", "canonical_tag", "reason_code"]]
     .rename(columns={"reason_code": "canonical_reason"})
     .drop_duplicates("url")
 )
 sold_df = sold_df.merge(sold_groups, on="url", how="left")
-curve_key_col = "canonical_tag" if curve_model() == "v2" else "group_id"
-sold_df = sold_df.dropna(subset=[curve_key_col, "price_numeric"]).copy()
+sold_df = sold_df.dropna(subset=["canonical_tag", "price_numeric"]).copy()
 
 st.markdown(
     clean_html(
@@ -347,32 +495,28 @@ st.markdown(
 )
 
 allow_repairs = "general_condition" in sold_df.columns
-group_ids = ["All"]
-if curve_model() == "v2" and "canonical_tag" in sold_df.columns:
-    curves_df = load_curves()
-    allowed_tags = set(
-        curves_df.get("canonical_tag", pd.Series(dtype=str))
-        .dropna()
-        .astype(str)
-        .str.strip()
-        .tolist()
+tag_options = ["All"]
+curves_df = load_curves()
+allowed_tags = set(
+    curves_df.get("canonical_tag", pd.Series(dtype=str))
+    .dropna()
+    .astype(str)
+    .str.strip()
+    .tolist()
+)
+if not allowed_tags:
+    st.warning("curves.csv has no canonical tags; showing all sold tags.")
+    tag_values = sorted({str(value).strip() for value in sold_df["canonical_tag"].dropna().tolist()})
+    tag_options.extend([value for value in tag_values if value])
+else:
+    tag_values = sorted(
+        {
+            str(value).strip()
+            for value in sold_df["canonical_tag"].dropna().tolist()
+            if str(value).strip() in allowed_tags
+        }
     )
-    if not allowed_tags:
-        st.warning("curves_v2.csv has no canonical tags; showing all sold tags.")
-        group_values = sorted({str(value).strip() for value in sold_df["canonical_tag"].dropna().tolist()})
-        group_ids.extend([value for value in group_values if value])
-    else:
-        group_values = sorted(
-            {
-                str(value).strip()
-                for value in sold_df["canonical_tag"].dropna().tolist()
-                if str(value).strip() in allowed_tags
-            }
-        )
-        group_ids.extend([value for value in group_values if value])
-elif "group_id" in sold_df.columns:
-    group_values = sorted({str(value).strip() for value in sold_df["group_id"].dropna().tolist()})
-    group_ids.extend([value for value in group_values if value])
+    tag_options.extend([value for value in tag_values if value])
 
 st.markdown('<div class="section-card">', unsafe_allow_html=True)
 st.subheader("Missed Opportunities")
@@ -380,29 +524,28 @@ st.caption("Compare sold results against curve-based estimates for the restricte
 
 left, right = st.columns([1.2, 1], gap="large")
 with left:
-    group_label = "Universe (Canonical tag)" if curve_model() == "v2" else "Universe (Group ID)"
-    group_choice = st.selectbox(group_label, group_ids, index=0)
+    tag_choice = st.selectbox("Universe (Canonical tag)", tag_options, index=0)
     include_repairs = st.checkbox(
         "Hypothesis: repairs matter (estimate costs)",
         value=allow_repairs,
         disabled=not allow_repairs,
     )
 with right:
-    only_sold_below = st.checkbox(
-        "Hypothesis: only misses when sold below curve",
+    only_missed = st.checkbox(
+        "Only show true misses (sold <= max bid)",
         value=True,
     )
-    min_delta = st.slider(
-        "Hypothesis: misses above $X are meaningful",
+    min_metric = st.slider(
+        "Minimum projected profit ($)" if only_missed else "Minimum curve delta ($)",
         min_value=0,
         max_value=20000,
         value=0,
         step=250,
     )
     only_net_positive = False
-    if include_repairs:
+    if not only_missed:
         only_net_positive = st.checkbox(
-            "Hypothesis: still positive after repairs",
+            "Only keep positive projected profit after costs",
             value=False,
         )
 
@@ -424,40 +567,35 @@ else:
 
 results: list[dict[str, object]] = []
 for _, row in sold_df.iterrows():
-    group_id_value = row.get("group_id")
-    group_id = safe_text(group_id_value, "")
-    canonical_tag = row.get("canonical_tag")
-    curve_key = safe_text(canonical_tag, "") if curve_model() == "v2" else group_id
+    canonical_tag = safe_text(row.get("canonical_tag"), "")
+    curve_key = canonical_tag
     canonical_reason = safe_text(row.get("canonical_reason"), "")
     year_val = safe_int(row.get("year"))
     odo_val = row.get("odometer_numeric")
     spec_reason = ""
-    series_key = None
     if not is_canonical_eligible(canonical_tag, canonical_reason):
         spec_reason = canonical_reason or "NOT_ELIGIBLE"
         curve_estimate = None
         curve_base = None
         trim_multiplier = None
+        curve_low = None
+        curve_high = None
     else:
         curve_estimate = None
         curve_base = None
         trim_multiplier = None
-    if curve_model() != "v2":
-        parsed = parse_pipe_key(group_id)
-        if parsed:
-            _, _, series_key, _ = parsed
+        curve_low = None
+        curve_high = None
 
     curve_subset = curves_df
     if curve_key:
-        curve_subset = curve_subset[curve_subset["group_id"] == curve_key]
-    if series_key and not curve_subset.empty:
-        curve_subset = curve_subset[curve_subset["series"] == series_key]
-        if curve_subset.empty and not spec_reason:
-            spec_reason = "SERIES_NOT_COVERED"
+        curve_subset = curve_subset[curve_subset["canonical_tag"] == curve_key]
 
     if not spec_reason:
         curve_estimate = interpolate_base_by_year(curve_subset, curve_key, year_val, odo_val)
         curve_base = curve_estimate
+        curve_low = interpolate_curve_value(curve_subset, curve_key, year_val, odo_val, "price_low")
+        curve_high = interpolate_curve_value(curve_subset, curve_key, year_val, odo_val, "price_high")
     if curve_estimate is None and not spec_reason:
         spec_reason = "NOT_COVERED"
 
@@ -472,6 +610,29 @@ for _, row in sold_df.iterrows():
     net_delta = None
     if delta is not None:
         net_delta = delta - (repair_cost or 0)
+
+    decision = compute_decision_metrics(
+        row,
+        curve_estimate,
+        include_repairs=include_repairs,
+        repair_cost_estimate=repair_cost,
+    )
+    max_bid = decision.get("max_bid")
+    projected_profit_at_sold = decision.get("projected_profit_at_sold")
+    profit_margin_pct = decision.get("profit_margin_pct")
+    total_costs = decision.get("total_costs")
+    platform_fees = decision.get("platform_fees")
+    transport_costs = decision.get("transport")
+    admin_costs = decision.get("admin_costs")
+    risk_buffer = decision.get("risk_buffer")
+
+    missed = False
+    if (
+        sold_price is not None
+        and max_bid is not None
+        and projected_profit_at_sold is not None
+    ):
+        missed = sold_price <= max_bid and projected_profit_at_sold > 0
 
     location_state = first_text(row, ["location_state", "state", "location", "yard"])
     rego_text = first_text(row, ["rego_expiry", "rego_no", "rego"])
@@ -488,11 +649,12 @@ for _, row in sold_df.iterrows():
             "odometer_reading": row.get("odometer_reading"),
             "odometer_numeric": row.get("odometer_numeric"),
             "sold_price": sold_price,
-            "group_id": curve_key,
-            "spec_series": series_key,
+            "canonical_tag": curve_key,
             "spec_reason": spec_reason,
             "curve_base": curve_base,
             "curve_estimate": curve_estimate,
+            "curve_low": curve_low,
+            "curve_high": curve_high,
             "trim_multiplier": trim_multiplier,
             "delta": delta,
             "delta_pct": delta_pct,
@@ -500,6 +662,15 @@ for _, row in sold_df.iterrows():
             "repair_severity": row.get("repair_severity") if include_repairs else None,
             "repair_decision": row.get("repair_decision") if include_repairs else None,
             "net_delta": net_delta,
+            "max_bid": max_bid,
+            "projected_profit_at_sold": projected_profit_at_sold,
+            "profit_margin_pct": profit_margin_pct,
+            "total_costs": total_costs,
+            "platform_fees": platform_fees,
+            "transport_costs": transport_costs,
+            "admin_costs": admin_costs,
+            "risk_buffer": risk_buffer,
+            "missed": missed,
             "date_sold": row.get("date_sold"),
             "location_state": location_state,
             "rego_text": rego_text,
@@ -512,31 +683,42 @@ for _, row in sold_df.iterrows():
 
 results_df = pd.DataFrame(results)
 
-view = results_df.copy()
-if group_choice != "All":
-    if curve_model() == "v2":
-        view = view[view["group_id"] == group_choice]
-    else:
-        view = view[view["group_id"] == group_choice]
-if only_sold_below:
-    view = view[view["delta"].fillna(0) > 0]
-if min_delta > 0:
-    view = view[view["delta"].fillna(0) >= min_delta]
-if only_net_positive:
-    view = view[view["net_delta"].fillna(0) > 0]
+no_curve_mask = results_df["curve_estimate"].isna() | (results_df["spec_reason"] == "NOT_COVERED")
+no_curve_view = results_df[no_curve_mask].copy()
+eligible_view = results_df[~no_curve_mask].copy()
 
-delta_series = view["net_delta"] if include_repairs else view["delta"]
+if tag_choice != "All":
+    eligible_view = eligible_view[eligible_view["canonical_tag"] == tag_choice]
+    no_curve_view = no_curve_view[no_curve_view["canonical_tag"] == tag_choice]
+
+view = eligible_view.copy()
+if only_missed:
+    view = view[view["missed"]]
+if min_metric > 0:
+    metric_series = view["projected_profit_at_sold"] if only_missed else view["delta"]
+    view = view[metric_series.fillna(0) >= min_metric]
+if only_net_positive:
+    view = view[view["projected_profit_at_sold"].fillna(0) > 0]
+
+metric_series = view["projected_profit_at_sold"] if only_missed else view["delta"]
 sold_count = int(view.shape[0])
-with_curve = int(view["curve_estimate"].notna().sum()) if sold_count else 0
-total_missed = float(delta_series.clip(lower=0).sum()) if sold_count else 0.0
-avg_missed = float(delta_series.clip(lower=0).mean()) if sold_count else 0.0
+with_curve = int(eligible_view.shape[0]) if not eligible_view.empty else 0
+no_curve_count = int(no_curve_view.shape[0]) if not no_curve_view.empty else 0
+total_missed = float(metric_series.clip(lower=0).sum()) if sold_count else 0.0
+avg_missed = float(metric_series.clip(lower=0).mean()) if sold_count else 0.0
 
 if sold_count == 0:
     summary_line = "No listings match the current hypotheses."
-elif total_missed > 0:
-    summary_line = f"Yes. Estimated missed margin: {money(total_missed)} across {sold_count:,} listings."
+elif only_missed:
+    if total_missed > 0:
+        summary_line = f"Yes. Total missed profit: {money(total_missed)} across {sold_count:,} listings."
+    else:
+        summary_line = "No. No profitable misses in the current view."
 else:
-    summary_line = "No. No positive deltas in the current view."
+    if total_missed > 0:
+        summary_line = f"Curve Delta view: {money(total_missed)} across {sold_count:,} listings."
+    else:
+        summary_line = "Curve Delta view: no positive deltas in the current view."
 
 st.markdown(f'<div class="notice">{summary_line}</div>', unsafe_allow_html=True)
 
@@ -548,8 +730,9 @@ if excluded_count:
 
 st.markdown('<div class="kpi-row">', unsafe_allow_html=True)
 
-miss_label = "Total Missed (Net Delta)" if include_repairs else "Total Missed (Delta > 0)"
-miss_sub = "After repair estimates" if include_repairs else "Curve estimate minus sold price"
+miss_label = "Total Missed Profit" if only_missed else "Curve Delta (Total)"
+miss_sub = "After fees, transport, admin, risk" + (" + repairs" if include_repairs else "")
+avg_label = "Average Missed Profit" if only_missed else "Average Curve Delta"
 
 kpi_html = f"""
 <div class="kpi">
@@ -558,7 +741,7 @@ kpi_html = f"""
   <div class="s">{miss_sub}</div>
 </div>
 <div class="kpi">
-  <div class="k">Average Miss</div>
+  <div class="k">{avg_label}</div>
   <div class="v">{money(avg_missed)}</div>
   <div class="s">Per vehicle (filtered view)</div>
 </div>
@@ -572,9 +755,29 @@ kpi_html = f"""
   <div class="v">{with_curve:,}</div>
   <div class="s">Coverage in current view</div>
 </div>
+<div class="kpi">
+  <div class="k">NO_CURVE Sold</div>
+  <div class="v">{no_curve_count:,}</div>
+  <div class="s">Excluded from misses</div>
+</div>
 """
 st.markdown(clean_html(kpi_html), unsafe_allow_html=True)
 st.markdown("</div>", unsafe_allow_html=True)
+
+if no_curve_count:
+    with st.expander(f"NO_CURVE sold ({no_curve_count})", expanded=False):
+        display_cols = [
+            "year",
+            "make",
+            "model",
+            "variant",
+            "sold_price",
+            "canonical_tag",
+            "spec_reason",
+            "url",
+        ]
+        existing_cols = [col for col in display_cols if col in no_curve_view.columns]
+        st.dataframe(no_curve_view[existing_cols], use_container_width=True)
 
 pattern_bits: list[str] = []
 if sold_count:
@@ -587,9 +790,10 @@ if sold_count:
     km_med = view["odometer_numeric"].median() if "odometer_numeric" in view.columns else None
     if km_med is not None and not pd.isna(km_med):
         pattern_bits.append(f"Median km: {int(km_med):,}")
-    d_med = delta_series.clip(lower=0).median()
+    d_med = metric_series.clip(lower=0).median()
     if d_med is not None and not pd.isna(d_med):
-        pattern_bits.append(f"Median miss: {money(d_med)}")
+        label = "Median missed profit" if only_missed else "Median curve delta"
+        pattern_bits.append(f"{label}: {money(d_med)}")
 
 if pattern_bits:
     chips = "".join([f'<div class="chip">{item}</div>' for item in pattern_bits])
@@ -598,23 +802,38 @@ if pattern_bits:
 st.markdown("</div>", unsafe_allow_html=True)
 
 st.markdown('<div class="section-card" style="margin-top:14px;">', unsafe_allow_html=True)
-st.markdown("### Misses (sorted by highest delta)")
+st.markdown(
+    "### Misses (sorted by highest projected profit)"
+    if only_missed
+    else "### Curve Delta View"
+)
 
 sort_choice = st.selectbox(
     "Sort",
-    ["Delta (high to low)", "Sold price (low to high)", "Odometer (low to high)", "Date sold (new to old)"],
+    [
+        "Projected profit (high to low)",
+        "Max bid (high to low)",
+        "Sold price (low to high)",
+        "Odometer (low to high)",
+        "Date sold (new to old)",
+        "Curve delta (high to low)",
+    ],
     index=0,
 )
 
 sort_df = view.copy()
-if sort_choice == "Delta (high to low)" and "delta" in sort_df.columns:
-    sort_df = sort_df.sort_values("delta", ascending=False, na_position="last")
+if sort_choice == "Projected profit (high to low)" and "projected_profit_at_sold" in sort_df.columns:
+    sort_df = sort_df.sort_values("projected_profit_at_sold", ascending=False, na_position="last")
+elif sort_choice == "Max bid (high to low)" and "max_bid" in sort_df.columns:
+    sort_df = sort_df.sort_values("max_bid", ascending=False, na_position="last")
 elif sort_choice == "Sold price (low to high)" and "sold_price" in sort_df.columns:
     sort_df = sort_df.sort_values("sold_price", ascending=True, na_position="last")
 elif sort_choice == "Odometer (low to high)" and "odometer_numeric" in sort_df.columns:
     sort_df = sort_df.sort_values("odometer_numeric", ascending=True, na_position="last")
 elif sort_choice == "Date sold (new to old)" and "date_sold" in sort_df.columns:
     sort_df = sort_df.sort_values("date_sold", ascending=False, na_position="last")
+elif sort_choice == "Curve delta (high to low)" and "delta" in sort_df.columns:
+    sort_df = sort_df.sort_values("delta", ascending=False, na_position="last")
 
 if sort_df.empty:
     st.info("No listings match the current hypotheses.")
@@ -624,12 +843,13 @@ if sort_df.empty:
 limit_choice = st.selectbox("Show top", [20, 50, 100], index=0)
 render_df = sort_df.head(limit_choice)
 
-delta_values = render_df["delta"].dropna()
+metric_field = "projected_profit_at_sold" if only_missed else "delta"
+metric_values = render_df[metric_field].dropna()
 top_threshold = None
 low_threshold = None
-if not delta_values.empty:
-    top_threshold = float(delta_values.quantile(0.85))
-    low_threshold = float(delta_values.quantile(0.4))
+if not metric_values.empty:
+    top_threshold = float(metric_values.quantile(0.85))
+    low_threshold = float(metric_values.quantile(0.4))
 
 group_key = render_df.apply(
     lambda row: " ".join(
@@ -643,8 +863,8 @@ group_key = render_df.apply(
 render_df = render_df.assign(group_key=group_key)
 
 group_scores = (
-    render_df.assign(delta_value=render_df["delta"].fillna(0))
-    .groupby("group_key")["delta_value"]
+    render_df.assign(metric_value=render_df[metric_field].fillna(0))
+    .groupby("group_key")["metric_value"]
     .sum()
     .sort_values(ascending=False)
 )
@@ -661,20 +881,21 @@ for group in group_order:
     group_df = render_df[render_df["group_bucket"] == group].copy()
     if group_df.empty:
         continue
-    group_avg = group_df["delta"].mean()
+    group_avg = group_df[metric_field].mean()
     if pd.notna(group_avg) and group_avg >= 5000:
         group_icon = "🚨"
     elif pd.notna(group_avg) and group_avg >= 2000:
         group_icon = "⚠️"
     else:
         group_icon = "📈"
-    group_summary = f"{money(group_avg)} avg miss • {len(group_df):,} listings"
+    avg_label = "avg profit" if only_missed else "avg delta"
+    group_summary = f"{money(group_avg)} {avg_label} • {len(group_df):,} listings"
     st.markdown(
         f'<div class="group-header">{group_icon} {html.escape(group)} <span>{group_summary}</span></div>',
         unsafe_allow_html=True,
     )
 
-    group_df = group_df.sort_values("delta", ascending=False, na_position="last")
+    group_df = group_df.sort_values(metric_field, ascending=False, na_position="last")
     for _, row in group_df.iterrows():
         year = safe_int(row.get("year"))
         make = safe_text(row.get("make"), "")
@@ -686,31 +907,39 @@ for group in group_order:
         url = safe_text(row.get("url"), "")
         date_sold = safe_text(row.get("date_sold"), "")
 
-        tier = glow_tier(delta)
+        metric_value = row.get(metric_field)
+        tier = glow_tier(metric_value)
         row_classes = [tier]
-        delta_val = None
-        if delta is None or (isinstance(delta, float) and pd.isna(delta)):
-            delta_class = "delta-neutral"
-            delta_text = "N/A"
+        metric_val = None
+        if metric_value is None or (isinstance(metric_value, float) and pd.isna(metric_value)):
+            metric_class = "delta-neutral"
+            metric_text = "N/A"
         else:
-            delta_val = float(delta)
-            if delta_val >= 5000:
-                delta_class = "delta-green"
-            elif delta_val >= 2000:
-                delta_class = "delta-amber"
+            metric_val = float(metric_value)
+            if metric_val >= 5000:
+                metric_class = "delta-green"
+            elif metric_val >= 2000:
+                metric_class = "delta-amber"
             else:
-                delta_class = "delta-neutral"
-            delta_text = money(delta_val)
-            if top_threshold is not None and delta_val >= top_threshold:
+                metric_class = "delta-neutral"
+            metric_text = money(metric_val)
+            if top_threshold is not None and metric_val >= top_threshold:
                 row_classes.append("top-miss")
-            if low_threshold is not None and delta_val <= low_threshold:
+            if low_threshold is not None and metric_val <= low_threshold:
                 row_classes.append("subdued")
+
+        delta_val = _to_float(delta)
+        delta_text = money(delta_val) if delta_val is not None else "N/A"
+        max_bid = row.get("max_bid")
+        profit_at_sold = row.get("projected_profit_at_sold")
+        profit_margin = row.get("profit_margin_pct")
 
         title = " ".join([part for part in [str(year) if year else "", make, model] if part]).strip()
         sub = " • ".join([part for part in [variant, f"Sold: {date_sold}" if date_sold else ""] if part])
         top_badge = ""
-        if delta_val is not None and top_threshold is not None and delta_val >= top_threshold:
-            top_badge = '<span class="top-badge">Top miss</span>'
+        if metric_val is not None and top_threshold is not None and metric_val >= top_threshold:
+            top_label = "Top profit" if only_missed else "Top delta"
+            top_badge = f'<span class="top-badge">{top_label}</span>'
 
         row_html = f"""
         <div class="miss-row {' '.join(row_classes)}">
@@ -721,8 +950,10 @@ for group in group_order:
             </div>
             <div class="miss-metrics">
               <div class="mm"><div class="k">Sold</div><div class="v">{money(sold_price)}</div></div>
-              <div class="mm"><div class="k">Curve</div><div class="v">{money(curve_est)}</div></div>
-              <div class="mm"><div class="k">Delta</div><div class="v delta-big {delta_class}">{delta_text}</div></div>
+              <div class="mm"><div class="k">Max bid</div><div class="v">{money(max_bid)}</div></div>
+              <div class="mm"><div class="k">{"Profit" if only_missed else "Curve delta"}</div><div class="v delta-big {metric_class}">{metric_text}</div></div>
+              <div class="mm"><div class="k">Profit %</div><div class="v">{pct(profit_margin)}</div></div>
+              <div class="mm"><div class="k">Curve delta</div><div class="v">{delta_text}</div></div>
             </div>
           </div>
         </div>
@@ -732,21 +963,35 @@ for group in group_order:
         with st.expander("Details", expanded=False):
             cols = st.columns(3)
             with cols[0]:
-                st.markdown("**Curve estimate**")
+                st.markdown("**Curve (resale mid)**")
                 st.write(money(curve_est))
                 st.markdown("**Sold price**")
                 st.write(money(sold_price))
-                st.markdown("**Delta (curve - sold)**")
-                st.write(delta_text)
+                st.markdown("**Max bid (Stage 6)**")
+                st.write(money(row.get("max_bid")))
+                st.markdown("**Projected profit at sold**")
+                st.write(money(row.get("projected_profit_at_sold")))
+                st.markdown("**Profit margin %**")
+                st.write(pct(row.get("profit_margin_pct")))
+            with cols[1]:
+                st.markdown("**Total costs**")
+                st.write(money(row.get("total_costs")))
+                st.markdown("**Platform fees**")
+                st.write(money(row.get("platform_fees")))
+                st.markdown("**Transport**")
+                st.write(money(row.get("transport_costs")))
+                st.markdown("**Admin (rego + prep)**")
+                st.write(money(row.get("admin_costs")))
+                st.markdown("**Risk buffer**")
+                st.write(money(row.get("risk_buffer")))
                 if include_repairs:
-                    st.markdown("**Net delta (after repairs)**")
-                    st.write(money(row.get("net_delta")))
                     st.markdown("**Repair estimate**")
                     st.write(money(row.get("repair_cost_estimate")))
-            with cols[1]:
-                st.markdown("**Spec series / reason**")
-                st.write(safe_text(row.get("spec_series"), "N/A"))
+            with cols[2]:
+                st.markdown("**Spec reason**")
                 st.write(safe_text(row.get("spec_reason"), "N/A"))
+                st.markdown("**Curve delta**")
+                st.write(delta_text)
                 st.markdown("**Delta %**")
                 st.write(pct(row.get("delta_pct")))
                 if include_repairs:
@@ -754,7 +999,6 @@ for group in group_order:
                     st.write(safe_text(row.get("repair_decision"), "N/A"))
                     st.markdown("**Repair severity**")
                     st.write(safe_text(row.get("repair_severity"), "N/A"))
-            with cols[2]:
                 st.markdown("**Risk / notes**")
                 st.write(safe_text(row.get("risk_summary"), "N/A"))
                 condition_text = safe_text(row.get("general_condition"), "")

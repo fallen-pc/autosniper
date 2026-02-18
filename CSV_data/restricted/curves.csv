@@ -1,109 +1,141 @@
-group_id,series,anchor_year,km_anchor,price_low,price_high,price_median,price_per_km_bucket,source,created_at
-3 | hatch_petrol_auto_20_na | BL | 2010,BL,2010,50000,,,12700,0.25,curve_pipe_import,2026-01-17T00:23:36
-3 | hatch_petrol_auto_20_na | BL | 2010,BL,2010,120000,,,10600,0.1,curve_pipe_import,2026-01-17T00:23:36
-3 | hatch_petrol_auto_20_na | BL | 2010,BL,2010,200000,,,8000,0.05,curve_pipe_import,2026-01-17T00:23:36
-3 | hatch_petrol_auto_20_na | BL | 2010,BL,2010,260000,,,6000,0.0,curve_pipe_import,2026-01-17T00:23:36
-3 | hatch_petrol_auto_20_na | BM | 2015,BM,2015,50000,,,16500,0.35,curve_pipe_import,2026-01-14T12:54:12
-3 | hatch_petrol_auto_20_na | BM | 2015,BM,2015,120000,,,13900,0.1,curve_pipe_import,2026-01-14T12:54:12
-3 | hatch_petrol_auto_20_na | BM | 2015,BM,2015,200000,,,11000,0.05,curve_pipe_import,2026-01-14T12:54:12
-3 | hatch_petrol_auto_20_na | BM | 2015,BM,2015,260000,,,10700,0.05,curve_pipe_import,2026-01-14T12:54:12
-3 | hatch_petrol_auto_20_na | BN | 2017,BN,2017,50000,,,18700,0.35,curve_pipe_import,2026-01-14T12:54:12
-3 | hatch_petrol_auto_20_na | BN | 2017,BN,2017,120000,,,15800,0.15,curve_pipe_import,2026-01-14T12:54:12
-3 | hatch_petrol_auto_20_na | BN | 2017,BN,2017,200000,,,13750,0.05,curve_pipe_import,2026-01-14T12:54:12
-3 | hatch_petrol_auto_20_na | BN | 2017,BN,2017,260000,,,12650,0.05,curve_pipe_import,2026-01-14T12:54:12
-3 | hatch_petrol_auto_20_na | BP | 2022,BP,2022,50000,,,24000,0.5,curve_pipe_import,2026-01-14T12:54:12
-3 | hatch_petrol_auto_20_na | BP | 2022,BP,2022,120000,,,19950,0.15,curve_pipe_import,2026-01-14T12:54:12
-3 | hatch_petrol_auto_20_na | BP | 2022,BP,2022,200000,,,16900,0.1,curve_pipe_import,2026-01-14T12:54:12
-3 | hatch_petrol_auto_20_na | BP | 2022,BP,2022,260000,,,15100,0.05,curve_pipe_import,2026-01-14T12:54:12
-bt50 | dualcab_ute_diesel_auto_32_4x4 | UR | 2017,UR,2017,50000,,,32200,0.65,curve_pipe_import,2026-01-20T14:37:06
-bt50 | dualcab_ute_diesel_auto_32_4x4 | UR | 2017,UR,2017,120000,,,27600,0.25,curve_pipe_import,2026-01-20T14:37:06
-bt50 | dualcab_ute_diesel_auto_32_4x4 | UR | 2017,UR,2017,200000,,,23000,0.1,curve_pipe_import,2026-01-20T14:37:06
-bt50 | dualcab_ute_diesel_auto_32_4x4 | UR | 2017,UR,2017,260000,,,23000,0.1,curve_pipe_import,2026-01-20T14:37:06
-camry | sedan_petrol_auto_ascent | ASV70R | 2020,ASV70R,2020,50000,25800.0,29200.0,27500,0.55,carsales_curve_ascent,2026-01-27T19:43:40
-camry | sedan_petrol_auto_ascent | ASV70R | 2020,ASV70R,2020,120000,21600.0,25000.0,23300,0.25,carsales_curve_ascent,2026-01-27T19:43:40
-camry | sedan_petrol_auto_ascent | ASV70R | 2020,ASV70R,2020,200000,19000.0,22300.0,20650,0.1,carsales_curve_ascent,2026-01-27T19:43:40
-camry | sedan_petrol_auto_ascent | ASV70R | 2020,ASV70R,2020,260000,17800.0,20400.0,19100,0.05,carsales_curve_ascent,2026-01-27T19:43:40
-camry | sedan_petrol_auto_ascent_sport | ASV70R | 2020,ASV70R,2020,50000,25800.0,29200.0,27500,0.55,carsales_curve_ascent_sport_stopgap,2026-01-27T19:43:40
-camry | sedan_petrol_auto_ascent_sport | ASV70R | 2020,ASV70R,2020,120000,21600.0,25000.0,23300,0.25,carsales_curve_ascent_sport_stopgap,2026-01-27T19:43:40
-camry | sedan_petrol_auto_ascent_sport | ASV70R | 2020,ASV70R,2020,200000,19000.0,22300.0,20650,0.1,carsales_curve_ascent_sport_stopgap,2026-01-27T19:43:40
-camry | sedan_petrol_auto_ascent_sport | ASV70R | 2020,ASV70R,2020,260000,17800.0,20400.0,19100,0.05,carsales_curve_ascent_sport_stopgap,2026-01-27T19:43:40
-camry | sedan_petrol_auto_sx_2_5i | ASV70R | 2020,ASV70R,2020,50000,27300.0,30700.0,29000,0.6,carsales_curve_sx,2026-01-27T19:43:40
-camry | sedan_petrol_auto_sx_2_5i | ASV70R | 2020,ASV70R,2020,120000,23100.0,26500.0,24800,0.25,carsales_curve_sx,2026-01-27T19:43:40
-camry | sedan_petrol_auto_sx_2_5i | ASV70R | 2020,ASV70R,2020,200000,20500.0,23800.0,22150,0.1,carsales_curve_sx,2026-01-27T19:43:40
-camry | sedan_petrol_auto_sx_2_5i | ASV70R | 2020,ASV70R,2020,260000,19300.0,21900.0,20600,0.1,carsales_curve_sx,2026-01-27T19:43:40
-corolla | hatch_petrol_auto | E170 | 2013,E170,2013,50000,,,16400,0.35,curve_pipe_import,2026-01-12T06:51:36
-corolla | hatch_petrol_auto | E170 | 2013,E170,2013,120000,,,13900,0.1,curve_pipe_import,2026-01-12T06:51:36
-corolla | hatch_petrol_auto | E170 | 2013,E170,2013,200000,,,11000,0.05,curve_pipe_import,2026-01-12T06:51:36
-corolla | hatch_petrol_auto | E170 | 2013,E170,2013,260000,,,10100,0.05,curve_pipe_import,2026-01-12T06:51:36
-corolla | hatch_petrol_auto | E180 | 2017,E180,2017,50000,,,19300,0.4,curve_pipe_import,2026-01-12T06:51:36
-corolla | hatch_petrol_auto | E180 | 2017,E180,2017,120000,,,16400,0.15,curve_pipe_import,2026-01-12T06:51:36
-corolla | hatch_petrol_auto | E180 | 2017,E180,2017,200000,,,13300,0.05,curve_pipe_import,2026-01-12T06:51:36
-corolla | hatch_petrol_auto | E180 | 2017,E180,2017,260000,,,13550,0.05,curve_pipe_import,2026-01-12T06:51:36
-corolla | hatch_petrol_auto | E210 | 2020,E210,2020,50000,25700.0,28900.0,27300,0.55,carsales_curve,2026-01-27T22:08:53
-corolla | hatch_petrol_auto | E210 | 2020,E210,2020,120000,21500.0,24700.0,23100,0.25,carsales_curve,2026-01-27T22:08:53
-corolla | hatch_petrol_auto | E210 | 2020,E210,2020,200000,20600.0,22100.0,21350,0.1,carsales_curve,2026-01-27T22:08:53
-corolla | hatch_petrol_auto | E210 | 2020,E210,2020,260000,18500.0,20000.0,19250,0.05,carsales_curve,2026-01-27T22:08:53
-corolla | sedan_petrol_auto | E170 | 2013,E170,2013,50000,,,15800,0.3,curve_pipe_import,2026-01-12T23:04:31
-corolla | sedan_petrol_auto | E170 | 2013,E170,2013,120000,,,13700,0.1,curve_pipe_import,2026-01-12T23:04:31
-corolla | sedan_petrol_auto | E170 | 2013,E170,2013,200000,,,11150,0.05,curve_pipe_import,2026-01-12T23:04:31
-corolla | sedan_petrol_auto | E170 | 2013,E170,2013,260000,,,9900,0.05,curve_pipe_import,2026-01-12T23:04:31
-corolla | sedan_petrol_auto | E180 | 2017,E180,2017,50000,,,17500,0.35,curve_pipe_import,2026-01-12T23:04:31
-corolla | sedan_petrol_auto | E180 | 2017,E180,2017,120000,,,16600,0.15,curve_pipe_import,2026-01-12T23:04:31
-corolla | sedan_petrol_auto | E180 | 2017,E180,2017,200000,,,14950,0.05,curve_pipe_import,2026-01-12T23:04:31
-corolla | sedan_petrol_auto | E180 | 2017,E180,2017,260000,,,13850,0.05,curve_pipe_import,2026-01-12T23:04:31
-corolla | sedan_petrol_auto | E210 | 2022,E210,2022,50000,,,24300,0.5,curve_pipe_import,2026-01-12T23:04:31
-corolla | sedan_petrol_auto | E210 | 2022,E210,2022,120000,,,19100,0.15,curve_pipe_import,2026-01-12T23:04:31
-corolla | sedan_petrol_auto | E210 | 2022,E210,2022,200000,,,16350,0.1,curve_pipe_import,2026-01-12T23:04:31
-corolla | sedan_petrol_auto | E210 | 2022,E210,2022,260000,,,14650,0.05,curve_pipe_import,2026-01-12T23:04:31
-cruze | hatch_petrol_auto_4cyl | JH | 2013,JH,2013,50000,,,7800,0.15,curve_pipe_import,2026-01-14T12:09:22+00:00
-cruze | hatch_petrol_auto_4cyl | JH | 2013,JH,2013,120000,,,5500,0.05,curve_pipe_import,2026-01-14T12:09:22+00:00
-cruze | hatch_petrol_auto_4cyl | JH | 2013,JH,2013,200000,,,3000,0.0,curve_pipe_import,2026-01-14T12:09:22+00:00
-cruze | hatch_petrol_auto_4cyl | JH | 2013,JH,2013,260000,,,3900,0.0,curve_pipe_import,2026-01-14T12:09:22+00:00
-cx5 | suv_petrol_auto_20 | KE | 2014,KE,2014,50000,,,25800,0.5,curve_pipe_import,2026-01-25T06:25:16
-cx5 | suv_petrol_auto_20 | KE | 2014,KE,2014,120000,,,21900,0.2,curve_pipe_import,2026-01-25T06:25:16
-cx5 | suv_petrol_auto_20 | KE | 2014,KE,2014,200000,,,19100,0.1,curve_pipe_import,2026-01-25T06:25:16
-cx5 | suv_petrol_auto_20 | KE | 2014,KE,2014,260000,,,17250,0.05,curve_pipe_import,2026-01-25T06:25:16
-cx5 | suv_petrol_auto_20 | KF | 2018,KF,2018,50000,,,23100,0.45,curve_pipe_import,2026-01-17T00:00:00
-cx5 | suv_petrol_auto_20 | KF | 2018,KF,2018,120000,,,18600,0.15,curve_pipe_import,2026-01-17T00:00:00
-cx5 | suv_petrol_auto_20 | KF | 2018,KF,2018,200000,,,16350,0.1,curve_pipe_import,2026-01-17T00:00:00
-cx5 | suv_petrol_auto_20 | KF | 2018,KF,2018,260000,,,14750,0.05,curve_pipe_import,2026-01-17T00:00:00
-hilux | dualcab_ute_diesel_auto | GUN126R | 2021,GUN126R,2021,50000,,,55100,1.1,curve_pipe_import,2026-01-11T22:23:08
-hilux | dualcab_ute_diesel_auto | GUN126R | 2021,GUN126R,2021,120000,,,48300,0.4,curve_pipe_import,2026-01-11T22:23:08
-hilux | dualcab_ute_diesel_auto | GUN126R | 2021,GUN126R,2021,200000,,,41450,0.2,curve_pipe_import,2026-01-11T22:23:08
-hilux | dualcab_ute_diesel_auto | GUN126R | 2021,GUN126R,2021,260000,,,36850,0.15,curve_pipe_import,2026-01-11T22:23:08
-hilux | dualcab_ute_diesel_auto | KUN26R | 2006,KUN26R,2006,50000,,,20400,0.4,curve_pipe_import,2026-01-11T22:23:08
-hilux | dualcab_ute_diesel_auto | KUN26R | 2006,KUN26R,2006,120000,,,20400,0.15,curve_pipe_import,2026-01-11T22:23:08
-hilux | dualcab_ute_diesel_auto | KUN26R | 2006,KUN26R,2006,200000,,,19200,0.1,curve_pipe_import,2026-01-11T22:23:08
-hilux | dualcab_ute_diesel_auto | KUN26R | 2006,KUN26R,2006,260000,,,17000,0.05,curve_pipe_import,2026-01-11T22:23:08
-hilux | dualcab_ute_diesel_auto | KUN26R | 2012,KUN26R,2012,50000,,,33500,0.65,curve_pipe_import,2026-01-11T22:23:08
-hilux | dualcab_ute_diesel_auto | KUN26R | 2012,KUN26R,2012,120000,,,31400,0.25,curve_pipe_import,2026-01-11T22:23:08
-hilux | dualcab_ute_diesel_auto | KUN26R | 2012,KUN26R,2012,200000,,,27500,0.15,curve_pipe_import,2026-01-11T22:23:08
-hilux | dualcab_ute_diesel_auto | KUN26R | 2012,KUN26R,2012,260000,,,24900,0.1,curve_pipe_import,2026-01-11T22:23:08
-i30 | hatch_petrol_auto_na_active_elite | GD | 2012,GD,2012,50000,,,12100,0.25,curve_pipe_import,2026-01-11T22:30:55
-i30 | hatch_petrol_auto_na_active_elite | GD | 2012,GD,2012,120000,,,10200,0.1,curve_pipe_import,2026-01-11T22:30:55
-i30 | hatch_petrol_auto_na_active_elite | GD | 2012,GD,2012,200000,,,7800,0.05,curve_pipe_import,2026-01-11T22:30:55
-i30 | hatch_petrol_auto_na_active_elite | GD | 2012,GD,2012,260000,,,6600,0.05,curve_pipe_import,2026-01-11T22:30:55
-i30 | hatch_petrol_auto_na_active_elite | PD.V4 | 2022,PD.V4,2022,50000,,,22900,0.45,curve_pipe_import,2026-01-11T22:30:55
-i30 | hatch_petrol_auto_na_active_elite | PD.V4 | 2022,PD.V4,2022,120000,,,18350,0.15,curve_pipe_import,2026-01-11T22:30:55
-i30 | hatch_petrol_auto_na_active_elite | PD.V4 | 2022,PD.V4,2022,200000,,,15400,0.1,curve_pipe_import,2026-01-11T22:30:55
-i30 | hatch_petrol_auto_na_active_elite | PD.V4 | 2022,PD.V4,2022,260000,,,13700,0.05,curve_pipe_import,2026-01-11T22:30:55
-i30 | hatch_petrol_auto_na_active_elite | PD2 | 2018,PD2,2018,50000,,,19900,0.4,curve_pipe_import,2026-01-11T22:30:55
-i30 | hatch_petrol_auto_na_active_elite | PD2 | 2018,PD2,2018,120000,,,16400,0.15,curve_pipe_import,2026-01-11T22:30:55
-i30 | hatch_petrol_auto_na_active_elite | PD2 | 2018,PD2,2018,200000,,,13900,0.05,curve_pipe_import,2026-01-11T22:30:55
-i30 | hatch_petrol_auto_na_active_elite | PD2 | 2018,PD2,2018,260000,,,12700,0.05,curve_pipe_import,2026-01-11T22:30:55
-ranger | dualcab_ute_diesel_auto | PX_MKI | 2013,PX_MKI,2013,50000,,,26000,0.5,curve_pipe_import,2026-01-19T17:18:04
-ranger | dualcab_ute_diesel_auto | PX_MKI | 2013,PX_MKI,2013,120000,,,24100,0.2,curve_pipe_import,2026-01-19T17:18:04
-ranger | dualcab_ute_diesel_auto | PX_MKI | 2013,PX_MKI,2013,200000,,,20600,0.1,curve_pipe_import,2026-01-19T17:18:04
-ranger | dualcab_ute_diesel_auto | PX_MKI | 2013,PX_MKI,2013,260000,,,17900,0.05,curve_pipe_import,2026-01-19T17:18:04
-ranger | dualcab_ute_diesel_auto | PX_MKII | 2017,PX_MKII,2017,50000,,,33800,0.7,curve_pipe_import,2026-01-14T20:40:18
-ranger | dualcab_ute_diesel_auto | PX_MKII | 2017,PX_MKII,2017,120000,,,29700,0.25,curve_pipe_import,2026-01-14T20:40:18
-ranger | dualcab_ute_diesel_auto | PX_MKII | 2017,PX_MKII,2017,200000,,,24800,0.1,curve_pipe_import,2026-01-14T20:40:18
-ranger | dualcab_ute_diesel_auto | PX_MKII | 2017,PX_MKII,2017,260000,,,24800,0.1,curve_pipe_import,2026-01-14T20:40:18
-rav4 | suv_petrol_auto_gx_fwd | MXAA52R | 2020,MXAA52R,2020,50000,31300.0,34500.0,32900,0.65,carsales_curve,2026-01-30T00:00:00
-rav4 | suv_petrol_auto_gx_fwd | MXAA52R | 2020,MXAA52R,2020,120000,26600.0,30000.0,28300,0.25,carsales_curve,2026-01-30T00:00:00
-rav4 | suv_petrol_auto_gx_fwd | MXAA52R | 2020,MXAA52R,2020,200000,23400.0,25300.0,24350,0.1,carsales_curve,2026-01-30T00:00:00
-rav4 | suv_petrol_auto_gx_fwd | MXAA52R | 2020,MXAA52R,2020,260000,21100.0,23100.0,22100,0.1,carsales_curve,2026-01-30T00:00:00
-rav4 | suv_petrol_auto_gxl_fwd | MXAA52R,MXAA52R,2020,50000,31400.0,34800.0,33100,0.6,carsales_curve,2026-01-30T00:00:00
-rav4 | suv_petrol_auto_gxl_fwd | MXAA52R,MXAA52R,2020,120000,26800.0,30200.0,28500,0.25,carsales_curve,2026-01-30T00:00:00
-rav4 | suv_petrol_auto_gxl_fwd | MXAA52R,MXAA52R,2020,200000,24500.0,26100.0,25300,0.1,carsales_curve,2026-01-30T00:00:00
-rav4 | suv_petrol_auto_gxl_fwd | MXAA52R,MXAA52R,2020,260000,22300.0,24000.0,23150,0.05,carsales_curve,2026-01-30T00:00:00
+canonical_tag,anchor_year,km_bucket,price_low,price_mid,price_high
+toyota_corolla_ascent_petrol_auto_sedan_zre152r,2009,30000,12150,13500,14850
+toyota_corolla_ascent_petrol_auto_sedan_zre152r,2009,60000,11450,12700,13950
+toyota_corolla_ascent_petrol_auto_sedan_zre152r,2009,100000,10600,11800,13000
+toyota_corolla_ascent_petrol_auto_sedan_zre152r,2009,150000,9900,11000,12100
+toyota_corolla_ascent_petrol_auto_sedan_zre152r,2009,200000,9000,10000,11000
+toyota_corolla_ascent_petrol_auto_sedan_zre152r,2011,30000,13500,15000,16500
+toyota_corolla_ascent_petrol_auto_sedan_zre152r,2011,60000,12800,14200,15600
+toyota_corolla_ascent_petrol_auto_sedan_zre152r,2011,100000,12150,13500,14850
+toyota_corolla_ascent_petrol_auto_sedan_zre152r,2011,150000,11250,12500,13750
+toyota_corolla_ascent_petrol_auto_sedan_zre152r,2011,200000,9250,10300,11300
+toyota_corolla_ascent_petrol_auto_sedan_zre152r,2013,30000,14400,16000,17600
+toyota_corolla_ascent_petrol_auto_sedan_zre152r,2013,60000,13600,15100,16600
+toyota_corolla_ascent_petrol_auto_sedan_zre152r,2013,100000,12800,14200,15600
+toyota_corolla_ascent_petrol_auto_sedan_zre152r,2013,150000,11800,13100,14400
+toyota_corolla_ascent_petrol_auto_sedan_zre152r,2013,200000,10400,11600,12800
+toyota_corolla_ascent_petrol_auto_sedan_zre172r,2015,30000,17950,19500,21050
+toyota_corolla_ascent_petrol_auto_sedan_zre172r,2015,60000,17300,18800,20300
+toyota_corolla_ascent_petrol_auto_sedan_zre172r,2015,100000,17000,18490,19950
+toyota_corolla_ascent_petrol_auto_sedan_zre172r,2015,150000,15800,17200,18600
+toyota_corolla_ascent_petrol_auto_sedan_zre172r,2015,200000,14250,15500,16750
+toyota_corolla_ascent_petrol_auto_sedan_zre172r,2017,30000,20250,22000,23750
+toyota_corolla_ascent_petrol_auto_sedan_zre172r,2017,60000,19250,20990,22650
+toyota_corolla_ascent_petrol_auto_sedan_zre172r,2017,100000,17500,19000,20500
+toyota_corolla_ascent_petrol_auto_sedan_zre172r,2017,150000,16500,17950,19400
+toyota_corolla_ascent_petrol_auto_sedan_zre172r,2017,200000,14900,16200,17500
+toyota_corolla_ascent_petrol_auto_sedan_zre172r,2019,30000,22000,23900,25800
+toyota_corolla_ascent_petrol_auto_sedan_zre172r,2019,60000,22050,23939,25850
+toyota_corolla_ascent_petrol_auto_sedan_zre172r,2019,100000,20200,21990,23750
+toyota_corolla_ascent_petrol_auto_sedan_zre172r,2019,150000,20150,21888,23650
+toyota_corolla_ascent_petrol_auto_sedan_zre172r,2019,200000,18200,19800,21400
+toyota_corolla_ascent_petrol_auto_hatch_zre18x,2013,30000,15200,16500,17800
+toyota_corolla_ascent_petrol_auto_hatch_zre18x,2013,60000,14000,15200,16400
+toyota_corolla_ascent_petrol_auto_hatch_zre18x,2013,100000,12900,14000,15100
+toyota_corolla_ascent_petrol_auto_hatch_zre18x,2013,150000,11500,12500,13500
+toyota_corolla_ascent_petrol_auto_hatch_zre18x,2013,200000,10100,11000,11900
+toyota_corolla_ascent_petrol_auto_hatch_zre18x,2015,30000,16100,17500,18900
+toyota_corolla_ascent_petrol_auto_hatch_zre18x,2015,60000,14900,16200,17500
+toyota_corolla_ascent_petrol_auto_hatch_zre18x,2015,100000,13800,15000,16200
+toyota_corolla_ascent_petrol_auto_hatch_zre18x,2015,150000,12700,13800,14900
+toyota_corolla_ascent_petrol_auto_hatch_zre18x,2015,200000,11200,12200,13200
+toyota_corolla_ascent_petrol_auto_hatch_zre18x,2017,30000,20100,21800,23500
+toyota_corolla_ascent_petrol_auto_hatch_zre18x,2017,60000,19200,20900,22600
+toyota_corolla_ascent_petrol_auto_hatch_zre18x,2017,100000,17700,19300,20900
+toyota_corolla_ascent_petrol_auto_hatch_zre18x,2017,150000,16300,17800,19300
+toyota_corolla_ascent_petrol_auto_hatch_zre18x,2017,200000,14900,16200,17500
+toyota_corolla_ascent_petrol_auto_hatch_zre18x,2018,30000,20700,22500,24300
+toyota_corolla_ascent_petrol_auto_hatch_zre18x,2018,60000,19600,21300,23000
+toyota_corolla_ascent_petrol_auto_hatch_zre18x,2018,100000,18400,19900,21400
+toyota_corolla_ascent_petrol_auto_hatch_zre18x,2018,150000,16900,18300,19700
+toyota_corolla_ascent_petrol_auto_hatch_zre18x,2018,200000,15500,16800,18100
+toyota_corolla_ascent_sport_petrol_auto_hatch_zre18x,2014,30000,16100,17500,18900
+toyota_corolla_ascent_sport_petrol_auto_hatch_zre18x,2014,60000,15450,16800,18150
+toyota_corolla_ascent_sport_petrol_auto_hatch_zre18x,2014,100000,14700,16000,17300
+toyota_corolla_ascent_sport_petrol_auto_hatch_zre18x,2014,150000,14000,15240,16450
+toyota_corolla_ascent_sport_petrol_auto_hatch_zre18x,2014,200000,13350,14500,15650
+toyota_corolla_ascent_sport_petrol_auto_hatch_zre18x,2016,30000,21050,22900,24750
+toyota_corolla_ascent_sport_petrol_auto_hatch_zre18x,2016,60000,18950,20600,22250
+toyota_corolla_ascent_sport_petrol_auto_hatch_zre18x,2016,100000,16550,18000,19450
+toyota_corolla_ascent_sport_petrol_auto_hatch_zre18x,2016,150000,16450,17870,19300
+toyota_corolla_ascent_sport_petrol_auto_hatch_zre18x,2016,200000,14100,15320,16550
+toyota_corolla_ascent_sport_petrol_auto_hatch_zre18x,2018,30000,20500,22300,24100
+toyota_corolla_ascent_sport_petrol_auto_hatch_zre18x,2018,60000,19500,21200,22900
+toyota_corolla_ascent_sport_petrol_auto_hatch_zre18x,2018,100000,19300,20980,22650
+toyota_corolla_ascent_sport_petrol_auto_hatch_zre18x,2018,150000,17850,19419,21050
+toyota_corolla_ascent_sport_petrol_auto_hatch_zre18x,2018,200000,16400,17800,19200
+toyota_corolla_ascent_sport_petrol_auto_hatch_mzea12r,2019,30000,24400,26500,28600
+toyota_corolla_ascent_sport_petrol_auto_hatch_mzea12r,2019,60000,23900,25990,28050
+toyota_corolla_ascent_sport_petrol_auto_hatch_mzea12r,2019,100000,21150,23000,24850
+toyota_corolla_ascent_sport_petrol_auto_hatch_mzea12r,2019,150000,19300,21000,22700
+toyota_corolla_ascent_sport_petrol_auto_hatch_mzea12r,2019,200000,17950,19500,21050
+toyota_corolla_ascent_sport_petrol_auto_hatch_mzea12r,2021,30000,25750,27990,30250
+toyota_corolla_ascent_sport_petrol_auto_hatch_mzea12r,2021,60000,23800,25887,27950
+toyota_corolla_ascent_sport_petrol_auto_hatch_mzea12r,2021,100000,22900,24880,26850
+toyota_corolla_ascent_sport_petrol_auto_hatch_mzea12r,2021,150000,20700,22500,24300
+toyota_corolla_ascent_sport_petrol_auto_hatch_mzea12r,2021,200000,18850,20500,22150
+toyota_corolla_ascent_sport_petrol_auto_hatch_mzea12r,2024,30000,27600,29990,32400
+toyota_corolla_ascent_sport_petrol_auto_hatch_mzea12r,2024,60000,26200,28500,30800
+toyota_corolla_ascent_sport_petrol_auto_hatch_mzea12r,2024,100000,24400,26500,28600
+toyota_corolla_ascent_sport_petrol_auto_hatch_mzea12r,2024,150000,22550,24500,26450
+toyota_corolla_ascent_sport_petrol_auto_hatch_mzea12r,2024,200000,20700,22500,24300
+toyota_corolla_ascent_sport_hybrid_auto_hatch_zwe211r,2020,30000,26200,28500,30800
+toyota_corolla_ascent_sport_hybrid_auto_hatch_zwe211r,2020,60000,24850,27000,29150
+toyota_corolla_ascent_sport_hybrid_auto_hatch_zwe211r,2020,100000,23000,25000,27000
+toyota_corolla_ascent_sport_hybrid_auto_hatch_zwe211r,2020,150000,22550,24500,26450
+toyota_corolla_ascent_sport_hybrid_auto_hatch_zwe211r,2020,200000,20700,22500,24300
+toyota_corolla_ascent_sport_hybrid_auto_hatch_zwe211r,2021,30000,27500,29900,32300
+toyota_corolla_ascent_sport_hybrid_auto_hatch_zwe211r,2021,60000,25750,28000,30250
+toyota_corolla_ascent_sport_hybrid_auto_hatch_zwe211r,2021,100000,24750,26900,29050
+toyota_corolla_ascent_sport_hybrid_auto_hatch_zwe211r,2021,150000,22050,24000,25950
+toyota_corolla_ascent_sport_hybrid_auto_hatch_zwe211r,2021,200000,20250,22000,23750
+toyota_corolla_ascent_sport_hybrid_auto_hatch_zwe211r,2022,30000,29250,31800,34350
+toyota_corolla_ascent_sport_hybrid_auto_hatch_zwe211r,2022,60000,27500,29900,32300
+toyota_corolla_ascent_sport_hybrid_auto_hatch_zwe211r,2022,100000,25750,27990,30250
+toyota_corolla_ascent_sport_hybrid_auto_hatch_zwe211r,2022,150000,23450,25500,27550
+toyota_corolla_ascent_sport_hybrid_auto_hatch_zwe211r,2022,200000,21600,23500,25400
+toyota_corolla_ascent_sport_hybrid_auto_hatch_zwe219r,2024,30000,30800,33500,36200
+toyota_corolla_ascent_sport_hybrid_auto_hatch_zwe219r,2024,60000,28050,30500,32950
+toyota_corolla_ascent_sport_hybrid_auto_hatch_zwe219r,2024,100000,26200,28500,30800
+toyota_corolla_ascent_sport_hybrid_auto_hatch_zwe219r,2024,150000,24400,26500,28600
+toyota_corolla_ascent_sport_hybrid_auto_hatch_zwe219r,2024,200000,22550,24500,26450
+toyota_corolla_ascent_sport_hybrid_auto_hatch_zwe219r,2025,30000,33850,36800,39750
+toyota_corolla_ascent_sport_hybrid_auto_hatch_zwe219r,2025,60000,30800,33500,36200
+toyota_corolla_ascent_sport_hybrid_auto_hatch_zwe219r,2025,100000,28500,31000,33500
+toyota_corolla_ascent_sport_hybrid_auto_hatch_zwe219r,2025,150000,26700,29000,31300
+toyota_corolla_ascent_sport_hybrid_auto_hatch_zwe219r,2025,200000,24850,27000,29150
+toyota_camry_ascent_hybrid_auto_sedan_axvh71r,2018,30000,27500,29500,31500
+toyota_camry_ascent_hybrid_auto_sedan_axvh71r,2018,60000,26500,28500,30500
+toyota_camry_ascent_hybrid_auto_sedan_axvh71r,2018,100000,25500,27500,29500
+toyota_camry_ascent_hybrid_auto_sedan_axvh71r,2018,150000,23500,25500,27500
+toyota_camry_ascent_hybrid_auto_sedan_axvh71r,2018,200000,21500,23500,25500
+toyota_camry_ascent_hybrid_auto_sedan_axvh71r,2020,30000,30500,32500,34500
+toyota_camry_ascent_hybrid_auto_sedan_axvh71r,2020,60000,29500,31500,33500
+toyota_camry_ascent_hybrid_auto_sedan_axvh71r,2020,100000,27500,29500,31500
+toyota_camry_ascent_hybrid_auto_sedan_axvh71r,2020,150000,25500,27500,29500
+toyota_camry_ascent_hybrid_auto_sedan_axvh71r,2020,200000,23500,25500,27500
+toyota_camry_ascent_hybrid_auto_sedan_axvh71r,2022,30000,32500,34500,36500
+toyota_camry_ascent_hybrid_auto_sedan_axvh71r,2022,60000,31500,33500,35500
+toyota_camry_ascent_hybrid_auto_sedan_axvh71r,2022,100000,29500,31500,33500
+toyota_camry_ascent_hybrid_auto_sedan_axvh71r,2022,150000,27500,29500,31500
+toyota_camry_ascent_hybrid_auto_sedan_axvh71r,2022,200000,25500,27500,29500
+toyota_camry_ascent_hybrid_auto_sedan_axvh71r,2024,30000,35500,37500,39500
+toyota_camry_ascent_hybrid_auto_sedan_axvh71r,2024,60000,33500,35500,37500
+toyota_camry_ascent_hybrid_auto_sedan_axvh71r,2024,100000,31500,33500,35500
+toyota_camry_ascent_hybrid_auto_sedan_axvh71r,2024,150000,29500,31500,33500
+toyota_camry_ascent_hybrid_auto_sedan_axvh71r,2024,200000,27500,29500,31500
+toyota_camry_ascent_petrol_auto_sedan_asv70r,2018,30000,27500,29500,31500
+toyota_camry_ascent_petrol_auto_sedan_asv70r,2018,60000,26500,28500,30500
+toyota_camry_ascent_petrol_auto_sedan_asv70r,2018,100000,24500,26500,28500
+toyota_camry_ascent_petrol_auto_sedan_asv70r,2018,150000,22500,24500,26500
+toyota_camry_ascent_petrol_auto_sedan_asv70r,2018,200000,20500,22500,24500
+toyota_camry_ascent_petrol_auto_sedan_asv70r,2020,30000,29500,31500,33500
+toyota_camry_ascent_petrol_auto_sedan_asv70r,2020,60000,27500,29500,31500
+toyota_camry_ascent_petrol_auto_sedan_asv70r,2020,100000,25500,27500,29500
+toyota_camry_ascent_petrol_auto_sedan_asv70r,2020,150000,23500,25500,27500
+toyota_camry_ascent_petrol_auto_sedan_asv70r,2020,200000,21500,23500,25500
+toyota_camry_ascent_petrol_auto_sedan_asv70r,2022,30000,31500,33500,35500
+toyota_camry_ascent_petrol_auto_sedan_asv70r,2022,60000,29500,31500,33500
+toyota_camry_ascent_petrol_auto_sedan_asv70r,2022,100000,27500,29500,31500
+toyota_camry_ascent_petrol_auto_sedan_asv70r,2022,150000,25500,27500,29500
+toyota_camry_ascent_petrol_auto_sedan_asv70r,2022,200000,23500,25500,27500

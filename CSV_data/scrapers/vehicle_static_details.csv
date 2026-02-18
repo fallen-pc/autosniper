@@ -1,16 +1,837 @@
 year,make,model,variant,body_type,transmission,fuel_type,odometer_reading,no_of_seats,vin,rego_no,rego_expiry,no_of_cylinders,engine_capacity,exterior_colour,interior_colour,key,spare_key,owners_manual,service_history,engine_turns_over,location,url,general_condition,canonical_tag,canonical_reason,drivetrain_source
-2016,audi,q7,3.0 tdi quattro (wovr - inspected),wagon,automatic,diesel,208724,7,WAUZZZ4M2HD004535,No plates,Unregistered,6,3,White,Black Leather,Yes,No,Yes,No,Yes,qld,https://www.grays.com/lot/0001-50714180/motor-vehicles-motor-cycles/2016-audi-q7-3-0-tdi-quattro-4m-automatic-7-seats-wagon-wovr-inspected,"dents or marks on body consistent with age and kilometres.
-paint cracked lhr guard
-medium dent on lhr door
-medium scuff on lhr guard
-damaged lh bottom taillight",unclassified,[out_of_scope],
+2017,mitsubishi,outlander,ls awd safety pack zk,wagon,automatic,diesel,121658,7,JMFXLGF6WHZ001067,FRI51M,Unregistered,4,2.3,White,Black,Yes,Yes,Yes,No,Yes,nsw,https://www.grays.com/lot/0001-10352680/motor-vehicles-motor-cycles/2017-mitsubishi-outlander-ls-awd-safety-pack-zk-automatic-7-seats-wagon,"large dent on driver side rear quarter panel, passenger side doors
+large scratch on front bumper bar
+engine noise observed.
+engine smoke visible
+steering requires attention.
+engine oil leak
+damaged front fog light.
+dpf missing.
+black smoke from exhaust.
+suspension requires attention.",unclassified,[out_of_scope],
+2008,mercedes,benz,m-class ml320cdi w164,wagon,automatic,diesel,153764,5,WDC1641222A461004,FVK55V,Unregistered,6,3.0,Black,Tan,Yes,Yes,Yes,No,Yes,nsw,https://www.grays.com/lot/0001-10352681/motor-vehicles-motor-cycles/2008-mercedes-benz-m-class-ml320cdi-w164-turbo-diesel-automatic-wagon,"engine noise observed.
+front seat worn drivers seat
+medium dent on drivers door
+paint peel on window belt moulds",unclassified,[out_of_scope],
+2004,toyota,coaster,deluxe bb50r,bus,manual,diesel,549939,21,JTGFG528009500244,No Plates,Unregistered,4,4.1,White,Grey,Yes,No,No,No,Yes,nsw,https://www.grays.com/lot/0001-10352686/motor-vehicles-motor-cycles/2004-toyota-coaster-deluxe-bb50r-turbo-diesel-manual-21-seats-bus,please refer to the photos or arrange inspection to view the condition of this vehicle.,unclassified,[out_of_scope],
+2016,hyundai,accent,active rb,hatchback,cvt,petrol,171178,5,KMHCT51BTGU295903,No plates,Unregistered,4,1.4,White,Black,Yes,No,Yes,Partial,Yes,nsw,https://www.grays.com/lot/0001-10352698/motor-vehicles-motor-cycles/2016-hyundai-accent-active-rb-cvt-hatchback,"front cracked bumper.
+transmission requires attention strongly recommend inspection by qualified third party
+engine light on",unclassified,[out_of_scope],
+2014,bmw,x5,sdrive 25d f15,wagon,automatic,diesel,201870,5,WBAKS020700C06416,BM05WX,Unregistered,4,2.0,Silver,Black,Yes,Yes,Yes,Partial,Yes,nsw,https://www.grays.com/lot/0001-10352699/motor-vehicles-motor-cycles/2014-bmw-x5-sdrive-25d-f15-turbo-diesel-automatic-8-speed-wagon,"large scratch on bumper bars
+seat torn drivers seat
+engine lacks power
+other warning light on",unclassified,[out_of_scope],
+2018,mazda,bt-50,4x2 xt,cab chassis,automatic,diesel,129168,2,MM0UR0YE100814411,FYH15V,Unregistered,4,2.2,White,Grey,Yes,Yes,Yes,Yes,Yes,nsw,https://www.grays.com/lot/0001-10352702/motor-vehicles-motor-cycles/2018-mazda-bt-50-4x2-xt-turbo-diesel-automatic-cab-chassis,"front seat worn drivers seat
+front bumper damage cracked bumper.
+medium dent on passenger door, b pillar and drivers guard
+engine noise observed.",unclassified,[out_of_scope],
+2012,volkswagen,golf,118tsi comfortline a6,hatchback,automatic,petrol,203527,5,WVWZZZ1KZDP049458,DP67FV,29-04-2026,4,1.4,White,Black,Yes,No,No,No,Yes,nsw,https://www.grays.com/lot/0001-10352703/motor-vehicles-motor-cycles/2012-volkswagen-golf-118tsi-comfortline-a6-automatic-hatchback,"transmission requires attention strongly recommend inspection by qualified third party
+abs light on
+traction control light on
+hood lining sagging
+large dent on passenger guard, passengers rear door, tailgate
+paint fading various panels
+front and rear bars damaged cracked bumper.
+windscreen chipped or cracked.
+hail damage visible.
+medium dent on bonnet and drivers door
+damaged both headlight broken
+other warning light on",unclassified,[out_of_scope],
+2002,toyota,hiace,sbv lwb rch22r van,van,manual,petrol,301767,2,JT721UK2200004070,YCK095,08-05-2026,4,2.4,White,Grey,Yes,No,No,No,No,nsw,https://www.grays.com/lot/0001-10352704/motor-vehicles-motor-cycles/2002-toyota-hiace-sbv-lwb-rch22r-manual-van,"flat battery. jump start or towing required
+carpet worn in places.
+large dent on passenger guard, passengers sliding door, sill panels, passengers rear barn door, drivers quarter panel and drivers front guard
+medium dent on drivers rear barn door
+hail damage visible.
+corrosion visible engine bay, front screen, roof
+large dent on roof damaged
+large scratch on front and rear bars
+glovebox would not open/close
+engine noise observed.
+engine light on
+other warning light on",unclassified,[out_of_scope],
+1995,holden,commodore,executive vr,sedan,automatic,petrol,438855,5,6H8VRK19HSL799476,No plates,Unregistered,6,3.8,White,Grey,Yes,Yes,Yes,Partial,Yes,nsw,https://www.grays.com/lot/0001-10352707/motor-vehicles-motor-cycles/1995-holden-commodore-executive-vr-automatic-sedan,"engine idling rough
+front seat worn drivers seat
+back seat stains.
+large scratch on rear bar
+paint peeling front bar
+paint fading guards and bonnet
+corrosion visible around rear screen
+steering requires attention.
+transmission requires attention strongly recommend inspection by qualified third party",unclassified,[out_of_scope],
+2017,mercedes,benz,a-class a180 w176 (wovr - inspected),hatchback,automatic,petrol,48750,5,WDD1760422J720257,No plates,Unregistered,4,1.6,Black,Black,Yes,No,Yes,No,Yes,nsw,https://www.grays.com/lot/0001-10352715/motor-vehicles-motor-cycles/2017-mercedes-benz-a-class-a180-w176-automatic-hatchback-wovr-inspected,"large scratch on bonnet, rear bumper bar
+other warning light on
+note: this vehicle is listed on the written off vehicle register (wovr). details of the status can be found in the ppsr attached at the bottom of this description. please refer to your relevant state-based road authority to determine whether this vehicle will require inspection or will be able to be registered based on the recorded wovr status.",unclassified,[out_of_scope],
+2015,nissan,juke,ti-s f15 ii,wagon,manual,petrol,141816,5,SJNFAAF15A7082078,CK79VD,Unregistered,4,1.6,Red,Black,Yes,Yes,Yes,Partial,Yes,nsw,https://www.grays.com/lot/0001-10352716/motor-vehicles-motor-cycles/2015-nissan-juke-ti-s-f15-ii-manual-wagon,"clutch requires attention
+seat torn drivers seat
+paint peeling roof and rear bar
+medium dent on passenger guard
+medium scratch on passenger guard, passenger front door and rear doors and drivers rear door",unclassified,[out_of_scope],
+2013,audi,a3,,hatchback,automatic,petrol,98205,5,WAUZZZ8V5DA040802,No plates,Unregistered,4,1.4,Black,Black,Yes,No,No,Partial,Yes,nsw,https://www.grays.com/lot/0001-10500710/motor-vehicles-motor-cycles/2013-audi-a3-automatic-hatchback,"transmission requires attention strongly recommend inspection by qualified third party
+medium dent on drivers door
+engine light on",unclassified,[out_of_scope],
+2016,kia,optima,gt jf,sedan,automatic,petrol,235746,5,KNAGV412MG5109678,Unable to locate,Unregistered,4,2.0,Black,Black Leather,Yes,Yes,Yes,Yes,Yes,nsw,https://www.grays.com/lot/0001-10500711/motor-vehicles-motor-cycles/2016-kia-optima-gt-jf-automatic-sedan,"body/panel damage right rear passenger door and rear gaurd
+dents or marks on body consistent with age and kilometres.
+engine noise observed.
+engine light on
+dents or marks on body consistent with age and kilometres.",unclassified,[out_of_scope],
+2020,land,rover,defender 110 p400 s,wagon,automatic,petrol,71265,5,SALEA7AU2M2038975,FVD26C,Unregistered,6,3.0,Grey,Black,Yes,Yes,No,No,Yes,nsw,https://www.grays.com/lot/0001-10601299/motor-vehicles-motor-cycles/2020-land-rover-defender-110-p400-s-automatic-8-speed-wagon,"suspension requires attention
+other warning light on
+large scratch on passenger side front guard and rhr guard",unclassified,[out_of_scope],
+2021,toyota,landcruiser,sahara fja300r 10,wagon,automatic,diesel,58483,7,JTMAA7BJ604003851,COO868,22-03-2026,6,3.3,Black,Black,Yes,No,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-20027290/motor-vehicles-motor-cycles/2021-toyota-landcruiser-sahara-fja300r-turbo-diesel-10-auto-7-seats-wagon,dents or marks on body consistent with age and kilometres.,unclassified,[out_of_scope],
+2010,mazda,bt-50,dx b2500,cab chassis,manual,diesel,213938,2,MM0UNY0W400860935,YUJ760,04-04-2026,4,2.5,Maroon,Grey,Yes,No,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21062742/motor-vehicles-motor-cycles/2010-mazda-bt-50-dx-b2500-turbo-diesel-manual-cab-chassis,medium scratch on around vehicle,unclassified,[out_of_scope],
+2012,holden,cruze,cdx jh,hatchback,automatic,petrol,141857,5,6G1PE6E56CL642003,YYM193,03-04-2026,4,1.8,Silver,Black Leather,Yes,No,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21062752/motor-vehicles-motor-cycles/2012-holden-cruze-cdx-jh-automatic-hatchback,"large scuff on front bumper
+dents or marks on body consistent with age and kilometres.
+engine overheating, tow advisable.
+paint fading on various panels
+medium scratch on various panels",unclassified,[out_of_scope],
+2005,audi,a6,3.2 fsi quattro c6,wagon,automatic,petrol,153026,5,WAUZZZ4F36N007677,1VW1FD,07-11-2025,6,3.2,Red,Black Leather,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21062755/motor-vehicles-motor-cycles/2005-audi-a6-3-2-fsi-quattro-c6-automatic-wagon,"dents or marks on body consistent with age and kilometres.
+paint peeling various panels",unclassified,[out_of_scope],
+2015,renault,megane,gt-line,hatchback,automatic,petrol,83233,5,VF1BZ3603F0724501,No plates,Unregistered,4,1.2,White,Black,Yes,No,No,No,Yes,vic,https://www.grays.com/lot/0001-21062756/motor-vehicles-motor-cycles/2015-renault-megane-gt-line-automatic-hatchback,"other warning light on
+dents or marks on body consistent with age and kilometres.
+medium scuff on around vehicle",unclassified,[out_of_scope],
+2014,mazda,3,maxx bm,sedan,automatic,petrol,392924,5,JM0BM527810120650,1BP3UE,02-05-2026,4,2.0,Dark Blue,Black,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21062880/motor-vehicles-motor-cycles/2014-mazda-3-maxx-bm-automatic-sedan,"medium dents, scratches around vehicle
+windscreen chipped.
+comment: headunit requires attentionsteering wheel worn
+comment: headunit requires attention
+steering wheel worn",unclassified,[out_of_scope],
+2015,ford,kuga,ambiente fwd tf ii,wagon,automatic,petrol,128057,5,WF0AXXWPMAFE86785,1EY7AD,08-07-2026,4,1.5,Orange,Black,Yes,No,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21062924/motor-vehicles-motor-cycles/2015-ford-kuga-ambiente-fwd-tf-ii-automatic-wagon,medium scratch on around vehicle,unclassified,[out_of_scope],
+2006,subaru,impreza,2.0i g2,sedan,automatic,petrol,259449,5,JF1GD9KR57G067644,URC520,13-03-2026,4,2.0,Silver,Black Leather,Yes,Yes,No,No,Yes,vic,https://www.grays.com/lot/0001-21062925/motor-vehicles-motor-cycles/2006-subaru-impreza-2-0i-g2-automatic-sedan,"windscreen chipped or cracked.
+carpet worn in places.
+large scratch on around vehicle
+transmission requires attention strongly recommend inspection by qualified third party
+front seat worn driver side
+front bumper cracked bumper.",unclassified,[out_of_scope],
+2012,holden,calais,ve ii,sedan,automatic,petrol,207014,5,6G1EX5E38CL711980,1GW1SX,20-01-2026,6,3.6,Black,Black Leather,Yes,No,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21062926/motor-vehicles-motor-cycles/2012-holden-calais-ve-ii-automatic-sedan,"front seat marks drivers
+dents or marks on body consistent with age and kilometres.
+paint cracked around vehicle
+medium scratch on around vehicle",unclassified,[out_of_scope],
+2012,hyundai,elantra,active md,sedan,manual,petrol,239917,5,KMHDG41ELDU579106,ZFV279,14-08-2026,4,1.8,Silver,Black,Yes,No,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21062929/motor-vehicles-motor-cycles/2012-hyundai-elantra-active-md-manual-sedan,"damaged lhr
+medium dent on around vehicle",unclassified,[out_of_scope],
+2012,skoda,octavia,90tsi 1z,sedan,manual,petrol,130533,5,TMBCJ61Z3C2161686,ZQA268,09-04-2026,4,1.4,White,Grey,Yes,Yes,No,Partial,Yes,vic,https://www.grays.com/lot/0001-21062955/motor-vehicles-motor-cycles/2012-skoda-octavia-90tsi-1z-manual-sedan,"transmission requires attention strongly recommend inspection by qualified third party
+dents or marks on body consistent with age and kilometres.
+paint cracked rear bumper
+medium scratch on around vehicle
+carpet worn in places.",unclassified,[out_of_scope],
+2012,skoda,octavia,90tsi 1z,wagon,automatic,petrol,103351,5,TMBHJ61Z0D2017505,1AA3ZN,25-01-2026,4,1.4,Grey,Black Leather,Yes,No,Yes,No,Yes,vic,https://www.grays.com/lot/0001-21062957/motor-vehicles-motor-cycles/2012-skoda-octavia-90tsi-1z-automatic-wagon,"dents or marks on body consistent with age and kilometres.
+paint peeling around vehicle",unclassified,[out_of_scope],
+2015,renault,captur,dynamique,wagon,automatic,petrol,112592,5,VF12R401EF0717005,AQH869,29-01-2026,4,1.2,Cream,Black,Yes,No,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21062958/motor-vehicles-motor-cycles/2015-renault-captur-dynamique-automatic-wagon,medium scratch on around vehicle,unclassified,[out_of_scope],
+2013,hyundai,ix35,se fwd lm,wagon,automatic,petrol,191062,5,TMAJU81FMEJ521858,1BN8VP,24-03-2026,4,2.0,Silver,Black Leather,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21062960/motor-vehicles-motor-cycles/2013-hyundai-ix35-se-fwd-lm-automatic-wagon,"medium scratch on around vehicle
+dents or marks on body consistent with age and kilometres.
+paint fading on various panels",unclassified,[out_of_scope],
+2010,mitsubishi,triton,4x2 gl-r mn,dual cab,manual,diesel,302486,5,MMAJNKA40AD018936,1FQ6CF,15-04-2026,4,2.5,Red,Grey,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21062961/motor-vehicles-motor-cycles/2010-mitsubishi-triton-4x2-gl-r-mn-turbo-diesel-manual-dual-cab,"paint fading around vehicle
+medium scratch on around vehicle",unclassified,[out_of_scope],
+2014,kia,cerato,s premium yd,hatchback,automatic,petrol,180023,5,KNAFK516MF5307450,1OU4XP,12-05-2026,4,1.8,White,Black,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21062962/motor-vehicles-motor-cycles/2014-kia-cerato-s-premium-yd-automatic-hatchback,"paint fading around vehicle
+medium scuff on around vehicle",unclassified,[out_of_scope],
+2010,kia,rio,lx jb,hatchback,automatic,petrol,261644,5,KNADH511MA6666295,XTR313,22-06-2026,4,1.4,Silver,Grey,Yes,No,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21062963/motor-vehicles-motor-cycles/2010-kia-rio-lx-jb-automatic-hatchback,"dents or marks on body consistent with age and kilometres.
+door mirror broken passenger mirror cap",unclassified,[out_of_scope],
+2013,hyundai,i30,elite gd,hatchback,automatic,petrol,256665,5,KMHD351EMDU090805,ZSU761,21-05-2026,4,1.8,Silver,Black,Yes,Yes,No,Partial,Yes,vic,https://www.grays.com/lot/0001-21062964/motor-vehicles-motor-cycles/2013-hyundai-i30-elite-gd-automatic-hatchback,medium scuff on around vehicle,unclassified,[out_of_scope],
+2011,holden,captiva,7 sx 2wd cg ii,wagon,automatic,diesel,216533,7,KL3CA266JBB032145,1DO9NF,15-04-2026,4,2.2,Blue,Grey,Yes,No,Yes,No,Yes,vic,https://www.grays.com/lot/0001-21062965/motor-vehicles-motor-cycles/2011-holden-captiva-7-sx-2wd-cg-ii-turbo-diesel-automatic-7-seats-wagon,"engine noise observed.
+seat torn drivers
+dents or marks on body consistent with age and kilometres.
+medium scratch on around vehicle",unclassified,[out_of_scope],
+2007,toyota,corolla,ascent zre152r,sedan,automatic,petrol,258066,5,JTNBU52E60J002151,2EB4XF,24-03-2026,4,1.8,Black,Black,Yes,Yes,Yes,No,Yes,vic,https://www.grays.com/lot/0001-21062966/motor-vehicles-motor-cycles/2007-toyota-corolla-ascent-zre152r-automatic-sedan,"dents or marks on body consistent with age and kilometres.
+body/panel damage front and rear bar
+paint fading around vehicle
+engine light on
+back seat stains.
+seat torn driver side
+door mirror broken driver side
+paint fading on various panels
+medium scratch on various panels
+medium dent on various panels
+carpet worn in places.",toyota_corolla_ascent_petrol_auto_sedan_zre152r,[ok],
+2006,lexus,rx,rx400h gsu35r,wagon,cvt,hybrid,214390,5,JTJHW31U702012054,XAD952,19-05-2026,6,3.3,Blue,Beige Leather,Yes,No,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21062967/motor-vehicles-motor-cycles/2006-lexus-rx-rx400h-gsu35r-cvt-wagon,"medium scratch on around vehicle
+medium dent on around vehicle
+seat torn driver seat",unclassified,[out_of_scope],
+2018,isuzu,d-max,4x2 sx hi-ride,dual cab,automatic,diesel,64738,5,MPATFR85JJT003961,1MZ3MT,30-06-2026,4,3.0,White,Grey,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21062968/motor-vehicles-motor-cycles/2018-isuzu-d-max-4x2-sx-hi-ride-turbo-diesel-automatic-dual-cab-ex-gov,dents or marks on body consistent with age and kilometres.,unclassified,[out_of_scope],
+2009,ford,mondeo,zetec mb,hatchback,automatic,diesel,194448,5,WF0EXXGBBE9R21120,XHR224,30-11-2026,4,2.0,Silver,Black,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21062969/motor-vehicles-motor-cycles/2009-ford-mondeo-zetec-mb-turbo-diesel-automatic-hatchback,dents or marks on body consistent with age and kilometres.,unclassified,[out_of_scope],
+2012,jeep,patriot,sport mk,wagon,cvt,petrol,160947,5,1C4NJPDAXDD159623,1YM1AQ,18-02-2026,4,2.0,White,Grey,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21062970/motor-vehicles-motor-cycles/2012-jeep-patriot-sport-mk-cvt-wagon,"noisy drivetrain.
+transmission requires attention
+medium scuff on around vehicle
+dents or marks on body consistent with age and kilometres.",unclassified,[out_of_scope],
+2008,volkswagen,passat,cc v6 fsi 3cc,coupe,automatic,petrol,166278,4,WVWZZZ3CZ9E517121,AZX345,28-02-2026,6,3.6,Grey,Black Leather,Yes,No,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21062987/motor-vehicles-motor-cycles/2008-volkswagen-passat-cc-v6-fsi-3cc-automatic-coupe,"other warning light on
+dents or marks on body consistent with age and kilometres.
+medium scratch on around vehicle",unclassified,[out_of_scope],
+2007,ford,falcon,xl bf ii,cab chassis,automatic,lpg,208979,3,6FPAAAJGCM7P44682,1KJ7YA,30-01-2026,6,4.0,Black,Black,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21062988/motor-vehicles-motor-cycles/2007-ford-falcon-xl-bf-ii-automatic-cab-chassis,"seat torn passenger seat
+dents or marks on body consistent with age and kilometres.",unclassified,[out_of_scope],
+2010,bmw,x1,sdrive 18i e84,wagon,automatic,petrol,169772,5,WBAVL32030VN74863,No plates,Unregistered,4,2.0,Silver,Black Leather,Yes,No,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21062995/motor-vehicles-motor-cycles/2010-bmw-x1-sdrive-18i-e84-automatic-wagon,"medium scratch on around vehicle
+engine noise observed.
+engine smoke visible
+other warning light on",unclassified,[out_of_scope],
+2012,mazda,3,neo bl,sedan,automatic,petrol,139565,5,JM0BL10F200342338,No Plates,Unregistered,4,2.0,Grey,Black,Yes,No,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21062996/motor-vehicles-motor-cycles/2012-mazda-3-neo-bl-automatic-sedan,"carpet worn in places.
+door mirror broken housing passenger side
+dents or marks on body consistent with age and kilometres.",unclassified,[out_of_scope],
+2007,mazda,3,sp23 luxury pack bk,sedan,automatic,petrol,153478,5,JM0BK103200350429,2DU8OF,30-04-2026,4,2.3,Silver,Black Leather,Yes,No,No,No,Yes,vic,https://www.grays.com/lot/0001-21062997/motor-vehicles-motor-cycles/2007-mazda-3-sp23-luxury-pack-bk-automatic-sedan,"paint fading around vehicle
+large scratch on around vehicle
+large scuff on front bumper
+front seat worn driver side
+dents or marks on body consistent with age and kilometres.
+front bumper cracked bumper.
+medium dent on various panels",unclassified,[out_of_scope],
+2020,toyota,hilux,4x2 workmate tgn121r,cab chassis,automatic,petrol,191851,2,MR0EX3CB101131465,1RW5BW,16-06-2026,4,2.7,White,Grey,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21062998/motor-vehicles-motor-cycles/2020-toyota-hilux-4x2-workmate-tgn121r-automatic-cab-chassis,"medium scratch on around vehicle
+front seat worn driver seat
+carpet worn in places.",unclassified,[out_of_scope],
+2007,toyota,trd,aurion 3500s gsv40r (wovr - inspected),sedan,automatic,petrol,199971,5,6T153KK400X293268,1VN9OY,07-03-2026,6,3.5,Red,Red,Yes,No,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21062999/motor-vehicles-motor-cycles/2007-toyota-trd-aurion-3500s-gsv40r-automatic-sedan-wovr-inspected,"carpet worn in places.
+medium scratch on around vehicle
+front cracked bumper.
+rear view mirror broken",unclassified,[out_of_scope],
+2013,mitsubishi,outlander,ls 4wd zj,wagon,cvt,petrol,272667,7,JMFXTGF8WDZ004024,1LL8ZC,26-01-2026,4,2.4,Silver,Black,Yes,No,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21063001/motor-vehicles-motor-cycles/2013-mitsubishi-outlander-ls-4wd-zj-cvt-7-seats-wagon,"damaged rear light cracked
+dents or marks on body consistent with age and kilometres.",unclassified,[out_of_scope],
+2022,isuzu,d-max,4x2 sx,cab chassis,automatic,diesel,167081,2,MPATFR40JNT002009,No plates,Unregistered,4,3.0,White,Black,Yes,Yes,No,No,Yes,vic,https://www.grays.com/lot/0001-21063003/motor-vehicles-motor-cycles/2022-isuzu-d-max-4x2-sx-turbo-diesel-automatic-cab-chassis,dents or marks on body consistent with age and kilometres.,unclassified,[out_of_scope],
+2006,mercedes,benz,sl500 r230,convertible,automatic,petrol,142515,2,WDB2304712F126234,ANW618,29-09-2026,8,5.5,Silver,Black Leather,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21063005/motor-vehicles-motor-cycles/2006-mercedes-benz-sl500-r230-automatic-convertible,dents or marks on body consistent with age and kilometres.,unclassified,[out_of_scope],
+2013,ford,mondeo,lx mc,hatchback,automatic,diesel,155664,5,WF0EXXGBBEDK83468,1ZO7QB,23-01-2026,4,2.0,White,Black,Yes,No,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063007/motor-vehicles-motor-cycles/2013-ford-mondeo-lx-mc-turbo-diesel-automatic-hatchback,"transmission requires attention strongly recommend inspection by qualified third party
+back seat worn.
+medium dent on some places
+dents or marks on body consistent with age and kilometres.",unclassified,[out_of_scope],
+2019,volkswagen,golf,110tsi comfortline a7,hatchback,automatic,petrol,84359,5,WVWZZZAUZLW004993,2DI9XX,31-01-2027,4,1.4,White,Grey,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21063008/motor-vehicles-motor-cycles/2019-volkswagen-golf-110tsi-comfortline-a7-automatic-hatchback,"airbag light on
+other warning light on
+windscreen chipped or cracked.
+medium scratch on around vehicle.
+rubber trim in boot worn.",unclassified,[out_of_scope],
+2008,hyundai,iload,tq van,van,automatic,diesel,169167,3,KMFWBH7JR9U103413,2EC6DY,26-04-2026,4,2.5,White,Grey,Yes,No,No,No,Yes,vic,https://www.grays.com/lot/0001-21063009/motor-vehicles-motor-cycles/2008-hyundai-iload-tq-turbo-diesel-automatic-van,"dents or marks on body consistent with age and kilometres.
+paint peeling drivers door
+dents or marks on body consistent with age and kilometres.",unclassified,[out_of_scope],
+2016,toyota,camry,altise hybrid avv50r,sedan,cvt,hybrid,108910,5,6T1BD3FK40X151602,No plates,Unregistered,4,2.5,Silver,Black,Yes,No,No,Partial,Yes,vic,https://www.grays.com/lot/0001-21063011/motor-vehicles-motor-cycles/2016-toyota-camry-altise-hybrid-avv50r-cvt-sedan,"dents or marks on body consistent with age and kilometres.
+medium scratch on around vehicle
+paint fading on various panels
+paint peeling front bumper",unclassified,[disallowed_variant],
+2012,mazda,bt-50,4x2 xt tipper tray,cab chassis,manual,diesel,262783,3,MM0UP0YF100135454,No Plates,Unregistered,5,3.2,Black,Black,Yes,No,No,No,Yes,vic,https://www.grays.com/lot/0001-21063012/motor-vehicles-motor-cycles/2012-mazda-bt-50-4x2-xt-turbo-diesel-tipper-tray-cab-chassis,"seat torn drivers
+dents or marks on body consistent with age and kilometres.
+paint fading bonnet and roof
+medium dent on around vehicle
+medium scratch on various panels",unclassified,[out_of_scope],
+2016,jeep,renegade,sport bu,wagon,automatic,petrol,82585,5,1C4BU0000GPD60883,No plates,Unregistered,4,1.4,Black,Black,Yes,Yes,No,No,Yes,vic,https://www.grays.com/lot/0001-21063013/motor-vehicles-motor-cycles/2016-jeep-renegade-sport-bu-automatic-wagon,"medium scratch on around vehicle
+paint fading grille",unclassified,[out_of_scope],
+2014,renault,captur,dynamique,wagon,automatic,petrol,125495,5,VF12R401EE0710357,AGP763,09-03-2026,4,1.2,Black,Grey,Yes,Yes,No,No,Yes,vic,https://www.grays.com/lot/0001-21063014/motor-vehicles-motor-cycles/2014-renault-captur-dynamique-automatic-wagon,"transmission requires attention strongly recommend inspection by qualified third party
+medium scratch on around vehicle",unclassified,[out_of_scope],
+2013,volkswagen,transporter,tdi340 lwb t5 van,van,automatic,diesel,286212,3,WV1ZZZ7HZEH011670,No Plates,Unregistered,4,2.0,Black,Grey,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063015/motor-vehicles-motor-cycles/2013-volkswagen-transporter-tdi340-lwb-t5-turbo-diesel-automatic-van,"engine noise observed.
+large scuff on around vehicle
+large dent on rear wheel arch driver side
+paint peeling around vehicle
+medium scratch on around vehicle",unclassified,[out_of_scope],
+2016,mitsubishi,pajero,sport gls qe,wagon,automatic,diesel,143457,7,MMAGUKS10GH005310,No plates,Unregistered,4,2.4,White,Black Leather,Yes,Yes,Yes,No,Yes,vic,https://www.grays.com/lot/0001-21063016/motor-vehicles-motor-cycles/2016-mitsubishi-pajero-sport-gls-qe-turbo-diesel-automatic,"medium scratch on around vehicle
+other warning light on
+windscreen chipped or cracked.
+seat torn driver seat",unclassified,[out_of_scope],
+2017,toyota,camry,altise hybrid avv50r,sedan,cvt,hybrid,148861,5,6T1BD3FK50X158543,No plates,Unregistered,4,2.5,White,Grey,Yes,No,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21063017/motor-vehicles-motor-cycles/2017-toyota-camry-altise-hybrid-avv50r-cvt-sedan,"windscreen chipped or cracked.
+dents or marks on body consistent with age and kilometres.",unclassified,[disallowed_variant],
+2012,mazda,cx-5,maxx sport ke,wagon,automatic,diesel,265615,5,JM0KE102100127580,1DW9TA,30-01-2027,4,2.2,White,Black,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063018/motor-vehicles-motor-cycles/2012-mazda-cx-5-maxx-sport-ke-turbo-diesel-automatic-wagon,dents or marks on body consistent with age and kilometres,unclassified,[out_of_scope],
+2007,nissan,tiida,st c11,hatchback,automatic,petrol,150677,5,MNTFBAC11A0002873,1YS7JX,06-07-2026,4,1.8,Black,Grey,Yes,No,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21063019/motor-vehicles-motor-cycles/2007-nissan-tiida-st-c11-automatic-hatchback,"dash torn or cracked
+paint peeling around vehicle
+dents or marks on body consistent with age and kilometres.
+medium scratch on around vehicle",unclassified,[out_of_scope],
+2012,volkswagen,golf,118tsi comfortline a6,hatchback,automatic,petrol,92053,5,WVWZZZ1KZCW299373,ZCC385,28-06-2026,4,1.4,Silver,Black Leather,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21063020/motor-vehicles-motor-cycles/2012-volkswagen-golf-118tsi-comfortline-a6-automatic-hatchback,"hood lining sagging
+medium scuff on around vehicle",unclassified,[out_of_scope],
+2017,hyundai,i30,active pd,hatchback,automatic,petrol,147268,5,KMHH351EMJU039086,APH292,18-12-2026,4,2.0,Grey,Black,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21063021/motor-vehicles-motor-cycles/2017-hyundai-i30-active-pd-automatic-hatchback,dents or marks on body consistent with age and kilometres.,unclassified,[out_of_scope],
+2017,land,rover,discovery sport td4 150 se td 9,wagon,automatic,diesel,132162,7,SALCA2AN1HH703855,AOZ768,27-07-2026,4,2.0,White,Black Leather,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063022/motor-vehicles-motor-cycles/2017-land-rover-discovery-sport-td4-150-se-td-9-auto-7-seats-wagon,dents or marks on body consistent with age and kilometres.,unclassified,[out_of_scope],
+2010,volkswagen,tiguan,125 tsi 5n,wagon,automatic,petrol,210970,5,WVGZZZ5NZAW090400,1QT4MP,21-02-2026,4,2.0,Black,Black Leather,Yes,No,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063024/motor-vehicles-motor-cycles/2010-volkswagen-tiguan-125-tsi-5n-automatic-wagon,"dents or marks on body consistent with age and kilometres.
+front seat worn driver side
+medium dent on various panels",unclassified,[out_of_scope],
+2015,holden,sportwagon,calais v vf,wagon,automatic,petrol,162877,5,6G1FJ8E39FL122156,1ER3XZ,15-01-2026,6,3.6,Silver,Black Leather,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21063025/motor-vehicles-motor-cycles/2015-holden-sportwagon-calais-v-vf-automatic-wagon,dents or marks on body consistent with age and kilometres.,unclassified,[out_of_scope],
+2016,mercedes,benz,v-class v250 bluetec avantga t d aut,people mover,automatic,diesel,250239,8,WDF44781323161753,2EG4ZQ,31-05-2026,4,2.1,Black,Black Leather,Yes,Yes,Yes,No,Yes,vic,https://www.grays.com/lot/0001-21063026/motor-vehicles-motor-cycles/2016-mercedes-benz-v-class-v250-bluetec-avantga-t-d-aut-8-seats,"seat torn drivers
+dents or marks on body consistent with age and kilometres.
+paint peeling around vehicle
+medium scratch on around vehicle",unclassified,[out_of_scope],
+2011,toyota,landcruiser,gxl vdj200r t d,wagon,automatic,diesel,490619,8,JTMHV09JX05026270,YOE226,18-08-2026,8,4.5,White,Black Leather,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063027/motor-vehicles-motor-cycles/2011-toyota-landcruiser-gxl-vdj200r-t-d-auto-rwc-issued-06-02-2026,dents or marks on body consistent with age and kilometres.,unclassified,[out_of_scope],
+2017,subaru,outback,2.5i b6a,wagon,cvt,petrol,107325,5,JF2BS9KC2HG058729,1JK9RC,03-03-2026,4,2.5,Silver,Black,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063029/motor-vehicles-motor-cycles/2017-subaru-outback-2-5i-b6a-cvt-wagon,"dents or marks on body consistent with age and kilometres.
+body/panel damage boot and rear bumper
+medium dent on left side of vehicle",unclassified,[out_of_scope],
+2018,subaru,forester,2.5i-s s5,wagon,cvt,petrol,172777,5,JF2SK9KL5KG005901,1OH9SA,30-06-2026,4,2.5,Silver,Black Leather,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21063030/motor-vehicles-motor-cycles/2018-subaru-forester-2-5i-s-s5-cvt-wagon-ex-gov,scuffs around vehicle,unclassified,[out_of_scope],
+2000,holden,calais,vx,sedan,automatic,petrol,395439,5,6H8VXX69R1L668917,No plates,Unregistered,6,3.8,Green,Black Leather,Yes,Yes,Yes,No,Yes,vic,https://www.grays.com/lot/0001-21063031/motor-vehicles-motor-cycles/2000-holden-calais-vx-automatic-sedan,"seat torn driver seat
+dents or marks on body consistent with age and kilometres.
+rear bumper cracked bumper.
+paint peeling around vehicle
+medium scratch on various panels",unclassified,[out_of_scope],
+2013,nissan,pathfinder,st-l r52,wagon,cvt,petrol,226615,7,5N1AR2MM6EC603328,1LZ6LZ,30-01-2026,6,3.5,Blue,Black Leather,Yes,No,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063032/motor-vehicles-motor-cycles/2013-nissan-pathfinder-st-l-r52-cvt-7-seats-wagon,"dents or marks on body consistent with age and kilometres.
+medium scratch on front bumper",unclassified,[out_of_scope],
+2007,ford,territory,tx sy,wagon,automatic,petrol,292046,5,6FPAAAJGAT7M40849,WDY713,14-12-2026,6,4.0,Black,Tan Leather,Yes,No,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063033/motor-vehicles-motor-cycles/2007-ford-territory-tx-sy-automatic-wagon,"hood lining sagging
+door card worn.
+large scratch on around vehicle
+paint cracked bonnet
+windscreen chipped or cracked.",unclassified,[out_of_scope],
+2011,mercedes,benz,b-class b200 cdi be w246 7,hatchback,automatic,diesel,176689,5,WDDMH0BB7CJ015558,2DQ9KQ,02-03-2026,4,1.8,White,Black Leather,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063034/motor-vehicles-motor-cycles/2011-mercedes-benz-b-class-b200-cdi-be-w246-turbo-diesel-7-auto-hatchback,"paint fading door frame
+front seat worn driver side
+dents or marks on body consistent with age and kilometres.",unclassified,[out_of_scope],
+2011,mazda,cx-7,classic,wagon,automatic,petrol,159385,5,JM0ER10L200231638,YNS673,18-02-2026,4,2.5,Purple,Black,Yes,No,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063035/motor-vehicles-motor-cycles/2011-mazda-cx-7-classic-automatic-wagon,"engine oil leak
+paint fading around exterior
+dents or marks on body consistent with age and kilometres.
+medium dent on around exterior
+large scuff on rear bumper
+damaged rear tail light and rear fog lights",unclassified,[out_of_scope],
+2008,citroen,dispatch,swb van,van,manual,diesel,316822,3,VF7XTRHKH64200212,No Plates,Unregistered,4,2.0,White,Grey,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063036/motor-vehicles-motor-cycles/2008-citroen-dispatch-swb-turbo-diesel-manual-van,"medium scratch on around vehicle
+steering requires attention.
+seat torn drivers seat
+windscreen chipped or cracked.",unclassified,[out_of_scope],
+2012,holden,cruze,sri-v jh,sedan,automatic,petrol,200627,5,6G1PE5E82DL801668,1KB2LP,07-09-2026,4,1.4,Silver,Black Leather,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063039/motor-vehicles-motor-cycles/2012-holden-cruze-sri-v-jh-automatic-sedan,"front seat worn driver side
+paint fading on various panels
+dents or marks on body consistent with age and kilometres.",unclassified,[out_of_scope],
+2012,kia,sorento,platinum xm,wagon,automatic,diesel,331442,7,KNAKU814SC5301990,ZJZ106,27-04-2026,4,2.2,White,Black Leather,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063040/motor-vehicles-motor-cycles/2012-kia-sorento-platinum-xm-turbo-diesel-automatic-7-seats-wagon,"display screen requires attenton.
+dents or marks on body consistent with age and kilometres.
+front seat worn driver side",unclassified,[out_of_scope],
+2016,renault,koleos,zen 4x2 xzg,wagon,cvt,petrol,177082,5,VF1RZG003G0243588,No plates,Unregistered,4,2.5,Black,Black Leather,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21063041/motor-vehicles-motor-cycles/2016-renault-koleos-zen-4x2-xzg-cvt-wagon,"medium scratch on around vehicle
+damaged rear fog light
+dents or marks on body consistent with age and kilometres.",unclassified,[out_of_scope],
+2015,mercedes,benz,a-class a200 w176,hatchback,automatic,petrol,160776,5,WDD1760432V122369,1XO9VX,12-02-2026,4,1.6,Grey,Black,Yes,No,No,No,Yes,vic,https://www.grays.com/lot/0001-21063042/motor-vehicles-motor-cycles/2015-mercedes-benz-a-class-a200-w176-automatic-hatchback,"medium scratch on around vehicle
+engine light on
+seat torn driver seat
+medium dent on panel near windscreen
+dents or marks on body consistent with age and kilometres.",unclassified,[out_of_scope],
+2012,suzuki,swift,sport fz,hatchback,cvt,petrol,130487,5,JSAFZC32S00101506,BDP328,02-10-2026,4,1.6,Blue,Black,Yes,Yes,No,No,Yes,vic,https://www.grays.com/lot/0001-21063043/motor-vehicles-motor-cycles/2012-suzuki-swift-sport-fz-cvt-hatchback,"paint fading around exterior
+paint peeling bonnet
+dents or marks on body consistent with age and kilometres.",unclassified,[out_of_scope],
+2016,ldv,g10,,people mover,automatic,petrol,159556,9,LSKG4AL14GA415754,No plates,Unregistered,4,2.0,White,Cream Leather,Yes,No,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063044/motor-vehicles-motor-cycles/2016-ldv-g10-9-seat-automatic-9-seats-people-mover,"dents or marks on body consistent with age and kilometres.
+other warning light on
+front seat worn drivers
+seat torn drivers
+medium dent on boot and door panel",unclassified,[out_of_scope],
+2007,bmw,1,series 116i e87,hatchback,manual,petrol,97676,5,WBAUE12020PB26289,WKB827,12-05-2026,4,1.6,Silver,Black,Yes,No,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21063045/motor-vehicles-motor-cycles/2007-bmw-1-series-116i-e87-manual-hatchback,dents or marks on body consistent with age and kilometres.,unclassified,[out_of_scope],
+2014,bmw,m5,f10,sedan,automatic,petrol,36300,5,WBSFV92060DX98096,1OG9HY,Unregistered,8,4.4,White,Black Leather,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063046/motor-vehicles-motor-cycles/2014-bmw-m5-f10-automatic-sedan,"medium scratch on around vehicle
+engine idling rough
+medium dent on around vehicle
+engine light on
+other warning light on.
+oil leak.
+carbon spoiler requires attention.",unclassified,[out_of_scope],
+2014,volvo,s60,t5 r design,sedan,automatic,petrol,138964,5,YV1FS40CDF2337293,1UT7HT,01-04-2026,4,2.0,White,Black Leather,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063047/motor-vehicles-motor-cycles/2014-volvo-s60-t5-r-design-automatic-8-speed-sedan,"engine warning light on.
+dents or marks on body consistent with age and kilometres.",unclassified,[out_of_scope],
+2016,nissan,pulsar,st c12,hatchback,cvt,petrol,114433,5,MNTFAAC12A0011761,No plates,Unregistered,4,1.8,White,Black,Yes,No,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21063048/motor-vehicles-motor-cycles/2016-nissan-pulsar-st-c12-cvt-hatchback,"front seat stains both
+back seat stains.
+damaged brake light
+dents or marks on body consistent with age and kilometres.",unclassified,[out_of_scope],
+2005,ford,territory,tx sx,wagon,automatic,petrol,264417,5,6FPAAAJGAT5P52321,TJO675,28-04-2026,6,4.0,White,Grey,Yes,No,Yes,No,Yes,vic,https://www.grays.com/lot/0001-21063049/motor-vehicles-motor-cycles/2005-ford-territory-tx-sx-automatic-wagon,"medium scratch on around vehicle
+corrosion visible around vehicle
+windscreen chipped or cracked.
+hood lining sagging
+dents or marks on body consistent with age and kilometres.
+paint fading roof",unclassified,[out_of_scope],
+2003,honda,cr-v,rd,wagon,automatic,petrol,350842,5,JHLRD78403C210299,SLD166,04-09-2026,4,2.4,Black,Grey,Yes,Yes,No,No,Yes,vic,https://www.grays.com/lot/0001-21063050/motor-vehicles-motor-cycles/2003-honda-cr-v-rd-automatic-wagon,"airbag light on
+dents or marks on body consistent with age and kilometres.
+medium scratch on around vehicle",unclassified,[out_of_scope],
+2014,dodge,journey,sxt,people mover,automatic,petrol,174236,7,3C4PDCJGXET274736,1UO5OF,13-09-2026,6,3.6,White,Black,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063052/motor-vehicles-motor-cycles/2014-dodge-journey-sxt-automatic-7-seats-people-mover,"dents or marks on body consistent with age and kilometres.
+paint fading around vehicle
+other warning light on",unclassified,[out_of_scope],
+2007,holden,berlina,ve,sedan,automatic,petrol,168986,5,6G1EL54B88L982470,UZT778,30-03-2026,6,3.6,Grey,Grey,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063053/motor-vehicles-motor-cycles/2007-holden-berlina-ve-automatic-sedan,"medium scratch on around vehicle
+engine light on
+door card damaged.",unclassified,[out_of_scope],
+2014,jaguar,xf,2.0p luxury,sedan,automatic,petrol,101203,5,SAJAC04M5EPU33337,2DR4BI,28-05-2026,4,2.0,Silver,Black Leather,Yes,No,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21063054/motor-vehicles-motor-cycles/2014-jaguar-xf-2-0p-luxury-automatic-8-speed-sedan,"dents or marks on body consistent with age and kilometres.
+engine light on",unclassified,[out_of_scope],
+2014,mazda,3,neo bm,hatchback,automatic,petrol,286258,5,JM0BM547810117209,1BN8KO,17-04-2026,4,2.0,Blue,Black,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063055/motor-vehicles-motor-cycles/2014-mazda-3-neo-bm-automatic-hatchback,"dents or marks on body consistent with age and kilometres.
+body/panel damage rear right quarter panel",unclassified,[out_of_scope],
+2012,alfa,romeo,giulietta qv,hatchback,manual,petrol,173647,5,ZAR94000007188853,1XH4MN,10-02-2026,4,1.7,White,Black Leather,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21063056/motor-vehicles-motor-cycles/2012-alfa-romeo-giulietta-qv-manual-hatchback,"paint cracked rear bumper
+medium scuff on around vehicle",unclassified,[out_of_scope],
+2016,holden,cruze,z series jh,sedan,automatic,petrol,182174,5,6G1PE5EM2GL241927,1HQ2SG,01-02-2026,4,1.8,Grey,Black Leather,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063058/motor-vehicles-motor-cycles/2016-holden-cruze-z-series-jh-automatic-sedan,"engine light on
+dents or marks on body consistent with age and kilometres.",unclassified,[out_of_scope],
+2015,hyundai,i30,active gd,hatchback,manual,petrol,202366,5,KMHD251ELGU257106,1EK5FR,28-04-2026,4,1.8,White,Black,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21063059/motor-vehicles-motor-cycles/2015-hyundai-i30-active-gd-manual-hatchback,"windscreen chipped or cracked.
+dents or marks on body consistent with age and kilometres.
+medium scuff on around vehicle",unclassified,[out_of_scope],
+2012,ford,territory,titanium sz,wagon,automatic,diesel,289033,7,6FPAAAJGATCA71497,1ZT9MW,30-04-2026,6,2.7,Blue,Black Leather,Yes,Yes,No,Partial,Yes,vic,https://www.grays.com/lot/0001-21063060/motor-vehicles-motor-cycles/2012-ford-territory-titanium-sz-turbo-diesel-automatic-7-seats-wagon,"medium scratch on boot
+body/panel damage rear bumper
+hood lining sagging
+front seat worn driver side
+dents or marks on body consistent with age and kilometres.",unclassified,[out_of_scope],
+2011,mazda,3,sp25 bl,hatchback,manual,petrol,237398,5,JM0BL10L100213988,2EE4KU,21-02-2026,4,2.5,Silver,Black Leather,Yes,Yes,No,No,Yes,vic,https://www.grays.com/lot/0001-21063061/motor-vehicles-motor-cycles/2011-mazda-3-sp25-bl-manual-hatchback,"front seat worn drivers
+windscreen chipped or cracked.
+dents or marks on body consistent with age and kilometres.
+paint fading roof
+medium scratch on around vehicle",unclassified,[out_of_scope],
+2008,volvo,xc90,d5,wagon,automatic,diesel,400003,7,YV1CZ714681486351,WTG539,08-01-2026,5,2.4,Silver,Black Leather,Yes,Yes,No,Partial,Yes,vic,https://www.grays.com/lot/0001-21063062/motor-vehicles-motor-cycles/2008-volvo-xc90-d5-turbo-diesel-automatic-7-seats-wagon,"front seats worn
+medium scratches around vehicle
+large dents, paint peeling around vehicle
+dents or marks on body consistent with age and kilometres.
+paint cracked rear bumper",unclassified,[out_of_scope],
+2009,hyundai,iload,tq van (wovr repairable),van,manual,diesel,331870,3,KMFWBH7JR9U155113,1XL4EJ,03-03-2026,4,2.5,White,Grey,Yes,No,No,Partial,Yes,vic,https://www.grays.com/lot/0001-21063063/motor-vehicles-motor-cycles/2009-hyundai-iload-tq-turbo-diesel-manual-van-wovr-repairable,"dents or marks on body consistent with age and kilometres.
+medium dent on around exterior
+paint peeling around exterior
+windscreen chipped or cracked.",unclassified,[out_of_scope],
+2014,bmw,x4,xdrive 20d f26,coupe,automatic,diesel,191761,5,WBAXX120900G75598,1DA2MQ,15-07-2026,4,2.0,Dark Blue,Black Leather,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063064/motor-vehicles-motor-cycles/2014-bmw-x4-xdrive-20d-f26-turbo-diesel-automatic-8-speed-coupe,"dents or marks on body consistent with age and kilometres.
+medium dent on right rear quarter
+windscreen chipped or cracked.",unclassified,[out_of_scope],
+2012,ford,falcon,xt fg ii,sedan,automatic,lpg,151509,5,6FPAAAJGSWCK82269,ZJE051,15-04-2026,6,4.0,Silver,Black,Yes,No,Yes,No,Yes,vic,https://www.grays.com/lot/0001-21063065/motor-vehicles-motor-cycles/2012-ford-falcon-xt-fg-ii-automatic-sedan,"controls broken drivers window switch panel
+medium scratch on around vehicle",unclassified,[out_of_scope],
+2016,hyundai,accent,active rb,hatchback,cvt,petrol,138020,5,KMHCT51BTGU276492,1HE6SC,15-04-2026,4,1.4,White,Black,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21063066/motor-vehicles-motor-cycles/2016-hyundai-accent-active-rb-cvt-hatchback,"dents or marks on body consistent with age and kilometres.
+paint peeling around vehicle",unclassified,[out_of_scope],
+2012,toyota,camry,altise asv50r,sedan,automatic,petrol,244825,5,6T1BF3FK60X006278,1EX1TT,15-04-2026,4,2.5,White,Grey,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063067/motor-vehicles-motor-cycles/2012-toyota-camry-altise-asv50r-automatic-sedan,"paint fading bonnet
+front bumper cracked bumper.
+medium dent on driver side back door
+medium scratch on door panel
+dents or marks on body consistent with age and kilometres.",unclassified,[disallowed_variant],
+2017,nissan,qashqai,ti j11 ii,wagon,cvt,petrol,188872,5,SJNFBAJ11AZ038355,ANZ525,07-04-2026,4,2.0,Black,Black Leather,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063068/motor-vehicles-motor-cycles/2017-nissan-qashqai-ti-j11-ii-cvt-wagon,"seat torn drivers
+dents or marks on body consistent with age and kilometres.
+large dent on front left fender
+medium scratch on around vehicle
+paint fading on various panels
+door mirror broken housing on passenger side",unclassified,[out_of_scope],
+2012,skoda,fabia,77tsi 5jf,hatchback,manual,petrol,186219,5,TMBFN65J6C3187912,ZGB238,21-02-2026,4,1.2,Black,Black,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063069/motor-vehicles-motor-cycles/2012-skoda-fabia-77tsi-5jf-manual-hatchback,"dents or marks on body consistent with age and kilometres.
+other warning light on",unclassified,[out_of_scope],
+2005,mercedes,benz,c-class c180 kompressor,coupe,automatic,petrol,228950,4,WBD2037462A808806,AEV783,Unregistered,4,1.8,Red,Black,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063070/motor-vehicles-motor-cycles/2005-mercedes-benz-c-class-c180-kompressor-automatic-coupe,"medium scratch on around vehicle
+paint peeling around vehicle
+engine light on
+dents or marks on body consistent with age and kilometres.",unclassified,[out_of_scope],
+2013,volkswagen,tiguan,132 tsi pacific 5n,wagon,automatic,petrol,131872,5,WVGZZZ5NZDW067273,1MG1DP,27-03-2026,4,2.0,Black,Black,Yes,No,No,Partial,Yes,vic,https://www.grays.com/lot/0001-21063071/motor-vehicles-motor-cycles/2013-volkswagen-tiguan-132-tsi-pacific-5n-automatic-wagon,"seat torn burn hole passenger seat
+medium dent on around vehicle
+paint peeling tailgate",unclassified,[out_of_scope],
+2021,nissan,navara,4x4 sl series 4,crew cab chassis,manual,diesel,185948,5,MNTCBND23A0005791,YKZ26G,Unregistered,4,2.3,White,Black,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063074/motor-vehicles-motor-cycles/2021-nissan-navara-4x4-sl-series-4-turbo-diesel-manual-crew-cab-chassis,dents or marks on body consistent with age and kilometres.,unclassified,[out_of_scope],
+2007,suzuki,swift,ez,hatchback,automatic,petrol,221640,5,JSAEZC21S00408162,1OK7CT,21-03-2026,4,1.5,Red,Black,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063078/motor-vehicles-motor-cycles/2007-suzuki-swift-ez-automatic-hatchback,"medium scratch on around vehicle
+paint peeling around vehicle",unclassified,[out_of_scope],
+2016,holden,astra,rs-v bk,hatchback,manual,petrol,50343,5,W0LBF6EH5HG033845,ALP306,Unregistered,4,1.6,Silver,Black Leather,Yes,Yes,Yes,No,Yes,vic,https://www.grays.com/lot/0001-21063079/motor-vehicles-motor-cycles/2016-holden-astra-rs-v-bk-manual-hatchback,"medium scratch on around vehicle
+large scuff on rear bumper
+dents or marks on body consistent with age and kilometres.
+front bumper cracked bumper.",unclassified,[out_of_scope],
+2014,ford,mondeo,lx mc,wagon,automatic,diesel,202919,5,WF0GXXGBBGEY29788,1BS5GU,14-05-2026,4,2.0,White,Black,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063080/motor-vehicles-motor-cycles/2014-ford-mondeo-lx-mc-turbo-diesel-automatic-wagon,"dents or marks on body consistent with age and kilometres.
+rear view mirror broken",unclassified,[out_of_scope],
+2002,nissan,maxima,st a33,sedan,automatic,petrol,203208,5,JN1CCUA33A0111025,RZM348,17-06-2026,6,3.0,Blue,Grey,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063081/motor-vehicles-motor-cycles/2002-nissan-maxima-st-a33-automatic-sedan,"dents or marks on body consistent with age and kilometres.
+large scratch on rear right door",unclassified,[out_of_scope],
+2008,holden,commodore,omega ve,wagon,automatic,petrol,241103,5,6G1EK85BX9L199106,WNJ197,24-01-2026,6,3.6,Silver,Black,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063082/motor-vehicles-motor-cycles/2008-holden-commodore-omega-ve-automatic-wagon,"dents or marks on body consistent with age and kilometres.
+medium scratch on front bumper
+medium dent on rear bumper
+body/panel damage rear right wheel arch
+hood lining sagging
+front seat worn driver side
+engine light on
+paint cracked on various panels",unclassified,[out_of_scope],
+2011,hyundai,iload,tq van,van,manual,petrol,121517,3,KMFWBX7RLCU412058,YUW791,23-12-2025,4,2.4,White,Grey,Yes,No,No,Partial,Yes,vic,https://www.grays.com/lot/0001-21063083/motor-vehicles-motor-cycles/2011-hyundai-iload-tq-manual-van,"medium scratch on around vehicle
+large dent on rear quarter panel passenger side
+large scuff on front bumper",unclassified,[out_of_scope],
+2010,renault,koleos,privilege,wagon,cvt,petrol,305289,5,VF1VY0C0VAC338837,1YP7BL,11-03-2026,4,2.5,Grey,Black Leather,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063084/motor-vehicles-motor-cycles/2010-renault-koleos-privilege-cvt-wagon,"dents or marks on body consistent with age and kilometres.
+paint fading mirrors",unclassified,[out_of_scope],
+2000,toyota,corolla,ascent ae112r,hatchback,automatic,petrol,105761,5,JT764AEB200048460,No plates,Unregistered,4,1.8,Red,Grey,Yes,No,Yes,No,Yes,vic,https://www.grays.com/lot/0001-21063086/motor-vehicles-motor-cycles/2000-toyota-corolla-ascent-ae112r-automatic-hatchback,"carpet worn in places.
+dents or marks on body consistent with age and kilometres.
+medium scratches around vehicle
+driver seat stains",unclassified,[disallowed_variant],
+2017,mercedes,benz,cla 200 cla200 c117 (wovr-repairable),coupe,automatic,petrol,77426,5,WDD1173432N625996,BOK167,13-11-2025,4,1.6,White,Black Leather,Yes,No,No,No,Yes,vic,https://www.grays.com/lot/0001-21063087/motor-vehicles-motor-cycles/2017-mercedes-benz-cla-200-cla200-c117-automatic-coupe-wovr-repairable,dents or marks on body consistent with age and kilometres.,unclassified,[out_of_scope],
+2017,hyundai,accent,sport rb,sedan,automatic,petrol,201193,5,KMHCT41EMJU410991,1WO9AN,27-09-2026,4,1.6,Grey,Grey,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063088/motor-vehicles-motor-cycles/2017-hyundai-accent-sport-rb-automatic-sedan,dents or marks on body consistent with age and kilometres.,unclassified,[out_of_scope],
+2004,nissan,pulsar,st n16,sedan,automatic,petrol,73725,5,JN1CBAN16A0091279,1IJ4GU,24-04-2026,4,1.8,Gold,Grey,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21063089/motor-vehicles-motor-cycles/2004-nissan-pulsar-st-n16-automatic-sedan,"dents or marks on body consistent with age and kilometres.
+medium scratches around vehicle",unclassified,[out_of_scope],
+2007,ford,falcon,xt bf ii,sedan,automatic,petrol,344657,5,6FPAAAJGSW7U38124,2BL4AM,17-01-2026,6,4.0,Silver,Grey,Yes,No,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063090/motor-vehicles-motor-cycles/2007-ford-falcon-xt-bf-ii-automatic-sedan,"hood lining sagging
+paint fading around vehicle
+dents or marks on body consistent with age and kilometres.
+medium scuff on around vehicle
+medium dent on rear bumper
+damaged right rear taillight
+damaged headlight",unclassified,[out_of_scope],
+2011,toyota,camry,altise acv40r,sedan,automatic,petrol,172536,5,6T153BK400X118375,YLL761,25-07-2026,4,2.4,Silver,Black,Yes,No,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21063091/motor-vehicles-motor-cycles/2011-toyota-camry-altise-acv40r-automatic-sedan-rwc-issued-11-02-2026,medium scratches around vehicle,unclassified,[disallowed_variant],
+2004,mazda,6,classic gg,hatchback,automatic,petrol,224388,5,JM0GG103100164892,1JL5CJ,16-02-2026,4,2.3,Purple,Grey,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063092/motor-vehicles-motor-cycles/2004-mazda-6-classic-gg-automatic-hatchback,"paint fading around vehicle
+medium scratch on around vehicle",unclassified,[out_of_scope],
+2014,audi,a3,1.8 tsi ambition 8v,hatchback,automatic,petrol,158433,5,WAUZZZ8V2EA188715,1VG8OV,11-04-2026,4,1.8,Silver,Black Leather,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21063095/motor-vehicles-motor-cycles/2014-audi-a3-1-8-tsi-ambition-8v-auto-hatchback-rwc-issued-11-02-2026,"large scuff on rear bumper
+dents or marks on body consistent with age and kilometres.
+medium scratch, paint peeling various panels
+exterior: windscreen chipped
+exterior: windscreen chipped",unclassified,[out_of_scope],
+2012,mazda,3,neo bl,sedan,manual,petrol,108416,5,JM0BL10F200323012,YXH369,16-11-2026,4,2.0,Red,Black,Yes,No,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063096/motor-vehicles-motor-cycles/2012-mazda-3-neo-bl-manual-sedan,"paint peeling, medium scratches various panels
+dents or marks on body consistent with age and kilometres.",unclassified,[out_of_scope],
+2008,toyota,yaris,yrx ncp93r,sedan,automatic,petrol,308477,5,JTDBT923901258278,1XO5DB,11-04-2026,4,1.5,Red,Grey,Yes,No,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063097/motor-vehicles-motor-cycles/2008-toyota-yaris-yrx-ncp93r-automatic-sedan,"stains on front seats.
+passeneger door mirror cap broken
+corrosion visible rhr roof
+medium scratches, paint peeling on various panels",unclassified,[out_of_scope],
+2015,holden,cruze,cdx jh,sedan,automatic,petrol,80843,5,6G1PE5EM7FL132460,1ES1VR,10-03-2026,4,1.8,Black,Black Leather,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063099/motor-vehicles-motor-cycles/2015-holden-cruze-cdx-jh-automatic-sedan,dents or marks on body consistent with age and kilometres.,unclassified,[out_of_scope],
+2016,hyundai,accent,active rb,hatchback,cvt,petrol,138816,5,KMHCT51BTHU330665,1KJ1JN,07-06-2026,4,1.4,Red,Black,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21063100/motor-vehicles-motor-cycles/2016-hyundai-accent-active-rb-cvt-hatchback,"dents or marks on body consistent with age and kilometres.
+paint peeling, medium scratches around vehicle",unclassified,[out_of_scope],
+2016,renault,megane,gt,hatchback,automatic,petrol,67925,5,VF1RFB006G0749864,AXG707,14-05-2026,4,1.6,Dark Blue,Multi,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21063101/motor-vehicles-motor-cycles/2016-renault-megane-gt-automatic-hatchback,"dents or marks on body consistent with age and kilometres.
+medium scratch on rear bumper",unclassified,[out_of_scope],
+2010,subaru,forester,x s3,wagon,manual,petrol,287645,5,JF2SH9KK4AG051172,No plates,Unregistered,4,2.5,Blue,Black,Yes,No,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21063102/motor-vehicles-motor-cycles/2010-subaru-forester-x-s3-manual-wagon,"windscreen chipped or cracked.
+paint fading around vehicle
+medium scratch on around vehicle
+corrosion visible in chipped and scratched paint
+windscreen chipped or cracked.
+paint fading around vehicle
+medium scratch on around vehicle
+corrosion visible in chipped and scratched paint",unclassified,[out_of_scope],
+2011,audi,a6,3.0 tdi quattro c7,sedan,automatic,diesel,129457,5,WAUZZZ4G4CN024198,VAN824,22-09-2026,6,3.0,Black,Black Leather,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063104/motor-vehicles-motor-cycles/2011-audi-a6-3-0-tdi-quattro-c7-turbo-diesel-automatic-sedan,"dents or marks on body consistent with age and kilometres.
+front right bumper cracked bumper.
+damaged left rear brake light
+medium scratch on around vehicle
+other warning light on",unclassified,[out_of_scope],
+2008,mercedes,benz,ml320cdi w164,wagon,automatic,diesel,265609,5,WDC1641222A482838,991FJ2,Unregistered,6,3.0,Black,Black Leather,Yes,No,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21063105/motor-vehicles-motor-cycles/2008-mercedes-benz-ml320cdi-w164-turbo-diesel-automatic-wagon,dents or marks on body consistent with age and kilometres.,unclassified,[out_of_scope],
+2014,mini,cooper,f56 wovr-repairable,hatchback,automatic,petrol,40270,4,WMWXM52010T929901,No plates,Unregistered,3,1.5,Cream,Black,Yes,No,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063106/motor-vehicles-motor-cycles/2014-mini-cooper-f56-automatic-wovr-repairable,"engine noise observed.
+engine idling rough
+other warning light on
+dents or marks on body consistent with age and kilometres.
+door handle not working or broken.
+engine light on
+front seat worn and back seat worn",unclassified,[out_of_scope],
+2005,toyota,landcruiser,prado gxl grj120r,wagon,automatic,petrol,223977,8,JTEBU29J905039138,No plates,Unregistered,6,4.0,Gold,Brown,Yes,No,No,No,Yes,vic,https://www.grays.com/lot/0001-21063107/motor-vehicles-motor-cycles/2005-toyota-landcruiser-prado-gxl-grj120r-automatic-8-seats-wagon,"dents or marks on body consistent with age and kilometres.
+medium scratch on around vehicle
+front seat stains both
+medium scuff on around vehicle",unclassified,[out_of_scope],
+2011,kia,cerato,koup si td,coupe,automatic,petrol,183903,5,KNAFU612MC5546052,1ZQ5QF,Unregistered,4,2.0,Black,Black,Yes,No,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21063110/motor-vehicles-motor-cycles/2011-kia-cerato-koup-si-td-automatic-coupe,"large scratch on around vehicle
+paint peeling around vehicle
+paint cracked rear bumper.
+paint faded on the bonnet.",unclassified,[out_of_scope],
+2015,jeep,cherokee,limited 4x4 kl 9,wagon,automatic,petrol,181590,5,1C4PJMHS1FW748187,1SZ4LG,28-02-2026,6,3.2,White,Black Leather,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063113/motor-vehicles-motor-cycles/2015-jeep-cherokee-limited-4x4-kl-9-auto-wagon,"windscreen chipped or cracked.
+medium scuff on around vehicle
+rear cracked bumper.
+other warning light on - tyre pressure sensor",unclassified,[out_of_scope],
+2011,bmw,x5,xdrive 40d sport e70 lci,wagon,automatic,diesel,276108,5,WBAZW62070L480278,ACB602,Unregistered,6,3.0,White,Black Leather,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063115/motor-vehicles-motor-cycles/2011-bmw-x5-xdrive-40d-sport-e70-lci-turbo-diesel-automatic-8-speed-wagon,"seat torn driver seat
+windscreen chipped or cracked.
+medium scratch on around vehicle",unclassified,[out_of_scope],
+2009,toyota,rav,4 cruiser aca33r,wagon,automatic,petrol,278017,5,JTMBD31VX05240023,No plates,Unregistered,4,2.4,Black,Black,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063116/motor-vehicles-motor-cycles/2009-toyota-rav-4-cruiser-aca33r-automatic-wagon,medium scratch on around vehicle,unclassified,[out_of_scope],
+2013,holden,ute,sv6 vf,ute,automatic,petrol,237971,2,6G1FB4E37EL906856,1VA6RZ,Unregistered,6,3.6,White,Black Leather,Yes,No,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21063117/motor-vehicles-motor-cycles/2013-holden-ute-sv6-vf-automatic-ute,"paint peeling bonnet
+engine light on
+windscreen chipped or cracked.",unclassified,[out_of_scope],
+2014,jeep,cherokee,limited 4x4 kl,wagon,automatic,diesel,176928,5,1C4PJMHYXFW537364,ADM251,15-01-2026,4,2.0,Grey,Black Leather,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21063118/motor-vehicles-motor-cycles/2014-jeep-cherokee-limited-4x4-kl-turbo-diesel-automatic-wagon,dents or marks on body consistent with age and kilometres.,unclassified,[out_of_scope],
+2015,volkswagen,touareg,150tdi 7p,wagon,automatic,diesel,261357,5,WVGZZZ7PZGD018121,2DR7ZR,15-04-2026,6,3.0,White,Black Leather,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063119/motor-vehicles-motor-cycles/2015-volkswagen-touareg-150tdi-7p-turbo-diesel-automatic-8-speed-wagon,"medium scratch on around vehicle
+door mirror broken passenger",unclassified,[out_of_scope],
+2010,honda,odyssey,luxury,people mover,automatic,petrol,249375,7,JHMRB3850AC200353,1GS9CE,Unregistered,4,2.4,Black,Black Leather,Yes,No,Yes,No,Yes,vic,https://www.grays.com/lot/0001-21063120/motor-vehicles-motor-cycles/2010-honda-odyssey-luxury-automatic-7-seats-people-mover,"paint fading around vehicle
+dents or marks on body consistent with age and kilometres.
+large scuff on around vehicle
+corrosion visible around vehicle",unclassified,[out_of_scope],
+2019,nissan,navara,4x2 rx series 3,dual cab,automatic,diesel,203605,5,MNTCB2D23A0014960,1JD7IF,09-08-2026,4,2.3,White,Black,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063121/motor-vehicles-motor-cycles/2019-nissan-navara-4x2-rx-series-3-turbo-diesel-automatic-dual-cab,"front seat worn drivers
+medium scratch on around vehicle",unclassified,[out_of_scope],
+2010,nissan,elgrand,,wagon,automatic,petrol,163294,7,6U90000TE52001859,2EE7YN,Unregistered,6,2.5,Black,Multi,Yes,Yes,No,No,Yes,vic,https://www.grays.com/lot/0001-21063122/motor-vehicles-motor-cycles/2010-nissan-elgrand-automatic-7-seats-wagon,medium scuff on around vehicle,unclassified,[out_of_scope],
+2018,isuzu,d-max,4x2 sx hi-ride t d,ute,automatic,diesel,193808,4,MPATFR85JJT000690,1MZ3LK,30-06-2026,4,3.0,White,Black,Yes,No,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063123/motor-vehicles-motor-cycles/2018-isuzu-d-max-4x2-sx-hi-ride-t-d-auto-ute-ex-gov,"dents or marks on body consistent with age and kilometres.
+body/panel damage front bumper",unclassified,[out_of_scope],
+2019,mitsubishi,triton,4x4 glx adas mr t d dual cab,cab chassis,automatic,diesel,39738,5,MMAJLKL10LH005010,1QH3YH,30-06-2026,4,2.4,White,Black,Yes,No,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063124/motor-vehicles-motor-cycles/2019-mitsubishi-triton-4x4-glx-adas-mr-t-d-auto-dual-cab-ex-gov,"dents or marks on body consistent with age and kilometres.
+body/panel damage front bumper
+seat torn driver side
+medium scuff on various panels",unclassified,[out_of_scope],
+2010,toyota,corolla,ascent zre152r,hatchback,manual,petrol,270921,5,JTNKU58E601125049,1SQ9AT,22-01-2026,4,1.8,White,Black,Yes,No,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063126/motor-vehicles-motor-cycles/2010-toyota-corolla-ascent-zre152r-manual-hatchback,"dents or marks on body consistent with age and kilometres.
+seat torn passenger seat
+corrosion visible around vehicle
+large scuff on around vehicle",unclassified,[out_of_scope],
+2004,toyota,echo,ncp12r,sedan,automatic,petrol,173835,5,JTDBT133300351254,SYJ994,16-07-2026,4,1.5,Silver,Grey,Yes,No,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063127/motor-vehicles-motor-cycles/2004-toyota-echo-ncp12r-automatic-sedan,"medium scuff on front bumper
+dents or marks on body consistent with age and kilometres.
+medium scratch on around exterior
+paint cracked rear bumper
+paint fading around exterior",unclassified,[out_of_scope],
+2007,bmw,530i,e60,sedan,automatic,petrol,208312,5,WBANU92010CU35729,WCF562,03-12-2025,6,3.0,Grey,Black Leather,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21063128/motor-vehicles-motor-cycles/2007-bmw-530i-e60-automatic-sedan,"engine noise observed.
+dents or marks on body consistent with age and kilometres.
+paint cracked rear bumper
+medium scuff on around vehicle",unclassified,[out_of_scope],
+2011,toyota,corolla,ascent zre152r,hatchback,automatic,petrol,257738,5,JTNKU56E101163260,YOF042,11-08-2026,4,1.8,Blue,Black,Yes,No,Yes,No,Yes,vic,https://www.grays.com/lot/0001-21063129/motor-vehicles-motor-cycles/2011-toyota-corolla-ascent-zre152r-automatic-hatchback,"engine noise observed.
+front seat torn both
+back seat stains and torn.
+carpet worn in places.
+large scratch on around vehicle
+large dent on around vehicle
+dents or marks on body consistent with age and kilometres.
+paint fading around vehicle
+large scuff on around vehicle",unclassified,[disallowed_variant],
+2004,toyota,camry,altise acv36r,sedan,automatic,petrol,356797,5,6T153BK360X051431,SWL982,01-10-2026,4,2.4,Grey,Grey,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063130/motor-vehicles-motor-cycles/2004-toyota-camry-altise-acv36r-automatic-sedan,"dents or marks on body consistent with age and kilometres.
+body/panel damage front bumper
+paint fading boot
+paint fading door frams",unclassified,[disallowed_variant],
+1998,hyundai,sonata,gle ef,sedan,automatic,petrol,238760,5,KMHEM41BRXA030389,YWL405,07-02-2026,4,2.0,Green,Grey,Yes,Yes,No,No,Yes,vic,https://www.grays.com/lot/0001-21063136/motor-vehicles-motor-cycles/1998-hyundai-sonata-gle-ef-automatic-sedan,"paint fading around vehicle
+corrosion visible around vehicle
+engine noise observed.
+paint fading around exterior
+rear bumper cracked bumper.
+dents or marks on body consistent with age and kilometres.
+medium scuff on rear passenger side
+front seat worn driver seat torn",unclassified,[out_of_scope],
+2016,porsche,cayenne,92a,wagon,automatic,diesel,144735,5,WP1ZZZ92ZGLA45082,BGO625,11-06-2026,6,3.0,Black,Beige Leather,Yes,No,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21063137/motor-vehicles-motor-cycles/2016-porsche-cayenne-diesel-92a-turbo-diesel-automatic-8-speed-wagon,"other warning light on
+dents or marks on body consistent with age and kilometres.
+damaged right rear reflector",unclassified,[out_of_scope],
+2004,ford,falcon,xt ba,sedan,automatic,petrol,374118,5,6FPAAAJGSW4D38129,TZG442,01-06-2026,6,4.0,Silver,Grey,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063138/motor-vehicles-motor-cycles/2004-ford-falcon-xt-ba-automatic-sedan,"dents or marks on body consistent with age and kilometres.
+body/panel damage front bumper
+paint peeling boot and spoiler
+paint fading boot and spoiler
+medium scratch on left side of vehicle",unclassified,[out_of_scope],
+2012,bmw,5,series 535d f10,sedan,automatic,diesel,223984,5,WBAXA72070DN13415,CJJ95U,Unregistered,6,3.0,Silver,Black Leather,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063139/motor-vehicles-motor-cycles/2012-bmw-5-series-535d-f10-turbo-diesel-automatic-8-speed-sedan,"other warning light on
+medium scuff on around vehicle
+hail damage visible.",unclassified,[out_of_scope],
+2012,subaru,impreza,2.0i g4,sedan,cvt,petrol,263393,5,JF1GJ7KC5CG004425,2EK7AY,30-04-2026,4,2.0,Silver,Grey,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21063140/motor-vehicles-motor-cycles/2012-subaru-impreza-2-0i-g4-cvt-sedan,"medium scratch on around vehicle
+large scuff on around vehicle
+engine light on
+abs light on
+traction control light on",unclassified,[out_of_scope],
+2013,mitsubishi,asx,2wd xb,wagon,cvt,petrol,199377,5,JMFXTGA2WDZ003340,2DZ5SV,15-04-2026,4,2.0,White,Black,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21063142/motor-vehicles-motor-cycles/2013-mitsubishi-asx-2wd-xb-cvt-wagon,medium scratch on around vehicle,unclassified,[out_of_scope],
+2015,ford,falcon,fg x,ute,automatic,lpg,218233,2,6FPAAAJGCMFU92142,1FV9ND,04-11-2026,6,4.0,Silver,Black,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063143/motor-vehicles-motor-cycles/2015-ford-falcon-fg-x-automatic-ute,dents or marks on body consistent with age and kilometres.,unclassified,[out_of_scope],
+2012,land,rover,range rover sport 3.0 sdv6 luxury t d,wagon,automatic,diesel,186180,5,SALLSAAF3DA767202,BZE679,15-04-2026,6,3.0,White,Black Leather,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063146/motor-vehicles-motor-cycles/2012-land-rover-range-rover-sport-3-0-sdv6-luxury-t-d-automatic-wagon,"dents or marks on body consistent with age and kilometres.
+driver seat worn.",unclassified,[out_of_scope],
+2021,mazda,3,g20 touring bp,sedan,automatic,petrol,184034,5,JM0BP2S7A01134122,1YE2FD,19-04-2026,4,2.0,Blue,Black Leather,Yes,Yes,No,Yes,Yes,vic,https://www.grays.com/lot/0001-21063148/motor-vehicles-motor-cycles/2021-mazda-3-g20-touring-bp-automatic-sedan,dents or marks on body consistent with age and kilometres.,unclassified,[out_of_scope],
+2010,toyota,yaris,yr ncp90r,hatchback,automatic,petrol,189009,5,JTDKW923805172556,No plates,Unregistered,4,1.3,Silver,Grey,Yes,No,No,No,Yes,vic,https://www.grays.com/lot/0001-21063149/motor-vehicles-motor-cycles/2010-toyota-yaris-yr-ncp90r-automatic-hatchback,"driver seat stains
+large scratches, medium scuffs around vehicle
+dents or marks on body consistent with age and kilometres.
+interior: reverse sensor requires attention, exterior: paint faded in areas
+interior: reverse sensor requires attention, exterior: paint faded in areas",unclassified,[out_of_scope],
+2011,audi,a5,2.0 tfsi quattro 8t,convertible,automatic,petrol,108404,4,WAUZZZ8F2BN022661,1TF9DW,15-05-2026,4,2.0,Brown,Cream Leather,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21063150/motor-vehicles-motor-cycles/2011-audi-a5-2-0-tfsi-quattro-8t-automatic-convertible,"dents or marks on body consistent with age and kilometres.
+medium scratch on around vehicle
+hood lining sagging",unclassified,[out_of_scope],
+2008,ford,transit,swb rwd low roof vm van,van,manual,diesel,201150,2,WF0XXXBDFX7P57044,No plates,Unregistered,4,2.4,White,Grey,Yes,No,No,Partial,Yes,vic,https://www.grays.com/lot/0001-21063151/motor-vehicles-motor-cycles/2008-ford-transit-swb-rwd-low-roof-vm-turbo-diesel-manual-van,"carpet worn in places.
+dents or marks on body consistent with age and kilometres.
+large scratches, medium scuffs, paint peeling and corrosion around vehicle",unclassified,[out_of_scope],
+2006,ford,fairmont,ghia bf,sedan,automatic,petrol,290646,5,6FPAAAJGSW6Y60602,No Plates,Unregistered,6,4.0,Blue,Black,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063152/motor-vehicles-motor-cycles/2006-ford-fairmont-ghia-bf-automatic-sedan,"windscreen chipped.
+medium scratches, scuffs around vehicle
+dents or marks on body consistent with age and kilometres.",unclassified,[out_of_scope],
+2011,ford,territory,tx sz,wagon,automatic,petrol,184669,5,6FPAAAJGATBP59999,1EO2RU,07-07-2026,6,4.0,Silver,Grey,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21063153/motor-vehicles-motor-cycles/2011-ford-territory-tx-sz-automatic-wagon,"hood lining sagging
+medium scuffs, dents or marks on body consistent with age and kilometres.",unclassified,[out_of_scope],
+2003,mercedes,benz,c200 k classic w203,sedan,automatic,petrol,211351,5,WDC2030422R096699,SDB563,06-03-2026,4,1.8,Gold,Tan Leather,Yes,No,No,No,Yes,vic,https://www.grays.com/lot/0001-21063154/motor-vehicles-motor-cycles/2003-mercedes-benz-c200-k-classic-w203-automatic-sedan,"large scuff on around vehicle
+dents or marks on body consistent with age and kilometres.
+paint peeling bonnet",unclassified,[out_of_scope],
+2008,mercedes,benz,e280 elegance w211,sedan,automatic,petrol,180389,5,WDB2110542B294508,1UB7KW,28-06-2026,6,3.0,Grey,Black Leather,Yes,Yes,No,Partial,Yes,vic,https://www.grays.com/lot/0001-21063155/motor-vehicles-motor-cycles/2008-mercedes-benz-e280-elegance-w211-automatic-sedan,"large scratch on boot
+dents or marks on body consistent with age and kilometres.",unclassified,[out_of_scope],
+2000,honda,cr-v,rd,wagon,automatic,petrol,305280,5,JHLRD1840YC234328,QOW842,04-01-2027,4,2.0,Blue,Grey,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21063158/motor-vehicles-motor-cycles/2000-honda-cr-v-rd-automatic-wagon,"medium dents and scratches around vehicle
+interior: driver window not working
+interior: driver window not working",unclassified,[out_of_scope],
+2008,audi,a5,3.2 fsi quattro 8t,coupe,automatic,petrol,194183,4,WAUZZZ8T48A029536,No plates,Unregistered,6,3.2,Silver,Black Leather,Yes,No,Yes,Yes,Yes,qld,https://www.grays.com/lot/0001-50517791/motor-vehicles-motor-cycles/2008-audi-a5-3-2-fsi-quattro-8t-automatic-coupe,"dents or marks on body consistent with age and kilometres.
+front seat worn both
+medium dent on front bumper,
+engine light on
+airbag light on
+other warning light on",unclassified,[out_of_scope],
+2016,holden,calais,v vf,sedan,automatic,petrol,243385,5,6G1FJ5E30GL257252,No plates,Unregistered,6,3.6,Green,Black Leather,Yes,Yes,No,No,Yes,qld,https://www.grays.com/lot/0001-50517792/motor-vehicles-motor-cycles/2016-holden-calais-v-vf-automatic-sedan,"transmission requires attention strongly recommend inspection by qualified third party
+dents or marks on body consistent with age and kilometres.",unclassified,[out_of_scope],
+2008,bmw,3,series 320d luminance e90,sedan,automatic,diesel,252665,5,WBAVG96040NL98147,No plates,Unregistered,4,2.0,Silver,Black Leather,Yes,No,Yes,Partial,Yes,qld,https://www.grays.com/lot/0001-50517803/motor-vehicles-motor-cycles/2008-bmw-3-series-320d-luminance-e90-turbo-diesel-automatic-sedan,"front seat worn both
+back seat worn.
+dents or marks on body consistent with age and kilometres.
+large scuff on front bumper,
+medium dent on rear bumper",unclassified,[out_of_scope],
+2017,toyota,camry,atara s asv50r,sedan,automatic,petrol,124625,5,6T1BF3FK40X118075,No plates,Unregistered,4,2.5,Red,Black,Yes,Yes,Yes,Partial,Yes,qld,https://www.grays.com/lot/0001-50517804/motor-vehicles-motor-cycles/2017-toyota-camry-atara-s-asv50r-automatic-sedan,"front seat worn rhf
+dents or marks on body consistent with age and kilometres.
+paint peeling lhf door handle
+medium dent on rhr door and guard",unclassified,[disallowed_variant],
+2020,hyundai,i30,active pd,hatchback,automatic,petrol,41143,5,KMHH351EMLU140180,No plates,Unregistered,4,2.0,Red,Black,Yes,No,No,Yes,Yes,qld,https://www.grays.com/lot/0001-50517805/motor-vehicles-motor-cycles/2020-hyundai-i30-active-pd-automatic-hatchback,"dents or marks on body consistent with age and kilometres.
+large scratch on bonnet
+medium scratch on rear bumper
+medium dent on rhr guard and lhr door
+other warning light on",unclassified,[out_of_scope],
+2012,hyundai,i40,elite vf,sedan,automatic,diesel,188997,5,KMHLC41UMDU019070,No plates,Unregistered,4,1.7,White,Black Leather,Yes,Yes,Yes,No,Yes,qld,https://www.grays.com/lot/0001-50517806/motor-vehicles-motor-cycles/2012-hyundai-i40-elite-vf-turbo-diesel-automatic-sedan,"dents or marks on body consistent with age and kilometres.
+front seat worn both
+large scuff on front bumper,
+airbag light on",unclassified,[out_of_scope],
+2011,mercedes,benz,slk-class slk350 blue efficiency r172,convertible,automatic,petrol,132123,2,WDD1724572F013336,No plates,Unregistered,6,3.5,Silver,Black Leather,Yes,No,Yes,Partial,Yes,qld,https://www.grays.com/lot/0001-50517807/motor-vehicles-motor-cycles/2011-mercedes-benz-slk-class-slk350-blue-efficiency-r172-auto-convertible,"dents or marks on body consistent with age and kilometres.
+front seat worn both
+engine light on",unclassified,[out_of_scope],
+2017,renault,megane,intens,sedan,automatic,petrol,115727,5,VF1RFB006H0756007,No plates,Unregistered,4,1.2,White,Black Leather,Yes,No,Yes,Partial,Yes,qld,https://www.grays.com/lot/0001-50517808/motor-vehicles-motor-cycles/2017-renault-megane-intens-automatic-sedan,"door card damaged.
+dents or marks on body consistent with age and kilometres.",unclassified,[out_of_scope],
+2010,nissan,navara,st (4x4) d40,dual cab,automatic,diesel,191133,5,MNTVCUD40A0011333,No plates,Unregistered,4,2.5,White,Black,Yes,No,Yes,No,Yes,qld,https://www.grays.com/lot/0001-50714510/motor-vehicles-motor-cycles/2010-nissan-navara-st-4x4-d40-turbo-diesel-automatic-dual-cab,"dents or marks on body consistent with age and kilometres.
+medium scratch on lhf guard
+other warning light on
+seat torn driver side",unclassified,[out_of_scope],
+2015,ford,kuga,trend awd tf ii,wagon,automatic,petrol,160501,5,WF0AXXWPMAFK27835,No plates,Unregistered,4,2.0,Black,Black,Yes,Yes,Yes,Partial,Yes,qld,https://www.grays.com/lot/0001-50714511/motor-vehicles-motor-cycles/2015-ford-kuga-trend-awd-tf-ii-automatic-wagon,"abs light on
+traction control light on
+other warning light on
+dents or marks on body consistent with age and kilometres.
+door card worn.
+paint peeling rhr guard
+paint fading lhf guard
+large scratch on front bumper",unclassified,[out_of_scope],
+2012,volkswagen,up!,aa,hatchback,manual,petrol,43628,4,WVWZZZAAZDD005440,No plates,Unregistered,3,1.0,White,Grey,Yes,No,No,No,Yes,qld,https://www.grays.com/lot/0001-50714512/motor-vehicles-motor-cycles/2012-volkswagen-up-aa-manual-hatchback,"flat battery. jump start or towing required
+engine overheating, tow advisable.
+dents or marks on body consistent with age and kilometres.
+engine lacks power
+engine idling rough",unclassified,[out_of_scope],
+2009,volkswagen,tiguan,125 tsi 5n,wagon,automatic,petrol,183449,5,WVGZZZ5NZ9W103300,No plates,Unregistered,4,2.0,Grey,Black,Yes,Yes,No,No,Yes,qld,https://www.grays.com/lot/0001-50714513/motor-vehicles-motor-cycles/2009-volkswagen-tiguan-125-tsi-5n-automatic-wagon,"dents or marks on body consistent with age and kilometres.
+paint peeling fuel flap
+large scuff on rear bumper",unclassified,[out_of_scope],
+2015,mazda,cx-5,grand touring ke,wagon,automatic,diesel,168705,5,JM0KE102200332543,No plates,Unregistered,4,2.2,Dark Grey,Black,Yes,No,Yes,Yes,Yes,qld,https://www.grays.com/lot/0001-50714515/motor-vehicles-motor-cycles/2015-mazda-cx-5-grand-touring-ke-turbo-diesel-automatic-wagon,"dents or marks on body consistent with age and kilometres.
+medium dent on rhf door",unclassified,[out_of_scope],
+2015,nissan,pathfinder,st r52,wagon,cvt,petrol,169507,7,5N1AR2MM8FC664102,No plates,Unregistered,6,3.5,White,Black,Yes,Yes,Yes,Partial,Yes,qld,https://www.grays.com/lot/0001-50714516/motor-vehicles-motor-cycles/2015-nissan-pathfinder-st-r52-cvt-7-seats-wagon,"paint peeling bonnet
+paint peeling bonnet
+dents or marks on body consistent with age and kilometres.
+dents or marks on body consistent with age and kilometres.",unclassified,[out_of_scope],
+2015,volvo,xc60,d4 kinetic,wagon,automatic,diesel,171619,5,YV1DZ73CDF2720824,No plates,Unregistered,4,2.0,Dark Blue,Black Leather,Yes,Yes,Yes,Yes,Yes,qld,https://www.grays.com/lot/0001-50714517/motor-vehicles-motor-cycles/2015-volvo-xc60-d4-kinetic-turbo-diesel-automatic-8-speed-wagon,"seat torn rhf, back,
+dents or marks on body consistent with age and kilometres.
+large scuff on rhr door plus guard",unclassified,[out_of_scope],
+2011,audi,q5,2.0 tdi quattro 8r,wagon,automatic,diesel,152144,5,WAUZZZ8RXBA085444,No plates,Unregistered,4,2.0,Black,Black Leather,Yes,No,No,No,Yes,qld,https://www.grays.com/lot/0001-50714518/motor-vehicles-motor-cycles/2011-audi-q5-2-0-tdi-quattro-8r-turbo-diesel-automatic-wagon,"hood lining sagging
+dents or marks on body consistent with age and kilometres.
+other warning light on",unclassified,[out_of_scope],
+2019,land,rover,range rover velar d300 hse l560 td,wagon,automatic,diesel,116469,5,SALYA2AK2LA253579,No plates,Unregistered,6,3.0,White,Black Leather,Yes,Yes,Yes,Partial,Yes,qld,https://www.grays.com/lot/0001-50714520/motor-vehicles-motor-cycles/2019-land-rover-range-rover-velar-d300-hse-l560-td-auto-8-speed-wagon,"front seat worn both
+dents or marks on body consistent with age and kilometres.
+other warning light on",unclassified,[out_of_scope],
+2012,hyundai,ix35,elite awd lm,wagon,automatic,diesel,214967,5,KMHJU81VSCU525100,No plates,Unregistered,4,2.0,Silver,Black,Yes,No,No,No,Yes,qld,https://www.grays.com/lot/0001-50714521/motor-vehicles-motor-cycles/2012-hyundai-ix35-elite-awd-lm-turbo-diesel-automatic-wagon,"front seat worn both
+back seat worn.
+dents or marks on body consistent with age and kilometres.
+medium scratch on lhf guard, front bumper, rhr door",unclassified,[out_of_scope],
+2016,mazda,cx-9,touring awd tc,wagon,automatic,petrol,175595,7,JM0TC4WLA00102048,No plates,Unregistered,4,2.5,Black,Black Leather,Yes,No,Yes,No,Yes,qld,https://www.grays.com/lot/0001-50714523/motor-vehicles-motor-cycles/2016-mazda-cx-9-touring-awd-tc-automatic-7-seats-wagon,"dents or marks on body consistent with age and kilometres.
+medium scratch on lhr door
+medium dent on lhr guard
+paint peeling bonnet and rear door
+other warning light on",unclassified,[out_of_scope],
+2006,toyota,corolla,ascent zze122r,hatchback,automatic,petrol,268216,5,JTDKR23E202039291,No plates,Unregistered,4,1.8,Black,Black,Yes,No,No,No,Yes,qld,https://www.grays.com/lot/0001-50714532/motor-vehicles-motor-cycles/2006-toyota-corolla-ascent-zze122r-automatic-hatchback,"driveline requires attention, recommend inspection by qualified third party
+flat battery. jump start or towing required
+back seat stains.
+door card worn.
+paint fading various panels
+paint cracked rear bumper
+medium scuff on front bumper
+engine oil leak",unclassified,[disallowed_variant],
+2008,holden,rodeo,lt 4x2 3.6 v6 ra,dual cab,automatic,petrol,322416,5,MPATFR27H8H531755,No plates,Unregistered,6,3.6,White,Grey,Yes,No,Yes,No,Yes,qld,https://www.grays.com/lot/0001-50714534/motor-vehicles-motor-cycles/2008-holden-rodeo-lt-4x2-3-6-v6-ra-automatic-dual-cab,"engine light on
+dents or marks on body consistent with age and kilometres.
+front seat worn both
+large scuff on lhr guard",unclassified,[out_of_scope],
+2016,land,rover,discovery sport td4 180 se,wagon,automatic,diesel,130760,5,SALCA2AN0HH652347,No plates,Unregistered,4,2.0,White,Black Leather,Yes,No,Yes,No,Yes,qld,https://www.grays.com/lot/0001-50714535/motor-vehicles-motor-cycles/2016-land-rover-discovery-sport-td4-180-se-turbo-diesel-automatic-wagon,"engine noise observed.
+dents or marks on body consistent with age and kilometres.
+front seat worn both
+engine light on",unclassified,[out_of_scope],
+2017,mazda,cx-5,akera kf,wagon,automatic,diesel,212088,5,JM0KF4W2A00110846,No plates,Unregistered,4,2.2,Red,Black Leather,Yes,No,Yes,No,Yes,qld,https://www.grays.com/lot/0001-50714536/motor-vehicles-motor-cycles/2017-mazda-cx-5-akera-kf-turbo-diesel-automatic-wagon,"dents or marks on body consistent with age and kilometres.
+front seat worn both",unclassified,[out_of_scope],
+2014,volkswagen,tiguan,118 tsi 5n,wagon,automatic,petrol,209838,5,WVGZZZ5NZFW061501,No plates,Unregistered,4,1.4,White,Black,Yes,Yes,Yes,Partial,Yes,qld,https://www.grays.com/lot/0001-50714550/motor-vehicles-motor-cycles/2014-volkswagen-tiguan-118-tsi-5n-automatic-wagon,"engine light on
+medium scuff on rhf door
+large dent on lhf door
+seat torn driver side
+dents or marks on body consistent with age and kilometres.",unclassified,[out_of_scope],
+1997,toyota,landcruiser,prado gxl v6 vzj95r,wagon,automatic,petrol,425781,8,JT711VJ9500020580,No plates,Unregistered,6,3.4,White,Grey,Yes,Yes,Yes,Partial,Yes,qld,https://www.grays.com/lot/0001-50714551/motor-vehicles-motor-cycles/1997-toyota-landcruiser-prado-gxl-v6-vzj95r-automatic-8-seats-wagon,"dents or marks on body consistent with age and kilometres.
+engine lacks power
+paint cracked front bumper
+paint peeling lhf flare
+medium scuff on rear bumper
+paint fading various panels
+transmission requires attention strongly recommend inspection by qualified third party",unclassified,[out_of_scope],
+2011,holden,captiva,7 lx awd cg ii,wagon,automatic,diesel,190747,7,KL3CD266JBB118559,No plates,Unregistered,4,2.2,White,Black Leather,Yes,Yes,Yes,Yes,Yes,qld,https://www.grays.com/lot/0001-50714552/motor-vehicles-motor-cycles/2011-holden-captiva-7-lx-awd-cg-ii-turbo-diesel-automatic-7-seats-wagon,"seat torn rhf,
+back seat worn.
+dents or marks on body consistent with age and kilometres.
+large dent on rhr guard,
+large scuff on front bumper, rear bumper,
+paint peeling tail gate,
+driveline requires attention, recommend inspection by qualified third party
+other warning light on",unclassified,[out_of_scope],
+2008,land,rover,freelander 2 td4 se,wagon,automatic,diesel,199083,5,SALFA23B68H095525,No plates,Unregistered,4,2.2,Gold,Tan Leather,Yes,No,Yes,Yes,Yes,qld,https://www.grays.com/lot/0001-50714554/motor-vehicles-motor-cycles/2008-land-rover-freelander-2-td4-se-turbo-diesel-automatic-wagon,"transmission requires attention strongly recommend inspection by qualified third party
+dents or marks on body consistent with age and kilometres.
+seat torn rhf,
+back seat worn.
+windscreen chipped or cracked.
+large scuff on lhf guard, lhf door, lhr door,
+engine light on
+other warning light on",unclassified,[out_of_scope],
+2011,mazda,3,neo bl (wovr-inspected),hatchback,automatic,petrol,145795,5,JM0BL10F200313870,No plates,Unregistered,4,2.0,Dark Grey,Black,Yes,Yes,No,Partial,Yes,qld,https://www.grays.com/lot/0001-50714555/motor-vehicles-motor-cycles/2011-mazda-3-neo-bl-automatic-hatchback-wovr-inspected,"medium scuff on lhf bumper
+rear cracked bumper.
+medium scratch on rhr door
+paint fading various panels
+airbag light on
+medium dent on rh under driver door
+paint peeling on various panels
+dents or marks on body consistent with age and kilometres.",unclassified,[out_of_scope],
+2012,mitsubishi,triton,4x4 glx mn,dual cab,automatic,diesel,419013,5,MMAJRKB40CD014935,No plates,Unregistered,4,2.5,White,Grey,Yes,No,Yes,Partial,Yes,qld,https://www.grays.com/lot/0001-50714556/motor-vehicles-motor-cycles/2012-mitsubishi-triton-4x4-glx-mn-turbo-diesel-automatic-dual-cab,"engine noise observed.
+transmission requires attention strongly recommend inspection by qualified third party
+dents or marks on body consistent with age and kilometres.
+front seat worn both
+door mirror broken rhf
+paint peeling bonnet,
+windscreen chipped or cracked.",unclassified,[out_of_scope],
+2012,audi,q5,2.0 tfsi quattro 8r,wagon,automatic,petrol,169046,5,WAUZZZ8R9DA024315,No plates,Unregistered,4,2.0,Black,Black Leather,Yes,Yes,Yes,Partial,Yes,qld,https://www.grays.com/lot/0001-50714557/motor-vehicles-motor-cycles/2012-audi-q5-2-0-tfsi-quattro-8r-automatic-8-speed-wagon,"dents or marks on body consistent with age and kilometres.
+front seat worn both",unclassified,[out_of_scope],
+2013,nissan,patrol,dx turbo leaf cab gu,cab chassis,manual,diesel,259391,2,JN1UETY61A0600054,No plates,Unregistered,4,3.0,White,Grey,Yes,Yes,Yes,Partial,Yes,qld,https://www.grays.com/lot/0001-50714559/motor-vehicles-motor-cycles/2013-nissan-patrol-dx-turbo-leaf-cab-gu-turbo-diesel-manual-cab-chassis,"dents or marks on body consistent with age and kilometres.
+driveline requires attention, recommend inspection by qualified third party",unclassified,[out_of_scope],
+2015,holden,barina,tm,hatchback,automatic,petrol,103733,5,KL3TA48E9FB190246,No plates,Unregistered,4,1.6,Blue,Black,Yes,Yes,Yes,Yes,Yes,qld,https://www.grays.com/lot/0001-50714560/motor-vehicles-motor-cycles/2015-holden-barina-tm-automatic-hatchback,"hail damage visible.
+paint cracked c pillar
+paint fading various panels
+dents or marks on body consistent with age and kilometres.
+engine overheating, tow advisable.
+paint peeling boot and roof",unclassified,[out_of_scope],
+2017,subaru,xv,2.0i-s g5x,hatchback,cvt,petrol,253807,5,JF1GT7KL5JG024928,No plates,Unregistered,4,2.0,White,Black Leather,Yes,Yes,Yes,Partial,Yes,qld,https://www.grays.com/lot/0001-50714561/motor-vehicles-motor-cycles/2017-subaru-xv-2-0i-s-g5x-cvt-hatchback,"front seat worn rhf
+dents or marks on body consistent with age and kilometres.
+driveline requires attention, recommend inspection by qualified third party
+other warning light on",unclassified,[out_of_scope],
+2018,ford,ranger,xlt 4x4 px ii,dual cab,manual,diesel,302148,5,MPBUMFF50JX155729,No plates,Unregistered,5,3.2,White,Black,Yes,No,No,No,Yes,qld,https://www.grays.com/lot/0001-50714562/motor-vehicles-motor-cycles/2018-ford-ranger-xlt-4x4-px-ii-turbo-diesel-manual-dual-cab,"engine noise observed.
+front seat stains both
+dents or marks on body consistent with age and kilometres.
+medium dent on lh doors
+large scuff on front bumper
+other warning light on",unclassified,[out_of_scope],
+2007,land,rover,freelander 2 si6 se,wagon,automatic,petrol,185803,5,SALFA23A77H021522,No plates,Unregistered,6,3.2,Grey,Black Leather,Yes,Yes,No,No,Yes,qld,https://www.grays.com/lot/0001-50714565/motor-vehicles-motor-cycles/2007-land-rover-freelander-2-si6-se-automatic-wagon,"steering requires attention.
+transmission requires attention
+dents or marks on body consistent with age and kilometres.
+dash torn or cracked
+medium scratch on rhr door",unclassified,[out_of_scope],
+2018,toyota,prado,150 series 4wd,wagon,automatic,diesel,235152,7,JTEBR3FJ60K092294,No plates,Unregistered,4,2.8,,,Yes,No,No,No,Yes,qld,https://www.grays.com/lot/0001-50714567/motor-vehicles-motor-cycles/2018-toyota-prado-150-series-4wd-automatic-wagon,interior damage: aircon not working. console lid torn. drivers seat broken; exterior damage: sun damage. several dents and scrapes. broekn right rear light.; engine & mechanical: headlight malfunction light on,unclassified,[out_of_scope],
+2015,land,rover,discovery 3.0 tdv6 series 4 -8 spd 7 sts,wagon,automatic,diesel,315719,7,SALLAAAN5FA774281,No plates,Unregistered,6,3.0,Dark Grey,Black Leather,Yes,Yes,Yes,Partial,Yes,qld,https://www.grays.com/lot/0001-50714568/motor-vehicles-motor-cycles/2015-land-rover-discovery-3-0-tdv6-series-4-turbo-diesel-8-spd-7-sts-wagon,"medium scratch on lhr quarter panel
+large scuff on lhf guard
+hood lining sagging
+medium dent on lhr quarter panel
+dents or marks on body consistent with age and kilometres.",unclassified,[out_of_scope],
+2018,ford,endura,trend awd,wagon,automatic,diesel,130419,5,2FMTK5JAXKBB39190,No plates,Unregistered,4,2.0,Bronze,Black,Yes,Yes,No,No,Yes,qld,https://www.grays.com/lot/0001-50714569/motor-vehicles-motor-cycles/2018-ford-endura-trend-awd-turbo-diesel-automatic-8-speed-wagon,"dents or marks on body consistent with age and kilometres.
+front seat worn both",unclassified,[out_of_scope],
+2014,ford,kuga,awd trend tf,wagon,automatic,petrol,123226,5,WF0AXXWPMAES86701,No plates,Unregistered,4,1.6,Red,Grey,Yes,No,Yes,Yes,Yes,qld,https://www.grays.com/lot/0001-50714571/motor-vehicles-motor-cycles/2014-ford-kuga-awd-trend-tf-automatic-wagon,"dents or marks on body consistent with age and kilometres.
+front seat worn both
+back seat stains.
+driveline requires attention, recommend inspection by qualified third party",unclassified,[out_of_scope],
+2016,mazda,cx-5,grand touring ke,wagon,automatic,diesel,163218,5,JM0KE102200361474,No plates,Unregistered,4,2.2,Blue,Black,Yes,Yes,Yes,Partial,Yes,qld,https://www.grays.com/lot/0001-50714572/motor-vehicles-motor-cycles/2016-mazda-cx-5-grand-touring-ke-turbo-diesel-automatic-wagon,"dents or marks on body consistent with age and kilometres.
+windscreen chipped or cracked.
+medium scratch on rear bumper",unclassified,[out_of_scope],
+2008,toyota,rav,4 cv aca33r,wagon,manual,petrol,301704,5,JTMBD33VX05207794,No plates,Unregistered,4,2.4,White,Grey,Yes,Yes,Yes,Yes,Yes,qld,https://www.grays.com/lot/0001-50714573/motor-vehicles-motor-cycles/2008-toyota-rav-4-cv-aca33r-manual-wagon,"dents or marks on body consistent with age and kilometres.
+front seat worn both
+large dent on rear bumper,
+large scuff on rear bumper,
+windscreen chipped or cracked.
+medium scratch on front bumper",unclassified,[out_of_scope],
+2013,holden,captiva,7 lx awd cg ii,wagon,automatic,diesel,141026,7,KL3CD266JCB118217,No plates,Unregistered,4,2.2,Red,Black Leather,Yes,No,No,No,Yes,qld,https://www.grays.com/lot/0001-50714574/motor-vehicles-motor-cycles/2013-holden-captiva-7-lx-awd-cg-ii-turbo-diesel-automatic-7-seats-wagon,"dents or marks on body consistent with age and kilometres.
+front seat worn lhf
+seat torn rhf
+paint fading spoiler",unclassified,[out_of_scope],
+2016,nissan,navara,4x4 rx np300,dual cab,automatic,diesel,148959,5,MNTCB4D23A0018340,No plates,Unregistered,4,2.3,Black,Grey,Yes,Yes,Yes,Yes,Yes,qld,https://www.grays.com/lot/0001-50714575/motor-vehicles-motor-cycles/2016-nissan-navara-4x4-rx-np300-turbo-diesel-automatic-dual-cab,"front seat worn both
+dents or marks on body consistent with age and kilometres.
+engine light on",unclassified,[out_of_scope],
+2011,land,rover,range rover sport 3.0 tdv6 luxury,wagon,automatic,diesel,155933,5,SALLSAAF3BA705960,No plates,Unregistered,6,3.0,White,Cream Leather,Yes,Yes,Yes,Yes,Yes,qld,https://www.grays.com/lot/0001-50714576/motor-vehicles-motor-cycles/2011-land-rover-range-rover-sport-3-0-tdv6-luxury-turbo-diesel-auto-wagon,dents or marks on body consistent with age and kilometres.,unclassified,[out_of_scope],
+2022,kia,carnival,s ka4,people mover,automatic,diesel,104652,8,KNANB81BMP6244736,No plates,Unregistered,4,2.2,White,Black,Yes,Yes,No,Yes,Yes,qld,https://www.grays.com/lot/0001-50714577/motor-vehicles-motor-cycles/2022-kia-carnival-s-ka4-turbo-diesel-auto-8-speed-8-seats-people-mover,dents or marks on body consistent with age and kilometres.,unclassified,[out_of_scope],
+2015,kia,cerato,s yd,hatchback,automatic,petrol,184340,5,KNAFK516MF5406853,No plates,Unregistered,4,1.8,Grey,Black,Yes,Yes,Yes,Yes,Yes,qld,https://www.grays.com/lot/0001-50714578/motor-vehicles-motor-cycles/2015-kia-cerato-s-yd-automatic-hatchback,"flat battery. jump start or towing required
+dents or marks on body consistent with age and kilometres.
+large dent on rear bumper
+paint cracked rear bumper
+rear bumper cracked bumper.",unclassified,[out_of_scope],
+2007,toyota,landcruiser,gxl vdj200r,wagon,automatic,diesel,232532,8,JTMHV09J004002596,No plates,Unregistered,8,4.5,White,Grey,Yes,Yes,Yes,Partial,Yes,qld,https://www.grays.com/lot/0001-50714579/motor-vehicles-motor-cycles/2007-toyota-landcruiser-gxl-vdj200r-turbo-diesel-automatic-8-seats-wagon,"engine noise observed.
+engine light on
+traction control light on
+other warning light on
+dents or marks on body consistent with age and kilometres.",unclassified,[out_of_scope],
+2018,holden,calais-v,tourer zb 9,wagon,automatic,petrol,139144,5,W0VZT8ED0J1119418,No plates,Unregistered,6,3.6,Silver,Black Leather,Yes,Yes,Yes,Partial,Yes,qld,https://www.grays.com/lot/0001-50714580/motor-vehicles-motor-cycles/2018-holden-calais-v-tourer-zb-9-auto-wagon,"dents or marks on body consistent with age and kilometres.
+large dent on lhr door
+medium scratch on rear bumper
+damaged lh taillight",unclassified,[out_of_scope],
+2019,ford,ranger,wildtrak 4x4 px iii,dual cab,automatic,diesel,116624,5,MPBUMFF60KX205613,No plates,Unregistered,4,2.0,Orange,Black Leather,Yes,Yes,No,Partial,Yes,qld,https://www.grays.com/lot/0001-50714581/motor-vehicles-motor-cycles/2019-ford-ranger-wildtrak-4x4-px-iii-turbo-diesel-automatic-dual-cab,"dents or marks on body consistent with age and kilometres.
+windscreen chipped or cracked.
+medium dent on bonnet
+large scratch on rhr door
+large dent on rhr guard
+medium scuff on rhr guard
+body/panel damage front bumper
+front cracked bumper.
+front seat worn drivers",unclassified,[out_of_scope],
+2021,nissan,leaf,ze1 direct drive,hatchback,direct drive,electric,29996,5,SJNFAAZE1A0141631,No plates,Unregistered,0,0.0,White,Black,Yes,Yes,Yes,Yes,Yes,qld,https://www.grays.com/lot/0001-50714582/motor-vehicles-motor-cycles/2021-nissan-leaf-ze1-direct-drive-hatchback-29-996-kms,dents or marks on body consistent with age and kilometres.,unclassified,[out_of_scope],
+2007,citroen,c4,1.6,hatchback,manual,petrol,208007,5,VF7LCRFJC74754611,No plates,Unregistered,4,1.6,White,Black,Yes,No,No,No,Yes,qld,https://www.grays.com/lot/0001-50714583/motor-vehicles-motor-cycles/2007-citroen-c4-1-6-manual-hatchback,"engine light on
+hood lining sagging
+gear knob broken
+door card damaged.
+dents or marks on body consistent with age and kilometres.
+paint peeling bonnet, mirrors and roof
+medium dent on lh cant rail and rhr door
+large dent on rhr guard
+door mirror broken lhs",unclassified,[out_of_scope],
+2016,ford,ranger,xl 4x4 px ii,dual cab,manual,diesel,251663,5,MNAUMFF50GW562300,No plates,Unregistered,5,3.2,White,Grey,Yes,No,Yes,Yes,Yes,qld,https://www.grays.com/lot/0001-50714584/motor-vehicles-motor-cycles/2016-ford-ranger-xl-4x4-px-ii-turbo-diesel-manual-dual-cab,"dents or marks on body consistent with age and kilometres.
+front seat worn both
+engine smoke visible
+engine lacks power
+large dent on rhf guard,
+medium scratch on various panels",unclassified,[out_of_scope],
+2011,jeep,cherokee,limited kk,wagon,automatic,petrol,107702,5,1J4P45GK9BW547270,No plates,Unregistered,6,3.7,Red,Black Leather,Yes,No,Yes,Partial,Yes,qld,https://www.grays.com/lot/0001-50714585/motor-vehicles-motor-cycles/2011-jeep-cherokee-limited-kk-automatic-wagon,"dents or marks on body consistent with age and kilometres.
+medium scuff on front bumper",unclassified,[out_of_scope],
+2011,kia,sorento,platinum xm,wagon,automatic,diesel,231299,7,KNAKU814SB5176979,No plates,Unregistered,4,2.2,Silver,Black Leather,Yes,No,Yes,Partial,Yes,qld,https://www.grays.com/lot/0001-50714586/motor-vehicles-motor-cycles/2011-kia-sorento-platinum-xm-turbo-diesel-automatic-7-seats-wagon,"engine noise observed.
+dents or marks on body consistent with age and kilometres.
+seat torn rhf
+windscreen chipped or cracked.
+large scratch on lhf door",unclassified,[out_of_scope],
+2016,mazda,cx-5,grand touring ke,wagon,automatic,diesel,196807,5,JM0KE102200380420,No plates,Unregistered,4,2.2,White,Black Leather,Yes,Yes,Yes,Partial,Yes,qld,https://www.grays.com/lot/0001-50714587/motor-vehicles-motor-cycles/2016-mazda-cx-5-grand-touring-ke-turbo-diesel-automatic-wagon,"dents or marks on body consistent with age and kilometres.
+seat torn drivers seat",unclassified,[out_of_scope],
+2013,toyota,hilux,4x2 workmate tgn16r,cab chassis,automatic,petrol,230180,2,MR0CX12G700112062,No plates,Unregistered,4,2.7,White,Grey,Yes,No,No,No,Yes,qld,https://www.grays.com/lot/0001-50714588/motor-vehicles-motor-cycles/2013-toyota-hilux-4x2-workmate-tgn16r-automatic-cab-chassis,"medium dent on lh b pillar and bonnet
+medium scuff on lhf guard
+dents or marks on body consistent with age and kilometres.
+seat torn driver side
+engine lacks power
+engine idling rough",unclassified,[out_of_scope],
+2009,nissan,navara,st-x 4x4 king cab d40,ute,manual,diesel,422322,4,MNTNCUD40A0002346,No plates,Unregistered,4,2.5,White,Multi,Yes,No,Yes,Yes,Yes,sa,https://www.grays.com/lot/0001-60050128/motor-vehicles-motor-cycles/2009-nissan-navara-st-x-4x4-king-cab-d40-turbo-diesel-manual-ute,engine idling rough,unclassified,[out_of_scope],
+2007,honda,jazz,vtis gd,hatchback,cvt,petrol,243223,5,MRHGD38607P040345,No plates,Unregistered,4,1.5,Blue,Multi,Yes,No,No,No,Yes,sa,https://www.grays.com/lot/0001-60050135/motor-vehicles-motor-cycles/2007-honda-jazz-vtis-gd-cvt-hatchback,please refer to the photos or arrange inspection to view the condition of this vehicle.,unclassified,[out_of_scope],
+2012,subaru,forester,x s3,wagon,automatic,petrol,175456,5,JF2SHMKS5CG092646,No plates,Unregistered,4,2.5,Red,Black Leather,Yes,No,Yes,Yes,Yes,sa,https://www.grays.com/lot/0001-60050136/motor-vehicles-motor-cycles/2012-subaru-forester-x-s3-automatic-wagon,please refer to the photos or arrange inspection to view the condition of this vehicle.,unclassified,[out_of_scope],
+2010,suzuki,swift,ez (wovr-inspected),hatchback,automatic,petrol,245733,5,JSAEZC21S00569026,No plates,Unregistered,4,1.5,White,Multi,Yes,No,No,No,Yes,sa,https://www.grays.com/lot/0001-60050138/motor-vehicles-motor-cycles/2010-suzuki-swift-ez-automatic-hatchback-wovr-inspected,please refer to the photos or arrange inspection to view the condition of this vehicle.,unclassified,[out_of_scope],
+2006,suzuki,swift,ez,hatchback,automatic,petrol,253597,5,JSAEZC21S00157303,No plates,Unregistered,4,1.5,Black,Multi,Yes,Yes,Yes,Yes,Yes,sa,https://www.grays.com/lot/0001-60050139/motor-vehicles-motor-cycles/2006-suzuki-swift-ez-automatic-hatchback,please refer to the photos or arrange inspection to view the condition of this vehicle.,unclassified,[out_of_scope],
+2012,mazda,3,neo bl,hatchback,manual,petrol,249570,5,JM0BL10F200373187,No plates,Unregistered,4,2.0,Grey,Multi,Yes,Yes,Yes,Yes,Yes,sa,https://www.grays.com/lot/0001-60050140/motor-vehicles-motor-cycles/2012-mazda-3-neo-bl-manual-hatchback,please refer to the photos or arrange inspection to view the condition of this vehicle.,unclassified,[out_of_scope],
+2011,mazda,3,maxx sport bl,hatchback,automatic,petrol,172866,5,JM0BL10F200316096,No plates,Unregistered,4,2.0,Black,Multi,Yes,No,Yes,Yes,Yes,sa,https://www.grays.com/lot/0001-60050141/motor-vehicles-motor-cycles/2011-mazda-3-maxx-sport-bl-automatic-hatchback,"engine idling rough
+engine light on
+other warning light on",unclassified,[out_of_scope],
+2013,renault,clio,expression,hatchback,manual,petrol,154841,5,VF15R5A0HD0680794,No plates,Unregistered,3,0.9,Black,Multi,Yes,Yes,Yes,Yes,Yes,sa,https://www.grays.com/lot/0001-60050143/motor-vehicles-motor-cycles/2013-renault-clio-expression-manual-hatchback,please refer to the photos or arrange inspection to view the condition of this vehicle.,unclassified,[out_of_scope],
+2007,toyota,yaris,yr ncp90r,hatchback,manual,petrol,137306,5,JTDJW923805060383,No plates,Unregistered,4,1.3,White,Multi,Yes,No,Yes,Yes,Yes,sa,https://www.grays.com/lot/0001-60050144/motor-vehicles-motor-cycles/2007-toyota-yaris-yr-ncp90r-manual-hatchback,please refer to the photos or arrange inspection to view the condition of this vehicle.,unclassified,[out_of_scope],
+2008,ford,territory,ghia sy,wagon,automatic,petrol,283376,5,6FPAAAJGAT8R52603,No plates,Unregistered,6,4.0,Black,Grey,Yes,Yes,Yes,Yes,Yes,sa,https://www.grays.com/lot/0001-60050145/motor-vehicles-motor-cycles/2008-ford-territory-ghia-sy-automatic-wagon,please refer to the photos or arrange inspection to view the condition of this vehicle.,unclassified,[out_of_scope],
+2010,land,rover,range rover sport 3.0 tdv6,wagon,automatic,diesel,166404,5,SALLSAAF3BA273843,No plates,Unregistered,6,3.0,Black,Cream Leather,Yes,No,Yes,Yes,Yes,sa,https://www.grays.com/lot/0001-60050149/motor-vehicles-motor-cycles/2010-land-rover-range-rover-sport-3-0-tdv6-turbo-diesel-automatic-wagon,please refer to the photos or arrange inspection to view the condition of this vehicle.,unclassified,[out_of_scope],
+2012,bmw,z4,sdrive20i e89,convertible,automatic,petrol,197490,2,WBALL32090J080344,No plates,Unregistered,4,2.0,White,Black Leather,Yes,No,Yes,Yes,Yes,sa,https://www.grays.com/lot/0001-60050155/motor-vehicles-motor-cycles/2012-bmw-z4-sdrive20i-e89-automatic-8-speed-convertible,engine noise observed.,unclassified,[out_of_scope],
+2013,toyota,corolla,levin zr zre182r,hatchback,cvt,petrol,163206,5,JTNKU3JE30J037543,No plates,Unregistered,4,1.8,Orange,Black Leather,Yes,Yes,No,Yes,Yes,sa,https://www.grays.com/lot/0001-60050156/motor-vehicles-motor-cycles/2013-toyota-corolla-levin-zr-zre182r-cvt-hatchback,please refer to the photos or arrange inspection to view the condition of this vehicle.,unclassified,[disallowed_variant],
+2010,bmw,3,series 335i m sport e93,convertible,automatic,petrol,127136,4,WBADX72050E241779,No plates,Unregistered,6,3.0,Silver,Black Leather,Yes,No,Yes,Yes,Yes,sa,https://www.grays.com/lot/0001-60050161/motor-vehicles-motor-cycles/2010-bmw-3-series-convertible-335i-m-sport-e93-automatic-convertible,please refer to the photos or arrange inspection to view the condition of this vehicle.,unclassified,[out_of_scope],
+2013,audi,a1,1.4 tfsi ambition 8x wovr-repairable,hatchback,automatic,petrol,113897,5,WAUZZZ8X2EB007933,No plates,Unregistered,4,1.4,Black,Black Leather,Yes,Yes,Yes,Yes,Yes,sa,https://www.grays.com/lot/0001-60050162/motor-vehicles-motor-cycles/2013-audi-a1-1-4-tfsi-ambition-8x-automatic-wovr-repairable,please refer to the photos or arrange inspection to view the condition of this vehicle.,unclassified,[out_of_scope],
 2008,toyota,corolla,ascent zre152r (wovr-inspected),hatchback,automatic,petrol,314999,5,JTNKU52E401068293,1DKO942,Unregistered,4,1.8,Silver,Charcoal,Yes,No,No,No,Yes,wa,https://www.grays.com/lot/0001-9066955/motor-vehicles-motor-cycles/2008-toyota-corolla-ascent-zre152r-auto-hatchback-wovr-inspected,"dents or marks on body consistent with age and kilometres.
 medium scuff on various panels
 medium dent on various panels
 paint fading on various panels
 corrosion visible front side bonnet
 windscreen chipped or cracked.",unclassified,[disallowed_variant],
-2010,ford,falcon,xr6 fg (wovr - inspected),sedan,automatic,petrol,221159,5,6FPAAAJGSWAA62823,Unlicensed,Unregistered,6,4,Blue,Black,Yes,No,No,No,Yes,wa,https://www.grays.com/lot/0001-9066980/motor-vehicles-motor-cycles/2010-ford-falcon-xr6-fg-automatic-sedan-wovr-inspected,"dents or marks on body consistent with age and kilometres.
+2010,ford,falcon,xr6 fg (wovr - inspected),sedan,automatic,petrol,221159,5,6FPAAAJGSWAA62823,Unlicensed,Unregistered,6,4.0,Blue,Black,Yes,No,No,No,Yes,wa,https://www.grays.com/lot/0001-9066980/motor-vehicles-motor-cycles/2010-ford-falcon-xr6-fg-automatic-sedan-wovr-inspected,"dents or marks on body consistent with age and kilometres.
 paint fading various panels
 rear bumper disjointed, passenger side skirt hang cracked bumper.
 driver window and driver rear window both do not work and or are missing window switchboard malfunctioning.",unclassified,[out_of_scope],
@@ -25,3 +846,116 @@ dents or marks on body consistent with age and kilometres.
 hood lining sagging
 windscreen chipped or cracked.
 paint cracked various panels",unclassified,[out_of_scope],
+2007,mazda,3,maxx bk,sedan,automatic,petrol,276286,5,JM0BK10F200365373,1GPD460,17-03-2026,4,2.0,Silver,Charcoal,Yes,Yes,Yes,Partial,Yes,wa,https://www.grays.com/lot/0001-9067005/motor-vehicles-motor-cycles/2007-mazda-3-maxx-bk-automatic-sedan,"engine light on
+medium scuff on various panels
+paint cracked front bumper
+dents or marks on body consistent with age and kilometres.
+paint fading on various panels
+medium scratch on various panels",unclassified,[out_of_scope],
+2008,mazda,6,limited gh,sedan,automatic,petrol,187488,5,JM0GH105100113257,Unlicensed,Unregistered,4,2.5,White,Charcoal,Yes,No,No,No,Yes,wa,https://www.grays.com/lot/0001-9067006/motor-vehicles-motor-cycles/2008-mazda-6-limited-gh-automatic-sedan,"airbag light on
+paint peeling roof
+medium scuff on passenger side quarter panel and rear door.",unclassified,[out_of_scope],
+2012,nissan,navara,4x4 st-x550 d40,dual cab,automatic,diesel,209456,5,VSKCAND40A0472490,1IUJ229,01-05-2026,6,3.0,White,Black Leather,Yes,No,Yes,Partial,Yes,wa,https://www.grays.com/lot/0001-9067007/motor-vehicles-motor-cycles/2012-nissan-navara-4x4-st-x550-d40-turbo-diesel-automatic-dual-cab,"medium scuff on passenger side tub
+front seat worn drivers
+dents or marks on body consistent with age and kilometres.",unclassified,[out_of_scope],
+2014,volkswagen,tiguan,155 tsi 5n,wagon,automatic,petrol,187769,5,WVGZZZ5NZEW099939,1IWQ806,03-03-2026,4,2.0,Red,Black Leather,Yes,No,Yes,Partial,Yes,wa,https://www.grays.com/lot/0001-9067008/motor-vehicles-motor-cycles/2014-volkswagen-tiguan-155-tsi-5n-automatic-wagon,"dents or marks on body consistent with age and kilometres.
+engine light on
+medium scuff on rear right
+other warning light on
+medium dent on various panels
+front seat worn driver side",unclassified,[out_of_scope],
+2010,nissan,dualis,st j10,wagon,manual,petrol,192492,5,SJNFBAJ10A2053111,"Unlicensed, Plates to be remove",Unregistered,4,2.0,Black,Charcoal,Yes,Yes,Yes,Partial,Yes,wa,https://www.grays.com/lot/0001-9067009/motor-vehicles-motor-cycles/2010-nissan-dualis-st-j10-manual-wagon,"door card damaged.
+paint fading various panels
+dents or marks on body consistent with age and kilometres.",unclassified,[out_of_scope],
+2009,ford,falcon,fg,ute,automatic,lpg,120401,2,6FPAAAJGCM9A60437,Unlicensed,Unregistered,6,4.0,White,Charcoal,Yes,No,Yes,Partial,Yes,wa,https://www.grays.com/lot/0001-9067018/motor-vehicles-motor-cycles/2009-ford-falcon-fg-automatic-ute,"dents or marks on body consistent with age and kilometres.
+paint fading various panels
+medium scuff on front bumper
+medium scratch on various panels",unclassified,[out_of_scope],
+2017,hyundai,tucson,active fwd tl,wagon,automatic,petrol,199906,5,KMHJ2814MJU482831,1GHU279,14-06-2026,4,2.0,White,Charcoal,Yes,Yes,Yes,Partial,Yes,wa,https://www.grays.com/lot/0001-9067019/motor-vehicles-motor-cycles/2017-hyundai-tucson-active-fwd-tl-automatic-wagon,"windscreen chipped or cracked.
+dents or marks on body consistent with age and kilometres.
+medium scratch on various panels",unclassified,[out_of_scope],
+2007,volkswagen,eos,2.0 turbo fsi 1f (wovr-inspected),convertible,automatic,petrol,168088,4,WVWZZZ1FZ8V018801,1ITJ863,Unregistered,4,2.0,Black,Cream Leather,Yes,No,No,Partial,Yes,wa,https://www.grays.com/lot/0001-9067020/motor-vehicles-motor-cycles/2007-volkswagen-eos-2-0-turbo-fsi-1f-auto-convertible-wovr-inspected,"dents or marks on body consistent with age and kilometres.
+medium scuff on various panels
+engine smoke visible
+door card worn.
+door card damaged.
+other warning light on
+front seat stains driver side
+paint peeling on various panels
+medium scratch on various panels",unclassified,[out_of_scope],
+2019,toyota,landcruiser,prado gxl gdj150r t d,wagon,automatic,diesel,107856,7,JTEBR3FJ10K136315,1ITB607,11-03-2026,4,2.8,Dark Grey,Charcoal,Yes,Yes,Yes,Partial,Yes,wa,https://www.grays.com/lot/0001-9067021/motor-vehicles-motor-cycles/2019-toyota-landcruiser-prado-gxl-gdj150r-t-d-auto-7-seats-wagon,dents or marks on body consistent with age and kilometres.,unclassified,[out_of_scope],
+2011,nissan,micra,st-l k13,hatchback,automatic,petrol,230729,5,MNTFAUK13A0002683,1DSJ046,28-02-2026,4,1.5,Silver,Charcoal,Yes,Yes,Yes,Partial,Yes,wa,https://www.grays.com/lot/0001-9067022/motor-vehicles-motor-cycles/2011-nissan-micra-st-l-k13-automatic-hatchback,"medium scuff on various panels
+dents or marks on body consistent with age and kilometres.",unclassified,[out_of_scope],
+1997,toyota,landcruiser,prado grande v6 vzj95r,wagon,automatic,petrol,423567,8,JT711VJ9500017477,1CZX416,08-08-2026,6,3.4,White,Grey,Yes,Yes,Yes,Partial,Yes,wa,https://www.grays.com/lot/0001-9067023/motor-vehicles-motor-cycles/1997-toyota-landcruiser-prado-grande-v6-vzj95r-automatic-8-seats-wagon,"dents or marks on body consistent with age and kilometres.
+corrosion visible around windscreen
+seats removed
+front seat worn drivers seat
+paint peeling various panels
+large dent on rear bumper bar",unclassified,[out_of_scope],
+2014,ford,focus,titanium lw ii,hatchback,automatic,petrol,205096,5,MPB1XXMXB1EB84747,1ERF080,16-03-2026,4,2.0,Red,Black Leather,Yes,Yes,Yes,Partial,Yes,wa,https://www.grays.com/lot/0001-9067024/motor-vehicles-motor-cycles/2014-ford-focus-titanium-lw-ii-automatic-hatchback,"dents or marks on body consistent with age and kilometres.
+paint fading rear wing and mirrors",unclassified,[out_of_scope],
+2008,mazda,cx-9,luxury,wagon,automatic,petrol,202769,7,JM0TB10A100110825,1DOW380,03/04/2026,6,3.7,White,Black Leather,Yes,No,Yes,No,Yes,wa,https://www.grays.com/lot/0001-9067027/motor-vehicles-motor-cycles/2008-mazda-cx-9-luxury-automatic-7-seats-wagon,"seat torn driver
+large scratch on driver rear door
+large scuff on along passenger side
+medium dent on driver rear quarter panel
+dents or marks on body consistent with age and kilometres.",unclassified,[out_of_scope],
+2018,volvo,xc60,d4 momentum,wagon,automatic,diesel,144973,5,YV1UZA8ACJ1104327,1FCT594,15-02-2026,4,2.0,Grey,Black Leather,Yes,No,Yes,Partial,Yes,wa,https://www.grays.com/lot/0001-9067029/motor-vehicles-motor-cycles/2018-volvo-xc60-d4-momentum-turbo-diesel-automatic-8-speed-wagon,"dents or marks on body consistent with age and kilometres.
+other warning light on",unclassified,[out_of_scope],
+2015,mercedes,benz,gl-class gl500 blueefficiency x166,wagon,automatic,petrol,149280,7,WDC1668732A587262,1HHQ831,15-04-2026,8,4.7,Black,Black Leather,Yes,Yes,Yes,Partial,Yes,wa,https://www.grays.com/lot/0001-9067030/motor-vehicles-motor-cycles/2015-mercedes-benz-gl-class-gl500-blueefficiency-x166-auto-wagon,dents or marks on body consistent with age and kilometres.,unclassified,[out_of_scope],
+2011,toyota,hilux,sr5 (4x4) kun26r,dual cab,manual,diesel,209665,5,MR0FZ29G301625872,1IWG123,07-02-2026,4,3.0,White,Grey,Yes,No,Yes,Partial,Yes,wa,https://www.grays.com/lot/0001-9067031/motor-vehicles-motor-cycles/2011-toyota-hilux-sr5-4x4-kun26r-turbo-diesel-manual-dual-cab,"dents or marks on body consistent with age and kilometres.
+large dent on right side doors",unclassified,[out_of_scope],
+1998,subaru,liberty,rx (awd) b2,sedan,automatic,petrol,363941,5,JF1BD9KE5WG034744,1AGN001,27-04-2026,4,2.5,Silver,Black,Yes,No,No,Partial,Yes,wa,https://www.grays.com/lot/0001-9067032/motor-vehicles-motor-cycles/1998-subaru-liberty-rx-awd-b2-automatic-sedan,"engine oil leak
+paint fading various panels
+corrosion visible passenger rear quarter panel and driver door
+seat torn driver
+front cracked bumper.
+medium scratch on various panels",unclassified,[out_of_scope],
+2019,volkswagen,golf,110tsi trendline a7,hatchback,automatic,petrol,201479,5,WVWZZZAUZLP025296,1HAO748,16-06-2026,4,1.4,Dark Grey,Grey,Yes,Yes,Yes,Yes,Yes,wa,https://www.grays.com/lot/0001-9067033/motor-vehicles-motor-cycles/2019-volkswagen-golf-110tsi-trendline-a7-automatic-hatchback,dents or marks on body consistent with age and kilometres.,unclassified,[out_of_scope],
+2003,nissan,pulsar,st n16,sedan,automatic,petrol,245483,5,JN1CBAN16A0058015,1BRM168,13-03-2026,4,1.8,Champagne,Grey,Yes,Yes,Yes,Partial,Yes,wa,https://www.grays.com/lot/0001-9067035/motor-vehicles-motor-cycles/2003-nissan-pulsar-st-n16-automatic-sedan,"seat torn driver
+medium dent on various panels
+large scuff on front driver side corner",unclassified,[out_of_scope],
+2011,peugeot,206,xt,hatchback,automatic,petrol,125612,5,VF3WC5FS9BW036199,1HIZ960,27-04-2026,4,1.6,Light Blue,Black Leather,Yes,Yes,No,No,Yes,wa,https://www.grays.com/lot/0001-9067036/motor-vehicles-motor-cycles/2011-peugeot-206-xt-automatic-hatchback,engine light on,unclassified,[out_of_scope],
+2010,lexus,ls460,import,sedan,automatic,petrol,162742,5,6ZZA0USF455006507,Unlicensed,Unregistered,8,4.6,Black,Black Leather,Yes,No,No,No,Yes,wa,https://www.grays.com/lot/0001-9067039/motor-vehicles-motor-cycles/2010-lexus-ls460-import-automatic-sedan,"medium dent on front right fender
+medium scuff on rear bumper",unclassified,[out_of_scope],
+2010,volkswagen,golf,gti a6,hatchback,automatic,petrol,259677,5,WVWZZZ1KZBW116436,1DQF336,07-03-2026,4,2.0,Red,Charcoal,Yes,Yes,Yes,Partial,Yes,wa,https://www.grays.com/lot/0001-9067042/motor-vehicles-motor-cycles/2010-volkswagen-golf-gti-a6-automatic-hatchback,"paint peeling grille and rear bumper
+medium scuff on driver door
+front seat worn driver side
+dents or marks on body consistent with age and kilometres.
+medium scratch on various panels",unclassified,[out_of_scope],
+2010,volvo,xc90,3.2 executive,wagon,automatic,petrol,162901,7,YV1CT9856A1557399,1GSG614,24/04/2026,6,3.2,Bronze,Cream Leather,Yes,Yes,Yes,Partial,Yes,wa,https://www.grays.com/lot/0001-9067044/motor-vehicles-motor-cycles/2010-volvo-xc90-3-2-executive-automatic-7-seats-wagon,"hood lining sagging
+dents or marks on body consistent with age and kilometres.
+front seat worn both
+other warning light on",unclassified,[out_of_scope],
+2011,audi,a4,1.8 tfsi b8,sedan,cvt,petrol,152545,5,WAUZZZ8K0BA109656,1DRM232,08-05-2026,4,1.8,Silver,Black Leather,Yes,No,Yes,Partial,Yes,wa,https://www.grays.com/lot/0001-9067046/motor-vehicles-motor-cycles/2011-audi-a4-1-8-tfsi-b8-cvt-sedan,"engine light on
+other warning light on
+dents or marks on body consistent with age and kilometres.
+medium scuff on various panels
+large dent on front left fender
+engine oil leak
+brakes require attention, recommend towing on collection",unclassified,[out_of_scope],
+2012,hyundai,elantra,elite md,sedan,automatic,petrol,258716,5,KMHDH41EMDU605074,1HKQ071,09-07-2026,4,1.8,Black,Black,Yes,No,No,No,Yes,wa,https://www.grays.com/lot/0001-9067049/motor-vehicles-motor-cycles/2012-hyundai-elantra-elite-md-automatic-sedan,"dents or marks on body consistent with age and kilometres.
+paint fading various panels
+large scratch on drivers side
+engine noise observed.",unclassified,[out_of_scope],
+2020,ford,ranger,xlt 4x4 px iii,dual cab,automatic,diesel,122999,5,MPBUMFF50LX267699,Unlicensed,Unregistered,5,3.2,White,Black Leather,Yes,Yes,Yes,No,Yes,wa,https://www.grays.com/lot/0001-9067050/motor-vehicles-motor-cycles/2020-ford-ranger-xlt-4x4-px-iii-turbo-diesel-automatic-dual-cab,"engine idling rough
+dents or marks on body consistent with age and kilometres.
+engine smoke visible",unclassified,[out_of_scope],
+2006,chrysler,pt,cruiser special edition,hatchback,automatic,petrol,77443,5,1A8F4B8B07T552521,B1013,01-07-2026,4,2.4,Blue,Grey,Yes,Yes,Yes,Partial,Yes,wa,https://www.grays.com/lot/0001-9067051/motor-vehicles-motor-cycles/2006-chrysler-pt-cruiser-special-edition-automatic-hatchback,"paint peeling both bumpers
+damaged left headlight
+paint cracked rear bumper bar
+dents or marks on body consistent with age and kilometres.",unclassified,[out_of_scope],
+2013,toyota,hilux,4x4 sr5 kun26r dual cab,cab chassis,manual,diesel,273458,5,MR0FZ29G901739035,1HIX544,13-09-2026,4,3.0,White,Grey,Yes,Yes,Yes,Partial,Yes,wa,https://www.grays.com/lot/0001-9067052/motor-vehicles-motor-cycles/2013-toyota-hilux-4x4-sr5-kun26r-turbo-diesel-manual-dual-cab,"dents or marks on body consistent with age and kilometres.
+windscreen chipped or cracked.",unclassified,[out_of_scope],
+2011,suzuki,kizashi,fr,sedan,cvt,petrol,173075,5,JSAFRE91S00122076,1EBL128,12-02-2026,4,2.4,Grey,Charcoal,Yes,No,Yes,Yes,Yes,wa,https://www.grays.com/lot/0001-9067053/motor-vehicles-motor-cycles/2011-suzuki-kizashi-fr-cvt-sedan,"dents or marks on body consistent with age and kilometres.
+paint peeling various panels
+medium scuff on rear bumper",unclassified,[out_of_scope],
+2014,volkswagen,jetta,118tsi comfortline 1b,sedan,automatic,petrol,177018,5,WVWZZZ16ZFM019443,1ESQ158,30-03-2026,4,1.4,Black,Black,Yes,No,Yes,Partial,Yes,wa,https://www.grays.com/lot/0001-9067054/motor-vehicles-motor-cycles/2014-volkswagen-jetta-118tsi-comfortline-1b-automatic-sedan,dents or marks on body consistent with age and kilometres.,unclassified,[out_of_scope],
+2019,ford,transit,350l lwb high roof vo van,van,manual,diesel,256286,3,WF0XXXTTGXKK65339,1GVG984,11-02-2026,4,2.0,White,Grey,Yes,Yes,No,Partial,Yes,wa,https://www.grays.com/lot/0001-9067055/motor-vehicles-motor-cycles/2019-ford-transit-350l-lwb-high-roof-vo-turbo-diesel-manual-van,"large dent on sliding door
+large scratch on front right corner",unclassified,[out_of_scope],
+2000,mazda,626,classic gf (wovr-inspected),sedan,automatic,petrol,362092,5,JM0GF10S200202046,1EYJ258,11-03-2026,4,2.0,Blue,Grey,Yes,No,Yes,Partial,Yes,wa,https://www.grays.com/lot/0001-9067071/motor-vehicles-motor-cycles/2000-mazda-626-classic-gf-automatic-sedan-wovr-inspected,"dents or marks on body consistent with age and kilometres.
+flat battery. jump start or towing required
+paint fading various panels
+paint peeling various panels
+front seat worn driver side
+medium scratch on various panels
+medium dent on various panels",unclassified,[out_of_scope],

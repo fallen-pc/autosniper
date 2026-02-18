@@ -1,4 +1,4 @@
-"""Build restricted active/sold datasets keyed by pipe group IDs."""
+"""Build restricted active/sold datasets keyed by canonical_tag."""
 
 from __future__ import annotations
 
@@ -17,14 +17,12 @@ if __package__ in (None, ""):
     from shared.canonical_tagging import AMBIG_DRIVETRAIN, UNCLASSIFIED, tag_dataframe
     from shared.schema import ACTIVE_LISTING_SCHEMA, SOLD_LISTING_SCHEMA
     from shared.sold_cleaning import normalize_listing_fields
-    from shared.pipe_keys import pipe_key_from_canonical
 else:  # pragma: no cover
     from shared.audit import append_audit_snapshot
     from shared.data_loader import dataset_path
     from shared.canonical_tagging import AMBIG_DRIVETRAIN, UNCLASSIFIED, tag_dataframe
     from shared.schema import ACTIVE_LISTING_SCHEMA, SOLD_LISTING_SCHEMA
     from shared.sold_cleaning import normalize_listing_fields
-    from shared.pipe_keys import pipe_key_from_canonical
 
 
 ACTIVE_SOURCE = dataset_path("active_vehicle_details.csv")
@@ -52,24 +50,12 @@ def _prepare_frame(df: pd.DataFrame) -> pd.DataFrame:
     return working
 
 
-def _to_int(value: object) -> int | None:
-    if value is None:
-        return None
-    text = str(value).strip().replace(",", "")
-    if not text:
-        return None
-    try:
-        return int(float(text))
-    except ValueError:
-        return None
-
-
 def _assign_groups(
     df: pd.DataFrame, source: str, *, require_price: bool
 ) -> Tuple[pd.DataFrame, pd.DataFrame]:
     if df.empty:
         return df.copy(), pd.DataFrame(
-            columns=["url", "canonical_tag", "group_id", "reason_code", "source"]
+            columns=["url", "canonical_tag", "reason_code", "source"]
         )
 
     working = tag_dataframe(
@@ -80,19 +66,9 @@ def _assign_groups(
     if "canonical_reason" not in working.columns:
         working["canonical_reason"] = ""
 
-    def _build_group_id(row: pd.Series) -> str:
-        canonical_tag = row.get("canonical_tag")
-        if canonical_tag and canonical_tag != UNCLASSIFIED:
-            year_val = _to_int(row.get("year"))
-            pipe_key = pipe_key_from_canonical(canonical_tag, year_val)
-            if pipe_key:
-                return pipe_key
-        return str(canonical_tag or "").strip()
-
-    working["group_id"] = working.apply(_build_group_id, axis=1)
     working["reason_code"] = working["canonical_reason"]
 
-    mapping = working[["url", "canonical_tag", "group_id", "reason_code"]].copy()
+    mapping = working[["url", "canonical_tag", "reason_code"]].copy()
     mapping["source"] = source
     return working, mapping
 

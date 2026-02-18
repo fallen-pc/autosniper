@@ -14,8 +14,8 @@ class CurveTests(unittest.TestCase):
     def test_interpolate_base_by_year(self) -> None:
         df = pd.DataFrame(
             [
-                {"group_id": "demo", "anchor_year": 2018, "km_anchor": 100000, "price_median": 20000},
-                {"group_id": "demo", "anchor_year": 2020, "km_anchor": 100000, "price_median": 24000},
+                {"canonical_tag": "demo", "anchor_year": 2018, "km_bucket": 100000, "price_mid": 20000},
+                {"canonical_tag": "demo", "anchor_year": 2020, "km_bucket": 100000, "price_mid": 24000},
             ]
         )
         estimate = interpolate_base_by_year(df, "demo", 2019, 100000)

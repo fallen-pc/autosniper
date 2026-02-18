@@ -1,18 +1,15 @@
 import pandas as pd
 import streamlit as st
 
-from shared.curves import curve_model
 from shared.ops_utils import (
     append_curve_queue,
     append_flag,
     append_note,
     build_curve_meta,
     build_issue_index,
-    build_tag_group_map,
     load_active_df,
     load_curves_df,
     load_flags_df,
-    load_group_map_df,
     load_notes_df,
     load_static_df,
     load_valuations_df,
@@ -29,10 +26,8 @@ static_df = load_static_df()
 active_df = load_active_df()
 valuations_df = load_valuations_df()
 curves_df = load_curves_df()
-group_map_df = load_group_map_df()
-tag_group_map = build_tag_group_map(group_map_df)
 curve_meta = build_curve_meta(curves_df)
-issue_df = build_issue_index(static_df, active_df, valuations_df, tag_group_map, curve_meta)
+issue_df = build_issue_index(static_df, active_df, valuations_df, curve_meta=curve_meta)
 
 urls = sorted(
     {
@@ -129,22 +124,17 @@ if not static_row.empty:
 if not canonical_tag:
     st.info("No canonical tag available for this URL.")
 else:
-    group_id = canonical_tag if curve_model() == "v2" else tag_group_map.get(canonical_tag)
-    if not group_id:
-        st.warning("No curve key found for this canonical tag.")
+    meta = curve_meta.get(canonical_tag)
+    if not meta:
+        st.warning("No curve rows found for this canonical tag.")
     else:
-        meta = curve_meta.get(group_id)
-        if not meta:
-            st.warning("No curve rows found for this curve key.")
-        else:
-            st.write(
-                {
-                    "canonical_tag": canonical_tag,
-                    "curve_key": group_id,
-                    "anchor_years": meta.anchor_years,
-                    "last_updated": meta.last_updated,
-                }
-            )
+        st.write(
+            {
+                "canonical_tag": canonical_tag,
+                "anchor_years": meta.anchor_years,
+                "last_updated": meta.last_updated,
+            }
+        )
 
 section_heading("Fix Actions", "Make changes the moment you spot a problem.")
 

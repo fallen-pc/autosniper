@@ -11,7 +11,7 @@ from typing import Iterable
 import pandas as pd
 
 from shared.canonical_tagging import UNCLASSIFIED
-from shared.curves import curve_model, load_curves
+from shared.curves import load_curves
 from shared.data_loader import dataset_path, ensure_datasets_available
 
 
@@ -49,7 +49,7 @@ class IssueSummary:
 
 @dataclass(frozen=True)
 class CurveMeta:
-    group_id: str
+    canonical_tag: str
     last_updated: datetime | None
     anchor_years: list[int]
 
@@ -246,78 +246,41 @@ def append_curve_queue(url: str, canonical_tag: str) -> None:
     df.to_csv(CURVE_QUEUE_FILE, mode="a", header=write_header, index=False)
 
 
-def build_tag_group_map(group_map_df: pd.DataFrame) -> dict[str, str]:
-    if curve_model() == "v2":
-        if group_map_df.empty or "canonical_tag" not in group_map_df.columns:
-            return {}
-        tags = (
-            group_map_df["canonical_tag"]
-            .fillna("")
-            .astype(str)
-            .str.strip()
-            .tolist()
-        )
-        return {tag: tag for tag in tags if tag and tag != UNCLASSIFIED}
-    if group_map_df.empty:
-        return {}
-    working = group_map_df.copy()
-    working["canonical_tag"] = working.get("canonical_tag", "").astype(str).str.strip()
-    working["group_id"] = working.get("group_id", "").astype(str).str.strip()
-    working = working[(working["canonical_tag"] != "") & (working["group_id"] != "")]
-    working = working[working["canonical_tag"].ne(UNCLASSIFIED)]
-    if working.empty:
-        return {}
-    def _mode(series: pd.Series) -> str:
-        counts = series.value_counts()
-        return str(counts.index[0]) if not counts.empty else ""
-    mapping = working.groupby("canonical_tag")["group_id"].agg(_mode).to_dict()
-    return {str(k): str(v) for k, v in mapping.items() if str(k).strip() and str(v).strip()}
-
-
 def build_curve_meta(curves_df: pd.DataFrame) -> dict[str, CurveMeta]:
     if curves_df.empty:
         return {}
     working = curves_df.copy()
-    working["group_id"] = working.get("group_id", "").astype(str).str.strip()
-    working = working[working["group_id"] != ""]
+    working["canonical_tag"] = working.get("canonical_tag", "").astype(str).str.strip()
+    working = working[working["canonical_tag"] != ""]
     if working.empty:
         return {}
     working["anchor_year"] = pd.to_numeric(working.get("anchor_year"), errors="coerce")
-    working["created_at"] = pd.to_datetime(working.get("created_at"), errors="coerce")
     meta: dict[str, CurveMeta] = {}
-    for group_id, subset in working.groupby("group_id"):
+    for canonical_tag, subset in working.groupby("canonical_tag"):
         anchor_years = sorted({int(val) for val in subset["anchor_year"].dropna().tolist()})
-        last_updated = subset["created_at"].dropna().max() if "created_at" in subset.columns else None
-        meta[group_id] = CurveMeta(
-            group_id=str(group_id),
-            last_updated=last_updated.to_pydatetime() if pd.notna(last_updated) else None,
+        meta[canonical_tag] = CurveMeta(
+            canonical_tag=str(canonical_tag),
+            last_updated=None,
             anchor_years=anchor_years,
         )
     return meta
 
 
-def has_curve(canonical_tag: str, tag_group_map: dict[str, str], curve_meta: dict[str, CurveMeta]) -> bool:
+def has_curve(canonical_tag: str, curve_meta: dict[str, CurveMeta]) -> bool:
     if not canonical_tag:
         return False
-    if curve_model() == "v2":
-        return canonical_tag in curve_meta
-    group_id = tag_group_map.get(canonical_tag)
-    if not group_id:
-        return False
-    return group_id in curve_meta
+    return canonical_tag in curve_meta
 
 
 def build_issue_index(
     static_df: pd.DataFrame,
     active_df: pd.DataFrame | None = None,
     valuations_df: pd.DataFrame | None = None,
-    tag_group_map: dict[str, str] | None = None,
     curve_meta: dict[str, CurveMeta] | None = None,
 ) -> pd.DataFrame:
     if static_df is None or static_df.empty:
         return pd.DataFrame(columns=["url", "severity", "issue_codes", "issue_count"])
 
-    tag_group_map = tag_group_map or {}
     curve_meta = curve_meta or {}
     active_lookup = {}
     if active_df is not None and not active_df.empty and "url" in active_df.columns:
@@ -356,7 +319,7 @@ def build_issue_index(
         if _is_blank(canonical_tag) or canonical_tag == UNCLASSIFIED:
             issues.append("NO_TAG")
         else:
-            if not has_curve(canonical_tag, tag_group_map, curve_meta):
+            if not has_curve(canonical_tag, curve_meta):
                 issues.append("NO_CURVE")
 
         canonical_reason = str(row.get("canonical_reason", "")).strip().lower()

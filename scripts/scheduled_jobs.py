@@ -136,18 +136,24 @@ def _extract_urls(df: pd.DataFrame) -> list[str]:
     return sorted(set(urls))
 
 
-def _run_update_bids(urls: Iterable[str]) -> None:
+def _run_update_bids(urls: Iterable[str], *, skip_master: bool = True) -> None:
     url_list = list(urls)
     if not url_list:
         print("No URLs found to update.")
         return
-    asyncio.run(update_bids.update_bids(input_links=url_list, limit=len(url_list)))
+    asyncio.run(
+        update_bids.update_bids(
+            input_links=url_list,
+            limit=len(url_list),
+            skip_master=skip_master,
+        )
+    )
 
 
 def run_daily_pipeline() -> None:
     extract_links.extract_all_vehicle_links()
     extract_vehicle_details.main()
-    asyncio.run(update_bids.update_bids())
+    asyncio.run(update_bids.update_bids(skip_master=True))
     _run_autotrader_scrape()
     update_master.update_master_database()
 

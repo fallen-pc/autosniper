@@ -64,7 +64,7 @@ def _run_pipeline() -> None:
     extract_links.extract_all_vehicle_links()
     asyncio.run(extract_vehicle_details.main())
     update_master.update_master_database()
-    asyncio.run(update_bids.update_bids())
+    asyncio.run(update_bids.update_bids(skip_master=True))
     compute_outcome_metrics()
 
 

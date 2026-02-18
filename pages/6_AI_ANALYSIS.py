@@ -16,16 +16,13 @@ from scripts.ai_price_analysis import _extract_hours_remaining
 from shared.comps_engine import parse_currency, parse_numeric
 from shared.canonical_tagging import UNCLASSIFIED, is_canonical_eligible, tag_dataframe
 from shared.curves import (
-    curve_dataset_name,
-    curve_model,
     get_curve_points,
     interpolate_base_by_year,
     interpolate_price_by_km,
     load_curves,
 )
 from shared.data_loader import dataset_path, ensure_datasets_available
-from shared.grouping import extract_state
-from shared.pipe_keys import looks_like_pipe_key, parse_pipe_key, pipe_key_from_canonical
+from shared.location_utils import extract_state
 from shared.repair_features import build_repair_features
 from shared.repair_pricing import (
     PANEL_CAP,
@@ -51,7 +48,7 @@ required_files = [
     "active_vehicle_details_restricted.csv",
     "sold_cars_restricted.csv",
     "restricted_group_map.csv",
-    curve_dataset_name(),
+    "curves.csv",
 ]
 missing = ensure_datasets_available(required_files)
 if missing:
@@ -63,14 +60,6 @@ if missing:
     st.stop()
 
 
-COROLLA_GROUPS = {
-    "toyota_corolla_hatch_petrol_auto_ascent_fwd_2013_2015",
-    "toyota_corolla_hatch_petrol_auto_ascent_fwd_2016_2018",
-    "toyota_corolla_hatch_petrol_auto_ascent_fwd_2019_2023",
-    "toyota_corolla_sedan_petrol_auto_ascent_fwd_2013_2015",
-    "toyota_corolla_sedan_petrol_auto_ascent_fwd_2016_2018",
-    "toyota_corolla_sedan_petrol_auto_ascent_fwd_2019_2023",
-}
 SPORT_TRIM_PATTERN = re.compile(r"\b(sport|sports|sx|zr|zrx)\b|sportivo|levin", re.IGNORECASE)
 ENGINE_DEFECT_PATTERN = re.compile(r"engine noise observed|engine idling rough", re.IGNORECASE)
 AUTOTRADER_OUTPUT = Path("autotrader_isolated/output/first_page_results.csv")
@@ -204,42 +193,20 @@ def _curve_confidence_label(value: Optional[float]) -> str:
 
 
 def _curve_key_for_row(row: pd.Series) -> str:
-    if curve_model() == "v2":
-        return _safe_text(row.get("canonical_tag"), fallback="").strip()
-    key = _safe_text(row.get("group_id"), fallback="").strip()
-    if not key or key == "N/A":
-        key = _safe_text(row.get("canonical_tag"), fallback="").strip()
-    return key
+    return _safe_text(row.get("canonical_tag"), fallback="").strip()
 
 
-def _curve_image_filename(group_id: str) -> str:
-    slug = re.sub(r"[^a-zA-Z0-9_-]+", "_", group_id).strip("_")
+def _curve_image_filename(canonical_tag: str) -> str:
+    slug = re.sub(r"[^a-zA-Z0-9_-]+", "_", canonical_tag).strip("_")
     return f"{slug}.png" if slug else ""
 
 
 def _find_curve_year_bounds(
-    curves_df: pd.DataFrame, group_id: str, year: Optional[int]
+    curves_df: pd.DataFrame, canonical_tag: str, year: Optional[int]
 ) -> tuple[Optional[int], Optional[int]]:
-    if curves_df.empty or not group_id or year is None:
+    if curves_df.empty or not canonical_tag or year is None:
         return None, None
-    subset = curves_df[curves_df["group_id"] == group_id].copy()
-    if curve_model() != "v2" and looks_like_pipe_key(group_id):
-        parsed = parse_pipe_key(group_id)
-        if parsed:
-            target_model, target_group_key, target_series, _ = parsed
-            def _same_base_group(value: object) -> bool:
-                if not isinstance(value, str):
-                    return False
-                parts = parse_pipe_key(value)
-                if not parts:
-                    return False
-                model, group_key, series, _ = parts
-                return (
-                    model == target_model
-                    and group_key == target_group_key
-                    and series == target_series
-                )
-            subset = curves_df[curves_df["group_id"].apply(_same_base_group)].copy()
+    subset = curves_df[curves_df["canonical_tag"] == canonical_tag].copy()
     if subset.empty or "anchor_year" not in subset.columns:
         return None, None
     years = sorted({int(y) for y in subset["anchor_year"].dropna()})
@@ -260,7 +227,7 @@ def _find_curve_year_bounds(
 
 def _render_interpolated_curve_plot(
     curves_df: pd.DataFrame,
-    group_id: str,
+    canonical_tag: str,
     year: int,
     km: Optional[float],
     lower_year: int,
@@ -269,36 +236,8 @@ def _render_interpolated_curve_plot(
 ) -> bool:
     if km is None:
         return False
-    subset = curves_df[curves_df["group_id"] == group_id].copy()
-    if curve_model() != "v2" and looks_like_pipe_key(group_id):
-        parsed = parse_pipe_key(group_id)
-        if parsed:
-            target_model, target_group_key, target_series, _ = parsed
-            def _same_base_group(value: object) -> bool:
-                if not isinstance(value, str):
-                    return False
-                parts = parse_pipe_key(value)
-                if not parts:
-                    return False
-                model, group_key, series, _ = parts
-                return (
-                    model == target_model
-                    and group_key == target_group_key
-                    and series == target_series
-                )
-            subset = curves_df[curves_df["group_id"].apply(_same_base_group)].copy()
-    lower_group_id = group_id
-    upper_group_id = group_id
-    if curve_model() != "v2" and looks_like_pipe_key(group_id):
-        if not subset.empty:
-            lower_row = subset[subset["anchor_year"] == lower_year]
-            upper_row = subset[subset["anchor_year"] == upper_year]
-            if not lower_row.empty:
-                lower_group_id = str(lower_row.iloc[0]["group_id"])
-            if not upper_row.empty:
-                upper_group_id = str(upper_row.iloc[0]["group_id"])
-    lower_points = get_curve_points(subset, lower_group_id, lower_year)
-    upper_points = get_curve_points(subset, upper_group_id, upper_year)
+    lower_points = get_curve_points(curves_df, canonical_tag, lower_year)
+    upper_points = get_curve_points(curves_df, canonical_tag, upper_year)
     if not lower_points or not upper_points:
         return False
 
@@ -341,14 +280,14 @@ def _render_interpolated_curve_plot(
 
 def _render_single_curve_plot(
     curves_df: pd.DataFrame,
-    group_id: str,
+    canonical_tag: str,
     year: int,
     km: Optional[float],
     autotrader_points: list[tuple[float, float]] | None = None,
 ) -> bool:
     if km is None:
         return False
-    points = get_curve_points(curves_df, group_id, year)
+    points = get_curve_points(curves_df, canonical_tag, year)
     if not points:
         return False
     import matplotlib.pyplot as plt
@@ -756,26 +695,13 @@ def _trans_match(left: object, right: object) -> bool:
     return left_key == right_key or left_key in right_key or right_key in left_key
 
 
-def _autotrader_group_id(row: pd.Series, curve_group_id: str) -> str:
-    tag = _safe_text(row.get("canonical_tag"), fallback="").strip()
-    if not tag or tag == "N/A" or tag == UNCLASSIFIED:
-        return ""
-    if curve_model() == "v2":
-        return tag
-    if looks_like_pipe_key(curve_group_id):
-        year_val = _safe_int(row.get("year"))
-        pipe_key = pipe_key_from_canonical(tag, year_val)
-        return pipe_key or ""
-    return tag
-
-
 def _score_autotrader_matches(
     listing_row: pd.Series,
-    curve_group_id: str,
+    curve_tag: str,
     *,
     limit: int = 3,
 ) -> tuple[pd.DataFrame, dict[str, int]]:
-    if autotrader_df.empty or not curve_group_id:
+    if autotrader_df.empty or not curve_tag:
         return pd.DataFrame(), {"total": 0}
     target_km = parse_numeric(listing_row.get("odometer_reading"))
     if target_km is None or target_km <= 0:
@@ -807,25 +733,11 @@ def _score_autotrader_matches(
         if _norm_key(candidate.get("make")) != "toyota":
             continue
         stats["toyota"] += 1
-        candidate_group = _autotrader_group_id(candidate, curve_group_id)
         candidate_tag = _safe_text(candidate.get("canonical_tag"), fallback="").strip()
         if candidate_tag == UNCLASSIFIED:
             candidate_tag = ""
-        if curve_model() != "v2" and looks_like_pipe_key(curve_group_id):
-            group_ok = candidate_group == curve_group_id
-            tag_ok = listing_tag and candidate_tag and candidate_tag == listing_tag
-            group_key_ok = False
-            target_parts = parse_pipe_key(curve_group_id)
-            candidate_parts = parse_pipe_key(candidate_group) if candidate_group else None
-            if target_parts and candidate_parts:
-                target_model, target_group_key, _, _ = target_parts
-                cand_model, cand_group_key, _, _ = candidate_parts
-                group_key_ok = target_model == cand_model and target_group_key == cand_group_key
-            if not group_ok and not tag_ok and not group_key_ok:
-                continue
-        else:
-            if not candidate_tag or candidate_tag != curve_group_id:
-                continue
+        if not candidate_tag or candidate_tag != curve_tag:
+            continue
         stats["group_match"] += 1
         if not _fuel_match(listing_fuel, candidate.get("fuel_type")):
             continue
@@ -1073,7 +985,7 @@ def _render_condition_summary(row: pd.Series) -> None:
 
 
 def _render_curve_section(row: pd.Series) -> None:
-    curve_id = _curve_key_for_row(row)
+    curve_tag = _curve_key_for_row(row)
     resale_value = _compute_resale_value(row)
     resale_display = _format_currency_value(resale_value)
     km_display = _format_odometer(row.get("odometer_reading"))
@@ -1082,16 +994,16 @@ def _render_curve_section(row: pd.Series) -> None:
     autotrader_points: list[tuple[float, float]] = []
 
     st.markdown("**Resale Curve (Carsales)**")
-    if curve_id:
-        st.caption(f"{curve_id}")
+    if curve_tag:
+        st.caption(f"{curve_tag}")
     st.write(f"Estimated resale @ {km_display} → **{resale_display}**  |  Confidence: **{confidence_label}**")
 
-    if not curve_id:
+    if not curve_tag:
         st.info("Curve image not available (missing curve key).")
         return
 
     if listing_year is not None:
-        matches, _ = _score_autotrader_matches(row, curve_id, limit=50)
+        matches, _ = _score_autotrader_matches(row, curve_tag, limit=50)
         if not matches.empty and "year" in matches.columns:
             year_matches = matches[pd.to_numeric(matches["year"], errors="coerce") == listing_year]
             for _, m in year_matches.iterrows():
@@ -1102,12 +1014,12 @@ def _render_curve_section(row: pd.Series) -> None:
                 if km_val is not None and price_val is not None and not pd.isna(km_val) and not pd.isna(price_val):
                     autotrader_points.append((float(km_val), float(price_val)))
 
-    lower_year, upper_year = _find_curve_year_bounds(curves_df, curve_id, listing_year)
+    lower_year, upper_year = _find_curve_year_bounds(curves_df, curve_tag, listing_year)
     if lower_year is not None and upper_year is not None and lower_year != upper_year:
         st.caption(f"Interpolated between {lower_year} and {upper_year} curves.")
         plotted = _render_interpolated_curve_plot(
             curves_df,
-            curve_id,
+            curve_tag,
             listing_year or lower_year,
             parse_numeric(row.get("odometer_reading")),
             lower_year,
@@ -1115,13 +1027,13 @@ def _render_curve_section(row: pd.Series) -> None:
             autotrader_points=autotrader_points if autotrader_points else None,
         )
         if not plotted:
-            st.info("Curve image not available for this group.")
+            st.info("Curve image not available for this tag.")
         return
 
     if listing_year is not None and autotrader_points:
         plotted = _render_single_curve_plot(
             curves_df,
-            curve_id,
+            curve_tag,
             listing_year,
             parse_numeric(row.get("odometer_reading")),
             autotrader_points=autotrader_points,
@@ -1129,12 +1041,12 @@ def _render_curve_section(row: pd.Series) -> None:
         if plotted:
             return
 
-    image_name = _curve_image_filename(curve_id)
+    image_name = _curve_image_filename(curve_tag)
     image_path = CURVE_IMAGE_DIR / image_name if image_name else None
     if image_path and image_path.exists():
         st.image(str(image_path), use_container_width=True)
     else:
-        st.info("Curve image not available for this group.")
+        st.info("Curve image not available for this tag.")
 
 
 def _render_autotrader_confirmation(row: pd.Series) -> None:
@@ -1148,12 +1060,12 @@ def _render_autotrader_confirmation(row: pd.Series) -> None:
         st.info("Curve estimate unavailable. Autotrader confirmation disabled.")
         return
 
-    curve_group_id = _curve_key_for_row(row)
-    if not curve_group_id:
-        st.info("Curve group missing. Autotrader confirmation disabled.")
+    curve_tag = _curve_key_for_row(row)
+    if not curve_tag:
+        st.info("Curve tag missing. Autotrader confirmation disabled.")
         return
 
-    matches, stats = _score_autotrader_matches(row, curve_group_id)
+    matches, stats = _score_autotrader_matches(row, curve_tag, limit=50)
     if stats and stats.get("total"):
         st.caption(
             "Filter path: "
@@ -1163,7 +1075,15 @@ def _render_autotrader_confirmation(row: pd.Series) -> None:
             f"{stats.get('fuel_trans_body', 0)} fuel/trans/body → "
         f"{stats.get('km_window', 0)} within ±100,000 km"
         )
-    st.caption(f"Debug: {len(matches)} Autotrader matches after filtering.")
+    year_note = ""
+    listing_year = _safe_int(row.get("year"))
+    if listing_year is not None and not matches.empty and "year" in matches.columns:
+        year_matches = matches[pd.to_numeric(matches["year"], errors="coerce") == listing_year]
+        if not year_matches.empty:
+            matches = year_matches.reset_index(drop=True)
+            year_note = f" (showing {listing_year} only)"
+
+    st.caption(f"Debug: {len(matches)} Autotrader matches after filtering{year_note}.")
     if matches.empty:
         st.caption("No qualifying Autotrader matches found within the km window (±100,000 km).")
         return
@@ -1435,10 +1355,8 @@ def load_group_map() -> pd.DataFrame:
     path = dataset_path("restricted_group_map.csv")
     df = pd.read_csv(path)
     df["url"] = df["url"].astype(str).str.strip()
-    if curve_model() == "v2" and "canonical_tag" in df.columns:
-        df["group_id"] = df["canonical_tag"]
-    elif "group_id" not in df.columns and "canonical_tag" in df.columns:
-        df["group_id"] = df["canonical_tag"]
+    if "canonical_tag" in df.columns:
+        df["canonical_tag"] = df["canonical_tag"].astype(str).str.strip()
     return df
 
 
@@ -1471,16 +1389,13 @@ def load_normalized_conditions() -> pd.DataFrame:
 
 def _select_sold_subset(
     sold_df: pd.DataFrame,
-    group_id: object,
+    canonical_tag: object,
     year_val: Optional[int],
     min_year_samples: int = 3,
 ) -> pd.DataFrame:
-    if sold_df.empty or not group_id:
+    if sold_df.empty or not canonical_tag:
         return pd.DataFrame()
-    if curve_model() == "v2" and "canonical_tag" in sold_df.columns:
-        subset = sold_df[sold_df["canonical_tag"] == group_id]
-    else:
-        subset = sold_df[sold_df["group_id"] == group_id]
+    subset = sold_df[sold_df["canonical_tag"] == canonical_tag]
     if year_val is None or "year_int" not in subset.columns:
         return subset
     year_subset = subset[subset["year_int"] == year_val]
@@ -1625,21 +1540,19 @@ def load_autotrader_data(raw_mtime: float | None = None) -> pd.DataFrame:
             df["canonical_reason"] = tagged_df["canonical_reason"].where(reason_series.eq(""), df["canonical_reason"])
         tagged_path.parent.mkdir(parents=True, exist_ok=True)
         df.to_csv(tagged_path, index=False)
-    # Enforce v2 tags only (strip v1 tags in autotrader data)
-    if curve_model() == "v2":
-        allowed_tags = set(
-            load_curves()
-            .get("canonical_tag", pd.Series(dtype=str))
-            .dropna()
-            .astype(str)
-            .str.strip()
-            .tolist()
-        )
-        if allowed_tags:
-            df["canonical_tag"] = df["canonical_tag"].fillna("").astype(str).str.strip()
-            df["canonical_tag"] = df["canonical_tag"].where(df["canonical_tag"].isin(allowed_tags), "UNCLASSIFIED")
-            tagged_path.parent.mkdir(parents=True, exist_ok=True)
-            df.to_csv(tagged_path, index=False)
+    allowed_tags = set(
+        load_curves()
+        .get("canonical_tag", pd.Series(dtype=str))
+        .dropna()
+        .astype(str)
+        .str.strip()
+        .tolist()
+    )
+    if allowed_tags:
+        df["canonical_tag"] = df["canonical_tag"].fillna("").astype(str).str.strip()
+        df["canonical_tag"] = df["canonical_tag"].where(df["canonical_tag"].isin(allowed_tags), "UNCLASSIFIED")
+        tagged_path.parent.mkdir(parents=True, exist_ok=True)
+        df.to_csv(tagged_path, index=False)
     return df
 
 
@@ -1712,17 +1625,9 @@ def _find_autotrader_matches(
 
 
 def _exclude_corolla_sport_comps(df: pd.DataFrame) -> pd.DataFrame:
-    if df.empty or "group_id" not in df.columns:
+    if df.empty or "canonical_tag" not in df.columns:
         return df
-
-    def _is_corolla_group(value: object) -> bool:
-        parsed = parse_pipe_key(value)
-        if parsed:
-            model, group_key, _, _ = parsed
-            return model == "corolla" and group_key in {"hatch_petrol_auto", "sedan_petrol_auto"}
-        return value in COROLLA_GROUPS
-
-    corolla_mask = df["group_id"].apply(_is_corolla_group)
+    corolla_mask = df["canonical_tag"].astype(str).str.lower().str.startswith("toyota_corolla")
     if not corolla_mask.any():
         return df
     text_fields = [field for field in ("variant", "model", "series", "trim") if field in df.columns]
@@ -1778,7 +1683,7 @@ if not cached_results.empty and "url" in cached_results.columns:
 
 
 active_groups = group_map_df[group_map_df["source"] == "active"][
-    ["url", "group_id", "canonical_tag", "reason_code"]
+    ["url", "canonical_tag", "reason_code"]
 ].rename(columns={"reason_code": "canonical_reason"})
 active_df = active_df.merge(active_groups, on="url", how="left")
 
@@ -1815,86 +1720,120 @@ if not normalized_conditions.empty and "url" in active_df.columns:
         sold_df["normalized_condition_text"] = sold_df["url"].map(grouped).fillna("")
 
 sold_groups = group_map_df[group_map_df["source"] == "sold"][
-    ["url", "group_id", "canonical_tag", "reason_code"]
+    ["url", "canonical_tag", "reason_code"]
 ].rename(columns={"reason_code": "canonical_reason"})
 sold_df = sold_df.merge(sold_groups, on="url", how="left")
 
-allowed_tags: set[str] | None = None
-if curve_model() == "v2":
-    allowed_tags = set(
-        curves_df.get("canonical_tag", pd.Series(dtype=str))
-        .dropna()
-        .astype(str)
-        .str.strip()
-        .tolist()
+allowed_tags: set[str] | None = set(
+    curves_df.get("canonical_tag", pd.Series(dtype=str))
+    .dropna()
+    .astype(str)
+    .str.strip()
+    .tolist()
+)
+no_curve_active_df = pd.DataFrame()
+if not allowed_tags:
+    st.warning("curves.csv has no canonical tags; showing all tags.")
+    allowed_tags = None
+else:
+    if "canonical_tag" not in active_df.columns:
+        active_df["canonical_tag"] = ""
+    active_df["canonical_tag"] = active_df["canonical_tag"].astype(str).str.strip()
+    active_df["tag_in_curves"] = active_df["canonical_tag"].isin(allowed_tags)
+    active_df["canonical_eligible"] = active_df.apply(
+        lambda r: is_canonical_eligible(r.get("canonical_tag"), r.get("canonical_reason")),
+        axis=1,
     )
-    if not allowed_tags:
-        st.warning("curves_v2.csv has no canonical tags; showing all tags.")
-        allowed_tags = None
-    else:
-        if "canonical_tag" not in active_df.columns:
-            active_df["canonical_tag"] = ""
-        active_df["canonical_tag"] = active_df["canonical_tag"].astype(str).str.strip()
-        active_df = active_df[active_df["canonical_tag"].isin(allowed_tags)].copy()
 
-        if "canonical_tag" not in sold_df.columns:
-            sold_df["canonical_tag"] = ""
-        sold_df["canonical_tag"] = sold_df["canonical_tag"].astype(str).str.strip()
-        sold_df = sold_df[sold_df["canonical_tag"].isin(allowed_tags)].copy()
-    if "canonical_tag" in active_df.columns:
-        active_df = active_df[
-            active_df.apply(
-                lambda r: is_canonical_eligible(r.get("canonical_tag"), r.get("canonical_reason")),
-                axis=1,
-            )
-        ].copy()
-        if "year" in active_df.columns and "anchor_year" in curves_df.columns:
-            year_band = (
-                curves_df.dropna(subset=["canonical_tag", "anchor_year"])
-                .assign(anchor_year=lambda d: d["anchor_year"].apply(_safe_int))
-                .dropna(subset=["anchor_year"])
-                .groupby("canonical_tag")["anchor_year"]
-                .agg(["min", "max"])
-                .rename(columns={"min": "min_year", "max": "max_year"})
-            )
-            active_df = active_df.merge(
-                year_band, left_on="canonical_tag", right_index=True, how="left"
-            )
-            active_df["year_int"] = active_df["year"].apply(_safe_int)
-            active_df = active_df[
-                active_df["year_int"].notna()
-                & active_df["min_year"].notna()
-                & active_df["max_year"].notna()
-                & (active_df["year_int"] >= active_df["min_year"])
-                & (active_df["year_int"] <= active_df["max_year"])
-            ].copy()
-            active_df = active_df.drop(columns=["min_year", "max_year"])
-        if "odometer_reading" in active_df.columns and "km_bucket" in curves_df.columns:
-            km_band = (
-                curves_df.dropna(subset=["canonical_tag", "km_bucket"])
-                .assign(km_bucket=lambda d: d["km_bucket"].apply(_safe_int))
-                .dropna(subset=["km_bucket"])
-                .groupby("canonical_tag")["km_bucket"]
-                .agg(["min", "max"])
-                .rename(columns={"min": "min_km", "max": "max_km"})
-            )
-            active_df = active_df.merge(
-                km_band, left_on="canonical_tag", right_index=True, how="left"
-            )
+    if "year" in active_df.columns and "anchor_year" in curves_df.columns:
+        year_band = (
+            curves_df.dropna(subset=["canonical_tag", "anchor_year"])
+            .assign(anchor_year=lambda d: d["anchor_year"].apply(_safe_int))
+            .dropna(subset=["anchor_year"])
+            .groupby("canonical_tag")["anchor_year"]
+            .agg(["min", "max"])
+            .rename(columns={"min": "min_year", "max": "max_year"})
+        )
+        active_df = active_df.merge(year_band, left_on="canonical_tag", right_index=True, how="left")
+        active_df["year_int"] = active_df["year"].apply(_safe_int)
+        active_df["year_in_range"] = (
+            active_df["year_int"].notna()
+            & active_df["min_year"].notna()
+            & active_df["max_year"].notna()
+            & (active_df["year_int"] >= active_df["min_year"])
+            & (active_df["year_int"] <= active_df["max_year"])
+        )
+    else:
+        active_df["year_in_range"] = False
+    if "odometer_reading" in active_df.columns and "km_bucket" in curves_df.columns:
+        km_band = (
+            curves_df.dropna(subset=["canonical_tag", "km_bucket"])
+            .assign(km_bucket=lambda d: d["km_bucket"].apply(_safe_int))
+            .dropna(subset=["km_bucket"])
+            .groupby("canonical_tag")["km_bucket"]
+            .agg(["min", "max"])
+            .rename(columns={"min": "min_km", "max": "max_km"})
+        )
+        active_df = active_df.merge(km_band, left_on="canonical_tag", right_index=True, how="left")
+        if "odometer_numeric" not in active_df.columns:
             active_df["odometer_numeric"] = active_df["odometer_reading"].apply(parse_numeric)
-            active_df = active_df[
-                active_df["odometer_numeric"].notna()
-                & active_df["min_km"].notna()
-                & active_df["max_km"].notna()
-                & (active_df["odometer_numeric"] >= active_df["min_km"])
-                & (active_df["odometer_numeric"] <= active_df["max_km"])
-            ].copy()
-            active_df = active_df.drop(columns=["min_km", "max_km"])
+        active_df["km_in_range"] = (
+            active_df["odometer_numeric"].notna()
+            & active_df["min_km"].notna()
+            & active_df["max_km"].notna()
+            & (active_df["odometer_numeric"] >= active_df["min_km"])
+            & (active_df["odometer_numeric"] <= active_df["max_km"])
+        )
+    else:
+        active_df["km_in_range"] = False
+    active_df["curve_coverage"] = (
+        active_df["tag_in_curves"]
+        & active_df["canonical_eligible"]
+        & active_df["year_in_range"]
+        & active_df["km_in_range"]
+    )
+    no_curve_active_df = active_df[~active_df["curve_coverage"]].copy()
+
+    def _build_no_curve_reason(row: pd.Series) -> str:
+        reasons = []
+        if not row.get("tag_in_curves"):
+            reasons.append("TAG_NOT_IN_CURVES")
+        if not row.get("canonical_eligible"):
+            reasons.append("NOT_ELIGIBLE")
+        if not row.get("year_in_range"):
+            reasons.append("YEAR_OUT_OF_RANGE")
+        if not row.get("km_in_range"):
+            reasons.append("KM_OUT_OF_RANGE")
+        return ", ".join(reasons) if reasons else "NO_CURVE"
+
+    no_curve_active_df["no_curve_reason"] = no_curve_active_df.apply(_build_no_curve_reason, axis=1)
+
+    active_df = active_df[active_df["curve_coverage"]].copy()
+    drop_cols = [
+        "tag_in_curves",
+        "canonical_eligible",
+        "year_in_range",
+        "km_in_range",
+        "curve_coverage",
+        "min_year",
+        "max_year",
+        "min_km",
+        "max_km",
+    ]
+    active_df = active_df.drop(columns=[col for col in drop_cols if col in active_df.columns])
+    no_curve_active_df = no_curve_active_df.drop(
+        columns=[col for col in drop_cols if col in no_curve_active_df.columns]
+    )
+
+    if "canonical_tag" not in sold_df.columns:
+        sold_df["canonical_tag"] = ""
+    sold_df["canonical_tag"] = sold_df["canonical_tag"].astype(str).str.strip()
+    sold_df = sold_df[sold_df["canonical_tag"].isin(allowed_tags)].copy()
 sold_df = _exclude_corolla_sport_comps(sold_df)
 sold_df = _exclude_major_engine_defects(sold_df)
 sold_df["year_int"] = sold_df["year"].apply(_safe_int) if "year" in sold_df.columns else None
 
-curve_key_col = "canonical_tag" if curve_model() == "v2" else "group_id"
+curve_key_col = "canonical_tag"
 
 sold_stats_group = (
     sold_df.dropna(subset=[curve_key_col, "price_numeric"])
@@ -1928,27 +1867,17 @@ sold_stats_year = (
 
 
 st.sidebar.header("Filters")
-if curve_model() == "v2":
-    if allowed_tags:
-        group_values = sorted({tag for tag in allowed_tags if tag and tag != UNCLASSIFIED})
-    else:
-        group_values = sorted(
-            {
-                str(val).strip()
-                for val in active_df.get("canonical_tag", pd.Series(dtype=str)).dropna().tolist()
-                if str(val).strip() and str(val).strip() != UNCLASSIFIED
-            }
-        )
-    group_filter = st.sidebar.selectbox("Canonical tag", ["All"] + group_values)
+if allowed_tags:
+    group_values = sorted({tag for tag in allowed_tags if tag and tag != UNCLASSIFIED})
 else:
     group_values = sorted(
         {
             str(val).strip()
-            for val in group_map_df["group_id"].dropna().tolist()
-            if str(val).strip()
+            for val in active_df.get("canonical_tag", pd.Series(dtype=str)).dropna().tolist()
+            if str(val).strip() and str(val).strip() != UNCLASSIFIED
         }
     )
-    group_filter = st.sidebar.selectbox("Group ID", ["All"] + group_values)
+group_filter = st.sidebar.selectbox("Canonical tag", ["All"] + group_values)
 refresh_clicked = st.sidebar.button("Refresh curve valuations")
 force_refresh = refresh_clicked
 
@@ -2285,100 +2214,84 @@ if "hours_remaining" in filtered.columns and (min_hours is not None or max_hours
         filtered = filtered[filtered["hours_remaining"] < max_hours]
 
 if group_filter != "All":
-    if curve_model() == "v2":
-        filtered = filtered[filtered["canonical_tag"] == group_filter]
-    else:
-        filtered = filtered[filtered["group_id"] == group_filter]
+    filtered = filtered[filtered["canonical_tag"] == group_filter]
 
-if curve_model() == "v2":
-    if "canonical_tag" not in filtered.columns:
-        filtered["canonical_tag"] = ""
-    filtered["canonical_tag"] = filtered["canonical_tag"].astype(str).str.strip()
-    filtered = filtered[filtered["canonical_tag"] != ""].copy()
-    if allowed_tags:
-        filtered = filtered[filtered["canonical_tag"].isin(allowed_tags)].copy()
-else:
-    filtered = filtered.dropna(subset=["group_id"]).copy()
+if "canonical_tag" not in filtered.columns:
+    filtered["canonical_tag"] = ""
+filtered["canonical_tag"] = filtered["canonical_tag"].astype(str).str.strip()
+filtered = filtered[filtered["canonical_tag"] != ""].copy()
+if allowed_tags:
+    filtered = filtered[filtered["canonical_tag"].isin(allowed_tags)].copy()
+
+no_curve_filtered = no_curve_active_df.copy()
+if not no_curve_filtered.empty:
+    if "hours_remaining" in no_curve_filtered.columns and (min_hours is not None or max_hours is not None):
+        no_curve_filtered = no_curve_filtered[no_curve_filtered["hours_remaining"].notna()]
+        if min_hours is not None:
+            no_curve_filtered = no_curve_filtered[no_curve_filtered["hours_remaining"] >= min_hours]
+        if max_hours is not None:
+            no_curve_filtered = no_curve_filtered[no_curve_filtered["hours_remaining"] < max_hours]
+    if group_filter != "All" and "canonical_tag" in no_curve_filtered.columns:
+        no_curve_filtered = no_curve_filtered[no_curve_filtered["canonical_tag"] == group_filter]
+
+if not no_curve_filtered.empty:
+    no_curve_html = clean_html(
+        f"""
+        <div class="autosniper-section">
+            <div class="section-title">No Curve Coverage</div>
+            <div class="section-subtitle">
+                {len(no_curve_filtered):,} listing(s) excluded from curve analysis.
+            </div>
+        </div>
+        """
+    )
+    st.markdown(no_curve_html, unsafe_allow_html=True)
+    with st.expander("View no-curve listings"):
+        display_cols = [
+            "year",
+            "make",
+            "model",
+            "variant",
+            "odometer_reading",
+            "price",
+            "location",
+            "no_curve_reason",
+            "url",
+        ]
+        available_cols = [col for col in display_cols if col in no_curve_filtered.columns]
+        if available_cols:
+            st.dataframe(
+                no_curve_filtered[available_cols],
+                use_container_width=True,
+                hide_index=True,
+            )
 
 if filtered.empty:
-    st.info("No active listings match the current filters.")
+    if no_curve_filtered.empty:
+        st.info("No active listings match the current filters.")
+    else:
+        st.info("No curve-covered listings match the current filters.")
     st.stop()
 
 
 results: list[Dict[str, Any]] = []
 for _, row in filtered.iterrows():
-    group_id = row.get("group_id")
-    canonical_tag = row.get("canonical_tag")
-    curve_key = canonical_tag if curve_model() == "v2" else group_id
+    canonical_tag = _safe_text(row.get("canonical_tag"), fallback="").strip()
     canonical_reason = _safe_text(row.get("canonical_reason"), fallback="").strip()
     year_val = _safe_int(row.get("year"))
     odo_val = row.get("odometer_numeric")
     spec_reason = ""
-    series_key = None
     if not is_canonical_eligible(canonical_tag, canonical_reason):
-        if curve_model() == "v2":
-            continue
-        spec_reason = canonical_reason or "NOT_ELIGIBLE"
-        results.append(
-            {
-                "url": row.get("url"),
-                "curve_base": None,
-                "curve_adjusted": None,
-                "trim_multiplier": None,
-                "computed_verdict": "Not Eligible",
-                "recommended_max_bid": None,
-                "resale_mid": None,
-                "net_profit_worst": None,
-                "spec_reason": spec_reason,
-                "spec_series": None,
-                "comps_count": 0,
-                "comps_median": None,
-                "comps_mean": None,
-                "comps_min": None,
-                "comps_max": None,
-                "expected_sale": None,
-                "expected_sale_note": "No curve / Not eligible",
-            }
-        )
         continue
-    if curve_model() != "v2":
-        parsed = parse_pipe_key(group_id)
-        if parsed:
-            _, _, series_key, _ = parsed
 
-    curve_subset = curves_df
-    if curve_key:
-        if curve_model() != "v2" and looks_like_pipe_key(curve_key):
-            parsed = parse_pipe_key(curve_key)
-            if parsed:
-                target_model, target_group_key, target_series, _ = parsed
-                def _same_base_group(value: object) -> bool:
-                    if not isinstance(value, str):
-                        return False
-                    parts = parse_pipe_key(value)
-                    if not parts:
-                        return False
-                    model, group_key, series, _ = parts
-                    return (
-                        model == target_model
-                        and group_key == target_group_key
-                        and series == target_series
-                    )
-                curve_subset = curve_subset[curve_subset["group_id"].apply(_same_base_group)]
-            else:
-                curve_subset = curve_subset[curve_subset["group_id"] == curve_key]
-        else:
-            curve_subset = curve_subset[curve_subset["group_id"] == curve_key]
-    if curve_subset.empty and not spec_reason:
+    curve_key = canonical_tag
+    curve_subset = curves_df[curves_df["canonical_tag"] == curve_key] if curve_key else pd.DataFrame()
+    if curve_subset.empty:
         spec_reason = "NO_CURVE"
-    if series_key and not curve_subset.empty:
-        curve_subset = curve_subset[curve_subset["series"] == series_key]
-        if curve_subset.empty and not spec_reason:
-            spec_reason = "SERIES_NOT_COVERED"
 
     base_estimate = None
     if not spec_reason:
-        base_estimate = interpolate_base_by_year(curve_subset, curve_key, year_val, odo_val)
+        base_estimate = interpolate_base_by_year(curves_df, curve_key, year_val, odo_val)
     trim_multiplier = None
     adjusted_estimate = base_estimate
     stats = None
@@ -2406,8 +2319,8 @@ for _, row in filtered.iterrows():
 
     autotrader_median = None
     listings_cluster_ok = False
-    curve_group_id = _curve_key_for_row(row)
-    at_matches, _ = _score_autotrader_matches(row, curve_group_id)
+    curve_tag = _curve_key_for_row(row)
+    at_matches, _ = _score_autotrader_matches(row, curve_tag)
     if not at_matches.empty and "price_value" in at_matches.columns:
         price_series = at_matches["price_value"].dropna()
         if not price_series.empty:
@@ -2428,7 +2341,6 @@ for _, row in filtered.iterrows():
                 "resale_mid": None,
                 "net_profit_worst": None,
                 "spec_reason": spec_reason or "NOT_ELIGIBLE",
-                "spec_series": series_key,
                 "comps_count": comps_count,
                 "comps_median": comps_median,
                 "comps_mean": comps_mean,
@@ -2443,7 +2355,7 @@ for _, row in filtered.iterrows():
     url_value = row.get("url")
     cached_verdict = _safe_text(cached_verdicts.get(url_value), fallback="")
     force_refresh_row = force_refresh or (
-        curve_model() == "v2" and cached_verdict and "not eligible" in cached_verdict.lower()
+        cached_verdict and "not eligible" in cached_verdict.lower()
     )
     analysis = run_curve_listing_analysis(
         row,
@@ -2469,7 +2381,6 @@ for _, row in filtered.iterrows():
     analysis["expected_sale"] = expected_sale
     analysis["expected_sale_note"] = expected_sale_note
     analysis["spec_reason"] = spec_reason or ""
-    analysis["spec_series"] = series_key
     results.append(analysis)
 
 
@@ -2550,10 +2461,7 @@ output["verdict_class"] = output["computed_verdict"].apply(lambda value: _map_ve
 
 filtered_output = output.copy()
 if group_filter != "All":
-    if curve_model() == "v2":
-        filtered_output = filtered_output[filtered_output["canonical_tag"] == group_filter]
-    else:
-        filtered_output = filtered_output[filtered_output["group_id"] == group_filter]
+    filtered_output = filtered_output[filtered_output["canonical_tag"] == group_filter]
 
 if hide_avoid:
     filtered_output = filtered_output[filtered_output["verdict_label"] != "Avoid"]
@@ -2707,19 +2615,14 @@ def render_listing_card(row: pd.Series) -> None:
         canonical_reason == "[AMBIG_DRIVETRAIN]" and is_toyota
     )
 
-    group_id = _safe_text(row.get("group_id"), fallback="")
     header_meta_parts = []
-    if curve_model() == "v2":
-        if canonical_tag:
-            header_meta_parts.append(f"Tag {canonical_tag}")
-        normalized_text = _safe_text(row.get("normalized_condition_text"), fallback="").strip()
-        if normalized_text:
-            header_meta_parts.append("Normalized: Yes")
-        else:
-            header_meta_parts.append("Normalized: No")
+    if canonical_tag:
+        header_meta_parts.append(f"Tag {canonical_tag}")
+    normalized_text = _safe_text(row.get("normalized_condition_text"), fallback="").strip()
+    if normalized_text:
+        header_meta_parts.append("Normalized: Yes")
     else:
-        if group_id and group_id != "N/A":
-            header_meta_parts.append(f"Group {group_id}")
+        header_meta_parts.append("Normalized: No")
     header_meta = " | ".join(header_meta_parts)
 
     defect_profile = build_defect_profile(row.to_dict())
@@ -2852,12 +2755,13 @@ def render_listing_card(row: pd.Series) -> None:
 
         _render_curve_section(row)
         _render_autotrader_confirmation(row)
+    with st.expander("Repairs / condition", expanded=False):
         _render_condition_summary(row)
 
         _render_bullets("Comparable sales (Grays)", comps_items)
-        group_id_value = row.get("group_id")
-        if group_id_value and not (isinstance(group_id_value, float) and pd.isna(group_id_value)):
-            comps_df = sold_df[sold_df["group_id"] == group_id_value].copy()
+        tag_value = row.get("canonical_tag")
+        if tag_value and not (isinstance(tag_value, float) and pd.isna(tag_value)):
+            comps_df = sold_df[sold_df["canonical_tag"] == tag_value].copy()
             listing_year = _safe_int(row.get("year"))
             if listing_year is not None and "year_int" in comps_df.columns:
                 comps_df = comps_df[comps_df["year_int"] == listing_year]

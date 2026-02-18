@@ -6,7 +6,7 @@ import pandas as pd
 import streamlit as st
 
 from shared.canonical_tagging import is_canonical_eligible
-from shared.curves import curve_model, load_curves
+from shared.curves import load_curves
 from shared.data_loader import dataset_path
 from shared.styling import clean_html, display_banner, inject_global_styles, page_intro
 
@@ -172,20 +172,17 @@ else:
 if toyota_only:
     combined = _toyota_filter(combined)
 
-if curve_model() == "v2":
-    curves_df = load_curves()
-    if curves_df.empty or "canonical_tag" not in curves_df.columns:
-        st.warning("curves_v2.csv is empty or missing canonical_tag; showing all tags.")
+curves_df = load_curves()
+if curves_df.empty:
+    st.warning("curves.csv is empty; showing all tags.")
+else:
+    allowed_tags = set(curves_df["canonical_tag"].dropna().astype(str).str.strip().tolist())
+    if not allowed_tags:
+        st.warning("No canonical tags found in curves.csv; showing all tags.")
     else:
-        allowed_tags = set(
-            curves_df["canonical_tag"].dropna().astype(str).str.strip().tolist()
-        )
-        if not allowed_tags:
-            st.warning("No canonical tags found in curves_v2.csv; showing all tags.")
-        else:
-            combined = combined[
-                combined["canonical_tag"].astype(str).str.strip().isin(allowed_tags)
-            ].copy()
+        combined = combined[
+            combined["canonical_tag"].astype(str).str.strip().isin(allowed_tags)
+        ].copy()
 
 summary_df, pivot_df = _build_summary(combined, split_eligibility=split_eligibility)
 audit_df = _build_policy_audit(combined)

@@ -1,13 +1,11 @@
 import pandas as pd
 import streamlit as st
 
-from shared.curves import curve_model
 from shared.ops_utils import (
     apply_global_filters,
     ISSUE_DEFINITIONS,
     build_curve_meta,
     build_issue_index,
-    build_tag_group_map,
     confidence_bucket,
     explode_issues,
     format_issue_label,
@@ -15,7 +13,6 @@ from shared.ops_utils import (
     load_active_df,
     load_curves_df,
     load_flags_df,
-    load_group_map_df,
     load_static_df,
     load_valuations_df,
     parse_time_remaining_hours,
@@ -38,10 +35,8 @@ if static_df.empty:
     st.stop()
 
 curves_df = load_curves_df()
-group_map_df = load_group_map_df()
-tag_group_map = build_tag_group_map(group_map_df)
 curve_meta = build_curve_meta(curves_df)
-issue_df = build_issue_index(static_df, active_df, valuations_df, tag_group_map, curve_meta)
+issue_df = build_issue_index(static_df, active_df, valuations_df, curve_meta=curve_meta)
 issue_df = issue_df[issue_df["issue_count"] > 0]
 flags_df = load_flags_df()
 flag_lookup = {}
@@ -125,14 +120,9 @@ with left:
         subset["time_remaining_hours"] = pd.Series([None] * len(subset), index=subset.index)
     subset["time_bucket"] = subset["time_remaining_hours"].apply(time_bucket)
     subset["confidence_bucket"] = subset.get("confidence", pd.Series(dtype=float)).apply(confidence_bucket)
-    if curve_model() == "v2":
-        subset["has_curve"] = subset["canonical_tag"].apply(
-            lambda tag: bool(tag) and str(tag).strip() in curve_meta
-        )
-    else:
-        subset["has_curve"] = subset["canonical_tag"].apply(
-            lambda tag: bool(tag) and tag_group_map.get(str(tag).strip()) in curve_meta
-        )
+    subset["has_curve"] = subset["canonical_tag"].apply(
+        lambda tag: bool(tag) and str(tag).strip() in curve_meta
+    )
     subset["is_flagged"] = subset["url"].map(lambda url: bool(flag_lookup.get(url)))
     subset = apply_global_filters(
         subset,

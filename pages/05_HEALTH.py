@@ -35,7 +35,8 @@ active_path = dataset_path("active_vehicle_details.csv")
 valuations_path = dataset_path("ai_listing_valuations.csv")
 sold_path = dataset_path("sold_cars.csv")
 referred_path = dataset_path("referred_cars.csv")
-failures_path = dataset_path("scrape_failures.csv")
+failures_path = dataset_path("excluded_listings.csv")
+legacy_failures_path = dataset_path("scrape_failures.csv")
 
 links_df = _load_csv(links_path)
 static_df = load_static_df()
@@ -79,9 +80,12 @@ else:
         "not_active_rate": f"{withdrawn_rate:.1%}",
     })
 
-section_heading("Error Logs", "Top failure reasons from scrape_failures.csv.")
-if failures_path.exists():
-    failures_df = pd.read_csv(failures_path, usecols=["timestamp", "reason_code"], nrows=50000)
+section_heading("Error Logs", "Top failure reasons from excluded_listings.csv.")
+log_path = failures_path if failures_path.exists() else legacy_failures_path
+if log_path.exists():
+    if log_path == legacy_failures_path and not failures_path.exists():
+        st.caption("Using legacy scrape_failures.csv (excluded_listings.csv not found yet).")
+    failures_df = pd.read_csv(log_path, usecols=["timestamp", "reason_code"], nrows=50000)
     if failures_df.empty:
         st.info("No scrape failures recorded.")
     else:
@@ -89,4 +93,4 @@ if failures_path.exists():
         reason_counts = failures_df["reason_code"].fillna("Unknown").value_counts().head(20)
         st.dataframe(reason_counts.reset_index(name="count"), use_container_width=True, hide_index=True)
 else:
-    st.info("scrape_failures.csv not found.")
+    st.info("excluded_listings.csv not found.")

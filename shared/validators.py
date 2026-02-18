@@ -233,9 +233,14 @@ def validate_static_row(row: Dict[str, object], cfg: ValidatorConfig) -> tuple[b
     body_text = _s(clean.get("body_type"))
     if not body_text:
         return False, R.MISSING_BODY_TYPE, clean
-    if cfg.allowed_body_types and body_text not in cfg.allowed_body_types:
-        return False, R.BAD_PARSE, clean
-    clean["body_type"] = body_text
+    if cfg.allowed_body_types:
+        allowed_map = {str(value).strip().lower(): str(value).strip() for value in cfg.allowed_body_types}
+        body_key = body_text.strip().lower()
+        if body_key not in allowed_map:
+            return False, R.BAD_PARSE, clean
+        clean["body_type"] = allowed_map[body_key]
+    else:
+        clean["body_type"] = body_text
 
     transmission_text = _s(clean.get("transmission"))
     if not transmission_text:
@@ -488,160 +493,3 @@ def validate_sold_cars_df(
         cleaned["bids"] = bids_series.loc[cleaned.index].fillna(0).astype(int)
     return cleaned, _build_stats(len(df), len(cleaned))
 
-
-def compute_price_per_km_bucket(
-    price_median: int | None,
-    km_anchor: int | None,
-    *,
-    bucket_size: float = PRICE_PER_KM_BUCKET_SIZE,
-) -> float | None:
-    if price_median is None or km_anchor is None or km_anchor <= 0:
-        return None
-    price_per_km = float(price_median) / float(km_anchor)
-    if not math.isfinite(price_per_km) or price_per_km <= 0:
-        return None
-    bucket = round(round(price_per_km / bucket_size) * bucket_size, 2)
-    return bucket
-
-
-def validate_curves_df(
-    df: pd.DataFrame,
-    *,
-    strict: bool = True,
-) -> Tuple[pd.DataFrame, Dict[str, int]]:
-    if df is None or df.empty:
-        return df, _build_stats(0, 0)
-
-    working = df.copy()
-    required = ("group_id", "anchor_year", "km_anchor")
-    missing = [col for col in required if col not in working.columns]
-    if missing:
-        if strict:
-            raise ValueError(f"curves.csv missing required columns: {', '.join(missing)}")
-        return working, _build_stats(len(df), len(df))
-
-    group_series = working["group_id"].fillna("").astype(str).str.strip()
-    anchor_year = pd.to_numeric(
-        working["anchor_year"].apply(_parse_non_negative_int),
-        errors="coerce",
-    )
-    km_anchor = pd.to_numeric(
-        working["km_anchor"].apply(_parse_non_negative_int),
-        errors="coerce",
-    )
-
-    price_low = (
-        pd.to_numeric(working["price_low"].apply(_parse_non_negative_int), errors="coerce")
-        if "price_low" in working.columns
-        else None
-    )
-    price_high = (
-        pd.to_numeric(working["price_high"].apply(_parse_non_negative_int), errors="coerce")
-        if "price_high" in working.columns
-        else None
-    )
-    price_median = (
-        pd.to_numeric(working["price_median"].apply(_parse_non_negative_int), errors="coerce")
-        if "price_median" in working.columns
-        else None
-    )
-
-    invalid_mask = group_series.eq("") | anchor_year.isna() | km_anchor.isna()
-    invalid_mask |= (km_anchor <= 0)
-
-    if price_median is None:
-        invalid_mask |= True
-    else:
-        fill_mask = price_median.isna()
-        if price_low is not None and price_high is not None and fill_mask.any():
-            fill_values = ((price_low + price_high) / 2.0).round()
-            price_median = price_median.where(~fill_mask, fill_values)
-        invalid_mask |= price_median.isna() | (price_median <= 0)
-
-    cleaned = working.loc[~invalid_mask].copy()
-    cleaned["group_id"] = group_series.loc[cleaned.index]
-    cleaned["anchor_year"] = anchor_year.loc[cleaned.index].astype(int)
-    cleaned["km_anchor"] = km_anchor.loc[cleaned.index].astype(int)
-    if price_low is not None:
-        cleaned["price_low"] = price_low.loc[cleaned.index].astype("Int64")
-    if price_high is not None:
-        cleaned["price_high"] = price_high.loc[cleaned.index].astype("Int64")
-    if price_median is not None:
-        cleaned["price_median"] = price_median.loc[cleaned.index].astype(int)
-
-    cleaned["price_per_km_bucket"] = cleaned.apply(
-        lambda row: compute_price_per_km_bucket(
-            row.get("price_median"),
-            row.get("km_anchor"),
-        ),
-        axis=1,
-    )
-    return cleaned, _build_stats(len(df), len(cleaned))
-
-
-def validate_curves_v2_df(
-    df: pd.DataFrame,
-    *,
-    strict: bool = True,
-) -> Tuple[pd.DataFrame, Dict[str, int]]:
-    if df is None or df.empty:
-        return df, _build_stats(0, 0)
-
-    working = df.copy()
-    required = ("canonical_tag", "anchor_year", "km_bucket")
-    missing = [col for col in required if col not in working.columns]
-    if missing:
-        if strict:
-            raise ValueError(f"curves_v2.csv missing required columns: {', '.join(missing)}")
-        return working, _build_stats(len(df), len(df))
-
-    tag_series = working["canonical_tag"].fillna("").astype(str).str.strip()
-    anchor_year = pd.to_numeric(
-        working["anchor_year"].apply(_parse_non_negative_int),
-        errors="coerce",
-    )
-    km_bucket = pd.to_numeric(
-        working["km_bucket"].apply(_parse_non_negative_int),
-        errors="coerce",
-    )
-
-    price_low = (
-        pd.to_numeric(working["price_low"].apply(_parse_non_negative_int), errors="coerce")
-        if "price_low" in working.columns
-        else None
-    )
-    price_high = (
-        pd.to_numeric(working["price_high"].apply(_parse_non_negative_int), errors="coerce")
-        if "price_high" in working.columns
-        else None
-    )
-    price_mid = (
-        pd.to_numeric(working["price_mid"].apply(_parse_non_negative_int), errors="coerce")
-        if "price_mid" in working.columns
-        else None
-    )
-
-    invalid_mask = tag_series.eq("") | anchor_year.isna() | km_bucket.isna()
-    invalid_mask |= (km_bucket <= 0)
-
-    if price_mid is None:
-        invalid_mask |= True
-    else:
-        fill_mask = price_mid.isna()
-        if price_low is not None and price_high is not None and fill_mask.any():
-            fill_values = ((price_low + price_high) / 2.0).round()
-            price_mid = price_mid.where(~fill_mask, fill_values)
-        invalid_mask |= price_mid.isna() | (price_mid <= 0)
-
-    cleaned = working.loc[~invalid_mask].copy()
-    cleaned["canonical_tag"] = tag_series.loc[cleaned.index]
-    cleaned["anchor_year"] = anchor_year.loc[cleaned.index].astype(int)
-    cleaned["km_bucket"] = km_bucket.loc[cleaned.index].astype(int)
-    if price_low is not None:
-        cleaned["price_low"] = price_low.loc[cleaned.index].astype("Int64")
-    if price_high is not None:
-        cleaned["price_high"] = price_high.loc[cleaned.index].astype("Int64")
-    if price_mid is not None:
-        cleaned["price_mid"] = price_mid.loc[cleaned.index].astype(int)
-
-    return cleaned, _build_stats(len(df), len(cleaned))
