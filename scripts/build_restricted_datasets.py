@@ -32,6 +32,8 @@ SOLD_RESTRICTED = dataset_path("sold_cars_restricted.csv")
 GROUP_MAP_PATH = dataset_path("restricted_group_map.csv")
 ENRICHMENT_BACKLOG_PATH = dataset_path("quality/enrichment_backlog.csv")
 SCOPE_NAME = "toyota_v1"
+FAKE_ACTIVE_MAKE = "toyota"
+FAKE_ACTIVE_MODELS = ("corolla", "camry")
 
 
 def _has_value(value: object) -> bool:
@@ -83,6 +85,34 @@ def _filter_sold(df: pd.DataFrame) -> pd.DataFrame:
     price_mask = df["price"].apply(_has_value)
     date_mask = df["date_sold"].apply(_has_value)
     return df[price_mask & date_mask].copy()
+
+
+def _build_fake_active_from_sold(
+    sold_df: pd.DataFrame, active_df: pd.DataFrame
+) -> pd.DataFrame:
+    if sold_df.empty:
+        return sold_df.iloc[0:0].copy()
+    working = sold_df.copy()
+    make_norm = working.get("make", "").astype(str).str.lower().str.strip()
+    model_norm = working.get("model", "").astype(str).str.lower().str.strip()
+    model_mask = model_norm.str.contains(r"\b(?:corolla|camry)\b", na=False)
+    target_mask = (make_norm == FAKE_ACTIVE_MAKE) & model_mask
+    if not target_mask.any():
+        return sold_df.iloc[0:0].copy()
+    fake_active = working[target_mask].copy()
+    if "url" in active_df.columns and "url" in fake_active.columns:
+        active_urls = (
+            active_df["url"].dropna().astype(str).str.strip().tolist()
+            if not active_df.empty
+            else []
+        )
+        if active_urls:
+            fake_active = fake_active[
+                ~fake_active["url"].astype(str).str.strip().isin(active_urls)
+            ].copy()
+    if "date_sold" in fake_active.columns:
+        fake_active["date_sold"] = ""
+    return fake_active
 
 
 def _write_restricted(df: pd.DataFrame, schema: Iterable[str], path: Path) -> None:
@@ -203,6 +233,10 @@ def build_restricted_datasets() -> None:
         active_df["date_sold"] = active_df["time_remaining_or_date_sold"]
 
     sold_df = _filter_sold(sold_df)
+    fake_active = _build_fake_active_from_sold(sold_df, active_df)
+    if not fake_active.empty:
+        active_df = pd.concat([active_df, fake_active], ignore_index=True, sort=False)
+        print(f"[INFO] Added {len(fake_active)} fake Toyota active listing(s) from sold dataset.")
 
     active_with_groups, active_map = _assign_groups(active_df, "active", require_price=False)
     sold_with_groups, sold_map = _assign_groups(sold_df, "sold", require_price=True)

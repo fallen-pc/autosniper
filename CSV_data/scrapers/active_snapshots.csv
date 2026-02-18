@@ -23484,3 +23484,546 @@ snapshot_ts,url,price_text,price_numeric,bids_numeric,time_remaining_text,time_r
 2026-02-18T11:20:33.653361,https://www.grays.com/lot/0001-21063099/motor-vehicles-motor-cycles/2015-holden-cruze-cdx-jh-automatic-sedan,709,709.0,13,21h 39m27s,21.657,Active,vic,VIC,lot
 2026-02-18T11:20:39.978524,https://www.grays.com/lot/0001-21063100/motor-vehicles-motor-cycles/2016-hyundai-accent-active-rb-cvt-hatchback,4750,4750.0,59,21h 39m20s,21.656,Active,vic,VIC,lot
 2026-02-18T11:20:46.361764,https://www.grays.com/lot/0001-21063101/motor-vehicles-motor-cycles/2016-renault-megane-gt-automatic-hatchback,6199,6199.0,96,21h 39m13s,21.654,Active,vic,VIC,lot
+2026-02-18T12:15:23.283167,https://www.grays.com/lot/0001-21062880/motor-vehicles-motor-cycles/2014-mazda-3-maxx-bm-automatic-sedan,3700,3700.0,42,20h 44m35s,20.743,Active,vic,VIC,lot
+2026-02-18T12:15:31.659036,https://www.grays.com/lot/0001-21063013/motor-vehicles-motor-cycles/2016-jeep-renegade-sport-bu-automatic-wagon,4100,4100.0,77,20h 44m29s,20.741,Active,vic,VIC,lot
+2026-02-18T12:15:43.524125,https://www.grays.com/lot/0001-21063014/motor-vehicles-motor-cycles/2014-renault-captur-dynamique-automatic-wagon,709,709.0,10,20h 44m17s,20.738,Active,vic,VIC,lot
+2026-02-18T12:15:54.720566,https://www.grays.com/lot/0001-21063016/motor-vehicles-motor-cycles/2016-mitsubishi-pajero-sport-gls-qe-turbo-diesel-automatic,12400,12400.0,127,20h 44m4s,20.734,Active,vic,VIC,lot
+2026-02-18T12:16:05.773994,https://www.grays.com/lot/0001-21063017/motor-vehicles-motor-cycles/2017-toyota-camry-altise-hybrid-avv50r-cvt-sedan,13000,13000.0,185,20h 43m55s,20.732,Active,vic,VIC,lot
+2026-02-18T12:16:13.090306,https://www.grays.com/lot/0001-21063026/motor-vehicles-motor-cycles/2016-mercedes-benz-v-class-v250-bluetec-avantga-t-d-aut-8-seats,10399,10399.0,132,20h 43m47s,20.73,Active,vic,VIC,lot
+2026-02-18T12:16:23.767988,https://www.grays.com/lot/0001-21063034/motor-vehicles-motor-cycles/2011-mercedes-benz-b-class-b200-cdi-be-w246-turbo-diesel-7-auto-hatchback,2300,2300.0,29,20h 43m35s,20.726,Active,vic,VIC,lot
+2026-02-18T12:16:31.427981,https://www.grays.com/lot/0001-21063049/motor-vehicles-motor-cycles/2005-ford-territory-tx-sx-automatic-wagon,309,309.0,7,20h 43m29s,20.725,Active,vic,VIC,lot
+2026-02-18T12:16:43.758627,https://www.grays.com/lot/0001-21063050/motor-vehicles-motor-cycles/2003-honda-cr-v-rd-automatic-wagon,209,209.0,4,20h 43m15s,20.721,Active,vic,VIC,lot
+2026-02-18T12:16:54.484200,https://www.grays.com/lot/0001-21063052/motor-vehicles-motor-cycles/2014-dodge-journey-sxt-automatic-7-seats-people-mover,309,309.0,5,20h 43m6s,20.718,Active,vic,VIC,lot
+2026-02-18T12:17:07.525104,https://www.grays.com/lot/0001-21063053/motor-vehicles-motor-cycles/2007-holden-berlina-ve-automatic-sedan,609,609.0,10,20h 42m53s,20.715,Active,vic,VIC,lot
+2026-02-18T12:17:14.988335,https://www.grays.com/lot/0001-21063054/motor-vehicles-motor-cycles/2014-jaguar-xf-2-0p-luxury-automatic-8-speed-sedan,3500,3500.0,42,20h 42m45s,20.712,Active,vic,VIC,lot
+2026-02-18T12:17:22.587245,https://www.grays.com/lot/0001-21063055/motor-vehicles-motor-cycles/2014-mazda-3-neo-bm-automatic-hatchback,3200,3200.0,43,20h 42m36s,20.71,Active,vic,VIC,lot
+2026-02-18T12:17:29.768062,https://www.grays.com/lot/0001-21063056/motor-vehicles-motor-cycles/2012-alfa-romeo-giulietta-qv-manual-hatchback,1309,1309.0,19,20h 42m30s,20.708,Active,vic,VIC,lot
+2026-02-18T12:17:37.721846,https://www.grays.com/lot/0001-21063058/motor-vehicles-motor-cycles/2016-holden-cruze-z-series-jh-automatic-sedan,625,625.0,5,20h 42m23s,20.706,Active,vic,VIC,lot
+2026-02-18T12:17:49.624815,https://www.grays.com/lot/0001-21063059/motor-vehicles-motor-cycles/2015-hyundai-i30-active-gd-manual-hatchback,2300,2300.0,23,20h 42m11s,20.703,Active,vic,VIC,lot
+2026-02-18T12:18:01.710780,https://www.grays.com/lot/0001-21063060/motor-vehicles-motor-cycles/2012-ford-territory-titanium-sz-turbo-diesel-automatic-7-seats-wagon,409,409.0,5,20h 41m59s,20.7,Active,vic,VIC,lot
+2026-02-18T12:18:14.229357,https://www.grays.com/lot/0001-21063061/motor-vehicles-motor-cycles/2011-mazda-3-sp25-bl-manual-hatchback,2100,2100.0,29,20h 41m46s,20.696,Active,vic,VIC,lot
+2026-02-18T12:18:22.065719,https://www.grays.com/lot/0001-21063062/motor-vehicles-motor-cycles/2008-volvo-xc90-d5-turbo-diesel-automatic-7-seats-wagon,9,9.0,1,20h 41m37s,20.694,Active,vic,VIC,lot
+2026-02-18T12:18:34.288733,https://www.grays.com/lot/0001-21063064/motor-vehicles-motor-cycles/2014-bmw-x4-xdrive-20d-f26-turbo-diesel-automatic-8-speed-coupe,6100,6100.0,60,20h 41m24s,20.69,Active,vic,VIC,lot
+2026-02-18T12:18:41.788345,https://www.grays.com/lot/0001-21063065/motor-vehicles-motor-cycles/2012-ford-falcon-xt-fg-ii-automatic-sedan,2009,2009.0,29,20h 41m17s,20.688,Active,vic,VIC,lot
+2026-02-18T12:18:49.384397,https://www.grays.com/lot/0001-21063066/motor-vehicles-motor-cycles/2016-hyundai-accent-active-rb-cvt-hatchback,2700,2700.0,38,20h 41m11s,20.686,Active,vic,VIC,lot
+2026-02-18T12:18:57.489734,https://www.grays.com/lot/0001-21063067/motor-vehicles-motor-cycles/2012-toyota-camry-altise-asv50r-automatic-sedan,2209,2209.0,42,20h 41m2s,20.684,Active,vic,VIC,lot
+2026-02-18T12:19:10.902243,https://www.grays.com/lot/0001-21063068/motor-vehicles-motor-cycles/2017-nissan-qashqai-ti-j11-ii-cvt-wagon,1500,1500.0,12,20h 40m49s,20.68,Active,vic,VIC,lot
+2026-02-18T12:19:21.700390,https://www.grays.com/lot/0001-21063069/motor-vehicles-motor-cycles/2012-skoda-fabia-77tsi-5jf-manual-hatchback,9,9.0,1,20h 40m37s,20.677,Active,vic,VIC,lot
+2026-02-18T12:19:29.617017,https://www.grays.com/lot/0001-21063070/motor-vehicles-motor-cycles/2005-mercedes-benz-c-class-c180-kompressor-automatic-coupe,209,209.0,3,20h 40m31s,20.675,Active,vic,VIC,lot
+2026-02-18T12:19:37.646697,https://www.grays.com/lot/0001-21063071/motor-vehicles-motor-cycles/2013-volkswagen-tiguan-132-tsi-pacific-5n-automatic-wagon,1250,1250.0,20,20h 40m23s,20.673,Active,vic,VIC,lot
+2026-02-18T12:19:45.088568,https://www.grays.com/lot/0001-21063074/motor-vehicles-motor-cycles/2021-nissan-navara-4x4-sl-series-4-turbo-diesel-manual-crew-cab-chassis,13300,13300.0,72,20h 40m15s,20.671,Active,vic,VIC,lot
+2026-02-18T12:19:56.657751,https://www.grays.com/lot/0001-21063079/motor-vehicles-motor-cycles/2016-holden-astra-rs-v-bk-manual-hatchback,3200,3200.0,34,20h 40m2s,20.667,Active,vic,VIC,lot
+2026-02-18T12:20:08.729616,https://www.grays.com/lot/0001-21063080/motor-vehicles-motor-cycles/2014-ford-mondeo-lx-mc-turbo-diesel-automatic-wagon,1050,1050.0,16,20h 39m52s,20.664,Active,vic,VIC,lot
+2026-02-18T12:20:21.103853,https://www.grays.com/lot/0001-21063081/motor-vehicles-motor-cycles/2002-nissan-maxima-st-a33-automatic-sedan,409,409.0,7,20h 39m39s,20.661,Active,vic,VIC,lot
+2026-02-18T12:20:34.043770,https://www.grays.com/lot/0001-21063082/motor-vehicles-motor-cycles/2008-holden-commodore-omega-ve-automatic-wagon,309,309.0,4,20h 39m25s,20.657,Active,vic,VIC,lot
+2026-02-18T12:20:41.779006,https://www.grays.com/lot/0001-21063083/motor-vehicles-motor-cycles/2011-hyundai-iload-tq-manual-van,3300,3300.0,29,20h 39m17s,20.655,Active,vic,VIC,lot
+2026-02-18T12:20:52.457033,https://www.grays.com/lot/0001-21063084/motor-vehicles-motor-cycles/2010-renault-koleos-privilege-cvt-wagon,605,605.0,2,20h 39m8s,20.652,Active,vic,VIC,lot
+2026-02-18T12:20:59.945629,https://www.grays.com/lot/0001-21063086/motor-vehicles-motor-cycles/2000-toyota-corolla-ascent-ae112r-automatic-hatchback,1509,1509.0,24,20h 39m0s,20.65,Active,vic,VIC,lot
+2026-02-18T12:21:13.524233,https://www.grays.com/lot/0001-21063088/motor-vehicles-motor-cycles/2017-hyundai-accent-sport-rb-automatic-sedan,4300,4300.0,72,20h 38m47s,20.646,Active,vic,VIC,lot
+2026-02-18T12:21:26.139639,https://www.grays.com/lot/0001-21063089/motor-vehicles-motor-cycles/2004-nissan-pulsar-st-n16-automatic-sedan,1709,1709.0,29,20h 38m33s,20.642,Active,vic,VIC,lot
+2026-02-18T12:21:37.334580,https://www.grays.com/lot/0001-21063090/motor-vehicles-motor-cycles/2007-ford-falcon-xt-bf-ii-automatic-sedan,209,209.0,3,20h 38m21s,20.639,Active,vic,VIC,lot
+2026-02-18T12:21:44.927414,https://www.grays.com/lot/0001-21063091/motor-vehicles-motor-cycles/2011-toyota-camry-altise-acv40r-automatic-sedan-rwc-issued-11-02-2026,6000,6000.0,42,20h 38m14s,20.637,Active,vic,VIC,lot
+2026-02-18T12:21:55.963860,https://www.grays.com/lot/0001-21063092/motor-vehicles-motor-cycles/2004-mazda-6-classic-gg-automatic-hatchback,309,309.0,4,20h 38m5s,20.635,Active,vic,VIC,lot
+2026-02-18T12:22:09.566011,https://www.grays.com/lot/0001-21063095/motor-vehicles-motor-cycles/2014-audi-a3-1-8-tsi-ambition-8v-auto-hatchback-rwc-issued-11-02-2026,5400,5400.0,55,20h 37m49s,20.63,Active,vic,VIC,lot
+2026-02-18T12:22:22.169833,https://www.grays.com/lot/0001-21063096/motor-vehicles-motor-cycles/2012-mazda-3-neo-bl-manual-sedan,2009,2009.0,37,20h 37m38s,20.627,Active,vic,VIC,lot
+2026-02-18T12:22:31.115468,https://www.grays.com/lot/0001-21063097/motor-vehicles-motor-cycles/2008-toyota-yaris-yrx-ncp93r-automatic-sedan,909,909.0,16,20h 37m28s,20.624,Active,vic,VIC,lot
+2026-02-18T12:22:38.992248,https://www.grays.com/lot/0001-21063099/motor-vehicles-motor-cycles/2015-holden-cruze-cdx-jh-automatic-sedan,809,809.0,14,20h 37m20s,20.622,Active,vic,VIC,lot
+2026-02-18T12:22:51.726562,https://www.grays.com/lot/0001-21063100/motor-vehicles-motor-cycles/2016-hyundai-accent-active-rb-cvt-hatchback,4850,4850.0,60,20h 37m7s,20.619,Active,vic,VIC,lot
+2026-02-18T12:23:00.989754,https://www.grays.com/lot/0001-21063101/motor-vehicles-motor-cycles/2016-renault-megane-gt-automatic-hatchback,6199,6199.0,96,20h 36m59s,20.616,Active,vic,VIC,lot
+2026-02-18T13:15:32.508344,https://www.grays.com/lot/0001-21062880/motor-vehicles-motor-cycles/2014-mazda-3-maxx-bm-automatic-sedan,3700,3700.0,42,19h 44m28s,19.741,Active,vic,VIC,lot
+2026-02-18T13:15:40.173973,https://www.grays.com/lot/0001-21063013/motor-vehicles-motor-cycles/2016-jeep-renegade-sport-bu-automatic-wagon,4100,4100.0,77,19h 44m20s,19.739,Active,vic,VIC,lot
+2026-02-18T13:15:47.647348,https://www.grays.com/lot/0001-21063014/motor-vehicles-motor-cycles/2014-renault-captur-dynamique-automatic-wagon,709,709.0,10,19h 44m11s,19.736,Active,vic,VIC,lot
+2026-02-18T13:15:58.057127,https://www.grays.com/lot/0001-21063016/motor-vehicles-motor-cycles/2016-mitsubishi-pajero-sport-gls-qe-turbo-diesel-automatic,12500,12500.0,128,19h 44m2s,19.734,Active,vic,VIC,lot
+2026-02-18T13:16:08.931249,https://www.grays.com/lot/0001-21063017/motor-vehicles-motor-cycles/2017-toyota-camry-altise-hybrid-avv50r-cvt-sedan,13000,13000.0,185,19h 43m50s,19.731,Active,vic,VIC,lot
+2026-02-18T13:16:16.221622,https://www.grays.com/lot/0001-21063026/motor-vehicles-motor-cycles/2016-mercedes-benz-v-class-v250-bluetec-avantga-t-d-aut-8-seats,10699,10699.0,137,19h 43m42s,19.728,Active,vic,VIC,lot
+2026-02-18T13:16:26.794354,https://www.grays.com/lot/0001-21063034/motor-vehicles-motor-cycles/2011-mercedes-benz-b-class-b200-cdi-be-w246-turbo-diesel-7-auto-hatchback,2300,2300.0,29,19h 43m32s,19.726,Active,vic,VIC,lot
+2026-02-18T13:16:34.244252,https://www.grays.com/lot/0001-21063049/motor-vehicles-motor-cycles/2005-ford-territory-tx-sx-automatic-wagon,309,309.0,7,19h 43m26s,19.724,Active,vic,VIC,lot
+2026-02-18T13:16:41.547567,https://www.grays.com/lot/0001-21063050/motor-vehicles-motor-cycles/2003-honda-cr-v-rd-automatic-wagon,209,209.0,4,19h 43m17s,19.721,Active,vic,VIC,lot
+2026-02-18T13:16:48.868774,https://www.grays.com/lot/0001-21063052/motor-vehicles-motor-cycles/2014-dodge-journey-sxt-automatic-7-seats-people-mover,409,409.0,6,19h 43m11s,19.72,Active,vic,VIC,lot
+2026-02-18T13:16:56.346705,https://www.grays.com/lot/0001-21063053/motor-vehicles-motor-cycles/2007-holden-berlina-ve-automatic-sedan,609,609.0,10,19h 43m3s,19.717,Active,vic,VIC,lot
+2026-02-18T13:17:03.357986,https://www.grays.com/lot/0001-21063054/motor-vehicles-motor-cycles/2014-jaguar-xf-2-0p-luxury-automatic-8-speed-sedan,4600,4600.0,63,19h 42m56s,19.716,Active,vic,VIC,lot
+2026-02-18T13:17:14.242292,https://www.grays.com/lot/0001-21063055/motor-vehicles-motor-cycles/2014-mazda-3-neo-bm-automatic-hatchback,3200,3200.0,43,19h 42m46s,19.713,Active,vic,VIC,lot
+2026-02-18T13:17:21.382274,https://www.grays.com/lot/0001-21063056/motor-vehicles-motor-cycles/2012-alfa-romeo-giulietta-qv-manual-hatchback,1309,1309.0,19,19h 42m38s,19.711,Active,vic,VIC,lot
+2026-02-18T13:17:33.507815,https://www.grays.com/lot/0001-21063058/motor-vehicles-motor-cycles/2016-holden-cruze-z-series-jh-automatic-sedan,625,625.0,5,19h 42m26s,19.707,Active,vic,VIC,lot
+2026-02-18T13:17:46.576018,https://www.grays.com/lot/0001-21063059/motor-vehicles-motor-cycles/2015-hyundai-i30-active-gd-manual-hatchback,2300,2300.0,23,19h 42m14s,19.704,Active,vic,VIC,lot
+2026-02-18T13:17:54.931302,https://www.grays.com/lot/0001-21063060/motor-vehicles-motor-cycles/2012-ford-territory-titanium-sz-turbo-diesel-automatic-7-seats-wagon,409,409.0,5,19h 42m5s,19.701,Active,vic,VIC,lot
+2026-02-18T13:18:02.285172,https://www.grays.com/lot/0001-21063061/motor-vehicles-motor-cycles/2011-mazda-3-sp25-bl-manual-hatchback,2200,2200.0,30,19h 41m56s,19.699,Active,vic,VIC,lot
+2026-02-18T13:18:09.946079,https://www.grays.com/lot/0001-21063062/motor-vehicles-motor-cycles/2008-volvo-xc90-d5-turbo-diesel-automatic-7-seats-wagon,9,9.0,1,19h 41m49s,19.697,Active,vic,VIC,lot
+2026-02-18T13:18:22.180036,https://www.grays.com/lot/0001-21063064/motor-vehicles-motor-cycles/2014-bmw-x4-xdrive-20d-f26-turbo-diesel-automatic-8-speed-coupe,6400,6400.0,65,19h 41m37s,19.694,Active,vic,VIC,lot
+2026-02-18T13:18:29.133047,https://www.grays.com/lot/0001-21063065/motor-vehicles-motor-cycles/2012-ford-falcon-xt-fg-ii-automatic-sedan,2009,2009.0,29,19h 41m30s,19.692,Active,vic,VIC,lot
+2026-02-18T13:18:39.965164,https://www.grays.com/lot/0001-21063066/motor-vehicles-motor-cycles/2016-hyundai-accent-active-rb-cvt-hatchback,2800,2800.0,39,19h 41m19s,19.689,Active,vic,VIC,lot
+2026-02-18T13:18:47.614878,https://www.grays.com/lot/0001-21063067/motor-vehicles-motor-cycles/2012-toyota-camry-altise-asv50r-automatic-sedan,2209,2209.0,42,19h 41m11s,19.686,Active,vic,VIC,lot
+2026-02-18T13:19:00.423057,https://www.grays.com/lot/0001-21063068/motor-vehicles-motor-cycles/2017-nissan-qashqai-ti-j11-ii-cvt-wagon,1500,1500.0,12,19h 41m0s,19.683,Active,vic,VIC,lot
+2026-02-18T13:19:11.607931,https://www.grays.com/lot/0001-21063069/motor-vehicles-motor-cycles/2012-skoda-fabia-77tsi-5jf-manual-hatchback,9,9.0,1,19h 40m49s,19.68,Active,vic,VIC,lot
+2026-02-18T13:19:19.578418,https://www.grays.com/lot/0001-21063070/motor-vehicles-motor-cycles/2005-mercedes-benz-c-class-c180-kompressor-automatic-coupe,209,209.0,3,19h 40m41s,19.678,Active,vic,VIC,lot
+2026-02-18T13:19:31.574165,https://www.grays.com/lot/0001-21063071/motor-vehicles-motor-cycles/2013-volkswagen-tiguan-132-tsi-pacific-5n-automatic-wagon,1250,1250.0,20,19h 40m28s,19.674,Active,vic,VIC,lot
+2026-02-18T13:19:39.412658,https://www.grays.com/lot/0001-21063074/motor-vehicles-motor-cycles/2021-nissan-navara-4x4-sl-series-4-turbo-diesel-manual-crew-cab-chassis,13300,13300.0,72,19h 40m21s,19.672,Active,vic,VIC,lot
+2026-02-18T13:19:46.714657,https://www.grays.com/lot/0001-21063079/motor-vehicles-motor-cycles/2016-holden-astra-rs-v-bk-manual-hatchback,3200,3200.0,34,19h 40m12s,19.67,Active,vic,VIC,lot
+2026-02-18T13:20:00.263909,https://www.grays.com/lot/0001-21063080/motor-vehicles-motor-cycles/2014-ford-mondeo-lx-mc-turbo-diesel-automatic-wagon,1050,1050.0,16,19h 40m0s,19.667,Active,vic,VIC,lot
+2026-02-18T13:20:08.472120,https://www.grays.com/lot/0001-21063081/motor-vehicles-motor-cycles/2002-nissan-maxima-st-a33-automatic-sedan,509,509.0,8,19h 39m51s,19.664,Active,vic,VIC,lot
+2026-02-18T13:20:22.311485,https://www.grays.com/lot/0001-21063082/motor-vehicles-motor-cycles/2008-holden-commodore-omega-ve-automatic-wagon,309,309.0,4,19h 39m37s,19.66,Active,vic,VIC,lot
+2026-02-18T13:20:29.287718,https://www.grays.com/lot/0001-21063083/motor-vehicles-motor-cycles/2011-hyundai-iload-tq-manual-van,3300,3300.0,29,19h 39m30s,19.658,Active,vic,VIC,lot
+2026-02-18T13:20:39.806822,https://www.grays.com/lot/0001-21063084/motor-vehicles-motor-cycles/2010-renault-koleos-privilege-cvt-wagon,605,605.0,2,19h 39m19s,19.655,Active,vic,VIC,lot
+2026-02-18T13:20:47.047982,https://www.grays.com/lot/0001-21063086/motor-vehicles-motor-cycles/2000-toyota-corolla-ascent-ae112r-automatic-hatchback,1509,1509.0,24,19h 39m13s,19.654,Active,vic,VIC,lot
+2026-02-18T13:21:01.232036,https://www.grays.com/lot/0001-21063088/motor-vehicles-motor-cycles/2017-hyundai-accent-sport-rb-automatic-sedan,4400,4400.0,74,19h 38m58s,19.649,Active,vic,VIC,lot
+2026-02-18T13:21:13.648554,https://www.grays.com/lot/0001-21063089/motor-vehicles-motor-cycles/2004-nissan-pulsar-st-n16-automatic-sedan,1709,1709.0,29,19h 38m45s,19.646,Active,vic,VIC,lot
+2026-02-18T13:21:21.240554,https://www.grays.com/lot/0001-21063090/motor-vehicles-motor-cycles/2007-ford-falcon-xt-bf-ii-automatic-sedan,209,209.0,3,19h 38m39s,19.644,Active,vic,VIC,lot
+2026-02-18T13:21:29.894568,https://www.grays.com/lot/0001-21063091/motor-vehicles-motor-cycles/2011-toyota-camry-altise-acv40r-automatic-sedan-rwc-issued-11-02-2026,6100,6100.0,43,19h 38m29s,19.641,Active,vic,VIC,lot
+2026-02-18T13:21:45.449723,https://www.grays.com/lot/0001-21063092/motor-vehicles-motor-cycles/2004-mazda-6-classic-gg-automatic-hatchback,309,309.0,4,19h 38m15s,19.637,Active,vic,VIC,lot
+2026-02-18T13:21:54.236174,https://www.grays.com/lot/0001-21063095/motor-vehicles-motor-cycles/2014-audi-a3-1-8-tsi-ambition-8v-auto-hatchback-rwc-issued-11-02-2026,5400,5400.0,55,19h 38m6s,19.635,Active,vic,VIC,lot
+2026-02-18T13:22:06.837181,https://www.grays.com/lot/0001-21063096/motor-vehicles-motor-cycles/2012-mazda-3-neo-bl-manual-sedan,2009,2009.0,37,19h 37m52s,19.631,Active,vic,VIC,lot
+2026-02-18T13:22:14.534965,https://www.grays.com/lot/0001-21063097/motor-vehicles-motor-cycles/2008-toyota-yaris-yrx-ncp93r-automatic-sedan,909,909.0,16,19h 37m45s,19.629,Active,vic,VIC,lot
+2026-02-18T13:22:22.189968,https://www.grays.com/lot/0001-21063099/motor-vehicles-motor-cycles/2015-holden-cruze-cdx-jh-automatic-sedan,909,909.0,15,19h 37m38s,19.627,Active,vic,VIC,lot
+2026-02-18T13:22:35.130148,https://www.grays.com/lot/0001-21063100/motor-vehicles-motor-cycles/2016-hyundai-accent-active-rb-cvt-hatchback,4850,4850.0,60,19h 37m24s,19.623,Active,vic,VIC,lot
+2026-02-18T13:22:42.744273,https://www.grays.com/lot/0001-21063101/motor-vehicles-motor-cycles/2016-renault-megane-gt-automatic-hatchback,6199,6199.0,96,19h 37m16s,19.621,Active,vic,VIC,lot
+2026-02-18T14:15:28.608952,https://www.grays.com/lot/0001-21062880/motor-vehicles-motor-cycles/2014-mazda-3-maxx-bm-automatic-sedan,3800,3800.0,43,18h 44m31s,18.742,Active,vic,VIC,lot
+2026-02-18T14:15:36.222117,https://www.grays.com/lot/0001-21063013/motor-vehicles-motor-cycles/2016-jeep-renegade-sport-bu-automatic-wagon,4100,4100.0,77,18h 44m24s,18.74,Active,vic,VIC,lot
+2026-02-18T14:15:43.512373,https://www.grays.com/lot/0001-21063014/motor-vehicles-motor-cycles/2014-renault-captur-dynamique-automatic-wagon,709,709.0,10,18h 44m15s,18.738,Active,vic,VIC,lot
+2026-02-18T14:15:51.042748,https://www.grays.com/lot/0001-21063016/motor-vehicles-motor-cycles/2016-mitsubishi-pajero-sport-gls-qe-turbo-diesel-automatic,12500,12500.0,128,18h 44m10s,18.736,Active,vic,VIC,lot
+2026-02-18T14:16:01.885230,https://www.grays.com/lot/0001-21063017/motor-vehicles-motor-cycles/2017-toyota-camry-altise-hybrid-avv50r-cvt-sedan,13000,13000.0,185,18h 43m57s,18.732,Active,vic,VIC,lot
+2026-02-18T14:16:09.172477,https://www.grays.com/lot/0001-21063026/motor-vehicles-motor-cycles/2016-mercedes-benz-v-class-v250-bluetec-avantga-t-d-aut-8-seats,11000,11000.0,139,18h 43m51s,18.731,Active,vic,VIC,lot
+2026-02-18T14:16:19.935279,https://www.grays.com/lot/0001-21063034/motor-vehicles-motor-cycles/2011-mercedes-benz-b-class-b200-cdi-be-w246-turbo-diesel-7-auto-hatchback,2400,2400.0,30,18h 43m39s,18.727,Active,vic,VIC,lot
+2026-02-18T14:16:27.539787,https://www.grays.com/lot/0001-21063049/motor-vehicles-motor-cycles/2005-ford-territory-tx-sx-automatic-wagon,309,309.0,7,18h 43m31s,18.725,Active,vic,VIC,lot
+2026-02-18T14:16:39.719255,https://www.grays.com/lot/0001-21063050/motor-vehicles-motor-cycles/2003-honda-cr-v-rd-automatic-wagon,209,209.0,4,18h 43m20s,18.722,Active,vic,VIC,lot
+2026-02-18T14:16:50.330892,https://www.grays.com/lot/0001-21063052/motor-vehicles-motor-cycles/2014-dodge-journey-sxt-automatic-7-seats-people-mover,509,509.0,7,18h 43m10s,18.719,Active,vic,VIC,lot
+2026-02-18T14:17:02.763346,https://www.grays.com/lot/0001-21063053/motor-vehicles-motor-cycles/2007-holden-berlina-ve-automatic-sedan,609,609.0,10,18h 42m56s,18.716,Active,vic,VIC,lot
+2026-02-18T14:17:14.406306,https://www.grays.com/lot/0001-21063054/motor-vehicles-motor-cycles/2014-jaguar-xf-2-0p-luxury-automatic-8-speed-sedan,4600,4600.0,63,18h 42m46s,18.713,Active,vic,VIC,lot
+2026-02-18T14:17:25.435827,https://www.grays.com/lot/0001-21063055/motor-vehicles-motor-cycles/2014-mazda-3-neo-bm-automatic-hatchback,3300,3300.0,44,18h 42m34s,18.709,Active,vic,VIC,lot
+2026-02-18T14:17:32.766967,https://www.grays.com/lot/0001-21063056/motor-vehicles-motor-cycles/2012-alfa-romeo-giulietta-qv-manual-hatchback,1309,1309.0,19,18h 42m26s,18.707,Active,vic,VIC,lot
+2026-02-18T14:17:43.836547,https://www.grays.com/lot/0001-21063058/motor-vehicles-motor-cycles/2016-holden-cruze-z-series-jh-automatic-sedan,625,625.0,5,18h 42m17s,18.705,Active,vic,VIC,lot
+2026-02-18T14:17:55.968200,https://www.grays.com/lot/0001-21063059/motor-vehicles-motor-cycles/2015-hyundai-i30-active-gd-manual-hatchback,2300,2300.0,23,18h 42m5s,18.701,Active,vic,VIC,lot
+2026-02-18T14:18:07.854447,https://www.grays.com/lot/0001-21063060/motor-vehicles-motor-cycles/2012-ford-territory-titanium-sz-turbo-diesel-automatic-7-seats-wagon,509,509.0,7,18h 41m51s,18.698,Active,vic,VIC,lot
+2026-02-18T14:18:20.204789,https://www.grays.com/lot/0001-21063061/motor-vehicles-motor-cycles/2011-mazda-3-sp25-bl-manual-hatchback,2200,2200.0,30,18h 41m40s,18.694,Active,vic,VIC,lot
+2026-02-18T14:18:32.488473,https://www.grays.com/lot/0001-21063062/motor-vehicles-motor-cycles/2008-volvo-xc90-d5-turbo-diesel-automatic-7-seats-wagon,9,9.0,1,18h 41m26s,18.691,Active,vic,VIC,lot
+2026-02-18T14:18:44.703405,https://www.grays.com/lot/0001-21063064/motor-vehicles-motor-cycles/2014-bmw-x4-xdrive-20d-f26-turbo-diesel-automatic-8-speed-coupe,6400,6400.0,65,18h 41m14s,18.687,Active,vic,VIC,lot
+2026-02-18T14:18:52.068781,https://www.grays.com/lot/0001-21063065/motor-vehicles-motor-cycles/2012-ford-falcon-xt-fg-ii-automatic-sedan,2009,2009.0,29,18h 41m8s,18.686,Active,vic,VIC,lot
+2026-02-18T14:19:02.825851,https://www.grays.com/lot/0001-21063066/motor-vehicles-motor-cycles/2016-hyundai-accent-active-rb-cvt-hatchback,2900,2900.0,40,18h 40m56s,18.682,Active,vic,VIC,lot
+2026-02-18T14:19:14.798020,https://www.grays.com/lot/0001-21063067/motor-vehicles-motor-cycles/2012-toyota-camry-altise-asv50r-automatic-sedan,2209,2209.0,42,18h 40m46s,18.679,Active,vic,VIC,lot
+2026-02-18T14:19:27.740502,https://www.grays.com/lot/0001-21063068/motor-vehicles-motor-cycles/2017-nissan-qashqai-ti-j11-ii-cvt-wagon,1500,1500.0,12,18h 40m33s,18.676,Active,vic,VIC,lot
+2026-02-18T14:19:38.817821,https://www.grays.com/lot/0001-21063069/motor-vehicles-motor-cycles/2012-skoda-fabia-77tsi-5jf-manual-hatchback,9,9.0,1,18h 40m22s,18.673,Active,vic,VIC,lot
+2026-02-18T14:19:49.865630,https://www.grays.com/lot/0001-21063070/motor-vehicles-motor-cycles/2005-mercedes-benz-c-class-c180-kompressor-automatic-coupe,209,209.0,3,18h 40m11s,18.67,Active,vic,VIC,lot
+2026-02-18T14:20:01.971780,https://www.grays.com/lot/0001-21063071/motor-vehicles-motor-cycles/2013-volkswagen-tiguan-132-tsi-pacific-5n-automatic-wagon,1250,1250.0,20,18h 39m59s,18.666,Active,vic,VIC,lot
+2026-02-18T14:20:13.759962,https://www.grays.com/lot/0001-21063074/motor-vehicles-motor-cycles/2021-nissan-navara-4x4-sl-series-4-turbo-diesel-manual-crew-cab-chassis,13300,13300.0,72,18h 39m45s,18.662,Active,vic,VIC,lot
+2026-02-18T14:20:25.943089,https://www.grays.com/lot/0001-21063079/motor-vehicles-motor-cycles/2016-holden-astra-rs-v-bk-manual-hatchback,3200,3200.0,34,18h 39m34s,18.659,Active,vic,VIC,lot
+2026-02-18T14:20:38.051497,https://www.grays.com/lot/0001-21063080/motor-vehicles-motor-cycles/2014-ford-mondeo-lx-mc-turbo-diesel-automatic-wagon,1050,1050.0,16,18h 39m21s,18.656,Active,vic,VIC,lot
+2026-02-18T14:20:49.513552,https://www.grays.com/lot/0001-21063081/motor-vehicles-motor-cycles/2002-nissan-maxima-st-a33-automatic-sedan,509,509.0,8,18h 39m9s,18.652,Active,vic,VIC,lot
+2026-02-18T14:21:02.755921,https://www.grays.com/lot/0001-21063082/motor-vehicles-motor-cycles/2008-holden-commodore-omega-ve-automatic-wagon,309,309.0,4,18h 38m57s,18.649,Active,vic,VIC,lot
+2026-02-18T14:21:13.645351,https://www.grays.com/lot/0001-21063083/motor-vehicles-motor-cycles/2011-hyundai-iload-tq-manual-van,3300,3300.0,29,18h 38m47s,18.646,Active,vic,VIC,lot
+2026-02-18T14:21:24.215029,https://www.grays.com/lot/0001-21063084/motor-vehicles-motor-cycles/2010-renault-koleos-privilege-cvt-wagon,605,605.0,2,18h 38m36s,18.643,Active,vic,VIC,lot
+2026-02-18T14:21:37.023545,https://www.grays.com/lot/0001-21063086/motor-vehicles-motor-cycles/2000-toyota-corolla-ascent-ae112r-automatic-hatchback,1509,1509.0,24,18h 38m22s,18.639,Active,vic,VIC,lot
+2026-02-18T14:21:50.164711,https://www.grays.com/lot/0001-21063088/motor-vehicles-motor-cycles/2017-hyundai-accent-sport-rb-automatic-sedan,4400,4400.0,74,18h 38m9s,18.636,Active,vic,VIC,lot
+2026-02-18T14:22:02.923841,https://www.grays.com/lot/0001-21063089/motor-vehicles-motor-cycles/2004-nissan-pulsar-st-n16-automatic-sedan,1809,1809.0,31,18h 37m56s,18.632,Active,vic,VIC,lot
+2026-02-18T14:22:13.726492,https://www.grays.com/lot/0001-21063090/motor-vehicles-motor-cycles/2007-ford-falcon-xt-bf-ii-automatic-sedan,209,209.0,3,18h 37m46s,18.629,Active,vic,VIC,lot
+2026-02-18T14:22:26.338429,https://www.grays.com/lot/0001-21063091/motor-vehicles-motor-cycles/2011-toyota-camry-altise-acv40r-automatic-sedan-rwc-issued-11-02-2026,6100,6100.0,43,18h 37m34s,18.626,Active,vic,VIC,lot
+2026-02-18T14:22:37.491884,https://www.grays.com/lot/0001-21063092/motor-vehicles-motor-cycles/2004-mazda-6-classic-gg-automatic-hatchback,309,309.0,4,18h 37m22s,18.623,Active,vic,VIC,lot
+2026-02-18T14:22:50.000039,https://www.grays.com/lot/0001-21063095/motor-vehicles-motor-cycles/2014-audi-a3-1-8-tsi-ambition-8v-auto-hatchback-rwc-issued-11-02-2026,5800,5800.0,62,18h 37m9s,18.619,Active,vic,VIC,lot
+2026-02-18T14:23:01.884153,https://www.grays.com/lot/0001-21063096/motor-vehicles-motor-cycles/2012-mazda-3-neo-bl-manual-sedan,2109,2109.0,38,18h 36m57s,18.616,Active,vic,VIC,lot
+2026-02-18T14:23:13.200122,https://www.grays.com/lot/0001-21063097/motor-vehicles-motor-cycles/2008-toyota-yaris-yrx-ncp93r-automatic-sedan,909,909.0,16,18h 36m47s,18.613,Active,vic,VIC,lot
+2026-02-18T14:23:25.887305,https://www.grays.com/lot/0001-21063099/motor-vehicles-motor-cycles/2015-holden-cruze-cdx-jh-automatic-sedan,1009,1009.0,16,18h 36m33s,18.609,Active,vic,VIC,lot
+2026-02-18T14:23:38.480507,https://www.grays.com/lot/0001-21063100/motor-vehicles-motor-cycles/2016-hyundai-accent-active-rb-cvt-hatchback,4850,4850.0,60,18h 36m21s,18.606,Active,vic,VIC,lot
+2026-02-18T14:23:51.064971,https://www.grays.com/lot/0001-21063101/motor-vehicles-motor-cycles/2016-renault-megane-gt-automatic-hatchback,6199,6199.0,96,18h 36m8s,18.602,Active,vic,VIC,lot
+2026-02-18T15:15:21.576285,https://www.grays.com/lot/0001-21062880/motor-vehicles-motor-cycles/2014-mazda-3-maxx-bm-automatic-sedan,3900,3900.0,44,17h 44m38s,17.744,Active,vic,VIC,lot
+2026-02-18T15:15:29.171726,https://www.grays.com/lot/0001-21063013/motor-vehicles-motor-cycles/2016-jeep-renegade-sport-bu-automatic-wagon,4100,4100.0,77,17h 44m31s,17.742,Active,vic,VIC,lot
+2026-02-18T15:15:40.373364,https://www.grays.com/lot/0001-21063014/motor-vehicles-motor-cycles/2014-renault-captur-dynamique-automatic-wagon,709,709.0,10,17h 44m18s,17.738,Active,vic,VIC,lot
+2026-02-18T15:15:51.072559,https://www.grays.com/lot/0001-21063016/motor-vehicles-motor-cycles/2016-mitsubishi-pajero-sport-gls-qe-turbo-diesel-automatic,12500,12500.0,128,17h 44m8s,17.736,Active,vic,VIC,lot
+2026-02-18T15:16:01.945214,https://www.grays.com/lot/0001-21063017/motor-vehicles-motor-cycles/2017-toyota-camry-altise-hybrid-avv50r-cvt-sedan,13000,13000.0,185,17h 43m57s,17.732,Active,vic,VIC,lot
+2026-02-18T15:16:13.885891,https://www.grays.com/lot/0001-21063026/motor-vehicles-motor-cycles/2016-mercedes-benz-v-class-v250-bluetec-avantga-t-d-aut-8-seats,11000,11000.0,139,17h 43m45s,17.729,Active,vic,VIC,lot
+2026-02-18T15:16:24.713072,https://www.grays.com/lot/0001-21063034/motor-vehicles-motor-cycles/2011-mercedes-benz-b-class-b200-cdi-be-w246-turbo-diesel-7-auto-hatchback,2400,2400.0,30,17h 43m35s,17.726,Active,vic,VIC,lot
+2026-02-18T15:16:32.289096,https://www.grays.com/lot/0001-21063049/motor-vehicles-motor-cycles/2005-ford-territory-tx-sx-automatic-wagon,309,309.0,7,17h 43m28s,17.724,Active,vic,VIC,lot
+2026-02-18T15:16:44.413985,https://www.grays.com/lot/0001-21063050/motor-vehicles-motor-cycles/2003-honda-cr-v-rd-automatic-wagon,209,209.0,4,17h 43m14s,17.721,Active,vic,VIC,lot
+2026-02-18T15:16:55.491560,https://www.grays.com/lot/0001-21063052/motor-vehicles-motor-cycles/2014-dodge-journey-sxt-automatic-7-seats-people-mover,509,509.0,7,17h 43m3s,17.717,Active,vic,VIC,lot
+2026-02-18T15:17:07.622682,https://www.grays.com/lot/0001-21063053/motor-vehicles-motor-cycles/2007-holden-berlina-ve-automatic-sedan,909,909.0,15,17h 42m53s,17.715,Active,vic,VIC,lot
+2026-02-18T15:17:19.261751,https://www.grays.com/lot/0001-21063054/motor-vehicles-motor-cycles/2014-jaguar-xf-2-0p-luxury-automatic-8-speed-sedan,4600,4600.0,63,17h 42m41s,17.711,Active,vic,VIC,lot
+2026-02-18T15:17:30.245002,https://www.grays.com/lot/0001-21063055/motor-vehicles-motor-cycles/2014-mazda-3-neo-bm-automatic-hatchback,3300,3300.0,44,17h 42m29s,17.708,Active,vic,VIC,lot
+2026-02-18T15:17:37.819881,https://www.grays.com/lot/0001-21063056/motor-vehicles-motor-cycles/2012-alfa-romeo-giulietta-qv-manual-hatchback,1309,1309.0,19,17h 42m21s,17.706,Active,vic,VIC,lot
+2026-02-18T15:17:45.625641,https://www.grays.com/lot/0001-21063058/motor-vehicles-motor-cycles/2016-holden-cruze-z-series-jh-automatic-sedan,625,625.0,5,17h 42m15s,17.704,Active,vic,VIC,lot
+2026-02-18T15:17:58.016837,https://www.grays.com/lot/0001-21063059/motor-vehicles-motor-cycles/2015-hyundai-i30-active-gd-manual-hatchback,2300,2300.0,23,17h 42m2s,17.701,Active,vic,VIC,lot
+2026-02-18T15:18:09.962398,https://www.grays.com/lot/0001-21063060/motor-vehicles-motor-cycles/2012-ford-territory-titanium-sz-turbo-diesel-automatic-7-seats-wagon,509,509.0,7,17h 41m49s,17.697,Active,vic,VIC,lot
+2026-02-18T15:18:17.191274,https://www.grays.com/lot/0001-21063061/motor-vehicles-motor-cycles/2011-mazda-3-sp25-bl-manual-hatchback,2200,2200.0,30,17h 41m42s,17.695,Active,vic,VIC,lot
+2026-02-18T15:18:25.137029,https://www.grays.com/lot/0001-21063062/motor-vehicles-motor-cycles/2008-volvo-xc90-d5-turbo-diesel-automatic-7-seats-wagon,9,9.0,1,17h 41m34s,17.693,Active,vic,VIC,lot
+2026-02-18T15:18:37.404803,https://www.grays.com/lot/0001-21063064/motor-vehicles-motor-cycles/2014-bmw-x4-xdrive-20d-f26-turbo-diesel-automatic-8-speed-coupe,6400,6400.0,65,17h 41m21s,17.689,Active,vic,VIC,lot
+2026-02-18T15:18:44.397296,https://www.grays.com/lot/0001-21063065/motor-vehicles-motor-cycles/2012-ford-falcon-xt-fg-ii-automatic-sedan,2109,2109.0,30,17h 41m15s,17.688,Active,vic,VIC,lot
+2026-02-18T15:18:55.370798,https://www.grays.com/lot/0001-21063066/motor-vehicles-motor-cycles/2016-hyundai-accent-active-rb-cvt-hatchback,2900,2900.0,40,17h 41m4s,17.684,Active,vic,VIC,lot
+2026-02-18T15:19:07.597072,https://www.grays.com/lot/0001-21063067/motor-vehicles-motor-cycles/2012-toyota-camry-altise-asv50r-automatic-sedan,2209,2209.0,42,17h 40m51s,17.681,Active,vic,VIC,lot
+2026-02-18T15:19:20.538762,https://www.grays.com/lot/0001-21063068/motor-vehicles-motor-cycles/2017-nissan-qashqai-ti-j11-ii-cvt-wagon,1500,1500.0,12,17h 40m40s,17.678,Active,vic,VIC,lot
+2026-02-18T15:19:28.722791,https://www.grays.com/lot/0001-21063069/motor-vehicles-motor-cycles/2012-skoda-fabia-77tsi-5jf-manual-hatchback,109,109.0,2,17h 40m32s,17.676,Active,vic,VIC,lot
+2026-02-18T15:19:39.772188,https://www.grays.com/lot/0001-21063070/motor-vehicles-motor-cycles/2005-mercedes-benz-c-class-c180-kompressor-automatic-coupe,209,209.0,3,17h 40m21s,17.672,Active,vic,VIC,lot
+2026-02-18T15:19:51.951768,https://www.grays.com/lot/0001-21063071/motor-vehicles-motor-cycles/2013-volkswagen-tiguan-132-tsi-pacific-5n-automatic-wagon,1350,1350.0,21,17h 40m8s,17.669,Active,vic,VIC,lot
+2026-02-18T15:20:03.705781,https://www.grays.com/lot/0001-21063074/motor-vehicles-motor-cycles/2021-nissan-navara-4x4-sl-series-4-turbo-diesel-manual-crew-cab-chassis,13300,13300.0,72,17h 39m55s,17.665,Active,vic,VIC,lot
+2026-02-18T15:20:11.178714,https://www.grays.com/lot/0001-21063079/motor-vehicles-motor-cycles/2016-holden-astra-rs-v-bk-manual-hatchback,3200,3200.0,34,17h 39m49s,17.664,Active,vic,VIC,lot
+2026-02-18T15:20:18.892850,https://www.grays.com/lot/0001-21063080/motor-vehicles-motor-cycles/2014-ford-mondeo-lx-mc-turbo-diesel-automatic-wagon,1050,1050.0,16,17h 39m40s,17.661,Active,vic,VIC,lot
+2026-02-18T15:20:30.442764,https://www.grays.com/lot/0001-21063081/motor-vehicles-motor-cycles/2002-nissan-maxima-st-a33-automatic-sedan,509,509.0,8,17h 39m30s,17.658,Active,vic,VIC,lot
+2026-02-18T15:20:43.045985,https://www.grays.com/lot/0001-21063082/motor-vehicles-motor-cycles/2008-holden-commodore-omega-ve-automatic-wagon,309,309.0,4,17h 39m16s,17.654,Active,vic,VIC,lot
+2026-02-18T15:20:53.996316,https://www.grays.com/lot/0001-21063083/motor-vehicles-motor-cycles/2011-hyundai-iload-tq-manual-van,3600,3600.0,34,17h 39m5s,17.651,Active,vic,VIC,lot
+2026-02-18T15:21:04.892747,https://www.grays.com/lot/0001-21063084/motor-vehicles-motor-cycles/2010-renault-koleos-privilege-cvt-wagon,605,605.0,2,17h 38m54s,17.648,Active,vic,VIC,lot
+2026-02-18T15:21:17.638728,https://www.grays.com/lot/0001-21063086/motor-vehicles-motor-cycles/2000-toyota-corolla-ascent-ae112r-automatic-hatchback,1509,1509.0,24,17h 38m43s,17.645,Active,vic,VIC,lot
+2026-02-18T15:21:31.506793,https://www.grays.com/lot/0001-21063088/motor-vehicles-motor-cycles/2017-hyundai-accent-sport-rb-automatic-sedan,4400,4400.0,74,17h 38m29s,17.641,Active,vic,VIC,lot
+2026-02-18T15:21:39.398917,https://www.grays.com/lot/0001-21063089/motor-vehicles-motor-cycles/2004-nissan-pulsar-st-n16-automatic-sedan,1909,1909.0,33,17h 38m20s,17.639,Active,vic,VIC,lot
+2026-02-18T15:21:50.371966,https://www.grays.com/lot/0001-21063090/motor-vehicles-motor-cycles/2007-ford-falcon-xt-bf-ii-automatic-sedan,209,209.0,3,17h 38m9s,17.636,Active,vic,VIC,lot
+2026-02-18T15:21:58.022110,https://www.grays.com/lot/0001-21063091/motor-vehicles-motor-cycles/2011-toyota-camry-altise-acv40r-automatic-sedan-rwc-issued-11-02-2026,6100,6100.0,43,17h 38m1s,17.634,Active,vic,VIC,lot
+2026-02-18T15:22:08.903836,https://www.grays.com/lot/0001-21063092/motor-vehicles-motor-cycles/2004-mazda-6-classic-gg-automatic-hatchback,609,609.0,10,17h 37m50s,17.631,Active,vic,VIC,lot
+2026-02-18T15:22:21.610312,https://www.grays.com/lot/0001-21063095/motor-vehicles-motor-cycles/2014-audi-a3-1-8-tsi-ambition-8v-auto-hatchback-rwc-issued-11-02-2026,5800,5800.0,62,17h 37m38s,17.627,Active,vic,VIC,lot
+2026-02-18T15:22:29.060648,https://www.grays.com/lot/0001-21063096/motor-vehicles-motor-cycles/2012-mazda-3-neo-bl-manual-sedan,2109,2109.0,38,17h 37m31s,17.625,Active,vic,VIC,lot
+2026-02-18T15:22:40.575821,https://www.grays.com/lot/0001-21063097/motor-vehicles-motor-cycles/2008-toyota-yaris-yrx-ncp93r-automatic-sedan,909,909.0,16,17h 37m18s,17.622,Active,vic,VIC,lot
+2026-02-18T15:22:53.242086,https://www.grays.com/lot/0001-21063099/motor-vehicles-motor-cycles/2015-holden-cruze-cdx-jh-automatic-sedan,1009,1009.0,16,17h 37m7s,17.619,Active,vic,VIC,lot
+2026-02-18T15:23:05.704598,https://www.grays.com/lot/0001-21063100/motor-vehicles-motor-cycles/2016-hyundai-accent-active-rb-cvt-hatchback,4850,4850.0,60,17h 36m53s,17.615,Active,vic,VIC,lot
+2026-02-18T15:23:18.275859,https://www.grays.com/lot/0001-21063101/motor-vehicles-motor-cycles/2016-renault-megane-gt-automatic-hatchback,6199,6199.0,96,17h 36m42s,17.612,Active,vic,VIC,lot
+2026-02-18T16:00:22.805738,https://www.grays.com/lot/0001-20027290/motor-vehicles-motor-cycles/2021-toyota-landcruiser-sahara-fja300r-turbo-diesel-10-auto-7-seats-wagon,85100,85100.0,175,3d 17h 4m38s,89.077,Active,vic,VIC,lot
+2026-02-18T16:00:30.460805,https://www.grays.com/lot/0001-21061290/motor-vehicles-motor-cycles/2008-toyota-hiace-trh223r-manual-14-seats-bus,109,109.0,2,3d 16h 59m28s,88.991,Active,vic,VIC,lot
+2026-02-18T16:00:41.464358,https://www.grays.com/lot/0001-21062742/motor-vehicles-motor-cycles/2010-mazda-bt-50-dx-b2500-turbo-diesel-manual-cab-chassis,409,409.0,5,3d 16h 59m18s,88.988,Active,vic,VIC,lot
+2026-02-18T16:00:52.515347,https://www.grays.com/lot/0001-21062755/motor-vehicles-motor-cycles/2005-audi-a6-3-2-fsi-quattro-c6-automatic-wagon,9,9.0,1,4d 16h 59m8s,112.986,Active,vic,VIC,lot
+2026-02-18T16:01:02.816477,https://www.grays.com/lot/0001-21062756/motor-vehicles-motor-cycles/2015-renault-megane-gt-line-automatic-hatchback,9,9.0,1,3d 16h 58m57s,88.983,Active,vic,VIC,lot
+2026-02-18T16:01:13.644748,https://www.grays.com/lot/0001-21062880/motor-vehicles-motor-cycles/2014-mazda-3-maxx-bm-automatic-sedan,3900,3900.0,44,16h 58m47s,16.98,Active,vic,VIC,lot
+2026-02-18T16:01:25.321910,https://www.grays.com/lot/0001-21063001/motor-vehicles-motor-cycles/2013-mitsubishi-outlander-ls-4wd-zj-cvt-7-seats-wagon,2109,2109.0,39,1d 16h 58m35s,40.976,Active,vic,VIC,lot
+2026-02-18T16:01:36.997144,https://www.grays.com/lot/0001-21063011/motor-vehicles-motor-cycles/2016-toyota-camry-altise-hybrid-avv50r-cvt-sedan,2900,2900.0,21,3d 16h 58m22s,88.973,Active,vic,VIC,lot
+2026-02-18T16:01:44.796990,https://www.grays.com/lot/0001-21063012/motor-vehicles-motor-cycles/2012-mazda-bt-50-4x2-xt-turbo-diesel-tipper-tray-cab-chassis,9,9.0,0,3d 16h 58m14s,88.971,Active,vic,VIC,lot
+2026-02-18T16:01:52.093625,https://www.grays.com/lot/0001-21063013/motor-vehicles-motor-cycles/2016-jeep-renegade-sport-bu-automatic-wagon,4100,4100.0,77,16h 58m8s,16.969,Active,vic,VIC,lot
+2026-02-18T16:02:03.337762,https://www.grays.com/lot/0001-21063014/motor-vehicles-motor-cycles/2014-renault-captur-dynamique-automatic-wagon,709,709.0,10,16h 57m55s,16.965,Active,vic,VIC,lot
+2026-02-18T16:02:14.108818,https://www.grays.com/lot/0001-21063016/motor-vehicles-motor-cycles/2016-mitsubishi-pajero-sport-gls-qe-turbo-diesel-automatic,12500,12500.0,128,16h 57m45s,16.962,Active,vic,VIC,lot
+2026-02-18T16:02:26.011333,https://www.grays.com/lot/0001-21063017/motor-vehicles-motor-cycles/2017-toyota-camry-altise-hybrid-avv50r-cvt-sedan,13000,13000.0,185,16h 57m33s,16.959,Active,vic,VIC,lot
+2026-02-18T16:02:38.083115,https://www.grays.com/lot/0001-21063026/motor-vehicles-motor-cycles/2016-mercedes-benz-v-class-v250-bluetec-avantga-t-d-aut-8-seats,11000,11000.0,139,16h 57m21s,16.956,Active,vic,VIC,lot
+2026-02-18T16:02:48.827168,https://www.grays.com/lot/0001-21063034/motor-vehicles-motor-cycles/2011-mercedes-benz-b-class-b200-cdi-be-w246-turbo-diesel-7-auto-hatchback,2400,2400.0,30,16h 57m10s,16.953,Active,vic,VIC,lot
+2026-02-18T16:02:59.490366,https://www.grays.com/lot/0001-21063043/motor-vehicles-motor-cycles/2012-suzuki-swift-sport-fz-cvt-hatchback,809,809.0,9,3d 16h 57m1s,88.95,Active,vic,VIC,lot
+2026-02-18T16:03:06.942922,https://www.grays.com/lot/0001-21063045/motor-vehicles-motor-cycles/2007-bmw-1-series-116i-e87-manual-hatchback,2700,2700.0,20,3d 16h 56m52s,88.948,Active,vic,VIC,lot
+2026-02-18T16:03:18.278127,https://www.grays.com/lot/0001-21063046/motor-vehicles-motor-cycles/2014-bmw-m5-f10-automatic-sedan,5500,5500.0,69,3d 16h 56m41s,88.945,Active,vic,VIC,lot
+2026-02-18T16:03:31.028917,https://www.grays.com/lot/0001-21063047/motor-vehicles-motor-cycles/2014-volvo-s60-t5-r-design-automatic-8-speed-sedan,609,609.0,7,3d 16h 56m28s,88.941,Active,vic,VIC,lot
+2026-02-18T16:03:41.507120,https://www.grays.com/lot/0001-21063048/motor-vehicles-motor-cycles/2016-nissan-pulsar-st-c12-cvt-hatchback,9,9.0,1,3d 17h 1m17s,89.021,Active,vic,VIC,lot
+2026-02-18T16:03:53.679704,https://www.grays.com/lot/0001-21063049/motor-vehicles-motor-cycles/2005-ford-territory-tx-sx-automatic-wagon,309,309.0,7,16h 56m6s,16.935,Active,vic,VIC,lot
+2026-02-18T16:04:05.895660,https://www.grays.com/lot/0001-21063050/motor-vehicles-motor-cycles/2003-honda-cr-v-rd-automatic-wagon,209,209.0,4,16h 55m54s,16.932,Active,vic,VIC,lot
+2026-02-18T16:04:16.613236,https://www.grays.com/lot/0001-21063052/motor-vehicles-motor-cycles/2014-dodge-journey-sxt-automatic-7-seats-people-mover,509,509.0,7,16h 55m43s,16.929,Active,vic,VIC,lot
+2026-02-18T16:04:24.329073,https://www.grays.com/lot/0001-21063053/motor-vehicles-motor-cycles/2007-holden-berlina-ve-automatic-sedan,909,909.0,15,16h 55m36s,16.927,Active,vic,VIC,lot
+2026-02-18T16:04:35.919586,https://www.grays.com/lot/0001-21063054/motor-vehicles-motor-cycles/2014-jaguar-xf-2-0p-luxury-automatic-8-speed-sedan,4600,4600.0,63,16h 55m24s,16.923,Active,vic,VIC,lot
+2026-02-18T16:04:43.316643,https://www.grays.com/lot/0001-21063055/motor-vehicles-motor-cycles/2014-mazda-3-neo-bm-automatic-hatchback,3300,3300.0,44,16h 55m15s,16.921,Active,vic,VIC,lot
+2026-02-18T16:04:54.401360,https://www.grays.com/lot/0001-21063056/motor-vehicles-motor-cycles/2012-alfa-romeo-giulietta-qv-manual-hatchback,1309,1309.0,19,16h 55m5s,16.918,Active,vic,VIC,lot
+2026-02-18T16:05:05.883357,https://www.grays.com/lot/0001-21063058/motor-vehicles-motor-cycles/2016-holden-cruze-z-series-jh-automatic-sedan,625,625.0,5,16h 54m53s,16.915,Active,vic,VIC,lot
+2026-02-18T16:05:17.918867,https://www.grays.com/lot/0001-21063059/motor-vehicles-motor-cycles/2015-hyundai-i30-active-gd-manual-hatchback,2300,2300.0,23,16h 54m42s,16.912,Active,vic,VIC,lot
+2026-02-18T16:05:29.913769,https://www.grays.com/lot/0001-21063060/motor-vehicles-motor-cycles/2012-ford-territory-titanium-sz-turbo-diesel-automatic-7-seats-wagon,509,509.0,7,16h 54m30s,16.908,Active,vic,VIC,lot
+2026-02-18T16:05:37.402967,https://www.grays.com/lot/0001-21063061/motor-vehicles-motor-cycles/2011-mazda-3-sp25-bl-manual-hatchback,2200,2200.0,30,16h 54m21s,16.906,Active,vic,VIC,lot
+2026-02-18T16:05:49.966322,https://www.grays.com/lot/0001-21063062/motor-vehicles-motor-cycles/2008-volvo-xc90-d5-turbo-diesel-automatic-7-seats-wagon,9,9.0,1,16h 54m10s,16.903,Active,vic,VIC,lot
+2026-02-18T16:06:02.456017,https://www.grays.com/lot/0001-21063064/motor-vehicles-motor-cycles/2014-bmw-x4-xdrive-20d-f26-turbo-diesel-automatic-8-speed-coupe,6400,6400.0,65,16h 53m57s,16.899,Active,vic,VIC,lot
+2026-02-18T16:06:09.598228,https://www.grays.com/lot/0001-21063065/motor-vehicles-motor-cycles/2012-ford-falcon-xt-fg-ii-automatic-sedan,2109,2109.0,30,16h 53m51s,16.898,Active,vic,VIC,lot
+2026-02-18T16:06:20.626217,https://www.grays.com/lot/0001-21063066/motor-vehicles-motor-cycles/2016-hyundai-accent-active-rb-cvt-hatchback,3000,3000.0,41,16h 53m40s,16.894,Active,vic,VIC,lot
+2026-02-18T16:06:28.430000,https://www.grays.com/lot/0001-21063067/motor-vehicles-motor-cycles/2012-toyota-camry-altise-asv50r-automatic-sedan,2209,2209.0,42,16h 53m32s,16.892,Active,vic,VIC,lot
+2026-02-18T16:06:41.635508,https://www.grays.com/lot/0001-21063068/motor-vehicles-motor-cycles/2017-nissan-qashqai-ti-j11-ii-cvt-wagon,1600,1600.0,13,16h 53m17s,16.888,Active,vic,VIC,lot
+2026-02-18T16:06:49.498991,https://www.grays.com/lot/0001-21063069/motor-vehicles-motor-cycles/2012-skoda-fabia-77tsi-5jf-manual-hatchback,109,109.0,2,16h 53m11s,16.886,Active,vic,VIC,lot
+2026-02-18T16:07:00.776204,https://www.grays.com/lot/0001-21063070/motor-vehicles-motor-cycles/2005-mercedes-benz-c-class-c180-kompressor-automatic-coupe,209,209.0,3,16h 52m59s,16.883,Active,vic,VIC,lot
+2026-02-18T16:07:12.984517,https://www.grays.com/lot/0001-21063071/motor-vehicles-motor-cycles/2013-volkswagen-tiguan-132-tsi-pacific-5n-automatic-wagon,1350,1350.0,21,16h 52m47s,16.88,Active,vic,VIC,lot
+2026-02-18T16:07:24.759220,https://www.grays.com/lot/0001-21063074/motor-vehicles-motor-cycles/2021-nissan-navara-4x4-sl-series-4-turbo-diesel-manual-crew-cab-chassis,13300,13300.0,72,16h 52m34s,16.876,Active,vic,VIC,lot
+2026-02-18T16:07:32.941243,https://www.grays.com/lot/0001-21063078/motor-vehicles-motor-cycles/2007-suzuki-swift-ez-automatic-hatchback,609,609.0,9,3d 16h 52m28s,88.874,Active,vic,VIC,lot
+2026-02-18T16:07:44.873055,https://www.grays.com/lot/0001-21063079/motor-vehicles-motor-cycles/2016-holden-astra-rs-v-bk-manual-hatchback,3200,3200.0,34,16h 52m15s,16.871,Active,vic,VIC,lot
+2026-02-18T16:07:57.796247,https://www.grays.com/lot/0001-21063080/motor-vehicles-motor-cycles/2014-ford-mondeo-lx-mc-turbo-diesel-automatic-wagon,1050,1050.0,16,16h 52m2s,16.867,Active,vic,VIC,lot
+2026-02-18T16:08:09.574139,https://www.grays.com/lot/0001-21063081/motor-vehicles-motor-cycles/2002-nissan-maxima-st-a33-automatic-sedan,509,509.0,8,16h 51m51s,16.864,Active,vic,VIC,lot
+2026-02-18T16:08:22.828316,https://www.grays.com/lot/0001-21063082/motor-vehicles-motor-cycles/2008-holden-commodore-omega-ve-automatic-wagon,309,309.0,4,16h 51m37s,16.86,Active,vic,VIC,lot
+2026-02-18T16:08:30.027077,https://www.grays.com/lot/0001-21063083/motor-vehicles-motor-cycles/2011-hyundai-iload-tq-manual-van,3600,3600.0,34,16h 51m31s,16.859,Active,vic,VIC,lot
+2026-02-18T16:08:41.281123,https://www.grays.com/lot/0001-21063084/motor-vehicles-motor-cycles/2010-renault-koleos-privilege-cvt-wagon,605,605.0,2,16h 51m17s,16.855,Active,vic,VIC,lot
+2026-02-18T16:08:54.263896,https://www.grays.com/lot/0001-21063086/motor-vehicles-motor-cycles/2000-toyota-corolla-ascent-ae112r-automatic-hatchback,1509,1509.0,24,16h 51m5s,16.851,Active,vic,VIC,lot
+2026-02-18T16:09:07.969302,https://www.grays.com/lot/0001-21063088/motor-vehicles-motor-cycles/2017-hyundai-accent-sport-rb-automatic-sedan,4400,4400.0,74,16h 50m51s,16.848,Active,vic,VIC,lot
+2026-02-18T16:09:16.116889,https://www.grays.com/lot/0001-21063089/motor-vehicles-motor-cycles/2004-nissan-pulsar-st-n16-automatic-sedan,1909,1909.0,33,16h 50m43s,16.845,Active,vic,VIC,lot
+2026-02-18T16:09:27.081480,https://www.grays.com/lot/0001-21063090/motor-vehicles-motor-cycles/2007-ford-falcon-xt-bf-ii-automatic-sedan,209,209.0,3,16h 50m32s,16.842,Active,vic,VIC,lot
+2026-02-18T16:09:35.006993,https://www.grays.com/lot/0001-21063091/motor-vehicles-motor-cycles/2011-toyota-camry-altise-acv40r-automatic-sedan-rwc-issued-11-02-2026,6100,6100.0,43,16h 50m24s,16.84,Active,vic,VIC,lot
+2026-02-18T16:09:46.223772,https://www.grays.com/lot/0001-21063092/motor-vehicles-motor-cycles/2004-mazda-6-classic-gg-automatic-hatchback,609,609.0,10,16h 50m12s,16.837,Active,vic,VIC,lot
+2026-02-18T16:09:59.230478,https://www.grays.com/lot/0001-21063095/motor-vehicles-motor-cycles/2014-audi-a3-1-8-tsi-ambition-8v-auto-hatchback-rwc-issued-11-02-2026,5800,5800.0,62,16h 50m0s,16.833,Active,vic,VIC,lot
+2026-02-18T16:10:06.871866,https://www.grays.com/lot/0001-21063096/motor-vehicles-motor-cycles/2012-mazda-3-neo-bl-manual-sedan,2109,2109.0,38,16h 49m52s,16.831,Active,vic,VIC,lot
+2026-02-18T16:10:18.359377,https://www.grays.com/lot/0001-21063097/motor-vehicles-motor-cycles/2008-toyota-yaris-yrx-ncp93r-automatic-sedan,909,909.0,16,16h 49m41s,16.828,Active,vic,VIC,lot
+2026-02-18T16:10:37.799330,https://www.grays.com/lot/0001-21063099/motor-vehicles-motor-cycles/2015-holden-cruze-cdx-jh-automatic-sedan,1009,1009.0,16,16h 49m21s,16.822,Active,vic,VIC,lot
+2026-02-18T16:10:45.579555,https://www.grays.com/lot/0001-21063100/motor-vehicles-motor-cycles/2016-hyundai-accent-active-rb-cvt-hatchback,4850,4850.0,60,16h 49m15s,16.821,Active,vic,VIC,lot
+2026-02-18T16:10:58.905708,https://www.grays.com/lot/0001-21063101/motor-vehicles-motor-cycles/2016-renault-megane-gt-automatic-hatchback,6199,6199.0,96,16h 49m1s,16.817,Active,vic,VIC,lot
+2026-02-18T16:11:10.545497,https://www.grays.com/lot/0001-21063102/motor-vehicles-motor-cycles/2010-subaru-forester-x-s3-manual-wagon,9,9.0,1,3d 16h 48m49s,88.814,Active,vic,VIC,lot
+2026-02-18T16:11:21.977322,https://www.grays.com/lot/0001-21063103/motor-vehicles-motor-cycles/2005-nissan-skyline-350gt-v35-automatic-sedan,109,109.0,2,3d 16h 48m38s,88.811,Active,vic,VIC,lot
+2026-02-18T16:11:34.123331,https://www.grays.com/lot/0001-21063104/motor-vehicles-motor-cycles/2011-audi-a6-3-0-tdi-quattro-c7-turbo-diesel-automatic-sedan,109,109.0,2,3d 16h 48m25s,88.807,Active,vic,VIC,lot
+2026-02-18T16:11:46.674919,https://www.grays.com/lot/0001-21063105/motor-vehicles-motor-cycles/2008-mercedes-benz-ml320cdi-w164-turbo-diesel-automatic-wagon,809,809.0,15,3d 16h 48m12s,88.803,Active,vic,VIC,lot
+2026-02-18T16:12:00.350223,https://www.grays.com/lot/0001-21063107/motor-vehicles-motor-cycles/2005-toyota-landcruiser-prado-gxl-grj120r-automatic-8-seats-wagon,3100,3100.0,22,3d 16h 53m0s,88.883,Active,vic,VIC,lot
+2026-02-18T16:12:09.960089,https://www.grays.com/lot/0001-21063110/motor-vehicles-motor-cycles/2011-kia-cerato-koup-si-td-automatic-coupe,9,9.0,1,3d 16h 47m49s,88.797,Active,vic,VIC,lot
+2026-02-18T16:12:17.218267,https://www.grays.com/lot/0001-21063112/motor-vehicles-motor-cycles/2008-volkswagen-golf-2-0-tdi-pacific-a5-turbo-diesel-automatic-hatchback,9,9.0,0,3d 16h 47m41s,88.795,Active,vic,VIC,lot
+2026-02-18T16:12:28.835397,https://www.grays.com/lot/0001-21063113/motor-vehicles-motor-cycles/2015-jeep-cherokee-limited-4x4-kl-9-auto-wagon,109,109.0,2,4d 16h 47m30s,112.792,Active,vic,VIC,lot
+2026-02-18T16:12:36.686820,https://www.grays.com/lot/0001-21063115/motor-vehicles-motor-cycles/2011-bmw-x5-xdrive-40d-sport-e70-lci-turbo-diesel-automatic-8-speed-wagon,809,809.0,13,3d 16h 47m23s,88.79,Active,vic,VIC,lot
+2026-02-18T16:12:48.296376,https://www.grays.com/lot/0001-21063116/motor-vehicles-motor-cycles/2009-toyota-rav-4-cruiser-aca33r-automatic-wagon,609,609.0,11,3d 16h 47m12s,88.787,Active,vic,VIC,lot
+2026-02-18T16:12:59.557518,https://www.grays.com/lot/0001-21063117/motor-vehicles-motor-cycles/2013-holden-ute-sv6-vf-automatic-ute,2800,2800.0,35,3d 16h 46m59s,88.783,Active,vic,VIC,lot
+2026-02-18T16:13:07.034383,https://www.grays.com/lot/0001-21063118/motor-vehicles-motor-cycles/2014-jeep-cherokee-limited-4x4-kl-turbo-diesel-automatic-wagon,1780,1780.0,20,3d 16h 46m53s,88.781,Active,vic,VIC,lot
+2026-02-18T16:13:19.133565,https://www.grays.com/lot/0001-21063119/motor-vehicles-motor-cycles/2015-volkswagen-touareg-150tdi-7p-turbo-diesel-automatic-8-speed-wagon,709,709.0,8,3d 16h 46m41s,88.778,Active,vic,VIC,lot
+2026-02-18T16:13:26.587403,https://www.grays.com/lot/0001-21063120/motor-vehicles-motor-cycles/2010-honda-odyssey-luxury-automatic-7-seats-people-mover,109,109.0,2,3d 16h 46m32s,88.776,Active,vic,VIC,lot
+2026-02-18T16:13:38.679800,https://www.grays.com/lot/0001-21063121/motor-vehicles-motor-cycles/2019-nissan-navara-4x2-rx-series-3-turbo-diesel-automatic-dual-cab,3402,3402.0,33,3d 16h 46m22s,88.773,Active,vic,VIC,lot
+2026-02-18T16:13:46.096763,https://www.grays.com/lot/0001-21063122/motor-vehicles-motor-cycles/2010-nissan-elgrand-automatic-7-seats-wagon,700,700.0,10,3d 16h 46m14s,88.771,Active,vic,VIC,lot
+2026-02-18T16:13:59.039686,https://www.grays.com/lot/0001-21063123/motor-vehicles-motor-cycles/2018-isuzu-d-max-4x2-sx-hi-ride-t-d-auto-ute-ex-gov,909,909.0,11,5d 16h 46m0s,136.767,Active,vic,VIC,lot
+2026-02-18T16:14:12.352359,https://www.grays.com/lot/0001-21063124/motor-vehicles-motor-cycles/2019-mitsubishi-triton-4x4-glx-adas-mr-t-d-auto-dual-cab-ex-gov,7400,7400.0,48,5d 16h 45m46s,136.763,Active,vic,VIC,lot
+2026-02-18T16:14:24.136054,https://www.grays.com/lot/0001-21063125/motor-vehicles-motor-cycles/2008-volkswagen-caravelle-128kw-lwb-t5-turbo-diesel-automatic,109,109.0,2,3d 16h 45m36s,88.76,Active,vic,VIC,lot
+2026-02-18T16:14:37.308650,https://www.grays.com/lot/0001-21063126/motor-vehicles-motor-cycles/2010-toyota-corolla-ascent-zre152r-manual-hatchback,109,109.0,2,6d 16h 45m21s,160.756,Active,vic,VIC,lot
+2026-02-18T16:14:44.429172,https://www.grays.com/lot/0001-21063127/motor-vehicles-motor-cycles/2004-toyota-echo-ncp12r-automatic-sedan,109,109.0,2,6d 16h 45m15s,160.754,Active,vic,VIC,lot
+2026-02-18T16:14:51.978133,https://www.grays.com/lot/0001-21063128/motor-vehicles-motor-cycles/2007-bmw-530i-e60-automatic-sedan,2155,2155.0,9,3d 16h 45m7s,88.752,Active,vic,VIC,lot
+2026-02-18T16:15:04.051397,https://www.grays.com/lot/0001-21063129/motor-vehicles-motor-cycles/2011-toyota-corolla-ascent-zre152r-automatic-hatchback,409,409.0,5,6d 16h 44m56s,160.749,Active,vic,VIC,lot
+2026-02-18T16:15:15.517890,https://www.grays.com/lot/0001-21063130/motor-vehicles-motor-cycles/2004-toyota-camry-altise-acv36r-automatic-sedan,109,109.0,2,6d 16h 44m43s,160.745,Active,vic,VIC,lot
+2026-02-18T16:15:27.481181,https://www.grays.com/lot/0001-21063133/motor-vehicles-motor-cycles/2007-honda-jazz-gli-gd-cvt-hatchback,9,9.0,0,3d 16h 44m33s,88.743,Active,vic,VIC,lot
+2026-02-18T16:15:40.729763,https://www.grays.com/lot/0001-21063134/motor-vehicles-motor-cycles/2009-audi-a4-1-8-tfsi-b8-cvt-sedan-rwc-issued-12-02-2026,409,409.0,8,3d 16h 44m18s,88.738,Active,vic,VIC,lot
+2026-02-18T16:15:52.219596,https://www.grays.com/lot/0001-21063136/motor-vehicles-motor-cycles/1998-hyundai-sonata-gle-ef-automatic-sedan,9,9.0,0,3d 16h 59m8s,88.986,Active,vic,VIC,lot
+2026-02-18T16:16:04.455408,https://www.grays.com/lot/0001-21063137/motor-vehicles-motor-cycles/2016-porsche-cayenne-diesel-92a-turbo-diesel-automatic-8-speed-wagon,16100,16100.0,111,3d 16h 58m54s,88.982,Active,vic,VIC,lot
+2026-02-18T16:16:14.952544,https://www.grays.com/lot/0001-21063138/motor-vehicles-motor-cycles/2004-ford-falcon-xt-ba-automatic-sedan,9,9.0,1,3d 16h 58m44s,88.979,Active,vic,VIC,lot
+2026-02-18T16:16:22.572862,https://www.grays.com/lot/0001-21063139/motor-vehicles-motor-cycles/2012-bmw-5-series-535d-f10-turbo-diesel-automatic-8-speed-sedan,3100,3100.0,26,3d 16h 43m36s,88.727,Active,vic,VIC,lot
+2026-02-18T16:16:30.197783,https://www.grays.com/lot/0001-21063140/motor-vehicles-motor-cycles/2012-subaru-impreza-2-0i-g4-cvt-sedan,109,109.0,2,3d 16h 43m30s,88.725,Active,vic,VIC,lot
+2026-02-18T16:16:37.570992,https://www.grays.com/lot/0001-21063142/motor-vehicles-motor-cycles/2013-mitsubishi-asx-2wd-xb-cvt-wagon,800,800.0,5,3d 16h 43m21s,88.722,Active,vic,VIC,lot
+2026-02-18T16:16:45.713227,https://www.grays.com/lot/0001-21063143/motor-vehicles-motor-cycles/2015-ford-falcon-fg-x-automatic-ute,3700,3700.0,34,3d 16h 43m15s,88.721,Active,vic,VIC,lot
+2026-02-18T16:16:53.146649,https://www.grays.com/lot/0001-21063146/motor-vehicles-motor-cycles/2012-land-rover-range-rover-sport-3-0-sdv6-luxury-t-d-automatic-wagon,1500,1500.0,13,3d 16h 43m7s,88.719,Active,vic,VIC,lot
+2026-02-18T16:17:04.600748,https://www.grays.com/lot/0001-21063148/motor-vehicles-motor-cycles/2021-mazda-3-g20-touring-bp-automatic-sedan,5200,5200.0,67,3d 16h 42m54s,88.715,Active,vic,VIC,lot
+2026-02-18T16:17:17.760824,https://www.grays.com/lot/0001-21063149/motor-vehicles-motor-cycles/2010-toyota-yaris-yr-ncp90r-automatic-hatchback,1009,1009.0,18,3d 16h 42m42s,88.712,Active,vic,VIC,lot
+2026-02-18T16:17:25.462947,https://www.grays.com/lot/0001-21063150/motor-vehicles-motor-cycles/2011-audi-a5-2-0-tfsi-quattro-8t-automatic-convertible,609,609.0,8,3d 16h 42m35s,88.71,Active,vic,VIC,lot
+2026-02-18T16:17:36.426136,https://www.grays.com/lot/0001-21063151/motor-vehicles-motor-cycles/2008-ford-transit-swb-rwd-low-roof-vm-turbo-diesel-manual-van,509,509.0,6,3d 16h 42m24s,88.707,Active,vic,VIC,lot
+2026-02-18T16:17:48.557551,https://www.grays.com/lot/0001-21063152/motor-vehicles-motor-cycles/2006-ford-fairmont-ghia-bf-automatic-sedan,309,309.0,5,3d 16h 42m10s,88.703,Active,vic,VIC,lot
+2026-02-18T16:17:56.409472,https://www.grays.com/lot/0001-21063153/motor-vehicles-motor-cycles/2011-ford-territory-tx-sz-automatic-wagon,1600,1600.0,28,3d 16h 42m4s,88.701,Active,vic,VIC,lot
+2026-02-18T16:18:07.531008,https://www.grays.com/lot/0001-21063154/motor-vehicles-motor-cycles/2003-mercedes-benz-c200-k-classic-w203-automatic-sedan,409,409.0,6,3d 16h 41m52s,88.698,Active,vic,VIC,lot
+2026-02-18T16:18:20.671638,https://www.grays.com/lot/0001-21063155/motor-vehicles-motor-cycles/2008-mercedes-benz-e280-elegance-w211-automatic-sedan,1209,1209.0,23,3d 16h 41m40s,88.694,Active,vic,VIC,lot
+2026-02-18T16:18:28.152495,https://www.grays.com/lot/0001-21063158/motor-vehicles-motor-cycles/2000-honda-cr-v-rd-automatic-wagon,309,309.0,4,3d 16h 41m32s,88.692,Active,vic,VIC,lot
+2026-02-18T16:18:36.087879,https://www.grays.com/lot/0001-21063163/motor-vehicles-motor-cycles/2005-bmw-325i-e90-automatic-sedan,9,9.0,1,4d 16h 41m23s,112.69,Active,vic,VIC,lot
+2026-02-18T16:18:48.903566,https://www.grays.com/lot/0001-21063168/motor-vehicles-motor-cycles/2013-nissan-pathfinder-st-r52-cvt-7-seats-wagon,9,9.0,1,4d 16h 41m10s,112.686,Active,vic,VIC,lot
+2026-02-18T16:18:56.196099,https://www.grays.com/lot/0001-21063169/motor-vehicles-motor-cycles/2007-mercedes-benz-a200-elegance-w169-cvt-hatchback,9,9.0,1,4d 16h 41m2s,112.684,Active,vic,VIC,lot
+2026-02-18T16:19:03.998661,https://www.grays.com/lot/0001-21063171/motor-vehicles-motor-cycles/2007-holden-commodore-omega-ve-automatic-sedan,9,9.0,1,4d 16h 40m55s,112.682,Active,vic,VIC,lot
+2026-02-18T16:19:15.315655,https://www.grays.com/lot/0001-21063172/motor-vehicles-motor-cycles/2015-fiat-freemont-base-automatic-7-seats-people-mover,9,9.0,0,4d 16h 40m43s,112.679,Active,vic,VIC,lot
+2026-02-18T16:19:26.095977,https://www.grays.com/lot/0001-21063173/motor-vehicles-motor-cycles/2014-land-rover-freelander-2-si4-se-automatic-wagon,209,209.0,3,4d 16h 40m33s,112.676,Active,vic,VIC,lot
+2026-02-18T16:19:37.222626,https://www.grays.com/lot/0001-21063175/motor-vehicles-motor-cycles/2007-toyota-corolla-ascent-zre152r-manual-hatchback,109,109.0,2,4d 16h 40m21s,112.672,Active,vic,VIC,lot
+2026-02-18T16:19:45.043820,https://www.grays.com/lot/0001-21063176/motor-vehicles-motor-cycles/2009-volvo-c70-le-automatic-coupe,9,9.0,0,4d 16h 40m14s,112.671,Active,vic,VIC,lot
+2026-02-18T16:19:56.158912,https://www.grays.com/lot/0001-21063179/motor-vehicles-motor-cycles/2008-mitsubishi-outlander-ls-zg-manual-wagon,9,9.0,1,4d 16h 40m3s,112.668,Active,vic,VIC,lot
+2026-02-18T16:20:07.162393,https://www.grays.com/lot/0001-21063180/motor-vehicles-motor-cycles/2018-ldv-t60-pro-turbo-diesel-automatic-dual-cab,209,209.0,3,4d 16h 39m52s,112.664,Active,vic,VIC,lot
+2026-02-18T16:20:17.195041,https://www.grays.com/lot/0001-21063181/motor-vehicles-motor-cycles/2003-holden-commodore-ss-vy-manual-sedan,2600,2600.0,30,4d 16h 39m42s,112.662,Active,vic,VIC,lot
+2026-02-18T16:20:29.704810,https://www.grays.com/lot/0001-21063182/motor-vehicles-motor-cycles/2009-mitsubishi-lancer-es-cj-cvt-sedan,209,209.0,3,4d 16h 39m29s,112.658,Active,vic,VIC,lot
+2026-02-18T16:20:42.855408,https://www.grays.com/lot/0001-21063183/motor-vehicles-motor-cycles/2014-nissan-x-trail-st-awd-t32-cvt-wagon,9,9.0,1,4d 16h 39m17s,112.655,Active,vic,VIC,lot
+2026-02-18T16:20:54.406424,https://www.grays.com/lot/0001-21063185/motor-vehicles-motor-cycles/2005-toyota-corolla-sportivo-zze123r-manual-hatchback,600,600.0,3,4d 16h 39m6s,112.652,Active,vic,VIC,lot
+2026-02-18T16:21:01.744574,https://www.grays.com/lot/0001-21063186/motor-vehicles-motor-cycles/2013-subaru-outback-2-0d-b5a-turbo-diesel-cvt-wagon,9,9.0,1,4d 16h 38m58s,112.649,Active,vic,VIC,lot
+2026-02-18T16:21:14.363306,https://www.grays.com/lot/0001-21063187/motor-vehicles-motor-cycles/2012-holden-commodore-sportwagon-z-series-ve-ii-automatic-wagon,9,9.0,0,4d 16h 38m46s,112.646,Active,vic,VIC,lot
+2026-02-18T16:21:24.673115,https://www.grays.com/lot/0001-21063191/motor-vehicles-motor-cycles/2006-toyota-yaris-yr-ncp90r-manual-hatchback,350,350.0,3,4d 16h 38m34s,112.643,Active,vic,VIC,lot
+2026-02-18T16:21:31.840274,https://www.grays.com/lot/0001-21063192/motor-vehicles-motor-cycles/2013-jeep-patriot-sport-mk-automatic-wagon,9,9.0,1,4d 16h 38m28s,112.641,Active,vic,VIC,lot
+2026-02-18T16:21:39.529925,https://www.grays.com/lot/0001-21063199/motor-vehicles-motor-cycles/2021-haval-h9-ultra-4wd-automatic-8-speed-7-seats-wagon,1309,1309.0,24,4d 16h 38m21s,112.639,Active,vic,VIC,lot
+2026-02-18T16:21:51.541044,https://www.grays.com/lot/0001-21063200/motor-vehicles-motor-cycles/2018-jaguar-e-pace-132kw-s-turbo-diesel-9-auto-wagon,1609,1609.0,27,4d 16h 38m8s,112.636,Active,vic,VIC,lot
+2026-02-18T16:21:58.413878,https://www.grays.com/lot/0001-21063201/motor-vehicles-motor-cycles/2022-mg-hs-vibe-automatic-wagon,11509,11509.0,0,4d 16h 38m1s,112.634,Active,vic,VIC,lot
+2026-02-18T16:22:08.266235,https://www.grays.com/lot/0001-21063202/motor-vehicles-motor-cycles/2013-hyundai-i30-active-gd-automatic-hatchback,2100,2100.0,23,4d 16h 37m51s,112.631,Active,vic,VIC,lot
+2026-02-18T16:22:20.384690,https://www.grays.com/lot/0001-21063203/motor-vehicles-motor-cycles/2016-mazda-bt-50-4x2-xtr-turbo-diesel-automatic-dual-cab,800,800.0,13,4d 16h 37m39s,112.627,Active,vic,VIC,lot
+2026-02-18T16:22:33.831995,https://www.grays.com/lot/0001-21063204/motor-vehicles-motor-cycles/2000-mercedes-benz-clk-320-320-avantgarde-c208-automatic-coupe,9,9.0,1,4d 16h 37m25s,112.624,Active,vic,VIC,lot
+2026-02-18T16:22:45.590282,https://www.grays.com/lot/0001-21063205/motor-vehicles-motor-cycles/2016-land-rover-range-rover-sport-4-4-sdv8-hse-td-at-8-speed-wagon,13100,13100.0,79,4d 16h 37m15s,112.621,Active,vic,VIC,lot
+2026-02-18T16:22:55.904482,https://www.grays.com/lot/0001-21063206/motor-vehicles-motor-cycles/2012-subaru-forester-x-s3-automatic-wagon,409,409.0,6,5d 16h 37m4s,136.618,Active,vic,VIC,lot
+2026-02-18T17:15:22.741420,https://www.grays.com/lot/0001-21062880/motor-vehicles-motor-cycles/2014-mazda-3-maxx-bm-automatic-sedan,3900,3900.0,44,15h 44m37s,15.744,Active,vic,VIC,lot
+2026-02-18T17:15:30.285974,https://www.grays.com/lot/0001-21063013/motor-vehicles-motor-cycles/2016-jeep-renegade-sport-bu-automatic-wagon,4100,4100.0,77,15h 44m29s,15.741,Active,vic,VIC,lot
+2026-02-18T17:15:37.833209,https://www.grays.com/lot/0001-21063014/motor-vehicles-motor-cycles/2014-renault-captur-dynamique-automatic-wagon,709,709.0,10,15h 44m21s,15.739,Active,vic,VIC,lot
+2026-02-18T17:15:48.267309,https://www.grays.com/lot/0001-21063016/motor-vehicles-motor-cycles/2016-mitsubishi-pajero-sport-gls-qe-turbo-diesel-automatic,12500,12500.0,128,15h 44m12s,15.737,Active,vic,VIC,lot
+2026-02-18T17:15:59.185703,https://www.grays.com/lot/0001-21063017/motor-vehicles-motor-cycles/2017-toyota-camry-altise-hybrid-avv50r-cvt-sedan,13000,13000.0,185,15h 44m1s,15.734,Active,vic,VIC,lot
+2026-02-18T17:16:06.642928,https://www.grays.com/lot/0001-21063026/motor-vehicles-motor-cycles/2016-mercedes-benz-v-class-v250-bluetec-avantga-t-d-aut-8-seats,11000,11000.0,139,15h 43m52s,15.731,Active,vic,VIC,lot
+2026-02-18T17:16:17.182512,https://www.grays.com/lot/0001-21063034/motor-vehicles-motor-cycles/2011-mercedes-benz-b-class-b200-cdi-be-w246-turbo-diesel-7-auto-hatchback,2400,2400.0,30,15h 43m43s,15.729,Active,vic,VIC,lot
+2026-02-18T17:16:29.590384,https://www.grays.com/lot/0001-21063049/motor-vehicles-motor-cycles/2005-ford-territory-tx-sx-automatic-wagon,309,309.0,7,15h 43m29s,15.725,Active,vic,VIC,lot
+2026-02-18T17:16:36.978334,https://www.grays.com/lot/0001-21063050/motor-vehicles-motor-cycles/2003-honda-cr-v-rd-automatic-wagon,209,209.0,4,15h 43m23s,15.723,Active,vic,VIC,lot
+2026-02-18T17:16:47.249730,https://www.grays.com/lot/0001-21063052/motor-vehicles-motor-cycles/2014-dodge-journey-sxt-automatic-7-seats-people-mover,509,509.0,7,15h 43m12s,15.72,Active,vic,VIC,lot
+2026-02-18T17:16:59.315204,https://www.grays.com/lot/0001-21063053/motor-vehicles-motor-cycles/2007-holden-berlina-ve-automatic-sedan,909,909.0,15,15h 43m0s,15.717,Active,vic,VIC,lot
+2026-02-18T17:17:10.405856,https://www.grays.com/lot/0001-21063054/motor-vehicles-motor-cycles/2014-jaguar-xf-2-0p-luxury-automatic-8-speed-sedan,4600,4600.0,63,15h 42m49s,15.714,Active,vic,VIC,lot
+2026-02-18T17:17:21.257575,https://www.grays.com/lot/0001-21063055/motor-vehicles-motor-cycles/2014-mazda-3-neo-bm-automatic-hatchback,3300,3300.0,44,15h 42m38s,15.711,Active,vic,VIC,lot
+2026-02-18T17:17:28.706540,https://www.grays.com/lot/0001-21063056/motor-vehicles-motor-cycles/2012-alfa-romeo-giulietta-qv-manual-hatchback,1309,1309.0,19,15h 42m30s,15.708,Active,vic,VIC,lot
+2026-02-18T17:17:40.279669,https://www.grays.com/lot/0001-21063058/motor-vehicles-motor-cycles/2016-holden-cruze-z-series-jh-automatic-sedan,625,625.0,5,15h 42m20s,15.706,Active,vic,VIC,lot
+2026-02-18T17:17:53.369365,https://www.grays.com/lot/0001-21063059/motor-vehicles-motor-cycles/2015-hyundai-i30-active-gd-manual-hatchback,2300,2300.0,23,15h 42m5s,15.701,Active,vic,VIC,lot
+2026-02-18T17:18:05.100413,https://www.grays.com/lot/0001-21063060/motor-vehicles-motor-cycles/2012-ford-territory-titanium-sz-turbo-diesel-automatic-7-seats-wagon,509,509.0,7,15h 41m54s,15.698,Active,vic,VIC,lot
+2026-02-18T17:18:17.277449,https://www.grays.com/lot/0001-21063061/motor-vehicles-motor-cycles/2011-mazda-3-sp25-bl-manual-hatchback,2200,2200.0,30,15h 41m41s,15.695,Active,vic,VIC,lot
+2026-02-18T17:18:25.241381,https://www.grays.com/lot/0001-21063062/motor-vehicles-motor-cycles/2008-volvo-xc90-d5-turbo-diesel-automatic-7-seats-wagon,9,9.0,1,15h 41m34s,15.693,Active,vic,VIC,lot
+2026-02-18T17:18:37.356266,https://www.grays.com/lot/0001-21063064/motor-vehicles-motor-cycles/2014-bmw-x4-xdrive-20d-f26-turbo-diesel-automatic-8-speed-coupe,6400,6400.0,65,15h 41m21s,15.689,Active,vic,VIC,lot
+2026-02-18T17:18:44.526750,https://www.grays.com/lot/0001-21063065/motor-vehicles-motor-cycles/2012-ford-falcon-xt-fg-ii-automatic-sedan,2109,2109.0,30,15h 41m15s,15.688,Active,vic,VIC,lot
+2026-02-18T17:18:55.581056,https://www.grays.com/lot/0001-21063066/motor-vehicles-motor-cycles/2016-hyundai-accent-active-rb-cvt-hatchback,3000,3000.0,41,15h 41m5s,15.685,Active,vic,VIC,lot
+2026-02-18T17:19:07.440816,https://www.grays.com/lot/0001-21063067/motor-vehicles-motor-cycles/2012-toyota-camry-altise-asv50r-automatic-sedan,2209,2209.0,42,15h 40m53s,15.681,Active,vic,VIC,lot
+2026-02-18T17:19:20.342288,https://www.grays.com/lot/0001-21063068/motor-vehicles-motor-cycles/2017-nissan-qashqai-ti-j11-ii-cvt-wagon,1600,1600.0,13,15h 40m39s,15.678,Active,vic,VIC,lot
+2026-02-18T17:19:31.935848,https://www.grays.com/lot/0001-21063069/motor-vehicles-motor-cycles/2012-skoda-fabia-77tsi-5jf-manual-hatchback,109,109.0,2,15h 40m27s,15.674,Active,vic,VIC,lot
+2026-02-18T17:19:43.280027,https://www.grays.com/lot/0001-21063070/motor-vehicles-motor-cycles/2005-mercedes-benz-c-class-c180-kompressor-automatic-coupe,209,209.0,3,15h 40m15s,15.671,Active,vic,VIC,lot
+2026-02-18T17:19:51.282895,https://www.grays.com/lot/0001-21063071/motor-vehicles-motor-cycles/2013-volkswagen-tiguan-132-tsi-pacific-5n-automatic-wagon,1350,1350.0,21,15h 40m8s,15.669,Active,vic,VIC,lot
+2026-02-18T17:20:03.351405,https://www.grays.com/lot/0001-21063074/motor-vehicles-motor-cycles/2021-nissan-navara-4x4-sl-series-4-turbo-diesel-manual-crew-cab-chassis,13300,13300.0,72,15h 39m56s,15.666,Active,vic,VIC,lot
+2026-02-18T17:20:15.604861,https://www.grays.com/lot/0001-21063079/motor-vehicles-motor-cycles/2016-holden-astra-rs-v-bk-manual-hatchback,3200,3200.0,34,15h 39m43s,15.662,Active,vic,VIC,lot
+2026-02-18T17:20:27.942384,https://www.grays.com/lot/0001-21063080/motor-vehicles-motor-cycles/2014-ford-mondeo-lx-mc-turbo-diesel-automatic-wagon,1050,1050.0,16,15h 39m32s,15.659,Active,vic,VIC,lot
+2026-02-18T17:20:39.147894,https://www.grays.com/lot/0001-21063081/motor-vehicles-motor-cycles/2002-nissan-maxima-st-a33-automatic-sedan,509,509.0,8,15h 39m20s,15.656,Active,vic,VIC,lot
+2026-02-18T17:20:51.870091,https://www.grays.com/lot/0001-21063082/motor-vehicles-motor-cycles/2008-holden-commodore-omega-ve-automatic-wagon,309,309.0,4,15h 39m7s,15.652,Active,vic,VIC,lot
+2026-02-18T17:21:00.253468,https://www.grays.com/lot/0001-21063083/motor-vehicles-motor-cycles/2011-hyundai-iload-tq-manual-van,3700,3700.0,35,15h 39m0s,15.65,Active,vic,VIC,lot
+2026-02-18T17:21:10.815752,https://www.grays.com/lot/0001-21063084/motor-vehicles-motor-cycles/2010-renault-koleos-privilege-cvt-wagon,605,605.0,2,15h 38m48s,15.647,Active,vic,VIC,lot
+2026-02-18T17:21:24.037689,https://www.grays.com/lot/0001-21063086/motor-vehicles-motor-cycles/2000-toyota-corolla-ascent-ae112r-automatic-hatchback,1509,1509.0,24,15h 38m36s,15.643,Active,vic,VIC,lot
+2026-02-18T17:21:37.578097,https://www.grays.com/lot/0001-21063088/motor-vehicles-motor-cycles/2017-hyundai-accent-sport-rb-automatic-sedan,4400,4400.0,74,15h 38m21s,15.639,Active,vic,VIC,lot
+2026-02-18T17:21:49.815419,https://www.grays.com/lot/0001-21063089/motor-vehicles-motor-cycles/2004-nissan-pulsar-st-n16-automatic-sedan,1909,1909.0,33,15h 38m10s,15.636,Active,vic,VIC,lot
+2026-02-18T17:22:04.226072,https://www.grays.com/lot/0001-21063090/motor-vehicles-motor-cycles/2007-ford-falcon-xt-bf-ii-automatic-sedan,209,209.0,3,15h 37m55s,15.632,Active,vic,VIC,lot
+2026-02-18T17:22:12.258673,https://www.grays.com/lot/0001-21063091/motor-vehicles-motor-cycles/2011-toyota-camry-altise-acv40r-automatic-sedan-rwc-issued-11-02-2026,6100,6100.0,43,15h 37m47s,15.63,Active,vic,VIC,lot
+2026-02-18T17:22:23.310237,https://www.grays.com/lot/0001-21063092/motor-vehicles-motor-cycles/2004-mazda-6-classic-gg-automatic-hatchback,609,609.0,10,15h 37m36s,15.627,Active,vic,VIC,lot
+2026-02-18T17:22:36.509654,https://www.grays.com/lot/0001-21063095/motor-vehicles-motor-cycles/2014-audi-a3-1-8-tsi-ambition-8v-auto-hatchback-rwc-issued-11-02-2026,5800,5800.0,62,15h 37m22s,15.623,Active,vic,VIC,lot
+2026-02-18T17:22:48.248775,https://www.grays.com/lot/0001-21063096/motor-vehicles-motor-cycles/2012-mazda-3-neo-bl-manual-sedan,2109,2109.0,38,15h 37m12s,15.62,Active,vic,VIC,lot
+2026-02-18T17:23:00.061133,https://www.grays.com/lot/0001-21063097/motor-vehicles-motor-cycles/2008-toyota-yaris-yrx-ncp93r-automatic-sedan,909,909.0,16,15h 36m59s,15.616,Active,vic,VIC,lot
+2026-02-18T17:23:12.607816,https://www.grays.com/lot/0001-21063099/motor-vehicles-motor-cycles/2015-holden-cruze-cdx-jh-automatic-sedan,1109,1109.0,17,15h 36m46s,15.613,Active,vic,VIC,lot
+2026-02-18T17:23:24.948068,https://www.grays.com/lot/0001-21063100/motor-vehicles-motor-cycles/2016-hyundai-accent-active-rb-cvt-hatchback,4850,4850.0,60,15h 36m35s,15.61,Active,vic,VIC,lot
+2026-02-18T17:23:37.280385,https://www.grays.com/lot/0001-21063101/motor-vehicles-motor-cycles/2016-renault-megane-gt-automatic-hatchback,6199,6199.0,96,15h 36m23s,15.606,Active,vic,VIC,lot
+2026-02-18T18:15:22.984267,https://www.grays.com/lot/0001-21062880/motor-vehicles-motor-cycles/2014-mazda-3-maxx-bm-automatic-sedan,4000,4000.0,45,14h 44m38s,14.744,Active,vic,VIC,lot
+2026-02-18T18:15:30.265943,https://www.grays.com/lot/0001-21063013/motor-vehicles-motor-cycles/2016-jeep-renegade-sport-bu-automatic-wagon,4100,4100.0,77,14h 44m30s,14.742,Active,vic,VIC,lot
+2026-02-18T18:15:41.156425,https://www.grays.com/lot/0001-21063014/motor-vehicles-motor-cycles/2014-renault-captur-dynamique-automatic-wagon,709,709.0,10,14h 44m20s,14.739,Active,vic,VIC,lot
+2026-02-18T18:15:51.690847,https://www.grays.com/lot/0001-21063016/motor-vehicles-motor-cycles/2016-mitsubishi-pajero-sport-gls-qe-turbo-diesel-automatic,12500,12500.0,128,14h 44m9s,14.736,Active,vic,VIC,lot
+2026-02-18T18:16:02.376461,https://www.grays.com/lot/0001-21063017/motor-vehicles-motor-cycles/2017-toyota-camry-altise-hybrid-avv50r-cvt-sedan,13000,13000.0,185,14h 43m59s,14.733,Active,vic,VIC,lot
+2026-02-18T18:16:14.608748,https://www.grays.com/lot/0001-21063026/motor-vehicles-motor-cycles/2016-mercedes-benz-v-class-v250-bluetec-avantga-t-d-aut-8-seats,11000,11000.0,139,14h 43m46s,14.729,Active,vic,VIC,lot
+2026-02-18T18:16:25.773124,https://www.grays.com/lot/0001-21063034/motor-vehicles-motor-cycles/2011-mercedes-benz-b-class-b200-cdi-be-w246-turbo-diesel-7-auto-hatchback,2400,2400.0,30,14h 43m36s,14.727,Active,vic,VIC,lot
+2026-02-18T18:16:38.274173,https://www.grays.com/lot/0001-21063049/motor-vehicles-motor-cycles/2005-ford-territory-tx-sx-automatic-wagon,309,309.0,7,14h 43m23s,14.723,Active,vic,VIC,lot
+2026-02-18T18:16:50.536659,https://www.grays.com/lot/0001-21063050/motor-vehicles-motor-cycles/2003-honda-cr-v-rd-automatic-wagon,209,209.0,4,14h 43m10s,14.719,Active,vic,VIC,lot
+2026-02-18T18:17:01.124007,https://www.grays.com/lot/0001-21063052/motor-vehicles-motor-cycles/2014-dodge-journey-sxt-automatic-7-seats-people-mover,509,509.0,7,14h 43m0s,14.717,Active,vic,VIC,lot
+2026-02-18T18:17:13.282417,https://www.grays.com/lot/0001-21063053/motor-vehicles-motor-cycles/2007-holden-berlina-ve-automatic-sedan,909,909.0,15,14h 42m47s,14.713,Active,vic,VIC,lot
+2026-02-18T18:17:20.538545,https://www.grays.com/lot/0001-21063054/motor-vehicles-motor-cycles/2014-jaguar-xf-2-0p-luxury-automatic-8-speed-sedan,4600,4600.0,63,14h 42m40s,14.711,Active,vic,VIC,lot
+2026-02-18T18:17:31.468140,https://www.grays.com/lot/0001-21063055/motor-vehicles-motor-cycles/2014-mazda-3-neo-bm-automatic-hatchback,3300,3300.0,44,14h 42m30s,14.708,Active,vic,VIC,lot
+2026-02-18T18:17:42.660962,https://www.grays.com/lot/0001-21063056/motor-vehicles-motor-cycles/2012-alfa-romeo-giulietta-qv-manual-hatchback,1309,1309.0,19,14h 42m18s,14.705,Active,vic,VIC,lot
+2026-02-18T18:17:50.875079,https://www.grays.com/lot/0001-21063058/motor-vehicles-motor-cycles/2016-holden-cruze-z-series-jh-automatic-sedan,625,625.0,5,14h 42m11s,14.703,Active,vic,VIC,lot
+2026-02-18T18:18:02.948879,https://www.grays.com/lot/0001-21063059/motor-vehicles-motor-cycles/2015-hyundai-i30-active-gd-manual-hatchback,2300,2300.0,23,14h 41m59s,14.7,Active,vic,VIC,lot
+2026-02-18T18:18:14.943230,https://www.grays.com/lot/0001-21063060/motor-vehicles-motor-cycles/2012-ford-territory-titanium-sz-turbo-diesel-automatic-7-seats-wagon,509,509.0,7,14h 41m46s,14.696,Active,vic,VIC,lot
+2026-02-18T18:18:22.331961,https://www.grays.com/lot/0001-21063061/motor-vehicles-motor-cycles/2011-mazda-3-sp25-bl-manual-hatchback,2200,2200.0,30,14h 41m38s,14.694,Active,vic,VIC,lot
+2026-02-18T18:18:34.611188,https://www.grays.com/lot/0001-21063062/motor-vehicles-motor-cycles/2008-volvo-xc90-d5-turbo-diesel-automatic-7-seats-wagon,500,500.0,2,14h 41m26s,14.691,Active,vic,VIC,lot
+2026-02-18T18:18:46.913554,https://www.grays.com/lot/0001-21063064/motor-vehicles-motor-cycles/2014-bmw-x4-xdrive-20d-f26-turbo-diesel-automatic-8-speed-coupe,6400,6400.0,65,14h 41m14s,14.687,Active,vic,VIC,lot
+2026-02-18T18:18:53.866585,https://www.grays.com/lot/0001-21063065/motor-vehicles-motor-cycles/2012-ford-falcon-xt-fg-ii-automatic-sedan,2109,2109.0,30,14h 41m7s,14.685,Active,vic,VIC,lot
+2026-02-18T18:19:04.800586,https://www.grays.com/lot/0001-21063066/motor-vehicles-motor-cycles/2016-hyundai-accent-active-rb-cvt-hatchback,3100,3100.0,42,14h 40m57s,14.682,Active,vic,VIC,lot
+2026-02-18T18:19:16.591378,https://www.grays.com/lot/0001-21063067/motor-vehicles-motor-cycles/2012-toyota-camry-altise-asv50r-automatic-sedan,2209,2209.0,42,14h 40m45s,14.679,Active,vic,VIC,lot
+2026-02-18T18:19:29.436647,https://www.grays.com/lot/0001-21063068/motor-vehicles-motor-cycles/2017-nissan-qashqai-ti-j11-ii-cvt-wagon,1700,1700.0,14,14h 40m32s,14.676,Active,vic,VIC,lot
+2026-02-18T18:19:40.437319,https://www.grays.com/lot/0001-21063069/motor-vehicles-motor-cycles/2012-skoda-fabia-77tsi-5jf-manual-hatchback,109,109.0,2,14h 40m21s,14.672,Active,vic,VIC,lot
+2026-02-18T18:19:51.190377,https://www.grays.com/lot/0001-21063070/motor-vehicles-motor-cycles/2005-mercedes-benz-c-class-c180-kompressor-automatic-coupe,209,209.0,3,14h 40m10s,14.669,Active,vic,VIC,lot
+2026-02-18T18:20:03.271424,https://www.grays.com/lot/0001-21063071/motor-vehicles-motor-cycles/2013-volkswagen-tiguan-132-tsi-pacific-5n-automatic-wagon,1350,1350.0,21,14h 39m58s,14.666,Active,vic,VIC,lot
+2026-02-18T18:20:10.775868,https://www.grays.com/lot/0001-21063074/motor-vehicles-motor-cycles/2021-nissan-navara-4x4-sl-series-4-turbo-diesel-manual-crew-cab-chassis,13300,13300.0,72,14h 39m50s,14.664,Active,vic,VIC,lot
+2026-02-18T18:20:22.437135,https://www.grays.com/lot/0001-21063079/motor-vehicles-motor-cycles/2016-holden-astra-rs-v-bk-manual-hatchback,3200,3200.0,34,14h 39m39s,14.661,Active,vic,VIC,lot
+2026-02-18T18:20:34.421913,https://www.grays.com/lot/0001-21063080/motor-vehicles-motor-cycles/2014-ford-mondeo-lx-mc-turbo-diesel-automatic-wagon,1050,1050.0,16,14h 39m27s,14.658,Active,vic,VIC,lot
+2026-02-18T18:20:45.395941,https://www.grays.com/lot/0001-21063081/motor-vehicles-motor-cycles/2002-nissan-maxima-st-a33-automatic-sedan,509,509.0,8,14h 39m16s,14.654,Active,vic,VIC,lot
+2026-02-18T18:20:57.965714,https://www.grays.com/lot/0001-21063082/motor-vehicles-motor-cycles/2008-holden-commodore-omega-ve-automatic-wagon,309,309.0,4,14h 39m3s,14.651,Active,vic,VIC,lot
+2026-02-18T18:21:08.895750,https://www.grays.com/lot/0001-21063083/motor-vehicles-motor-cycles/2011-hyundai-iload-tq-manual-van,3700,3700.0,35,14h 38m53s,14.648,Active,vic,VIC,lot
+2026-02-18T18:21:19.490795,https://www.grays.com/lot/0001-21063084/motor-vehicles-motor-cycles/2010-renault-koleos-privilege-cvt-wagon,605,605.0,2,14h 38m42s,14.645,Active,vic,VIC,lot
+2026-02-18T18:21:32.103622,https://www.grays.com/lot/0001-21063086/motor-vehicles-motor-cycles/2000-toyota-corolla-ascent-ae112r-automatic-hatchback,1509,1509.0,24,14h 38m29s,14.641,Active,vic,VIC,lot
+2026-02-18T18:21:45.338055,https://www.grays.com/lot/0001-21063088/motor-vehicles-motor-cycles/2017-hyundai-accent-sport-rb-automatic-sedan,4400,4400.0,74,14h 38m15s,14.637,Active,vic,VIC,lot
+2026-02-18T18:21:57.796018,https://www.grays.com/lot/0001-21063089/motor-vehicles-motor-cycles/2004-nissan-pulsar-st-n16-automatic-sedan,1909,1909.0,33,14h 38m3s,14.634,Active,vic,VIC,lot
+2026-02-18T18:22:08.536725,https://www.grays.com/lot/0001-21063090/motor-vehicles-motor-cycles/2007-ford-falcon-xt-bf-ii-automatic-sedan,209,209.0,3,14h 37m53s,14.631,Active,vic,VIC,lot
+2026-02-18T18:22:20.865331,https://www.grays.com/lot/0001-21063091/motor-vehicles-motor-cycles/2011-toyota-camry-altise-acv40r-automatic-sedan-rwc-issued-11-02-2026,6100,6100.0,43,14h 37m41s,14.628,Active,vic,VIC,lot
+2026-02-18T18:22:31.916858,https://www.grays.com/lot/0001-21063092/motor-vehicles-motor-cycles/2004-mazda-6-classic-gg-automatic-hatchback,609,609.0,10,14h 37m30s,14.625,Active,vic,VIC,lot
+2026-02-18T18:22:44.658471,https://www.grays.com/lot/0001-21063095/motor-vehicles-motor-cycles/2014-audi-a3-1-8-tsi-ambition-8v-auto-hatchback-rwc-issued-11-02-2026,5800,5800.0,62,14h 37m17s,14.621,Active,vic,VIC,lot
+2026-02-18T18:22:56.458212,https://www.grays.com/lot/0001-21063096/motor-vehicles-motor-cycles/2012-mazda-3-neo-bl-manual-sedan,2109,2109.0,38,14h 37m5s,14.618,Active,vic,VIC,lot
+2026-02-18T18:23:07.870763,https://www.grays.com/lot/0001-21063097/motor-vehicles-motor-cycles/2008-toyota-yaris-yrx-ncp93r-automatic-sedan,909,909.0,16,14h 36m53s,14.615,Active,vic,VIC,lot
+2026-02-18T18:23:20.345443,https://www.grays.com/lot/0001-21063099/motor-vehicles-motor-cycles/2015-holden-cruze-cdx-jh-automatic-sedan,1109,1109.0,17,14h 36m41s,14.611,Active,vic,VIC,lot
+2026-02-18T18:23:32.645929,https://www.grays.com/lot/0001-21063100/motor-vehicles-motor-cycles/2016-hyundai-accent-active-rb-cvt-hatchback,4850,4850.0,60,14h 36m28s,14.608,Active,vic,VIC,lot
+2026-02-18T18:23:45.275674,https://www.grays.com/lot/0001-21063101/motor-vehicles-motor-cycles/2016-renault-megane-gt-automatic-hatchback,6199,6199.0,96,14h 36m16s,14.604,Active,vic,VIC,lot
+2026-02-18T19:15:23.562341,https://www.grays.com/lot/0001-21062880/motor-vehicles-motor-cycles/2014-mazda-3-maxx-bm-automatic-sedan,4000,4000.0,45,13h 44m38s,13.744,Active,vic,VIC,lot
+2026-02-18T19:15:31.197256,https://www.grays.com/lot/0001-21063013/motor-vehicles-motor-cycles/2016-jeep-renegade-sport-bu-automatic-wagon,4100,4100.0,77,13h 44m30s,13.742,Active,vic,VIC,lot
+2026-02-18T19:15:41.997468,https://www.grays.com/lot/0001-21063014/motor-vehicles-motor-cycles/2014-renault-captur-dynamique-automatic-wagon,709,709.0,10,13h 44m19s,13.739,Active,vic,VIC,lot
+2026-02-18T19:15:52.711032,https://www.grays.com/lot/0001-21063016/motor-vehicles-motor-cycles/2016-mitsubishi-pajero-sport-gls-qe-turbo-diesel-automatic,12600,12600.0,129,13h 44m8s,13.736,Active,vic,VIC,lot
+2026-02-18T19:16:00.715078,https://www.grays.com/lot/0001-21063017/motor-vehicles-motor-cycles/2017-toyota-camry-altise-hybrid-avv50r-cvt-sedan,13000,13000.0,185,13h 44m1s,13.734,Active,vic,VIC,lot
+2026-02-18T19:16:08.099344,https://www.grays.com/lot/0001-21063026/motor-vehicles-motor-cycles/2016-mercedes-benz-v-class-v250-bluetec-avantga-t-d-aut-8-seats,11000,11000.0,139,13h 43m53s,13.731,Active,vic,VIC,lot
+2026-02-18T19:16:15.341807,https://www.grays.com/lot/0001-21063034/motor-vehicles-motor-cycles/2011-mercedes-benz-b-class-b200-cdi-be-w246-turbo-diesel-7-auto-hatchback,2400,2400.0,30,13h 43m46s,13.729,Active,vic,VIC,lot
+2026-02-18T19:16:27.113180,https://www.grays.com/lot/0001-21063049/motor-vehicles-motor-cycles/2005-ford-territory-tx-sx-automatic-wagon,309,309.0,7,13h 43m34s,13.726,Active,vic,VIC,lot
+2026-02-18T19:16:34.350208,https://www.grays.com/lot/0001-21063050/motor-vehicles-motor-cycles/2003-honda-cr-v-rd-automatic-wagon,209,209.0,4,13h 43m26s,13.724,Active,vic,VIC,lot
+2026-02-18T19:16:44.717461,https://www.grays.com/lot/0001-21063052/motor-vehicles-motor-cycles/2014-dodge-journey-sxt-automatic-7-seats-people-mover,509,509.0,7,13h 43m16s,13.721,Active,vic,VIC,lot
+2026-02-18T19:16:52.159085,https://www.grays.com/lot/0001-21063053/motor-vehicles-motor-cycles/2007-holden-berlina-ve-automatic-sedan,909,909.0,15,13h 43m9s,13.719,Active,vic,VIC,lot
+2026-02-18T19:16:59.188879,https://www.grays.com/lot/0001-21063054/motor-vehicles-motor-cycles/2014-jaguar-xf-2-0p-luxury-automatic-8-speed-sedan,4600,4600.0,63,13h 43m2s,13.717,Active,vic,VIC,lot
+2026-02-18T19:17:09.970504,https://www.grays.com/lot/0001-21063055/motor-vehicles-motor-cycles/2014-mazda-3-neo-bm-automatic-hatchback,3300,3300.0,44,13h 42m51s,13.714,Active,vic,VIC,lot
+2026-02-18T19:17:17.055242,https://www.grays.com/lot/0001-21063056/motor-vehicles-motor-cycles/2012-alfa-romeo-giulietta-qv-manual-hatchback,1309,1309.0,19,13h 42m44s,13.712,Active,vic,VIC,lot
+2026-02-18T19:17:28.244656,https://www.grays.com/lot/0001-21063058/motor-vehicles-motor-cycles/2016-holden-cruze-z-series-jh-automatic-sedan,625,625.0,5,13h 42m32s,13.709,Active,vic,VIC,lot
+2026-02-18T19:17:36.063272,https://www.grays.com/lot/0001-21063059/motor-vehicles-motor-cycles/2015-hyundai-i30-active-gd-manual-hatchback,2300,2300.0,23,13h 42m25s,13.707,Active,vic,VIC,lot
+2026-02-18T19:17:47.932320,https://www.grays.com/lot/0001-21063060/motor-vehicles-motor-cycles/2012-ford-territory-titanium-sz-turbo-diesel-automatic-7-seats-wagon,509,509.0,7,13h 42m13s,13.704,Active,vic,VIC,lot
+2026-02-18T19:17:55.227960,https://www.grays.com/lot/0001-21063061/motor-vehicles-motor-cycles/2011-mazda-3-sp25-bl-manual-hatchback,2200,2200.0,30,13h 42m5s,13.701,Active,vic,VIC,lot
+2026-02-18T19:18:07.774416,https://www.grays.com/lot/0001-21063062/motor-vehicles-motor-cycles/2008-volvo-xc90-d5-turbo-diesel-automatic-7-seats-wagon,500,500.0,2,13h 41m53s,13.698,Active,vic,VIC,lot
+2026-02-18T19:18:15.923522,https://www.grays.com/lot/0001-21063064/motor-vehicles-motor-cycles/2014-bmw-x4-xdrive-20d-f26-turbo-diesel-automatic-8-speed-coupe,6400,6400.0,65,13h 41m46s,13.696,Active,vic,VIC,lot
+2026-02-18T19:18:23.230985,https://www.grays.com/lot/0001-21063065/motor-vehicles-motor-cycles/2012-ford-falcon-xt-fg-ii-automatic-sedan,2109,2109.0,30,13h 41m38s,13.694,Active,vic,VIC,lot
+2026-02-18T19:18:34.136494,https://www.grays.com/lot/0001-21063066/motor-vehicles-motor-cycles/2016-hyundai-accent-active-rb-cvt-hatchback,3100,3100.0,42,13h 41m27s,13.691,Active,vic,VIC,lot
+2026-02-18T19:18:41.622680,https://www.grays.com/lot/0001-21063067/motor-vehicles-motor-cycles/2012-toyota-camry-altise-asv50r-automatic-sedan,2209,2209.0,42,13h 41m19s,13.689,Active,vic,VIC,lot
+2026-02-18T19:18:54.527725,https://www.grays.com/lot/0001-21063068/motor-vehicles-motor-cycles/2017-nissan-qashqai-ti-j11-ii-cvt-wagon,1800,1800.0,15,13h 41m7s,13.685,Active,vic,VIC,lot
+2026-02-18T19:19:02.563314,https://www.grays.com/lot/0001-21063069/motor-vehicles-motor-cycles/2012-skoda-fabia-77tsi-5jf-manual-hatchback,109,109.0,2,13h 40m59s,13.683,Active,vic,VIC,lot
+2026-02-18T19:19:13.370338,https://www.grays.com/lot/0001-21063070/motor-vehicles-motor-cycles/2005-mercedes-benz-c-class-c180-kompressor-automatic-coupe,209,209.0,3,13h 40m48s,13.68,Active,vic,VIC,lot
+2026-02-18T19:19:25.360594,https://www.grays.com/lot/0001-21063071/motor-vehicles-motor-cycles/2013-volkswagen-tiguan-132-tsi-pacific-5n-automatic-wagon,1450,1450.0,22,13h 40m36s,13.677,Active,vic,VIC,lot
+2026-02-18T19:19:36.891636,https://www.grays.com/lot/0001-21063074/motor-vehicles-motor-cycles/2021-nissan-navara-4x4-sl-series-4-turbo-diesel-manual-crew-cab-chassis,13300,13300.0,72,13h 40m24s,13.673,Active,vic,VIC,lot
+2026-02-18T19:19:48.709219,https://www.grays.com/lot/0001-21063079/motor-vehicles-motor-cycles/2016-holden-astra-rs-v-bk-manual-hatchback,3200,3200.0,34,13h 40m13s,13.67,Active,vic,VIC,lot
+2026-02-18T19:20:00.867599,https://www.grays.com/lot/0001-21063080/motor-vehicles-motor-cycles/2014-ford-mondeo-lx-mc-turbo-diesel-automatic-wagon,1150,1150.0,17,13h 40m0s,13.667,Active,vic,VIC,lot
+2026-02-18T19:20:11.885445,https://www.grays.com/lot/0001-21063081/motor-vehicles-motor-cycles/2002-nissan-maxima-st-a33-automatic-sedan,509,509.0,8,13h 39m50s,13.664,Active,vic,VIC,lot
+2026-02-18T19:20:24.508501,https://www.grays.com/lot/0001-21063082/motor-vehicles-motor-cycles/2008-holden-commodore-omega-ve-automatic-wagon,309,309.0,4,13h 39m37s,13.66,Active,vic,VIC,lot
+2026-02-18T19:20:34.994743,https://www.grays.com/lot/0001-21063083/motor-vehicles-motor-cycles/2011-hyundai-iload-tq-manual-van,3700,3700.0,35,13h 39m26s,13.657,Active,vic,VIC,lot
+2026-02-18T19:20:42.394887,https://www.grays.com/lot/0001-21063084/motor-vehicles-motor-cycles/2010-renault-koleos-privilege-cvt-wagon,605,605.0,2,13h 39m18s,13.655,Active,vic,VIC,lot
+2026-02-18T19:20:49.740673,https://www.grays.com/lot/0001-21063086/motor-vehicles-motor-cycles/2000-toyota-corolla-ascent-ae112r-automatic-hatchback,1509,1509.0,24,13h 39m11s,13.653,Active,vic,VIC,lot
+2026-02-18T19:20:57.671389,https://www.grays.com/lot/0001-21063088/motor-vehicles-motor-cycles/2017-hyundai-accent-sport-rb-automatic-sedan,4400,4400.0,74,13h 39m4s,13.651,Active,vic,VIC,lot
+2026-02-18T19:21:05.416741,https://www.grays.com/lot/0001-21063089/motor-vehicles-motor-cycles/2004-nissan-pulsar-st-n16-automatic-sedan,1909,1909.0,33,13h 38m56s,13.649,Active,vic,VIC,lot
+2026-02-18T19:21:16.565919,https://www.grays.com/lot/0001-21063090/motor-vehicles-motor-cycles/2007-ford-falcon-xt-bf-ii-automatic-sedan,209,209.0,3,13h 38m45s,13.646,Active,vic,VIC,lot
+2026-02-18T19:21:24.389086,https://www.grays.com/lot/0001-21063091/motor-vehicles-motor-cycles/2011-toyota-camry-altise-acv40r-automatic-sedan-rwc-issued-11-02-2026,6200,6200.0,44,13h 38m37s,13.644,Active,vic,VIC,lot
+2026-02-18T19:21:35.247443,https://www.grays.com/lot/0001-21063092/motor-vehicles-motor-cycles/2004-mazda-6-classic-gg-automatic-hatchback,609,609.0,10,13h 38m26s,13.641,Active,vic,VIC,lot
+2026-02-18T19:21:48.461323,https://www.grays.com/lot/0001-21063095/motor-vehicles-motor-cycles/2014-audi-a3-1-8-tsi-ambition-8v-auto-hatchback-rwc-issued-11-02-2026,5800,5800.0,62,13h 38m12s,13.637,Active,vic,VIC,lot
+2026-02-18T19:21:56.037150,https://www.grays.com/lot/0001-21063096/motor-vehicles-motor-cycles/2012-mazda-3-neo-bl-manual-sedan,2109,2109.0,38,13h 38m5s,13.635,Active,vic,VIC,lot
+2026-02-18T19:22:07.250842,https://www.grays.com/lot/0001-21063097/motor-vehicles-motor-cycles/2008-toyota-yaris-yrx-ncp93r-automatic-sedan,909,909.0,16,13h 37m54s,13.632,Active,vic,VIC,lot
+2026-02-18T19:22:14.926506,https://www.grays.com/lot/0001-21063099/motor-vehicles-motor-cycles/2015-holden-cruze-cdx-jh-automatic-sedan,1109,1109.0,17,13h 37m46s,13.629,Active,vic,VIC,lot
+2026-02-18T19:22:27.424043,https://www.grays.com/lot/0001-21063100/motor-vehicles-motor-cycles/2016-hyundai-accent-active-rb-cvt-hatchback,4850,4850.0,60,13h 37m34s,13.626,Active,vic,VIC,lot
+2026-02-18T19:22:34.822356,https://www.grays.com/lot/0001-21063101/motor-vehicles-motor-cycles/2016-renault-megane-gt-automatic-hatchback,6199,6199.0,96,13h 37m26s,13.624,Active,vic,VIC,lot
+2026-02-18T20:15:24.983972,https://www.grays.com/lot/0001-21062880/motor-vehicles-motor-cycles/2014-mazda-3-maxx-bm-automatic-sedan,4000,4000.0,45,12h 44m36s,12.743,Active,vic,VIC,lot
+2026-02-18T20:15:32.509193,https://www.grays.com/lot/0001-21063013/motor-vehicles-motor-cycles/2016-jeep-renegade-sport-bu-automatic-wagon,4100,4100.0,77,12h 44m28s,12.741,Active,vic,VIC,lot
+2026-02-18T20:15:43.351477,https://www.grays.com/lot/0001-21063014/motor-vehicles-motor-cycles/2014-renault-captur-dynamique-automatic-wagon,709,709.0,10,12h 44m18s,12.738,Active,vic,VIC,lot
+2026-02-18T20:15:53.806925,https://www.grays.com/lot/0001-21063016/motor-vehicles-motor-cycles/2016-mitsubishi-pajero-sport-gls-qe-turbo-diesel-automatic,12600,12600.0,129,12h 44m7s,12.735,Active,vic,VIC,lot
+2026-02-18T20:16:01.752051,https://www.grays.com/lot/0001-21063017/motor-vehicles-motor-cycles/2017-toyota-camry-altise-hybrid-avv50r-cvt-sedan,13000,13000.0,185,12h 44m0s,12.733,Active,vic,VIC,lot
+2026-02-18T20:16:13.612049,https://www.grays.com/lot/0001-21063026/motor-vehicles-motor-cycles/2016-mercedes-benz-v-class-v250-bluetec-avantga-t-d-aut-8-seats,11000,11000.0,139,12h 43m48s,12.73,Active,vic,VIC,lot
+2026-02-18T20:16:24.217220,https://www.grays.com/lot/0001-21063034/motor-vehicles-motor-cycles/2011-mercedes-benz-b-class-b200-cdi-be-w246-turbo-diesel-7-auto-hatchback,2500,2500.0,31,12h 43m37s,12.727,Active,vic,VIC,lot
+2026-02-18T20:16:36.472995,https://www.grays.com/lot/0001-21063049/motor-vehicles-motor-cycles/2005-ford-territory-tx-sx-automatic-wagon,409,409.0,9,12h 43m24s,12.723,Active,vic,VIC,lot
+2026-02-18T20:16:43.994254,https://www.grays.com/lot/0001-21063050/motor-vehicles-motor-cycles/2003-honda-cr-v-rd-automatic-wagon,209,209.0,4,12h 43m17s,12.721,Active,vic,VIC,lot
+2026-02-18T20:16:54.280084,https://www.grays.com/lot/0001-21063052/motor-vehicles-motor-cycles/2014-dodge-journey-sxt-automatic-7-seats-people-mover,509,509.0,7,12h 43m6s,12.718,Active,vic,VIC,lot
+2026-02-18T20:17:06.615652,https://www.grays.com/lot/0001-21063053/motor-vehicles-motor-cycles/2007-holden-berlina-ve-automatic-sedan,909,909.0,15,12h 42m54s,12.715,Active,vic,VIC,lot
+2026-02-18T20:17:13.869864,https://www.grays.com/lot/0001-21063054/motor-vehicles-motor-cycles/2014-jaguar-xf-2-0p-luxury-automatic-8-speed-sedan,4600,4600.0,63,12h 42m47s,12.713,Active,vic,VIC,lot
+2026-02-18T20:17:24.835519,https://www.grays.com/lot/0001-21063055/motor-vehicles-motor-cycles/2014-mazda-3-neo-bm-automatic-hatchback,3300,3300.0,44,12h 42m37s,12.71,Active,vic,VIC,lot
+2026-02-18T20:17:35.994551,https://www.grays.com/lot/0001-21063056/motor-vehicles-motor-cycles/2012-alfa-romeo-giulietta-qv-manual-hatchback,1409,1409.0,20,12h 42m25s,12.707,Active,vic,VIC,lot
+2026-02-18T20:17:47.777745,https://www.grays.com/lot/0001-21063058/motor-vehicles-motor-cycles/2016-holden-cruze-z-series-jh-automatic-sedan,625,625.0,5,12h 42m13s,12.704,Active,vic,VIC,lot
+2026-02-18T20:17:59.848596,https://www.grays.com/lot/0001-21063059/motor-vehicles-motor-cycles/2015-hyundai-i30-active-gd-manual-hatchback,2300,2300.0,23,12h 42m2s,12.701,Active,vic,VIC,lot
+2026-02-18T20:18:11.817410,https://www.grays.com/lot/0001-21063060/motor-vehicles-motor-cycles/2012-ford-territory-titanium-sz-turbo-diesel-automatic-7-seats-wagon,1309,1309.0,23,12h 41m50s,12.697,Active,vic,VIC,lot
+2026-02-18T20:18:24.048375,https://www.grays.com/lot/0001-21063061/motor-vehicles-motor-cycles/2011-mazda-3-sp25-bl-manual-hatchback,2200,2200.0,30,12h 41m37s,12.694,Active,vic,VIC,lot
+2026-02-18T20:18:36.397096,https://www.grays.com/lot/0001-21063062/motor-vehicles-motor-cycles/2008-volvo-xc90-d5-turbo-diesel-automatic-7-seats-wagon,500,500.0,2,12h 41m24s,12.69,Active,vic,VIC,lot
+2026-02-18T20:18:48.612624,https://www.grays.com/lot/0001-21063064/motor-vehicles-motor-cycles/2014-bmw-x4-xdrive-20d-f26-turbo-diesel-automatic-8-speed-coupe,6400,6400.0,65,12h 41m12s,12.687,Active,vic,VIC,lot
+2026-02-18T20:18:55.568622,https://www.grays.com/lot/0001-21063065/motor-vehicles-motor-cycles/2012-ford-falcon-xt-fg-ii-automatic-sedan,2109,2109.0,30,12h 41m6s,12.685,Active,vic,VIC,lot
+2026-02-18T20:19:06.617154,https://www.grays.com/lot/0001-21063066/motor-vehicles-motor-cycles/2016-hyundai-accent-active-rb-cvt-hatchback,3200,3200.0,43,12h 40m55s,12.682,Active,vic,VIC,lot
+2026-02-18T20:19:18.567097,https://www.grays.com/lot/0001-21063067/motor-vehicles-motor-cycles/2012-toyota-camry-altise-asv50r-automatic-sedan,2209,2209.0,42,12h 40m43s,12.679,Active,vic,VIC,lot
+2026-02-18T20:19:31.387213,https://www.grays.com/lot/0001-21063068/motor-vehicles-motor-cycles/2017-nissan-qashqai-ti-j11-ii-cvt-wagon,1800,1800.0,15,12h 40m30s,12.675,Active,vic,VIC,lot
+2026-02-18T20:19:42.088121,https://www.grays.com/lot/0001-21063069/motor-vehicles-motor-cycles/2012-skoda-fabia-77tsi-5jf-manual-hatchback,209,209.0,3,12h 40m19s,12.672,Active,vic,VIC,lot
+2026-02-18T20:19:53.068886,https://www.grays.com/lot/0001-21063070/motor-vehicles-motor-cycles/2005-mercedes-benz-c-class-c180-kompressor-automatic-coupe,209,209.0,3,12h 40m8s,12.669,Active,vic,VIC,lot
+2026-02-18T20:20:05.535584,https://www.grays.com/lot/0001-21063071/motor-vehicles-motor-cycles/2013-volkswagen-tiguan-132-tsi-pacific-5n-automatic-wagon,1450,1450.0,22,12h 39m55s,12.665,Active,vic,VIC,lot
+2026-02-18T20:20:17.201662,https://www.grays.com/lot/0001-21063074/motor-vehicles-motor-cycles/2021-nissan-navara-4x4-sl-series-4-turbo-diesel-manual-crew-cab-chassis,13300,13300.0,72,12h 39m44s,12.662,Active,vic,VIC,lot
+2026-02-18T20:20:29.546694,https://www.grays.com/lot/0001-21063079/motor-vehicles-motor-cycles/2016-holden-astra-rs-v-bk-manual-hatchback,3200,3200.0,34,12h 39m31s,12.659,Active,vic,VIC,lot
+2026-02-18T20:20:41.775920,https://www.grays.com/lot/0001-21063080/motor-vehicles-motor-cycles/2014-ford-mondeo-lx-mc-turbo-diesel-automatic-wagon,1150,1150.0,17,12h 39m18s,12.655,Active,vic,VIC,lot
+2026-02-18T20:20:52.857478,https://www.grays.com/lot/0001-21063081/motor-vehicles-motor-cycles/2002-nissan-maxima-st-a33-automatic-sedan,509,509.0,8,12h 39m8s,12.652,Active,vic,VIC,lot
+2026-02-18T20:21:05.454849,https://www.grays.com/lot/0001-21063082/motor-vehicles-motor-cycles/2008-holden-commodore-omega-ve-automatic-wagon,309,309.0,4,12h 38m56s,12.649,Active,vic,VIC,lot
+2026-02-18T20:21:16.141100,https://www.grays.com/lot/0001-21063083/motor-vehicles-motor-cycles/2011-hyundai-iload-tq-manual-van,3700,3700.0,35,12h 38m45s,12.646,Active,vic,VIC,lot
+2026-02-18T20:21:26.622080,https://www.grays.com/lot/0001-21063084/motor-vehicles-motor-cycles/2010-renault-koleos-privilege-cvt-wagon,605,605.0,2,12h 38m34s,12.643,Active,vic,VIC,lot
+2026-02-18T20:21:34.037210,https://www.grays.com/lot/0001-21063086/motor-vehicles-motor-cycles/2000-toyota-corolla-ascent-ae112r-automatic-hatchback,1509,1509.0,24,12h 38m27s,12.641,Active,vic,VIC,lot
+2026-02-18T20:21:47.265094,https://www.grays.com/lot/0001-21063088/motor-vehicles-motor-cycles/2017-hyundai-accent-sport-rb-automatic-sedan,4400,4400.0,74,12h 38m13s,12.637,Active,vic,VIC,lot
+2026-02-18T20:21:59.706451,https://www.grays.com/lot/0001-21063089/motor-vehicles-motor-cycles/2004-nissan-pulsar-st-n16-automatic-sedan,2009,2009.0,34,12h 38m1s,12.634,Active,vic,VIC,lot
+2026-02-18T20:22:10.661421,https://www.grays.com/lot/0001-21063090/motor-vehicles-motor-cycles/2007-ford-falcon-xt-bf-ii-automatic-sedan,209,209.0,3,12h 37m51s,12.631,Active,vic,VIC,lot
+2026-02-18T20:22:23.448349,https://www.grays.com/lot/0001-21063091/motor-vehicles-motor-cycles/2011-toyota-camry-altise-acv40r-automatic-sedan-rwc-issued-11-02-2026,6200,6200.0,44,12h 37m38s,12.627,Active,vic,VIC,lot
+2026-02-18T20:22:34.602025,https://www.grays.com/lot/0001-21063092/motor-vehicles-motor-cycles/2004-mazda-6-classic-gg-automatic-hatchback,609,609.0,10,12h 37m27s,12.624,Active,vic,VIC,lot
+2026-02-18T20:22:47.695936,https://www.grays.com/lot/0001-21063095/motor-vehicles-motor-cycles/2014-audi-a3-1-8-tsi-ambition-8v-auto-hatchback-rwc-issued-11-02-2026,5800,5800.0,62,12h 37m14s,12.621,Active,vic,VIC,lot
+2026-02-18T20:22:59.834758,https://www.grays.com/lot/0001-21063096/motor-vehicles-motor-cycles/2012-mazda-3-neo-bl-manual-sedan,2109,2109.0,38,12h 37m2s,12.617,Active,vic,VIC,lot
+2026-02-18T20:23:11.231664,https://www.grays.com/lot/0001-21063097/motor-vehicles-motor-cycles/2008-toyota-yaris-yrx-ncp93r-automatic-sedan,909,909.0,16,12h 36m50s,12.614,Active,vic,VIC,lot
+2026-02-18T20:23:24.052377,https://www.grays.com/lot/0001-21063099/motor-vehicles-motor-cycles/2015-holden-cruze-cdx-jh-automatic-sedan,1109,1109.0,17,12h 36m37s,12.61,Active,vic,VIC,lot
+2026-02-18T20:23:36.689304,https://www.grays.com/lot/0001-21063100/motor-vehicles-motor-cycles/2016-hyundai-accent-active-rb-cvt-hatchback,4850,4850.0,60,12h 36m24s,12.607,Active,vic,VIC,lot
+2026-02-18T20:23:49.447099,https://www.grays.com/lot/0001-21063101/motor-vehicles-motor-cycles/2016-renault-megane-gt-automatic-hatchback,6199,6199.0,96,12h 36m12s,12.603,Active,vic,VIC,lot
+2026-02-18T21:15:23.064263,https://www.grays.com/lot/0001-21062880/motor-vehicles-motor-cycles/2014-mazda-3-maxx-bm-automatic-sedan,4000,4000.0,45,11h 44m38s,11.744,Active,vic,VIC,lot
+2026-02-18T21:15:29.762158,https://www.grays.com/lot/0001-21063013/motor-vehicles-motor-cycles/2016-jeep-renegade-sport-bu-automatic-wagon,4100,4100.0,77,11h 44m31s,11.742,Active,vic,VIC,lot
+2026-02-18T21:15:36.080862,https://www.grays.com/lot/0001-21063014/motor-vehicles-motor-cycles/2014-renault-captur-dynamique-automatic-wagon,709,709.0,10,11h 44m25s,11.74,Active,vic,VIC,lot
+2026-02-18T21:15:42.375783,https://www.grays.com/lot/0001-21063016/motor-vehicles-motor-cycles/2016-mitsubishi-pajero-sport-gls-qe-turbo-diesel-automatic,12700,12700.0,130,11h 44m19s,11.739,Active,vic,VIC,lot
+2026-02-18T21:15:49.200577,https://www.grays.com/lot/0001-21063017/motor-vehicles-motor-cycles/2017-toyota-camry-altise-hybrid-avv50r-cvt-sedan,13100,13100.0,187,11h 44m12s,11.737,Active,vic,VIC,lot
+2026-02-18T21:15:55.724054,https://www.grays.com/lot/0001-21063026/motor-vehicles-motor-cycles/2016-mercedes-benz-v-class-v250-bluetec-avantga-t-d-aut-8-seats,11000,11000.0,139,11h 44m6s,11.735,Active,vic,VIC,lot
+2026-02-18T21:16:02.245420,https://www.grays.com/lot/0001-21063034/motor-vehicles-motor-cycles/2011-mercedes-benz-b-class-b200-cdi-be-w246-turbo-diesel-7-auto-hatchback,2500,2500.0,31,11h 43m59s,11.733,Active,vic,VIC,lot
+2026-02-18T21:16:09.449923,https://www.grays.com/lot/0001-21063049/motor-vehicles-motor-cycles/2005-ford-territory-tx-sx-automatic-wagon,409,409.0,9,11h 43m52s,11.731,Active,vic,VIC,lot
+2026-02-18T21:16:16.047714,https://www.grays.com/lot/0001-21063050/motor-vehicles-motor-cycles/2003-honda-cr-v-rd-automatic-wagon,209,209.0,4,11h 43m45s,11.729,Active,vic,VIC,lot
+2026-02-18T21:16:22.688276,https://www.grays.com/lot/0001-21063052/motor-vehicles-motor-cycles/2014-dodge-journey-sxt-automatic-7-seats-people-mover,509,509.0,7,11h 43m38s,11.727,Active,vic,VIC,lot
+2026-02-18T21:16:29.525616,https://www.grays.com/lot/0001-21063053/motor-vehicles-motor-cycles/2007-holden-berlina-ve-automatic-sedan,909,909.0,15,11h 43m32s,11.726,Active,vic,VIC,lot
+2026-02-18T21:16:36.132225,https://www.grays.com/lot/0001-21063054/motor-vehicles-motor-cycles/2014-jaguar-xf-2-0p-luxury-automatic-8-speed-sedan,4600,4600.0,63,11h 43m25s,11.724,Active,vic,VIC,lot
+2026-02-18T21:16:43.158506,https://www.grays.com/lot/0001-21063055/motor-vehicles-motor-cycles/2014-mazda-3-neo-bm-automatic-hatchback,3300,3300.0,44,11h 43m19s,11.722,Active,vic,VIC,lot
+2026-02-18T21:16:49.885966,https://www.grays.com/lot/0001-21063056/motor-vehicles-motor-cycles/2012-alfa-romeo-giulietta-qv-manual-hatchback,1409,1409.0,20,11h 43m12s,11.72,Active,vic,VIC,lot
+2026-02-18T21:16:56.475333,https://www.grays.com/lot/0001-21063058/motor-vehicles-motor-cycles/2016-holden-cruze-z-series-jh-automatic-sedan,925,925.0,10,11h 43m4s,11.718,Active,vic,VIC,lot
+2026-02-18T21:17:03.394082,https://www.grays.com/lot/0001-21063059/motor-vehicles-motor-cycles/2015-hyundai-i30-active-gd-manual-hatchback,2300,2300.0,23,11h 42m58s,11.716,Active,vic,VIC,lot
+2026-02-18T21:17:10.479013,https://www.grays.com/lot/0001-21063060/motor-vehicles-motor-cycles/2012-ford-territory-titanium-sz-turbo-diesel-automatic-7-seats-wagon,1309,1309.0,23,11h 42m51s,11.714,Active,vic,VIC,lot
+2026-02-18T21:17:17.109306,https://www.grays.com/lot/0001-21063061/motor-vehicles-motor-cycles/2011-mazda-3-sp25-bl-manual-hatchback,2300,2300.0,32,11h 42m44s,11.712,Active,vic,VIC,lot
+2026-02-18T21:17:23.924164,https://www.grays.com/lot/0001-21063062/motor-vehicles-motor-cycles/2008-volvo-xc90-d5-turbo-diesel-automatic-7-seats-wagon,500,500.0,2,11h 42m38s,11.711,Active,vic,VIC,lot
+2026-02-18T21:17:30.739277,https://www.grays.com/lot/0001-21063064/motor-vehicles-motor-cycles/2014-bmw-x4-xdrive-20d-f26-turbo-diesel-automatic-8-speed-coupe,6400,6400.0,65,11h 42m30s,11.708,Active,vic,VIC,lot
+2026-02-18T21:17:37.752534,https://www.grays.com/lot/0001-21063065/motor-vehicles-motor-cycles/2012-ford-falcon-xt-fg-ii-automatic-sedan,2109,2109.0,30,11h 42m24s,11.707,Active,vic,VIC,lot
+2026-02-18T21:17:47.247392,https://www.grays.com/lot/0001-21063066/motor-vehicles-motor-cycles/2016-hyundai-accent-active-rb-cvt-hatchback,3200,3200.0,43,11h 42m16s,11.704,Active,vic,VIC,lot
+2026-02-18T21:17:57.080387,https://www.grays.com/lot/0001-21063067/motor-vehicles-motor-cycles/2012-toyota-camry-altise-asv50r-automatic-sedan,2209,2209.0,42,11h 42m7s,11.702,Active,vic,VIC,lot
+2026-02-18T21:18:09.647999,https://www.grays.com/lot/0001-21063068/motor-vehicles-motor-cycles/2017-nissan-qashqai-ti-j11-ii-cvt-wagon,2000,2000.0,19,11h 41m51s,11.697,Active,vic,VIC,lot
+2026-02-18T21:18:19.755323,https://www.grays.com/lot/0001-21063069/motor-vehicles-motor-cycles/2012-skoda-fabia-77tsi-5jf-manual-hatchback,209,209.0,3,11h 41m42s,11.695,Active,vic,VIC,lot
+2026-02-18T21:18:30.502330,https://www.grays.com/lot/0001-21063070/motor-vehicles-motor-cycles/2005-mercedes-benz-c-class-c180-kompressor-automatic-coupe,209,209.0,3,11h 41m31s,11.692,Active,vic,VIC,lot
+2026-02-18T21:18:37.614757,https://www.grays.com/lot/0001-21063071/motor-vehicles-motor-cycles/2013-volkswagen-tiguan-132-tsi-pacific-5n-automatic-wagon,1450,1450.0,22,11h 41m24s,11.69,Active,vic,VIC,lot
+2026-02-18T21:18:44.483493,https://www.grays.com/lot/0001-21063074/motor-vehicles-motor-cycles/2021-nissan-navara-4x4-sl-series-4-turbo-diesel-manual-crew-cab-chassis,13300,13300.0,72,11h 41m17s,11.688,Active,vic,VIC,lot
+2026-02-18T21:18:51.465552,https://www.grays.com/lot/0001-21063079/motor-vehicles-motor-cycles/2016-holden-astra-rs-v-bk-manual-hatchback,3200,3200.0,34,11h 41m10s,11.686,Active,vic,VIC,lot
+2026-02-18T21:18:58.034831,https://www.grays.com/lot/0001-21063080/motor-vehicles-motor-cycles/2014-ford-mondeo-lx-mc-turbo-diesel-automatic-wagon,1150,1150.0,17,11h 41m3s,11.684,Active,vic,VIC,lot
+2026-02-18T21:19:04.393391,https://www.grays.com/lot/0001-21063081/motor-vehicles-motor-cycles/2002-nissan-maxima-st-a33-automatic-sedan,509,509.0,8,11h 40m56s,11.682,Active,vic,VIC,lot
+2026-02-18T21:19:11.114804,https://www.grays.com/lot/0001-21063082/motor-vehicles-motor-cycles/2008-holden-commodore-omega-ve-automatic-wagon,309,309.0,4,11h 40m50s,11.681,Active,vic,VIC,lot
+2026-02-18T21:19:17.549892,https://www.grays.com/lot/0001-21063083/motor-vehicles-motor-cycles/2011-hyundai-iload-tq-manual-van,3700,3700.0,35,11h 40m44s,11.679,Active,vic,VIC,lot
+2026-02-18T21:19:24.329128,https://www.grays.com/lot/0001-21063084/motor-vehicles-motor-cycles/2010-renault-koleos-privilege-cvt-wagon,605,605.0,2,11h 40m37s,11.677,Active,vic,VIC,lot
+2026-02-18T21:19:30.854627,https://www.grays.com/lot/0001-21063086/motor-vehicles-motor-cycles/2000-toyota-corolla-ascent-ae112r-automatic-hatchback,1509,1509.0,24,11h 40m30s,11.675,Active,vic,VIC,lot
+2026-02-18T21:19:37.377160,https://www.grays.com/lot/0001-21063088/motor-vehicles-motor-cycles/2017-hyundai-accent-sport-rb-automatic-sedan,4400,4400.0,74,11h 40m23s,11.673,Active,vic,VIC,lot
+2026-02-18T21:19:44.199941,https://www.grays.com/lot/0001-21063089/motor-vehicles-motor-cycles/2004-nissan-pulsar-st-n16-automatic-sedan,2009,2009.0,34,11h 40m17s,11.671,Active,vic,VIC,lot
+2026-02-18T21:19:50.981324,https://www.grays.com/lot/0001-21063090/motor-vehicles-motor-cycles/2007-ford-falcon-xt-bf-ii-automatic-sedan,209,209.0,3,11h 40m11s,11.67,Active,vic,VIC,lot
+2026-02-18T21:19:57.510448,https://www.grays.com/lot/0001-21063091/motor-vehicles-motor-cycles/2011-toyota-camry-altise-acv40r-automatic-sedan-rwc-issued-11-02-2026,6200,6200.0,44,11h 40m3s,11.667,Active,vic,VIC,lot
+2026-02-18T21:20:04.457810,https://www.grays.com/lot/0001-21063092/motor-vehicles-motor-cycles/2004-mazda-6-classic-gg-automatic-hatchback,609,609.0,10,11h 39m57s,11.666,Active,vic,VIC,lot
+2026-02-18T21:20:11.088984,https://www.grays.com/lot/0001-21063095/motor-vehicles-motor-cycles/2014-audi-a3-1-8-tsi-ambition-8v-auto-hatchback-rwc-issued-11-02-2026,5800,5800.0,62,11h 39m50s,11.664,Active,vic,VIC,lot
+2026-02-18T21:20:17.561778,https://www.grays.com/lot/0001-21063096/motor-vehicles-motor-cycles/2012-mazda-3-neo-bl-manual-sedan,2109,2109.0,38,11h 39m43s,11.662,Active,vic,VIC,lot
+2026-02-18T21:20:24.258333,https://www.grays.com/lot/0001-21063097/motor-vehicles-motor-cycles/2008-toyota-yaris-yrx-ncp93r-automatic-sedan,909,909.0,16,11h 39m37s,11.66,Active,vic,VIC,lot
+2026-02-18T21:20:30.855558,https://www.grays.com/lot/0001-21063099/motor-vehicles-motor-cycles/2015-holden-cruze-cdx-jh-automatic-sedan,1109,1109.0,17,11h 39m31s,11.659,Active,vic,VIC,lot
+2026-02-18T21:20:37.493863,https://www.grays.com/lot/0001-21063100/motor-vehicles-motor-cycles/2016-hyundai-accent-active-rb-cvt-hatchback,4850,4850.0,60,11h 39m23s,11.656,Active,vic,VIC,lot
+2026-02-18T21:20:43.949527,https://www.grays.com/lot/0001-21063101/motor-vehicles-motor-cycles/2016-renault-megane-gt-automatic-hatchback,6199,6199.0,96,11h 39m17s,11.655,Active,vic,VIC,lot

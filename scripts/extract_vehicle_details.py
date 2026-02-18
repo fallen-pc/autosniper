@@ -825,7 +825,6 @@ def _normalize_text_columns(df: pd.DataFrame) -> pd.DataFrame:
         "general_condition",
         "canonical_tag",
         "canonical_reason",
-        "drivetrain_source",
         "series",
         "badge",
     }
@@ -869,6 +868,8 @@ def merge_and_save_static(existing_df: pd.DataFrame, new_df: pd.DataFrame) -> pd
         append_log=False,
     )
     static_export = _normalize_text_columns(static_export)
+    if "drivetrain_source" in static_export.columns:
+        static_export = static_export.drop(columns=["drivetrain_source"])
     atomic_write(static_export, OUTPUT_FILE)
     seed_active_dataset(static_export)
     return static_export
@@ -887,6 +888,8 @@ def seed_active_dataset(static_df: pd.DataFrame) -> None:
         append_log=True,
     )
     active_df = _normalize_text_columns(active_df)
+    if "drivetrain_source" in active_df.columns:
+        active_df = active_df.drop(columns=["drivetrain_source"])
     base_columns = list(static_df.columns)
     existing_active = pd.read_csv(ACTIVE_OUTPUT_FILE) if ACTIVE_OUTPUT_FILE.exists() else pd.DataFrame()
 
