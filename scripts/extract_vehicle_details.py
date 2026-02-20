@@ -47,12 +47,13 @@ else:
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 ROOT_DIR = SCRIPT_DIR.parent
-INPUT_FILE = dataset_path("all_vehicle_links.csv")
+INPUT_FILE = dataset_path("active_vehicle_links.csv")
 RAW_OUTPUT_FILE = dataset_path("raw_vehicle_data.csv")
 NORMALIZED_OUTPUT_FILE = dataset_path("normalised_data.csv")
 OUTPUT_FILE = dataset_path("vehicle_static_details.csv")
 ACTIVE_OUTPUT_FILE = dataset_path("active_vehicle_details.csv")
 FAILURES_FILE = dataset_path("excluded_listings.csv")
+ACTIVE_LINKS_FILE = dataset_path("active_vehicle_links.csv")
 SKIPPED_LOG = ROOT_DIR / "logs" / "skipped_links.txt"
 
 SCHEMA_FIELDS = SOLD_RAW_SCRAPE_COLUMNS.copy()
@@ -191,10 +192,11 @@ def _prepare_raw_snapshot(df: pd.DataFrame) -> pd.DataFrame:
     if df.empty:
         return df
     snapshot = df.copy()
-    for column in SCHEMA_FIELDS:
+    snapshot = snapshot.drop(columns=["canonical_tag", "canonical_reason"], errors="ignore")
+    for column in SOLD_RAW_SCRAPE_COLUMNS:
         if column not in snapshot.columns:
             snapshot[column] = ""
-    return snapshot.reindex(columns=SCHEMA_FIELDS)
+    return snapshot.reindex(columns=SOLD_RAW_SCRAPE_COLUMNS)
 
 
 def _prepare_normalised_snapshot(df: pd.DataFrame) -> pd.DataFrame:
@@ -203,10 +205,11 @@ def _prepare_normalised_snapshot(df: pd.DataFrame) -> pd.DataFrame:
     working = normalize_listing_fields(df)
     working = drop_invalid_years(working, allow_missing=True)
     working = drop_invalid_odometer_rows(working, allow_missing=True)
-    for column in SCHEMA_FIELDS:
+    working = working.drop(columns=["canonical_tag", "canonical_reason"], errors="ignore")
+    for column in SOLD_RAW_SCRAPE_COLUMNS:
         if column not in working.columns:
             working[column] = ""
-    return working.reindex(columns=SCHEMA_FIELDS)
+    return working.reindex(columns=SOLD_RAW_SCRAPE_COLUMNS)
 
 
 def load_make_whitelist(existing_df: pd.DataFrame) -> set[str]:
@@ -799,6 +802,22 @@ def write_skipped(skipped: list[str]) -> None:
             handle.write(url + "\n")
 
 
+def remove_from_active_links(urls: Iterable[str]) -> None:
+    if ACTIVE_LINKS_FILE is None or not ACTIVE_LINKS_FILE.exists():
+        return
+    url_list = [str(url).strip() for url in urls if str(url).strip()]
+    if not url_list:
+        return
+    df = pd.read_csv(ACTIVE_LINKS_FILE)
+    if "url" not in df.columns or df.empty:
+        return
+    normalized_remove = {_normalize_url_value(url) for url in url_list if _normalize_url_value(url)}
+    df["_url_norm"] = df["url"].astype(str).str.strip().str.lower()
+    df = df[~df["_url_norm"].isin(normalized_remove)].copy()
+    df.drop(columns=["_url_norm"], inplace=True, errors="ignore")
+    atomic_write(df, ACTIVE_LINKS_FILE)
+
+
 def atomic_write(df: pd.DataFrame, path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     fd, temp_path = tempfile.mkstemp(suffix=".csv")
@@ -854,6 +873,8 @@ def merge_and_save_static(existing_df: pd.DataFrame, new_df: pd.DataFrame) -> pd
     make_whitelist = load_make_whitelist(existing_df)
     combined, failures = filter_static_rows(combined, make_whitelist)
     append_failure_log(failures)
+    if failures:
+        remove_from_active_links([record.get("url", "") for record in failures])
     static_export = combined.drop_duplicates(subset=["url"], keep="last")
     static_export = static_export.reindex(columns=STATIC_VEHICLE_SCHEMA, fill_value="")
     static_export, stats = validate_vehicle_static_df(static_export)
@@ -951,10 +972,16 @@ def main(
     checkpoint_every: int | None = None,
 ) -> None:
     if not INPUT_FILE.exists():
-        print(f"Missing input file: {INPUT_FILE}")
-        return
+        fallback = dataset_path("all_vehicle_links.csv")
+        if not fallback.exists():
+            print(f"Missing input file: {INPUT_FILE}")
+            return
+        print(f"Active links missing; falling back to {fallback}.")
+        input_path = fallback
+    else:
+        input_path = INPUT_FILE
 
-    links_df = pd.read_csv(INPUT_FILE)
+    links_df = pd.read_csv(input_path)
     raw_links = links_df.get("url", pd.Series(dtype=str)).dropna().astype(str).tolist()
     all_links: list[str] = []
     seen_links: set[str] = set()

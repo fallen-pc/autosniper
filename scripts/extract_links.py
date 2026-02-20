@@ -23,6 +23,7 @@ BASE_URL = (
     "motor-vehiclesmotor-cycles/motor-vehicles"
 )
 OUTPUT_FILE = dataset_path("all_vehicle_links.csv")
+ACTIVE_OUTPUT_FILE = dataset_path("active_vehicle_links.csv")
 SUMMARY_FILE = Path("logs") / "link_scrape_summary.json"
 SOLD_FILE = dataset_path("sold_cars.csv")
 REFERRED_FILE = dataset_path("referred_cars.csv")
@@ -73,25 +74,38 @@ def _load_existing_urls(paths: tuple[Path, ...]) -> set[str]:
     return known
 
 
-def _load_pipeline_urls(path: Path) -> tuple[list[str], set[str]]:
+def _load_pipeline_urls(path: Path) -> tuple[pd.DataFrame, set[str]]:
     if not path.exists():
-        return [], set()
+        return pd.DataFrame(columns=["url", "discovered_at"]), set()
+    try:
+        df = pd.read_csv(path)
+    except (ValueError, pd.errors.EmptyDataError):
+        df = pd.read_csv(path) if path.exists() else pd.DataFrame()
+    if "url" not in df.columns:
+        return pd.DataFrame(columns=["url", "discovered_at"]), set()
+    df = df.copy()
+    df["url"] = df["url"].dropna().astype(str).map(_clean_url)
+    df = df[df["url"].astype(str).str.strip().ne("")]
+    if "discovered_at" not in df.columns:
+        df["discovered_at"] = ""
+    df["_url_norm"] = df["url"].astype(str).str.strip().str.lower()
+    df = df.drop_duplicates(subset=["_url_norm"], keep="first")
+    normalized = set(df["_url_norm"].dropna().tolist())
+    df = df.drop(columns=["_url_norm"])
+    return df.reset_index(drop=True), normalized
+
+
+def _load_active_urls(path: Path) -> set[str]:
+    if not path.exists():
+        return set()
     try:
         df = pd.read_csv(path, usecols=["url"])
     except (ValueError, pd.errors.EmptyDataError):
         df = pd.read_csv(path) if path.exists() else pd.DataFrame()
     if "url" not in df.columns:
-        return [], set()
-    raw_urls = df["url"].dropna().astype(str).map(_clean_url)
-    pipeline_urls: list[str] = []
-    normalized: set[str] = set()
-    for url in raw_urls:
-        norm = _normalize_url(url)
-        if not norm or norm in normalized:
-            continue
-        pipeline_urls.append(url)
-        normalized.add(norm)
-    return pipeline_urls, normalized
+        return set()
+    urls = df["url"].dropna().astype(str).map(_normalize_url)
+    return {url for url in urls if url}
 
 
 def extract_links_from_content(content: str) -> list[str]:
@@ -190,13 +204,15 @@ def extract_all_vehicle_links() -> None:
         page += 1
 
     OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
-    pipeline_urls, pipeline_norm = _load_pipeline_urls(OUTPUT_FILE)
+    pipeline_df, pipeline_norm = _load_pipeline_urls(OUTPUT_FILE)
     sold_referred_norm = _load_existing_urls((SOLD_FILE, REFERRED_FILE))
+    active_norm = _load_active_urls(ACTIVE_OUTPUT_FILE)
 
     skipped_existing = 0
     skipped_sold = 0
     skipped_compliance = 0
     new_links: list[str] = []
+    discovered_at = datetime.utcnow().isoformat()
     for link in sorted(all_links):
         norm = _normalize_url(link)
         if not norm:
@@ -218,19 +234,43 @@ def extract_all_vehicle_links() -> None:
         print(f"Dropped {skipped_compliance} compliance-tagged link(s).")
 
     new_links = sorted(new_links)
-    final_links = pipeline_urls + new_links
-    df = pd.DataFrame(final_links, columns=["url"])
-    df.to_csv(OUTPUT_FILE, index=False)
-    print(f"Saved {len(df)} vehicle links to {OUTPUT_FILE} ({len(new_links)} new).")
+    if new_links:
+        new_rows = pd.DataFrame(
+            [{"url": link, "discovered_at": discovered_at} for link in new_links]
+        )
+        pipeline_df = pd.concat([pipeline_df, new_rows], ignore_index=True, sort=False)
+    if "url" in pipeline_df.columns:
+        pipeline_df["_url_norm"] = pipeline_df["url"].astype(str).str.strip().str.lower()
+        pipeline_df = pipeline_df.drop_duplicates(subset=["_url_norm"], keep="first")
+        pipeline_df = pipeline_df.drop(columns=["_url_norm"])
+    pipeline_df = pipeline_df.reset_index(drop=True)
+    pipeline_df.to_csv(OUTPUT_FILE, index=False)
+    print(f"Saved {len(pipeline_df)} vehicle links to {OUTPUT_FILE} ({len(new_links)} new).")
 
+    active_urls: set[str] = set()
+    for link in sorted(all_links):
+        norm = _normalize_url(link)
+        if not norm:
+            continue
+        if norm in sold_referred_norm:
+            continue
+        if is_compliance_slug(link):
+            continue
+        active_urls.add(norm)
+    active_df = pd.DataFrame(sorted(active_urls), columns=["url"])
+    ACTIVE_OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
+    active_df.to_csv(ACTIVE_OUTPUT_FILE, index=False)
+
+    pipeline_before = len(pipeline_df) - len(new_links)
     summary = {
         "generated_at": datetime.utcnow().isoformat(),
         "total_links_found": len(all_links),
-        "pipeline_before": len(pipeline_urls),
-        "pipeline_after": len(final_links),
+        "pipeline_before": pipeline_before if pipeline_before >= 0 else len(pipeline_df),
+        "pipeline_after": len(pipeline_df),
         "new_added": len(new_links),
         "skipped_existing": skipped_existing,
         "skipped_sold": skipped_sold,
+        "active_links": len(active_df),
     }
     SUMMARY_FILE.parent.mkdir(parents=True, exist_ok=True)
     SUMMARY_FILE.write_text(json.dumps(summary, indent=2), encoding="utf-8")

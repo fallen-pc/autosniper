@@ -662,18 +662,16 @@ def tag_dataframe(
     variants = load_allowed_variants()
     tags: list[str] = []
     reasons: list[str] = []
-    drivetrain_sources: list[str] = []
     log_rows: list[dict[str, object]] = []
     timestamp = datetime.utcnow().isoformat(timespec="seconds")
 
     for _, row in df.iterrows():
         row_map = row.to_dict()
-        tag, reason, drivetrain_source = assign_canonical_tag(
+        tag, reason, _drivetrain_source = assign_canonical_tag(
             row_map, require_price=require_price, allowed_variants=variants
         )
         tags.append(tag)
         reasons.append(reason)
-        drivetrain_sources.append(drivetrain_source)
         if tag == UNCLASSIFIED and append_log:
             log_rows.append(
                 {
@@ -688,7 +686,7 @@ def tag_dataframe(
     tagged = df.copy()
     tagged["canonical_tag"] = tags
     tagged["canonical_reason"] = reasons
-    tagged["drivetrain_source"] = drivetrain_sources
+    # drivetrain_source is intentionally omitted from outputs.
     if filter_unclassified:
         tagged = tagged[tagged["canonical_tag"] != UNCLASSIFIED].copy()
 

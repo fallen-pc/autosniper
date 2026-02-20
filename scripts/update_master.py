@@ -508,6 +508,7 @@ def _restore_active_columns(active_target: pd.DataFrame, existing_active: pd.Dat
     if existing_active.empty or "url" not in active_target.columns or "url" not in existing_active.columns:
         return active_target
 
+    dynamic_columns = {"status", "time_remaining_or_date_sold", "price", "bids", "date_sold"}
     enriched = active_target.copy()
     enriched["_url_norm"] = _normalize_url(enriched["url"])
     existing = existing_active.copy()
@@ -516,6 +517,8 @@ def _restore_active_columns(active_target: pd.DataFrame, existing_active: pd.Dat
 
     for column in lookup.columns:
         if column in ("_url_norm",):
+            continue
+        if column not in dynamic_columns:
             continue
         if column not in enriched.columns:
             enriched[column] = pd.NA
@@ -677,6 +680,8 @@ def update_master_database() -> None:
 
     active_target = active_df if not active_df.empty else pd.DataFrame(columns=df.columns)
     active_target = _restore_active_columns(active_target, existing_active)
+    if "drivetrain_source" in active_target.columns:
+        active_target = active_target.drop(columns=["drivetrain_source"])
     _atomic_write(active_target, ACTIVE_FILE)
     print(f"Active listings saved to {ACTIVE_FILE} ({len(active_target)} rows).")
     completed_urls: set[str] = set()
@@ -684,6 +689,7 @@ def update_master_database() -> None:
         completed_urls.update(sold_df["url"].dropna().tolist())
     if "url" in referred_df.columns:
         completed_urls.update(referred_df["url"].dropna().tolist())
+    _prune_urls_from_dataset(dataset_path("active_vehicle_links.csv"), completed_urls, "active links (sold/referred)")
     if "url" in active_target.columns:
         active_urls = {url.strip() for url in active_target["url"].dropna().tolist() if str(url).strip()}
         if active_urls:

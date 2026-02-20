@@ -41,6 +41,7 @@ DATA_DIR = Path(os.getenv("AUTOSNIPER_DATA_DIR", "CSV_data"))
 
 DATASET_PATHS: dict[str, Path] = {
     "all_vehicle_links.csv": Path("scrapers") / "all_vehicle_links.csv",
+    "active_vehicle_links.csv": Path("scrapers") / "active_vehicle_links.csv",
     "raw_vehicle_data.csv": Path("scrapers") / "raw_vehicle_data.csv",
     "normalised_data.csv": Path("scrapers") / "normalised_data.csv",
     "vehicle_static_details.csv": Path("scrapers") / "vehicle_static_details.csv",

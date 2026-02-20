@@ -208,6 +208,8 @@ def persist_dataframe(df: pd.DataFrame, note: str) -> None:
     """Write the current dataframe state to disk atomically for resume safety."""
     os.makedirs(os.path.dirname(CSV_FILE), exist_ok=True)
     snapshot = df.copy()
+    if "drivetrain_source" in snapshot.columns:
+        snapshot = snapshot.drop(columns=["drivetrain_source"])
     snapshot["url"] = snapshot["url"].apply(clean_url)
     temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".csv").name
     snapshot.to_csv(temp_file, index=False)

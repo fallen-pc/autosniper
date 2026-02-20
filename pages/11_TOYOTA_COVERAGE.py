@@ -40,8 +40,6 @@ def _load_source(path: Path, source_label: str) -> pd.DataFrame:
     df["source"] = source_label
     if "canonical_reason" not in df.columns:
         df["canonical_reason"] = ""
-    if "drivetrain_source" not in df.columns:
-        df["drivetrain_source"] = ""
     if "make" not in df.columns:
         df["make"] = df["canonical_tag"].astype(str).str.split("_").str[0]
     return df
@@ -124,10 +122,6 @@ def _build_policy_audit(df: pd.DataFrame) -> pd.DataFrame:
         .agg(
             total=("canonical_tag", "size"),
             eligible=("eligible", "sum"),
-            policy_fwd=(
-                "drivetrain_source",
-                lambda series: (series == "POLICY_IMPLICIT_FWD_AU").sum(),
-            ),
         )
         .reset_index()
     )
@@ -210,7 +204,7 @@ else:
     st.dataframe(summary_df, width="stretch", hide_index=True)
 
     if not audit_df.empty:
-        st.markdown("**Policy audit (eligibility + implicit FWD)**")
+        st.markdown("**Policy audit (eligibility)**")
         st.dataframe(
             audit_df,
             width="stretch",
