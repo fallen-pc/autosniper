@@ -57,6 +57,9 @@ ACTIVE_LINKS_FILE = dataset_path("active_vehicle_links.csv")
 SKIPPED_LOG = ROOT_DIR / "logs" / "skipped_links.txt"
 
 SCHEMA_FIELDS = SOLD_RAW_SCRAPE_COLUMNS.copy()
+STATIC_OUTPUT_COLUMNS = list(
+    dict.fromkeys(list(STATIC_VEHICLE_SCHEMA) + ["canonical_tag", "canonical_reason"])
+)
 
 FIELD_MAP = {
     "body_type": "Body Type",
@@ -168,9 +171,25 @@ def _load_url_set(path: Path) -> set[str]:
     return {url for url in urls if url}
 
 
-def _merge_pipeline_snapshot(path: Path, new_df: pd.DataFrame) -> pd.DataFrame:
+def _lock_schema(df: pd.DataFrame, expected_columns: Iterable[str]) -> pd.DataFrame:
+    columns = list(expected_columns)
+    if df.empty:
+        return pd.DataFrame(columns=columns)
+    out = df.copy()
+    for column in columns:
+        if column not in out.columns:
+            out[column] = ""
+    return out.reindex(columns=columns)
+
+
+def _merge_pipeline_snapshot(
+    path: Path,
+    new_df: pd.DataFrame,
+    *,
+    expected_columns: Iterable[str],
+) -> pd.DataFrame:
     if new_df.empty:
-        return pd.DataFrame()
+        return pd.DataFrame(columns=list(expected_columns))
     if path.exists():
         try:
             existing_df = pd.read_csv(path, low_memory=False)
@@ -178,6 +197,8 @@ def _merge_pipeline_snapshot(path: Path, new_df: pd.DataFrame) -> pd.DataFrame:
             existing_df = pd.DataFrame()
     else:
         existing_df = pd.DataFrame()
+    existing_df = _lock_schema(existing_df, expected_columns)
+    new_df = _lock_schema(new_df, expected_columns)
     combined = pd.concat([existing_df, new_df], ignore_index=True, sort=False)
     if "url" in combined.columns:
         combined["_url_norm"] = combined["url"].astype(str).str.strip().str.lower()
@@ -185,7 +206,8 @@ def _merge_pipeline_snapshot(path: Path, new_df: pd.DataFrame) -> pd.DataFrame:
         combined = combined.drop(columns=["_url_norm"], errors="ignore")
     else:
         combined = combined.drop_duplicates()
-    return combined.reset_index(drop=True)
+    combined = combined.reset_index(drop=True)
+    return _lock_schema(combined, expected_columns)
 
 
 def _prepare_raw_snapshot(df: pd.DataFrame) -> pd.DataFrame:
@@ -193,10 +215,10 @@ def _prepare_raw_snapshot(df: pd.DataFrame) -> pd.DataFrame:
         return df
     snapshot = df.copy()
     snapshot = snapshot.drop(columns=["canonical_tag", "canonical_reason"], errors="ignore")
-    for column in SOLD_RAW_SCRAPE_COLUMNS:
+    for column in STATIC_VEHICLE_SCHEMA:
         if column not in snapshot.columns:
             snapshot[column] = ""
-    return snapshot.reindex(columns=SOLD_RAW_SCRAPE_COLUMNS)
+    return snapshot.reindex(columns=STATIC_VEHICLE_SCHEMA)
 
 
 def _prepare_normalised_snapshot(df: pd.DataFrame) -> pd.DataFrame:
@@ -206,10 +228,10 @@ def _prepare_normalised_snapshot(df: pd.DataFrame) -> pd.DataFrame:
     working = drop_invalid_years(working, allow_missing=True)
     working = drop_invalid_odometer_rows(working, allow_missing=True)
     working = working.drop(columns=["canonical_tag", "canonical_reason"], errors="ignore")
-    for column in SOLD_RAW_SCRAPE_COLUMNS:
+    for column in STATIC_VEHICLE_SCHEMA:
         if column not in working.columns:
             working[column] = ""
-    return working.reindex(columns=SOLD_RAW_SCRAPE_COLUMNS)
+    return working.reindex(columns=STATIC_VEHICLE_SCHEMA)
 
 
 def load_make_whitelist(existing_df: pd.DataFrame) -> set[str]:
@@ -891,6 +913,7 @@ def merge_and_save_static(existing_df: pd.DataFrame, new_df: pd.DataFrame) -> pd
     static_export = _normalize_text_columns(static_export)
     if "drivetrain_source" in static_export.columns:
         static_export = static_export.drop(columns=["drivetrain_source"])
+    static_export = static_export.reindex(columns=STATIC_OUTPUT_COLUMNS, fill_value="")
     atomic_write(static_export, OUTPUT_FILE)
     seed_active_dataset(static_export)
     return static_export
@@ -970,6 +993,7 @@ def main(
     *,
     force_all: bool = False,
     checkpoint_every: int | None = None,
+    raw_only: bool = False,
 ) -> None:
     if not INPUT_FILE.exists():
         fallback = dataset_path("all_vehicle_links.csv")
@@ -1037,28 +1061,39 @@ def main(
                 total_scraped += len(data)
                 new_df = pd.DataFrame(data)
                 raw_snapshot = _prepare_raw_snapshot(new_df)
-                raw_merged = _merge_pipeline_snapshot(RAW_OUTPUT_FILE, raw_snapshot)
+                raw_merged = _merge_pipeline_snapshot(
+                    RAW_OUTPUT_FILE,
+                    raw_snapshot,
+                    expected_columns=STATIC_VEHICLE_SCHEMA,
+                )
                 if not raw_merged.empty:
                     atomic_write(raw_merged, RAW_OUTPUT_FILE)
 
-                normalized_snapshot = _prepare_normalised_snapshot(new_df)
-                normalized_merged = _merge_pipeline_snapshot(
-                    NORMALIZED_OUTPUT_FILE,
-                    normalized_snapshot,
-                )
-                if not normalized_merged.empty:
-                    atomic_write(normalized_merged, NORMALIZED_OUTPUT_FILE)
+                if raw_only:
+                    print(f"Checkpoint saved raw only ({len(new_df)} new rows).")
+                else:
+                    normalized_snapshot = _prepare_normalised_snapshot(new_df)
+                    normalized_merged = _merge_pipeline_snapshot(
+                        NORMALIZED_OUTPUT_FILE,
+                        normalized_snapshot,
+                        expected_columns=STATIC_VEHICLE_SCHEMA,
+                    )
+                    if not normalized_merged.empty:
+                        atomic_write(normalized_merged, NORMALIZED_OUTPUT_FILE)
 
-                existing_df = merge_and_save_static(existing_df, new_df)
-                print(
-                    f"Checkpoint saved ({len(new_df)} new rows, total {len(existing_df)})."
-                )
+                    existing_df = merge_and_save_static(existing_df, new_df)
+                    print(
+                        f"Checkpoint saved ({len(new_df)} new rows, total {len(existing_df)})."
+                    )
             else:
                 print("No listings were scraped in this batch.")
         if total_scraped == 0:
             print("No listings were scraped.")
             return
-        print(f"Saved {total_scraped} rows (total {len(existing_df)}). Output: {OUTPUT_FILE}")
+        if raw_only:
+            print(f"Saved {total_scraped} raw rows. Output: {RAW_OUTPUT_FILE}")
+        else:
+            print(f"Saved {total_scraped} rows (total {len(existing_df)}). Output: {OUTPUT_FILE}")
         if total_skipped:
             print(f"{total_skipped} URLs skipped. See {SKIPPED_LOG}")
         return
@@ -1070,17 +1105,28 @@ def main(
         return
 
     raw_snapshot = _prepare_raw_snapshot(new_df)
-    raw_merged = _merge_pipeline_snapshot(RAW_OUTPUT_FILE, raw_snapshot)
+    raw_merged = _merge_pipeline_snapshot(
+        RAW_OUTPUT_FILE,
+        raw_snapshot,
+        expected_columns=STATIC_VEHICLE_SCHEMA,
+    )
     if not raw_merged.empty:
         atomic_write(raw_merged, RAW_OUTPUT_FILE)
 
-    normalized_snapshot = _prepare_normalised_snapshot(new_df)
-    normalized_merged = _merge_pipeline_snapshot(NORMALIZED_OUTPUT_FILE, normalized_snapshot)
-    if not normalized_merged.empty:
-        atomic_write(normalized_merged, NORMALIZED_OUTPUT_FILE)
+    if raw_only:
+        print(f"Saved {len(new_df)} raw rows to {RAW_OUTPUT_FILE}")
+    else:
+        normalized_snapshot = _prepare_normalised_snapshot(new_df)
+        normalized_merged = _merge_pipeline_snapshot(
+            NORMALIZED_OUTPUT_FILE,
+            normalized_snapshot,
+            expected_columns=STATIC_VEHICLE_SCHEMA,
+        )
+        if not normalized_merged.empty:
+            atomic_write(normalized_merged, NORMALIZED_OUTPUT_FILE)
 
-    existing_df = merge_and_save_static(existing_df, new_df)
-    print(f"Saved {len(new_df)} rows (total {len(existing_df)}). Output: {OUTPUT_FILE}")
+        existing_df = merge_and_save_static(existing_df, new_df)
+        print(f"Saved {len(new_df)} rows (total {len(existing_df)}). Output: {OUTPUT_FILE}")
 
     write_skipped(skipped)
     if skipped:
@@ -1106,9 +1152,15 @@ if __name__ == "__main__":
         default=50,
         help="Save progress every N listings (0 = disable).",
     )
+    parser.add_argument(
+        "--raw-only",
+        action="store_true",
+        help="Only write raw_vehicle_data.csv (skip normalise/exclude/static).",
+    )
     args = parser.parse_args()
     main(
         batch_size=args.batch_size,
         force_all=args.all,
         checkpoint_every=args.checkpoint_every,
+        raw_only=args.raw_only,
     )

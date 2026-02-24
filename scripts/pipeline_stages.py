@@ -1,0 +1,204 @@
+from __future__ import annotations
+
+import argparse
+from pathlib import Path
+
+import pandas as pd
+
+if __package__ in (None, ""):
+    import sys
+
+    sys.path.append(str(Path(__file__).resolve().parent.parent))
+    from shared.data_loader import dataset_path
+    from shared.schema import ACTIVE_LISTING_SCHEMA, STATIC_VEHICLE_SCHEMA
+    from scripts.extract_vehicle_details import (
+        _prepare_normalised_snapshot,
+        atomic_write,
+        merge_and_save_static,
+    )
+else:  # pragma: no cover
+    from shared.data_loader import dataset_path
+    from shared.schema import ACTIVE_LISTING_SCHEMA, STATIC_VEHICLE_SCHEMA
+    from scripts.extract_vehicle_details import (
+        _prepare_normalised_snapshot,
+        atomic_write,
+        merge_and_save_static,
+    )
+
+
+RAW_PATH = dataset_path("raw_vehicle_data.csv")
+NORMAL_PATH = dataset_path("normalised_data.csv")
+STATIC_PATH = dataset_path("vehicle_static_details.csv")
+ACTIVE_PATH = dataset_path("active_vehicle_details.csv")
+MATCHED_PATH = dataset_path("matched_canonical_details.csv")
+UNMATCHED_PATH = dataset_path("unmatched_canonical_details.csv")
+ALL_LINKS_PATH = dataset_path("all_vehicle_links.csv")
+ACTIVE_LINKS_PATH = dataset_path("active_vehicle_links.csv")
+EXCLUDED_PATH = dataset_path("excluded_listings.csv")
+STATIC_OUTPUT_COLUMNS = list(
+    dict.fromkeys(list(STATIC_VEHICLE_SCHEMA) + ["canonical_tag", "canonical_reason"])
+)
+
+
+def _empty_csv(path: Path, columns: list[str]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    pd.DataFrame(columns=columns).to_csv(path, index=False)
+
+
+def _read_csv_safe(path: Path) -> pd.DataFrame:
+    if not path.exists():
+        return pd.DataFrame()
+    try:
+        return pd.read_csv(path, low_memory=False)
+    except (ValueError, pd.errors.EmptyDataError):
+        return pd.DataFrame()
+
+
+def _coerce_schema(path: Path, columns: list[str]) -> dict[str, object]:
+    before_exists = path.exists()
+    before_df = _read_csv_safe(path)
+    before_columns = list(before_df.columns)
+    row_count = int(len(before_df))
+    if before_df.empty:
+        out_df = pd.DataFrame(columns=columns)
+    else:
+        out_df = before_df.copy()
+        for column in columns:
+            if column not in out_df.columns:
+                out_df[column] = ""
+        out_df = out_df.reindex(columns=columns)
+    changed = (not before_exists) or (before_columns != columns)
+    if changed:
+        atomic_write(out_df, path)
+    return {
+        "path": str(path),
+        "rows": row_count,
+        "changed": changed,
+        "before_columns": before_columns,
+        "after_columns": columns,
+    }
+
+
+def audit_and_lock_schemas() -> dict[str, dict[str, object]]:
+    reports = {
+        "raw_vehicle_data.csv": _coerce_schema(RAW_PATH, list(STATIC_VEHICLE_SCHEMA)),
+        "normalised_data.csv": _coerce_schema(NORMAL_PATH, list(STATIC_VEHICLE_SCHEMA)),
+        "vehicle_static_details.csv": _coerce_schema(STATIC_PATH, STATIC_OUTPUT_COLUMNS),
+    }
+    for name, report in reports.items():
+        status = "LOCKED" if report["changed"] else "OK"
+        print(f"{name}: {status} ({report['rows']} rows)")
+        if report["changed"]:
+            print(f"  before: {report['before_columns']}")
+            print(f"  after:  {report['after_columns']}")
+    return reports
+
+
+def normalize_from_raw() -> None:
+    if not RAW_PATH.exists():
+        print(f"Missing raw dataset: {RAW_PATH}")
+        return
+    raw_df = pd.read_csv(RAW_PATH)
+    raw_df = raw_df.reindex(columns=STATIC_VEHICLE_SCHEMA, fill_value="")
+    if raw_df.empty:
+        print("Raw dataset is empty; nothing to normalize.")
+        return
+    normalized = _prepare_normalised_snapshot(raw_df)
+    atomic_write(normalized, NORMAL_PATH)
+    print(f"Normalised rows: {len(normalized)} written to {NORMAL_PATH}")
+
+
+def apply_exclusions_from_normalised() -> None:
+    if not NORMAL_PATH.exists():
+        print(f"Missing normalised dataset: {NORMAL_PATH}")
+        return
+    normal_df = pd.read_csv(NORMAL_PATH)
+    normal_df = normal_df.reindex(columns=STATIC_VEHICLE_SCHEMA, fill_value="")
+    if normal_df.empty:
+        print("Normalised dataset is empty; nothing to filter.")
+        return
+    existing_static = pd.read_csv(STATIC_PATH) if STATIC_PATH.exists() else pd.DataFrame()
+    merge_and_save_static(existing_static, normal_df)
+    print(f"Static export refreshed from {NORMAL_PATH}")
+
+
+def match_canonical_details() -> None:
+    if not STATIC_PATH.exists():
+        print(f"Missing static dataset: {STATIC_PATH}")
+        return
+    static_df = pd.read_csv(STATIC_PATH)
+    if static_df.empty:
+        print("Static dataset is empty; nothing to match.")
+        return
+    curves_path = dataset_path("curves.csv")
+    if not curves_path.exists():
+        print(f"Missing curves dataset: {curves_path}")
+        return
+    curves_df = pd.read_csv(curves_path)
+    if "canonical_tag" not in curves_df.columns:
+        print("curves.csv has no canonical_tag column; aborting.")
+        return
+    available_tags = (
+        curves_df["canonical_tag"]
+        .dropna()
+        .astype(str)
+        .str.strip()
+        .replace({"nan": "", "None": ""})
+    )
+    allowed = {tag for tag in available_tags.tolist() if tag}
+    if "canonical_tag" not in static_df.columns:
+        static_df["canonical_tag"] = ""
+    static_df["canonical_tag"] = (
+        static_df["canonical_tag"].fillna("").astype(str).str.strip()
+    )
+    matched = static_df[static_df["canonical_tag"].isin(allowed)].copy()
+    unmatched = static_df[~static_df["canonical_tag"].isin(allowed)].copy()
+    atomic_write(matched, MATCHED_PATH)
+    atomic_write(unmatched, UNMATCHED_PATH)
+    print(
+        f"Matched canonical tags: {len(matched)} rows -> {MATCHED_PATH}. "
+        f"Unmatched: {len(unmatched)} rows -> {UNMATCHED_PATH}."
+    )
+
+
+def clear_pipeline() -> None:
+    _empty_csv(ALL_LINKS_PATH, ["url", "discovered_at"])
+    _empty_csv(ACTIVE_LINKS_PATH, ["url"])
+    _empty_csv(RAW_PATH, list(STATIC_VEHICLE_SCHEMA))
+    _empty_csv(NORMAL_PATH, list(STATIC_VEHICLE_SCHEMA))
+    static_cols = list(dict.fromkeys(list(STATIC_VEHICLE_SCHEMA) + ["canonical_tag", "canonical_reason"]))
+    _empty_csv(STATIC_PATH, static_cols)
+    active_cols = list(
+        dict.fromkeys(static_cols + ["status", "time_remaining_or_date_sold", "price", "bids"])
+    )
+    _empty_csv(ACTIVE_PATH, active_cols)
+    _empty_csv(EXCLUDED_PATH, ["timestamp", "url", "reason_code", "field_snapshot"])
+    _empty_csv(MATCHED_PATH, static_cols)
+    _empty_csv(UNMATCHED_PATH, static_cols)
+    print("Pipeline cleared: links, raw, normalised, static, active, exclusions.")
+    audit_and_lock_schemas()
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Run individual Grays pipeline stages.")
+    parser.add_argument(
+        "stage",
+        choices=["normalize", "exclude", "match", "clear", "audit"],
+        help="Pipeline stage to run",
+    )
+    args = parser.parse_args()
+
+    if args.stage == "normalize":
+        normalize_from_raw()
+    elif args.stage == "exclude":
+        apply_exclusions_from_normalised()
+    elif args.stage == "match":
+        match_canonical_details()
+    elif args.stage == "clear":
+        clear_pipeline()
+    elif args.stage == "audit":
+        audit_and_lock_schemas()
+
+
+if __name__ == "__main__":
+    main()

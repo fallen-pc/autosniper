@@ -45,6 +45,8 @@ DATASET_PATHS: dict[str, Path] = {
     "raw_vehicle_data.csv": Path("scrapers") / "raw_vehicle_data.csv",
     "normalised_data.csv": Path("scrapers") / "normalised_data.csv",
     "vehicle_static_details.csv": Path("scrapers") / "vehicle_static_details.csv",
+    "matched_canonical_details.csv": Path("scrapers") / "matched_canonical_details.csv",
+    "unmatched_canonical_details.csv": Path("scrapers") / "unmatched_canonical_details.csv",
     "active_vehicle_details.csv": Path("scrapers") / "active_vehicle_details.csv",
     "sold_cars.csv": Path("scrapers") / "sold_cars.csv",
     "referred_cars.csv": Path("scrapers") / "referred_cars.csv",
