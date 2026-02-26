@@ -26,15 +26,18 @@ OUT_OF_SCOPE_YEAR = "[OUT_OF_SCOPE_YEAR]"
 DISALLOWED_VARIANT = "[DISALLOWED_VARIANT]"
 POLICY_IMPLICIT_FWD_AU = "POLICY_IMPLICIT_FWD_AU"
 
-ALLOWED_VARIANTS_PATH = Path(__file__).resolve().parent.parent / "config" / "toyota_allowed_variants.csv"
-NORMALISATION_RULES_PATH = (
-    Path(__file__).resolve().parent.parent / "config" / "toyota_normalisation_rules.csv"
-)
+CONFIG_DIR = Path(__file__).resolve().parent.parent / "config"
+ALLOWED_VARIANTS_PATH = CONFIG_DIR / "allowed_variants.csv"
+LEGACY_ALLOWED_VARIANTS_PATH = CONFIG_DIR / "toyota_allowed_variants.csv"
+NORMALISATION_RULES_PATH = CONFIG_DIR / "normalisation_rules.csv"
+LEGACY_NORMALISATION_RULES_PATH = CONFIG_DIR / "toyota_normalisation_rules.csv"
 TAG_LOG_PATH = dataset_path("quality/canonical_tagging_log.csv")
 ELIGIBLE_CANONICAL_REASONS = {"", R.OK, "MATCHED", "NORMALISED_MATCH"}
 
 MAKE_ALIASES = {
     "toyota": "toyota",
+    "mazda": "mazda",
+    "hyundai": "hyundai",
 }
 
 MODEL_ALIASES = {
@@ -44,10 +47,10 @@ MODEL_ALIASES = {
     "hi-lux": "hilux",
     "hiluxsr5": "hilux",
     "rav4": "rav4",
+    "mazda3": "3",
+    "mazda 3": "3",
+    "i30": "i30",
 }
-
-TOYOTA_SCOPE_MODELS = {"corolla", "camry", "hilux", "rav4"}
-IMPLICIT_FWD_MODELS_AU = {"corolla", "camry"}
 
 
 def is_canonical_eligible(canonical_tag: object, canonical_reason: object) -> bool:
@@ -448,46 +451,71 @@ def _year_in_any_band(candidates: Sequence[AllowedVariant], year: int | None) ->
 
 @lru_cache(maxsize=1)
 def load_allowed_variants(path: Path | None = None) -> Tuple[AllowedVariant, ...]:
-    source = path or ALLOWED_VARIANTS_PATH
-    if not source.exists():
+    if path is not None:
+        sources = [path]
+    else:
+        sources: list[Path] = []
+        if ALLOWED_VARIANTS_PATH.exists():
+            sources.append(ALLOWED_VARIANTS_PATH)
+        sources.extend(sorted(CONFIG_DIR.glob("*_allowed_variants.csv")))
+        if not sources and LEGACY_ALLOWED_VARIANTS_PATH.exists():
+            sources.append(LEGACY_ALLOWED_VARIANTS_PATH)
+        deduped_sources: list[Path] = []
+        seen = set()
+        for candidate in sources:
+            resolved = str(candidate.resolve())
+            if resolved in seen:
+                continue
+            seen.add(resolved)
+            deduped_sources.append(candidate)
+        sources = deduped_sources
+    if not sources:
         return ()
-    df = pd.read_csv(source)
     variants: list[AllowedVariant] = []
-    for _, row in df.iterrows():
-        canonical_tag = _normalize_text(row.get("canonical_tag"))
-        if not canonical_tag:
-            continue
-        make = _normalize_text(row.get("make"))
-        model = _normalize_text(row.get("model"))
-        body = _normalize_text(row.get("body"))
-        fuel = _normalize_text(row.get("fuel"))
-        transmission = _normalize_text(row.get("transmission"))
-        badge = _normalize_text(row.get("badge"))
-        series = _normalize_text(row.get("series"))
-        badge_aliases = _split_pipe(row.get("allowed_badge_aliases")) or (badge,)
-        body_aliases = _split_pipe(row.get("allowed_body_aliases")) or (body,)
-        excluded = _split_pipe(row.get("excluded_keywords"))
-        variants.append(
-            AllowedVariant(
-                canonical_tag=canonical_tag,
-                make=make,
-                model=model,
-                body=body,
-                fuel=fuel,
-                transmission=transmission,
-                badge=badge,
-                series=series,
-                badge_aliases=badge_aliases,
-                body_aliases=body_aliases,
-                excluded_keywords=excluded,
+    seen_keys: set[tuple[str, str, str, str, str, str, str]] = set()
+    for source in sources:
+        df = pd.read_csv(source)
+        for _, row in df.iterrows():
+            canonical_tag = _normalize_text(row.get("canonical_tag"))
+            if not canonical_tag:
+                continue
+            make = _normalize_text(row.get("make"))
+            model = _normalize_text(row.get("model"))
+            body = _normalize_text(row.get("body"))
+            fuel = _normalize_text(row.get("fuel"))
+            transmission = _normalize_text(row.get("transmission"))
+            badge = _normalize_text(row.get("badge"))
+            series = _normalize_text(row.get("series"))
+            row_key = (canonical_tag, make, model, body, fuel, transmission, badge)
+            if row_key in seen_keys:
+                continue
+            seen_keys.add(row_key)
+            badge_aliases = _split_pipe(row.get("allowed_badge_aliases")) or (badge,)
+            body_aliases = _split_pipe(row.get("allowed_body_aliases")) or (body,)
+            excluded = _split_pipe(row.get("excluded_keywords"))
+            variants.append(
+                AllowedVariant(
+                    canonical_tag=canonical_tag,
+                    make=make,
+                    model=model,
+                    body=body,
+                    fuel=fuel,
+                    transmission=transmission,
+                    badge=badge,
+                    series=series,
+                    badge_aliases=badge_aliases,
+                    body_aliases=body_aliases,
+                    excluded_keywords=excluded,
+                )
             )
-        )
     return tuple(variants)
 
 
 @lru_cache(maxsize=1)
 def load_normaliser(path: Path | None = None) -> Normaliser:
     source = path or NORMALISATION_RULES_PATH
+    if not source.exists() and path is None:
+        source = LEGACY_NORMALISATION_RULES_PATH
     if not source.exists():
         return Normaliser({})
     df = pd.read_csv(source)
@@ -529,13 +557,11 @@ def assign_canonical_tag(
     normalized_row["badge"] = normaliser.norm("badge", normalized_row.get("badge"))
 
     make = _normalize_make(normalized_row.get("make"))
-    if make != "toyota":
+    if not make:
         return UNCLASSIFIED, OUT_OF_SCOPE, ""
     model = _normalize_model(normalized_row.get("model"))
     if not model:
         return UNCLASSIFIED, R.BAD_PARSE, ""
-    if model not in TOYOTA_SCOPE_MODELS:
-        return UNCLASSIFIED, OUT_OF_SCOPE, ""
 
     variants = allowed_variants or load_allowed_variants()
     candidates = [v for v in variants if v.make == make and v.model == model]
@@ -584,6 +610,8 @@ def assign_canonical_tag(
         series_matches = [v for v in candidates if v.series and v.series == series_code]
         unique_series_tags = {v.canonical_tag for v in series_matches}
         if len(unique_series_tags) == 1:
+            if not _year_in_any_band(series_matches, year):
+                return UNCLASSIFIED, OUT_OF_SCOPE_YEAR, ""
             return series_matches[0].canonical_tag, R.OK, ""
         if len(series_matches) == 0:
             return UNCLASSIFIED, DISALLOWED_VARIANT, ""
@@ -621,6 +649,8 @@ def assign_canonical_tag(
     )
     if required_reason != R.OK:
         return UNCLASSIFIED, required_reason, ""
+    if not _year_in_any_band([badge_matches[0]], year):
+        return UNCLASSIFIED, OUT_OF_SCOPE_YEAR, ""
     return badge_matches[0].canonical_tag, R.OK, drivetrain_source
 
 

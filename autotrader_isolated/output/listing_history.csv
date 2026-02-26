@@ -6618,3 +6618,338 @@ event_date,event,url,price,previous_price,price_change,year,make,model,variant,b
 2026-02-24T21:06:29,sold,car/14976069/toyota/rav4/vic/tottenham/suv,32888,32888,,2020,Toyota,RAV4,Gx (2Wd),Wagon,92292.0,Automatic,2026-05-27,Unleaded,VIC
 2026-02-24T21:06:29,sold,car/14975715/toyota/camry/vic/preston/sedan,13990,13990,,2014,Toyota,Camry,Atara S,Sedan,186836.0,Automatic,2026-08-28,Unleaded,VIC
 2026-02-24T21:06:29,sold,car/14791181/toyota/prius/vic/maidstone/hatchback,22995,22995,,2020,Toyota,Prius,A,Hatch,105238.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,price_change,car/14911610/toyota/hilux/vic/south-melbourne/dual-cab,46990.0,47990,-1000.0,2019,Toyota,Hilux,Rugged (4X4),Double Cab Pick Up,146023.0,Automatic,2026-06-23,Diesel,VIC
+2026-02-25T22:27:40,relisted,car/14962352/toyota/c-hr/vic/st-kilda/suv,24200.0,24200,,2018,Toyota,C-HR,G ZYX10,SUV,91549.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,price_change,car/14887127/toyota/kluger/vic/south-melbourne/suv,66990.0,69990,-3000.0,2022,Toyota,Kluger,Grande Hybrid Awd,Wagon,29863.0,Automatic,2026-10-17,Hybrid,VIC
+2026-02-25T22:27:40,price_change,car/14961533/toyota/corolla-cross/vic/south-melbourne/suv,39490.0,39990,-500.0,2023,Toyota,Corolla Cross,Gx 2Wd Hybrid,Wagon,37500.0,Automatic,2026-06-22,Hybrid,VIC
+2026-02-25T22:27:40,relisted,car/14967401/toyota/yaris/vic/port-melbourne/hatchback,18700.0,18700,,2019,Toyota,Yaris,Ascent,Hatchback,84000.0,Automatic,2026-05-02,Unleaded,VIC
+2026-02-25T22:27:40,listed,car/14983237/toyota/corolla/vic/port-melbourne/hatchback,19900.0,,,2017,Toyota,Corolla,Ascent Sport,Hatchback,77932.0,Automatic,2026-04-16,Unleaded,VIC
+2026-02-25T22:27:40,listed,car/14983656/toyota/yaris-cross/vic/melbourne/suv,32777.0,,,2022,Toyota,Yaris Cross,GX,SUV,14576.0,,,Other,VIC
+2026-02-25T22:27:40,listed,car/14983297/toyota/kluger/vic/maidstone/suv,17989.0,,,2014,Toyota,Kluger,Gx (4X4),Wagon,259452.0,Automatic,,Unleaded,VIC
+2026-02-25T22:27:40,relisted,car/14976918/toyota/prius-c/vic/coburg-north/hatchback,11990.0,11990,,2014,Toyota,Prius C,Hybrid,Hatchback,210566.0,Automatic,2026-04-15,Hybrid,VIC
+2026-02-25T22:27:40,relisted,car/14902284/toyota/kluger/vic/tottenham/suv,39888.0,39888,,2022,Toyota,Kluger,Gx 2Wd,Wagon,85491.0,Automatic,2026-08-19,Premium,VIC
+2026-02-25T22:27:40,relisted,car/14949409/toyota/aurion/vic/elsternwick/sedan,11990.0,11990,,2007,Toyota,Aurion,At-X,Sedan,97495.0,Automatic,,Unleaded,VIC
+2026-02-25T22:27:40,relisted,car/14919240/toyota/camry/vic/maidstone/sedan,15990.0,15990,,2016,Toyota,Camry,Altise,Sedan,140200.0,Automatic,2026-06-27,Unleaded,VIC
+2026-02-25T22:27:40,price_change,car/14970091/toyota/hilux/vic/south-melbourne/pickup,34990.0,35990,-1000.0,2016,Toyota,Hilux,SR,Ute Tray,166043.0,Automatic,2026-08-17,Other,VIC
+2026-02-25T22:27:40,listed,car/14982673/toyota/corolla/vic/preston/sedan,22990.0,,,2019,Toyota,Corolla,Ascent,Sedan,68774.0,Automatic,2026-03-04,Unleaded,VIC
+2026-02-25T22:27:40,price_change,car/14871752/toyota/rav4/vic/south-melbourne/suv,43490.0,43990,-500.0,2021,Toyota,RAV4,Gx (Awd) Hybrid,Wagon,11347.0,Automatic,2026-07-29,Hybrid,VIC
+2026-02-25T22:27:40,listed,car/14982860/toyota/rav4/vic/port-melbourne/suv,28800.0,,,2019,Toyota,RAV4,Gxl (2Wd),Wagon,141418.0,Automatic,2026-03-19,Unleaded,VIC
+2026-02-25T22:27:40,listed,car/14981273/toyota/rav4/vic/melbourne/suv,34990.0,,,2022,Toyota,RAV4,Gx (Awd) Hybrid,Wagon,144301.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,price_change,car/14865299/toyota/landcruiser/vic/airport-west/suv,,136788,,2023,Toyota,Landcruiser,Lc300 Sahara Zx (4X4),Wagon,64777.0,Automatic,2026-01-10,Diesel,VIC
+2026-02-25T22:27:40,price_change,car/14921078/toyota/rav4/vic/port-melbourne/suv,39490.0,39990,-500.0,2022,Toyota,RAV4,Gx (Awd) Hybrid,Wagon,58570.0,Automatic,2025-10-13,Hybrid,VIC
+2026-02-25T22:27:40,listed,car/14980237/toyota/hilux/vic/south-melbourne/dual-cab,62888.0,,,2023,Toyota,Hilux,Rogue (4X4),Double Cab Pick Up,81488.0,Automatic,2026-04-12,Diesel,VIC
+2026-02-25T22:27:40,relisted,car/14876597/toyota/hiace/vic/elsternwick/van,42990.0,42990,,2020,Toyota,HiAce,Lwb Gl (Colours),Van,105369.0,Automatic,,Diesel,VIC
+2026-02-25T22:27:40,relisted,car/14968724/toyota/yaris/vic/braybrook/hatchback,8999.0,8999,,2009,Toyota,Yaris,Yr,Hatchback,255542.0,Automatic,2026-03-31,Unleaded,VIC
+2026-02-25T22:27:40,relisted,car/14137939/toyota/hiace/vic/coburg-north/people-mover,59990.0,59990,,2019,Toyota,HiAce,Commuter (12 Seats),Bus,75753.0,Automatic,,Diesel,VIC
+2026-02-25T22:27:40,listed,car/14983000/toyota/corolla/vic/northcote/sedan,5999.0,,,2009,Toyota,Corolla,Ascent,Sedan,279000.0,Automatic,,Unleaded,VIC
+2026-02-25T22:27:40,listed,car/14979984/toyota/corolla/vic/melbourne/sedan,29555.0,,,2019,Toyota,Corolla,Ascent Sport (Hybrid),Sedan,23341.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,relisted,car/14864593/toyota/kluger/vic/west-footscray/suv,23990.0,23990,,2015,Toyota,Kluger,Grande (4X4),Wagon,210877.0,Automatic,2026-03-25,Unleaded,VIC
+2026-02-25T22:27:40,relisted,car/14942998/toyota/corolla/vic/maidstone/hatchback,15989.0,16989,-1000.0,2015,Toyota,Corolla,Ascent,Hatchback,177018.0,Automatic,,Unleaded,VIC
+2026-02-25T22:27:40,price_change,car/14942998/toyota/corolla/vic/maidstone/hatchback,15989.0,16989,-1000.0,2015,Toyota,Corolla,Ascent,Hatchback,177018.0,Automatic,,Unleaded,VIC
+2026-02-25T22:27:40,price_change,car/14851358/toyota/rav4/vic/south-melbourne/suv,53990.0,54990,-1000.0,2023,Toyota,RAV4,Cruiser (2Wd) Hybrid,Wagon,47113.0,Automatic,2026-08-31,Hybrid,VIC
+2026-02-25T22:27:40,price_change,car/14919078/toyota/corolla-cross/vic/south-melbourne/suv,38990.0,39990,-1000.0,2024,Toyota,Corolla Cross,Gx 2Wd,Wagon,17116.0,Automatic,2026-08-17,Unleaded,VIC
+2026-02-25T22:27:40,price_change,car/14832140/toyota/c-hr/vic/preston/suv,32990.0,33990,-1000.0,2023,Toyota,C-HR,Koba (2Wd),Wagon,70154.0,Automatic,2000-01-01,Premium,VIC
+2026-02-25T22:27:40,relisted,car/14955434/toyota/86/vic/south-melbourne/coupe,54900.0,34900,20000.0,2022,Toyota,86,Gts,Coupe,44566.0,Automatic,,Premium,VIC
+2026-02-25T22:27:40,price_change,car/14955434/toyota/86/vic/south-melbourne/coupe,54900.0,34900,20000.0,2022,Toyota,86,Gts,Coupe,44566.0,Automatic,,Premium,VIC
+2026-02-25T22:27:40,relisted,car/14970260/toyota/corolla/vic/fawkner/limousine,17990.0,17990,,2020,Toyota,Corolla,AXIO (HYBRID) NKE165,Sedan,109998.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,relisted,car/14956790/toyota/hilux/vic/altona-north/dual-cab,34990.0,34990,,2019,Toyota,Hilux,Sr (4X4),Double Cab Pick Up,227736.0,Automatic,2026-04-28,Diesel,VIC
+2026-02-25T22:27:40,relisted,car/14867346/toyota/hiace/vic/coburg-north/van,42990.0,42990,,2019,Toyota,HiAce,Slwb,Van,143369.0,Automatic,,Diesel,VIC
+2026-02-25T22:27:40,price_change,car/14803755/toyota/rav4/vic/berwick/suv,27499.0,27999,-500.0,2017,Toyota,RAV4,Gxl (2Wd),Wagon,57716.0,Automatic,,Unleaded,VIC
+2026-02-25T22:27:40,listed,car/14978651/toyota/hilux/vic/fawkner/dual-cab,29997.0,,,2014,Toyota,Hilux,Sr5 (4X4),Dual Cab Pick-up,241890.0,Automatic,2026-04-22,Diesel,VIC
+2026-02-25T22:27:40,relisted,car/14835196/toyota/hiace/vic/coburg-north/people-mover,48990.0,48990,,2018,Toyota,HiAce,Commuter (12 Seats),Bus,37782.0,Automatic,,Diesel,VIC
+2026-02-25T22:27:40,relisted,car/14889937/toyota/camry/vic/altona-north/sedan,7499.0,7499,,2004,Toyota,Camry,Altise,Sedan,219773.0,Automatic,2026-05-18,Unleaded,VIC
+2026-02-25T22:27:40,listed,car/14954953/toyota/kluger/vic/deer-park/suv,51880.0,,,2024,Toyota,Kluger,Gx Awd,Wagon,45175.0,Automatic,,Unleaded,VIC
+2026-02-25T22:27:40,relisted,car/14924984/toyota/hiace/vic/coburg-north/van,24990.0,24990,,2015,Toyota,HiAce,Lwb,Van,220925.0,Automatic,,Unleaded,VIC
+2026-02-25T22:27:40,listed,car/14970714/toyota/kluger/vic/deer-park/suv,35888.0,,,2021,Toyota,Kluger,Gx 2Wd,Wagon,126753.0,Automatic,2026-04-29,Premium,VIC
+2026-02-25T22:27:40,relisted,car/14941017/toyota/rav4/vic/altona-north/suv,17999.0,21999,-4000.0,2018,Toyota,RAV4,Gxl (2Wd),Wagon,212071.0,Automatic,2026-06-07,Unleaded,VIC
+2026-02-25T22:27:40,price_change,car/14941017/toyota/rav4/vic/altona-north/suv,17999.0,21999,-4000.0,2018,Toyota,RAV4,Gxl (2Wd),Wagon,212071.0,Automatic,2026-06-07,Unleaded,VIC
+2026-02-25T22:27:40,listed,car/14954955/toyota/corolla/vic/deer-park/hatchback,25888.0,,,2021,Toyota,Corolla,Ascent Sport Hybrid,Hatchback,131517.0,Automatic,2026-03-01,Hybrid,VIC
+2026-02-25T22:27:40,listed,car/14982858/toyota/echo/vic/oakleigh-south/sedan,2900.0,,,2003,Toyota,Echo,,Sedan,262213.0,Manual,2026-05-13,Unleaded,VIC
+2026-02-25T22:27:40,relisted,car/14940495/toyota/kluger/vic/fawkner/suv,26997.0,26997,,2015,Toyota,Kluger,Grande (4X2),Wagon,154772.0,Automatic,2026-03-26,Unleaded,VIC
+2026-02-25T22:27:40,relisted,car/14963886/toyota/corolla/vic/oakleigh/hatchback,23990.0,23990,,2015,Toyota,Corolla,Sx,Hatchback,10564.0,Automatic,2026-07-17,Unleaded,VIC
+2026-02-25T22:27:40,relisted,car/14936275/toyota/rav4/vic/altona-north/suv,12999.0,12999,,2009,Toyota,RAV4,Cv (4X4),Wagon,179225.0,Automatic,2026-07-06,Unleaded,VIC
+2026-02-25T22:27:40,relisted,car/14869038/toyota/yaris/vic/laverton-north/hatchback,21195.0,21195,,2019,Toyota,Yaris,Zr,Hatchback,23274.0,Automatic,,Unleaded,VIC
+2026-02-25T22:27:40,listed,car/14981512/toyota/corolla/vic/oakleigh/hatchback,36990.0,,,2024,Toyota,Corolla,Sx Hybrid,Hatchback,24023.0,Automatic,2027-01-18,Hybrid,VIC
+2026-02-25T22:27:40,listed,car/14970056/toyota/corolla/vic/ferntree-gully/sedan,30990.0,,,2022,Toyota,Corolla,Ascent Sport Hybrid,Sedan,16725.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,price_change,car/14877686/toyota/hilux/vic/moorabbin-airport/dual-cab,45990.0,46490,-500.0,2021,Toyota,Hilux,Sr5 (4X4),Double Cab Pick Up,124300.0,Manual,2025-12-30,Diesel,VIC
+2026-02-25T22:27:40,relisted,car/14961536/toyota/camry/vic/springvale/sedan,29980.0,29980,,2018,Toyota,Camry,Ascent (Hybrid),Sedan,55241.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,relisted,car/14856277/toyota/corolla/vic/ringwood/suv,24999.0,24999,,2020,Toyota,Corolla,,SUV,117171.0,Automatic,2026-03-10,Other,VIC
+2026-02-25T22:27:40,listed,car/14977715/toyota/hiace/vic/ringwood/van,9999.0,,,2006,Toyota,HiAce,Lwb,Van,431858.0,Manual,2026-08-01,Unleaded,VIC
+2026-02-25T22:27:40,price_change,car/14904116/toyota/camry/vic/moorabbin-airport/sedan,30990.0,31990,-1000.0,2020,Toyota,Camry,Ascent Sport (Hybrid),Sedan,84230.0,Automatic,2026-02-10,Hybrid,VIC
+2026-02-25T22:27:40,price_change,car/14967989/toyota/camry/vic/south-morang/sedan,25480.0,25990,-510.0,2018,Toyota,Camry,Ascent Sport,Sedan,89182.0,Automatic,2026-06-30,Unleaded,VIC
+2026-02-25T22:27:40,listed,car/14984450/toyota/hiace/vic/south-morang/people-mover,49480.0,,,2021,Toyota,HiAce,Slwb Commuter (12 Seats),Bus,114172.0,Automatic,2026-02-17,Diesel,VIC
+2026-02-25T22:27:40,listed,car/14984768/toyota/kluger/vic/bayswater/suv,14690.0,,,2012,Toyota,Kluger,Altitude (Fwd) 7 Seat,Wagon,228513.0,Automatic,2026-06-20,Unleaded,VIC
+2026-02-25T22:27:40,price_change,car/14968107/toyota/c-hr/vic/south-morang/suv,35480.0,35990,-510.0,2023,Toyota,C-HR,Koba (2Wd),Wagon,58794.0,Automatic,,Premium,VIC
+2026-02-25T22:27:40,listed,car/14978626/toyota/corolla/vic/ringwood/hatchback,19999.0,,,2017,Toyota,Corolla,Sx,Hatchback,133886.0,Automatic,2026-03-22,Unleaded,VIC
+2026-02-25T22:27:40,price_change,car/14865194/toyota/rav4/vic/moorabbin-airport/suv,33490.0,33990,-500.0,2021,Toyota,RAV4,Gx (Awd) Hybrid,Wagon,106166.0,Automatic,2026-02-23,Hybrid,VIC
+2026-02-25T22:27:40,price_change,car/14967990/toyota/camry/vic/south-morang/sedan,35990.0,36990,-1000.0,2024,Toyota,Camry,Ascent,Sedan,46062.0,Automatic,2026-04-08,Premium,VIC
+2026-02-25T22:27:40,price_change,car/14955537/toyota/hilux/vic/south-morang/dual-cab,59970.0,60480,-510.0,2021,Toyota,Hilux,Rugged X (4X4),Double Cab Pick Up,96197.0,Automatic,2026-10-20,Diesel,VIC
+2026-02-25T22:27:40,listed,car/14979702/toyota/kluger/vic/ferntree-gully/suv,64990.0,,,2021,Toyota,Kluger,Grande Hybrid Awd,Wagon,21737.0,Automatic,2026-09-02,Hybrid,VIC
+2026-02-25T22:27:40,price_change,car/14968116/toyota/hiace/vic/south-morang/van,52990.0,53990,-1000.0,2024,Toyota,HiAce,Lwb (4 Door Option),Van,79509.0,Automatic,2026-07-16,Diesel,VIC
+2026-02-25T22:27:40,price_change,car/14968264/toyota/hiace/vic/south-morang/van,48480.0,48990,-510.0,2022,Toyota,HiAce,Lwb,Van,73934.0,Automatic,,Diesel,VIC
+2026-02-25T22:27:40,listed,car/14980731/toyota/yaris/vic/ringwood/hatchback,20990.0,,,2020,Toyota,Yaris,G,Hatch,79955.0,Automatic,,Other,VIC
+2026-02-25T22:27:40,price_change,car/14841083/toyota/c-hr/vic/moorabbin-airport/suv,29990.0,30990,-1000.0,2020,Toyota,C-HR,Koba (2Wd) Hybrid,Wagon,81410.0,Automatic,2025-12-04,Hybrid,VIC
+2026-02-25T22:27:40,relisted,car/14950837/toyota/hilux/vic/ringwood/dual-cab,26999.0,26999,,2014,Toyota,Hilux,Sr (4X4),Dual Cab Pick-up,241728.0,Automatic,2026-06-21,Diesel,VIC
+2026-02-25T22:27:40,listed,car/14973997/toyota/yaris/vic/ringwood/hatchback,23990.0,,,2019,Toyota,Yaris,Ascent,Hatchback,28225.0,Automatic,2026-09-24,Unleaded,VIC
+2026-02-25T22:27:40,price_change,car/14932341/toyota/rav4/vic/moorabbin-airport/suv,38490.0,38990,-500.0,2023,Toyota,RAV4,Gx (2Wd) Hybrid,Wagon,104794.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,listed,car/14981059/toyota/c-hr/vic/ringwood/suv,26888.0,,,2020,Toyota,C-HR,Koba (2Wd),Wagon,99223.0,Automatic,2026-03-29,Premium,VIC
+2026-02-25T22:27:40,relisted,car/14939908/toyota/kluger/vic/ringwood/suv,18990.0,18990,,2012,Toyota,Kluger,Kx-R (Fwd) 7 Seat,Wagon,211086.0,Automatic,2026-03-26,Unleaded,VIC
+2026-02-25T22:27:40,relisted,car/14905170/toyota/c-hr/vic/springvale/suv,26490.0,26980,-490.0,2017,Toyota,C-HR,Koba (Awd),Wagon,62446.0,Automatic,,Premium,VIC
+2026-02-25T22:27:40,price_change,car/14905170/toyota/c-hr/vic/springvale/suv,26490.0,26980,-490.0,2017,Toyota,C-HR,Koba (Awd),Wagon,62446.0,Automatic,,Premium,VIC
+2026-02-25T22:27:40,listed,car/14977827/toyota/corolla/vic/ringwood/hatchback,8998.0,,,2002,Toyota,Corolla,Ascent Seca,Hatchback,106851.0,Automatic,2026-05-07,Unleaded,VIC
+2026-02-25T22:27:40,relisted,car/14870889/toyota/rav4/vic/laverton-north/suv,33890.0,33890,,2021,Toyota,RAV4,Gxl (2Wd),Wagon,71334.0,Automatic,,Unleaded,VIC
+2026-02-25T22:27:40,listed,car/14980921/toyota/c-hr/vic/croydon/suv,26888.0,,,2018,Toyota,C-HR,Koba (2Wd),Wagon,53622.0,Automatic,2026-05-18,Premium,VIC
+2026-02-25T22:27:40,listed,car/14980729/toyota/camry/vic/ringwood/sedan,14990.0,,,2010,Toyota,Camry,Altise,Sedan,94382.0,Automatic,2026-04-30,Unleaded,VIC
+2026-02-25T22:27:40,listed,car/14980920/toyota/hilux/vic/croydon/dual-cab,46888.0,,,2022,Toyota,Hilux,Sr (4X4),Double Cab Pick Up,121102.0,Automatic,,Diesel,VIC
+2026-02-25T22:27:40,listed,car/14980934/toyota/hilux/vic/croydon/dual-cab,52888.0,,,2023,Toyota,Hilux,Sr (4X4),Double Cab Chassis,62115.0,Automatic,2026-11-15,Diesel,VIC
+2026-02-25T22:27:40,listed,car/14962032/toyota/rav4/vic/mulgrave/suv,16888.0,,,2012,Toyota,RAV4,Cruiser (2Wd),Wagon,171512.0,Automatic,2026-05-17,Unleaded,VIC
+2026-02-25T22:27:40,listed,car/14983009/toyota/prius/vic/clayton-south/suv,21990.0,,,2015,Toyota,Prius,ZVW40 7 SEATER,SUV,91047.0,Automatic,,Unleaded,VIC
+2026-02-25T22:27:40,relisted,car/14952903/toyota/kluger/vic/ringwood/suv,8990.0,9999,-1009.0,2008,Toyota,Kluger,Kx-R (Fwd) 5 Seat,Wagon,387545.0,Automatic,2026-03-30,Unleaded,VIC
+2026-02-25T22:27:40,price_change,car/14952903/toyota/kluger/vic/ringwood/suv,8990.0,9999,-1009.0,2008,Toyota,Kluger,Kx-R (Fwd) 5 Seat,Wagon,387545.0,Automatic,2026-03-30,Unleaded,VIC
+2026-02-25T22:27:40,price_change,car/14928395/toyota/corolla/vic/ringwood/hatchback,16888.0,16990,-102.0,2014,Toyota,Corolla,Ascent,Hatchback,131156.0,Automatic,2026-03-27,Unleaded,VIC
+2026-02-25T22:27:40,relisted,car/14913650/toyota/corolla/vic/springvale/hatchback,18480.0,18480,,2014,Toyota,Corolla,Ascent Sport,Hatchback,89593.0,Automatic,,Unleaded,VIC
+2026-02-25T22:27:40,listed,car/14982664/toyota/corolla/vic/burwood/sedan,22975.0,,,2016,Toyota,Corolla,Zr,Sedan,64537.0,Automatic,2026-04-13,Unleaded,VIC
+2026-02-25T22:27:40,price_change,car/14956558/toyota/corolla/vic/sunbury/hatchback,26490.0,27990,-1500.0,2019,Toyota,Corolla,Zr,Hatchback,87813.0,Automatic,2026-01-29,Unleaded,VIC
+2026-02-25T22:27:40,listed,car/14984024/toyota/c-hr/vic/frankston/suv,39990.0,,,2022,Toyota,C-HR,Koba (2Wd) Hybrid,Wagon,37322.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,listed,car/14984234/toyota/rav4/vic/dandenong/suv,15990.0,,,2016,Toyota,RAV4,Gx (2Wd),Wagon,165388.0,Automatic,,Unleaded,VIC
+2026-02-25T22:27:40,listed,car/14984244/toyota/camry/vic/frankston/sedan,36990.0,,,2024,Toyota,Camry,Ascent,Sedan,16094.0,Automatic,,Premium,VIC
+2026-02-25T22:27:40,listed,car/14984289/toyota/hilux/vic/dandenong-south/pickup,25888.0,,,2021,Toyota,Hilux,WORKMATE,Ute Tray,132168.0,Automatic,,Unleaded,VIC
+2026-02-25T22:27:40,listed,car/14983429/toyota/hilux/vic/dandenong-south/pickup,38888.0,,,2017,Toyota,Hilux,SR5,Ute Tray,130176.0,Automatic,,Diesel,VIC
+2026-02-25T22:27:40,listed,car/14983453/toyota/noah/vic/dandenong/suv,29990.0,,,2018,Toyota,Noah,HYBRID,SUV,113340.0,Automatic,,Other,VIC
+2026-02-25T22:27:40,relisted,car/14945081/toyota/landcruiser-prado/vic/narre-warren/suv,56990.0,56990,,2019,Toyota,Landcruiser Prado,Gxl (4X4),Wagon,147091.0,Automatic,,Diesel,VIC
+2026-02-25T22:27:40,price_change,car/14930367/toyota/camry/vic/nunawading/sedan,22990.0,23950,-960.0,2018,Toyota,Camry,Ascent Sport,Sedan,89207.0,Automatic,2026-02-26,Unleaded,VIC
+2026-02-25T22:27:40,listed,car/14978568/toyota/corolla/vic/sunbury/hatchback,21990.0,,,2017,Toyota,Corolla,Ascent Sport,Hatchback,70285.0,Automatic,,Unleaded,VIC
+2026-02-25T22:27:40,price_change,car/14979256/toyota/camry/vic/brighton/sedan,27972.0,28990,-1018.0,2020,Toyota,Camry,Ascent,Sedan,39619.0,Automatic,2026-06-08,Unleaded,VIC
+2026-02-25T22:27:40,price_change,car/14971695/toyota/gr86/vic/cranbourne/coupe,52490.0,53490,-1000.0,2025,Toyota,GR86,Gts,Coupe,4068.0,Manual,,Premium,VIC
+2026-02-25T22:27:40,listed,car/14982971/toyota/corolla/vic/sunbury/hatchback,37950.0,,,2022,Toyota,Corolla,Zr Hybrid,Hatchback,42795.0,Automatic,2026-12-28,Hybrid,VIC
+2026-02-25T22:27:40,listed,car/14982969/toyota/rav4/vic/sunbury/suv,59950.0,,,2025,Toyota,RAV4,Cruiser (2Wd) Hybrid,Wagon,3723.0,Automatic,2026-11-24,Hybrid,VIC
+2026-02-25T22:27:40,price_change,car/14930366/toyota/camry/vic/nunawading/sedan,22990.0,23950,-960.0,2018,Toyota,Camry,Ascent Sport,Sedan,89207.0,Automatic,2026-02-26,Unleaded,VIC
+2026-02-25T22:27:40,price_change,car/14891094/toyota/rav4/vic/cranbourne/suv,49990.0,50888,-898.0,2023,Toyota,RAV4,Xse (Awd) Hybrid Premium Paint,Wagon,46255.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,price_change,car/14883764/toyota/hiace/vic/cranbourne/van,39490.0,39888,-398.0,2019,Toyota,HiAce,Lwb,Van,142657.0,Automatic,,Diesel,VIC
+2026-02-25T22:27:40,price_change,car/14974281/toyota/yaris/vic/cranbourne/hatchback,31490.0,31990,-500.0,2024,Toyota,Yaris,Ascent Sport Hybrid,Hatchback,13183.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,price_change,car/14847882/toyota/landcruiser/vic/berwick/dual-cab,123999.0,124999,-1000.0,2023,Toyota,Landcruiser,Lc79 Gxl,Double Cab Chassis,39191.0,Manual,,Diesel,VIC
+2026-02-25T22:27:40,price_change,car/14907535/toyota/landcruiser/vic/cranbourne/suv,137990.0,139490,-1500.0,2023,Toyota,Landcruiser,Lc300 Gr-S (4X4),Wagon,82209.0,Automatic,,Diesel,VIC
+2026-02-25T22:27:40,price_change,car/14964543/toyota/landcruiser/vic/cranbourne/dual-cab,97990.0,98490,-500.0,2023,Toyota,Landcruiser,Lc79 Gxl,Double Cab Chassis,31691.0,Automatic,,Diesel,VIC
+2026-02-25T22:27:40,listed,car/14982448/toyota/corolla/vic/burwood/hatchback,28495.0,,,2020,Toyota,Corolla,Sx (Hybrid),Hatchback,49663.0,Automatic,2026-04-22,Hybrid,VIC
+2026-02-25T22:27:40,listed,car/14983085/toyota/hilux/vic/berwick/dual-cab,50999.0,,,2019,Toyota,Hilux,Rogue (4X4),Double Cab Pick Up,114357.0,Automatic,,Diesel,VIC
+2026-02-25T22:27:40,listed,car/14983503/toyota/tundra/vic/berwick/dual-cab,144998.0,,,2024,Toyota,Tundra,Limited,Dual Cab Pick-up,10610.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,listed,car/14983504/toyota/landcruiser/vic/berwick/suv,114998.0,,,2022,Toyota,Landcruiser,Gxl,Wagon,32086.0,Manual,,Diesel,VIC
+2026-02-25T22:27:40,listed,car/14983623/toyota/hilux/vic/mornington/single-cab,14990.0,,,2013,Toyota,Hilux,Workmate,Cab Chassis,74320.0,Manual,2025-05-07,Unleaded,VIC
+2026-02-25T22:27:40,listed,car/14983369/toyota/hilux/vic/berwick/dual-cab,42999.0,,,2020,Toyota,Hilux,Sr (4X4),Double Cab Chassis,131820.0,Automatic,,Diesel,VIC
+2026-02-25T22:27:40,listed,car/14983379/toyota/hiace/vic/cranbourne/van,43990.0,,,2020,Toyota,HiAce,Lwb Gl (Colours),Van,109202.0,Automatic,,Diesel,VIC
+2026-02-25T22:27:40,listed,car/14983377/toyota/landcruiser-prado/vic/cranbourne/suv,65990.0,,,2021,Toyota,Landcruiser Prado,Gxl,Wagon,82591.0,Automatic,,Diesel,VIC
+2026-02-25T22:27:40,price_change,car/14871873/toyota/kluger/vic/cranbourne/suv,42490.0,42888,-398.0,2021,Toyota,Kluger,Gxl Awd,Wagon,91254.0,Automatic,,Premium,VIC
+2026-02-25T22:27:40,price_change,car/14933956/toyota/aurion/vic/mornington/sedan,14990.0,14888,102.0,2009,Toyota,Aurion,Sportivo Zr6,Sedan,148977.0,Automatic,2026-12-30,Unleaded,VIC
+2026-02-25T22:27:40,price_change,car/14898138/toyota/c-hr/vic/cranbourne/suv,34777.0,35490,-713.0,2022,Toyota,C-HR,Koba (2Wd),Wagon,55560.0,Automatic,,Premium,VIC
+2026-02-25T22:27:40,price_change,car/14961211/toyota/landcruiser/vic/cranbourne/suv,140990.0,142990,-2000.0,2022,Toyota,Landcruiser,Lc300 Sahara (4X4),Wagon,10193.0,Automatic,,Diesel,VIC
+2026-02-25T22:27:40,price_change,car/14828772/toyota/landcruiser/vic/cranbourne/suv,103990.0,104990,-1000.0,2023,Toyota,Landcruiser,Lc300 Gxl (4X4),Wagon,46794.0,Automatic,,Diesel,VIC
+2026-02-25T22:27:40,price_change,car/14892635/toyota/hilux/vic/cranbourne/dual-cab,58490.0,58990,-500.0,2022,Toyota,Hilux,Sr5 (4X4),Double Cab Pick Up,64142.0,Automatic,,Diesel,VIC
+2026-02-25T22:27:40,price_change,car/14935621/toyota/tundra/vic/cranbourne/dual-cab,157888.0,158990,-1102.0,2024,Toyota,Tundra,Limited,Dual Cab Pick-up,3391.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,price_change,car/14958448/toyota/landcruiser-prado/vic/cranbourne/suv,55990.0,56888,-898.0,2021,Toyota,Landcruiser Prado,Gxl,Wagon,172898.0,Automatic,,Diesel,VIC
+2026-02-25T22:27:40,price_change,car/14936556/toyota/hiace/vic/cranbourne/van,57490.0,57990,-500.0,2022,Toyota,HiAce,Slwb,Van,68643.0,Automatic,,Diesel,VIC
+2026-02-25T22:27:40,price_change,car/14909980/toyota/rav4/vic/cranbourne/suv,39990.0,40990,-1000.0,2022,Toyota,RAV4,Gx (2Wd) Hybrid,Wagon,55902.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,price_change,car/14933806/toyota/c-hr/vic/cranbourne/suv,42990.0,43490,-500.0,2024,Toyota,C-HR,Gxl Hybrid,Wagon,29540.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,price_change,car/14963472/toyota/landcruiser-prado/vic/cranbourne/suv,44490.0,44990,-500.0,2013,Toyota,Landcruiser Prado,Gxl (4X4),Wagon,88814.0,Automatic,,Diesel,VIC
+2026-02-25T22:27:40,price_change,car/14909979/toyota/hilux/vic/cranbourne/single-cab,23888.0,24490,-602.0,2020,Toyota,Hilux,Workmate,Cab Chassis,157165.0,Automatic,,Unleaded,VIC
+2026-02-25T22:27:40,price_change,car/14956003/toyota/camry/vic/cranbourne/sedan,43490.0,43990,-500.0,2025,Toyota,Camry,Ascent Hybrid,Sedan,14997.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,price_change,car/14909425/toyota/camry/vic/cranbourne/sedan,23888.0,24490,-602.0,2018,Toyota,Camry,Ascent Sport (Hybrid),Sedan,180290.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,price_change,car/14946644/toyota/landcruiser/vic/cranbourne/suv,138490.0,139990,-1500.0,2024,Toyota,Landcruiser,Lc300 Vx (4X4),Wagon,33644.0,Automatic,,Diesel,VIC
+2026-02-25T22:27:40,price_change,car/14957005/toyota/camry/vic/cranbourne/sedan,32490.0,32888,-398.0,2020,Toyota,Camry,Ascent Sport (Hybrid),Sedan,92418.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,price_change,car/14963477/toyota/rav4/vic/cranbourne/suv,43990.0,44990,-1000.0,2020,Toyota,RAV4,Gxl Awd Hybrid,Wagon,63565.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,price_change,car/14958278/toyota/rav4/vic/berwick/suv,22388.0,22888,-500.0,2017,Toyota,RAV4,Gx (2Wd),Wagon,137381.0,Automatic,,Unleaded,VIC
+2026-02-25T22:27:40,price_change,car/14924535/toyota/corolla/vic/berwick/hatchback,34999.0,35499,-500.0,2020,Toyota,Corolla,Zr (Hybrid),Hatchback,17637.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,price_change,car/14885056/toyota/corolla/vic/cranbourne/hatchback,33490.0,33990,-500.0,2024,Toyota,Corolla,Ascent Sport Hybrid,Hatchback,19777.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,price_change,car/14971902/toyota/rav4/vic/cranbourne/suv,39490.0,39990,-500.0,2020,Toyota,RAV4,Gx 2Wd Hybrid,Wagon,58431.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,price_change,car/14971900/toyota/kluger/vic/cranbourne/suv,34490.0,34990,-500.0,2019,Toyota,Kluger,Gx (4X4),Wagon,104328.0,Automatic,,Unleaded,VIC
+2026-02-25T22:27:40,price_change,car/14951921/toyota/rav4/vic/cranbourne/suv,32990.0,33490,-500.0,2021,Toyota,RAV4,Gx (Awd) Hybrid,Wagon,149962.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,price_change,car/14960866/toyota/rav4/vic/cranbourne/suv,38888.0,39490,-602.0,2022,Toyota,RAV4,Gx (2Wd) Hybrid,Wagon,70485.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,price_change,car/14969970/toyota/corolla/vic/cranbourne/hatchback,32490.0,32990,-500.0,2023,Toyota,Corolla,Ascent Sport Hybrid,Hatchback,44321.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,price_change,car/14957661/toyota/camry/vic/cranbourne/sedan,19490.0,19990,-500.0,2012,Toyota,Camry,Altise,Sedan,103370.0,Automatic,,Unleaded,VIC
+2026-02-25T22:27:40,price_change,car/14969969/toyota/corolla/vic/cranbourne/hatchback,32990.0,33990,-1000.0,2024,Toyota,Corolla,Ascent Sport Hybrid,Hatchback,46427.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,price_change,car/14895940/toyota/rav4/vic/cranbourne/suv,41490.0,41990,-500.0,2022,Toyota,RAV4,Cruiser (2Wd),Wagon,71260.0,Automatic,,Unleaded,VIC
+2026-02-25T22:27:40,price_change,car/14969526/toyota/corolla/vic/cranbourne/hatchback,37490.0,37990,-500.0,2024,Toyota,Corolla,Ascent Sport Hybrid,Hatchback,11640.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,price_change,car/14968231/toyota/kluger/vic/cranbourne/suv,57990.0,58490,-500.0,2022,Toyota,Kluger,Grande 2Wd,Wagon,36992.0,Automatic,,Premium,VIC
+2026-02-25T22:27:40,price_change,car/14945304/toyota/c-hr/vic/cranbourne/suv,43490.0,43990,-500.0,2024,Toyota,C-HR,Gxl Hybrid,Wagon,21648.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,price_change,car/14956215/toyota/camry/vic/cranbourne/sedan,31888.0,32490,-602.0,2019,Toyota,Camry,Ascent,Sedan,44553.0,Automatic,,Unleaded,VIC
+2026-02-25T22:27:40,price_change,car/14969968/toyota/hilux/vic/cranbourne/dual-cab,35777.0,36990,-1213.0,2015,Toyota,Hilux,Sr5 (4X4),Dual Cab Utility,220939.0,Automatic,,Diesel,VIC
+2026-02-25T22:27:40,price_change,car/14956088/toyota/rav4/vic/cranbourne/suv,45490.0,45990,-500.0,2024,Toyota,RAV4,Gx (2Wd) Hybrid,Wagon,46656.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,price_change,car/14960857/toyota/yaris/vic/cranbourne/hatchback,22990.0,23990,-1000.0,2019,Toyota,Yaris,Zr,Hatchback,29741.0,Automatic,,Unleaded,VIC
+2026-02-25T22:27:40,price_change,car/14950168/toyota/hilux/vic/cranbourne/dual-cab,52888.0,53990,-1102.0,2022,Toyota,Hilux,Sr (4X4),Double Cab Chassis,66230.0,Automatic,,Diesel,VIC
+2026-02-25T22:27:40,price_change,car/14925707/toyota/rav4/vic/cranbourne/suv,22888.0,23490,-602.0,2013,Toyota,RAV4,Gx (4X4),Wagon,103662.0,Automatic,,Unleaded,VIC
+2026-02-25T22:27:40,listed,car/14981107/toyota/c-hr/vic/mornington/suv,41990.0,,,2024,Toyota,C-HR,Gxl Hybrid,Wagon,31068.0,Automatic,2026-05-13,Hybrid,VIC
+2026-02-25T22:27:40,price_change,car/14868119/toyota/c-hr/vic/cranbourne/suv,40990.0,41490,-500.0,2024,Toyota,C-HR,Gxl Hybrid,Wagon,42269.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,price_change,car/14924760/toyota/kluger/vic/mornington/suv,35595.0,35495,100.0,2019,Toyota,Kluger,Gxl (4X4),Wagon,118097.0,Automatic,2026-06-30,Unleaded,VIC
+2026-02-25T22:27:40,price_change,car/14838628/toyota/camry/vic/cranbourne/sedan,34777.0,35990,-1213.0,2024,Toyota,Camry,Ascent,Sedan,62690.0,Automatic,,Premium,VIC
+2026-02-25T22:27:40,price_change,car/14877629/toyota/kluger/vic/cranbourne/suv,56490.0,56990,-500.0,2022,Toyota,Kluger,Gxl Hybrid Awd,Wagon,51612.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,relisted,car/14707679/toyota/hilux/vic/west-footscray/dual-cab,47990.0,47990,,2022,Toyota,Hilux,Sr5 (4X4),Double Cab Pick Up,192616.0,Automatic,2025-10-03,Diesel,VIC
+2026-02-25T22:27:40,relisted,car/14384757/toyota/crown/vic/maidstone/limousine,19995.0,19995,,2015,Toyota,Crown,ROYAL,Sedan,101964.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,relisted,car/14625352/toyota/c-hr/vic/maidstone/suv,23995.0,23995,,2018,Toyota,C-HR,G,SUV,108938.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,relisted,car/14498581/toyota/vellfire/vic/maidstone/van,42995.0,42995,,2019,Toyota,Vellfire,HYBRID X TOYOTA SAFETY SENSE,Commercial,97486.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,relisted,car/14758543/toyota/corolla/vic/maidstone/suv,24995.0,24995,,2020,Toyota,Corolla,WXB FULL OPTION,SUV,100383.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,relisted,car/14758601/toyota/corolla-cross/vic/maidstone/suv,34995.0,34995,,2022,Toyota,Corolla Cross,HYBRID G,SUV,55974.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,price_change,car/14770881/toyota/yaris-cross/vic/west-footscray/suv,23499.0,23999,-500.0,2022,Toyota,Yaris Cross,Urban,Wagon,87500.0,Automatic,,Unleaded,VIC
+2026-02-25T22:27:40,relisted,car/14758575/toyota/aqua/vic/maidstone/hatchback,13995.0,13995,,2012,Toyota,Aqua,G,Hatch,86336.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,relisted,car/14919636/toyota/probox/vic/maidstone/suv,,,,2020,Toyota,Probox,G L,SUV,92770.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,relisted,car/14752737/toyota/corolla/vic/st-kilda/wagon,21600.0,21600,,2020,Toyota,Corolla,Touring (Hybrid),Wagon,140000.0,,,,VIC
+2026-02-25T22:27:40,relisted,car/14734974/toyota/rukus/vic/footscray/wagon,7990.0,7990,,2011,Toyota,Rukus,Build 1,Wagon,224102.0,Automatic,,Unleaded,VIC
+2026-02-25T22:27:40,relisted,car/14384751/toyota/sienta/vic/maidstone/van,16995.0,16995,,2016,Toyota,Sienta,HYBRID G,Commercial,100780.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,relisted,car/14711372/toyota/hiace/vic/coburg-north/van,12990.0,12990,,2013,Toyota,HiAce,Lwb,Van,321030.0,Manual,2026-07-15,Diesel,VIC
+2026-02-25T22:27:40,relisted,car/14704298/toyota/hiace/vic/melbourne/people-mover,46990.0,46990,,2018,Toyota,HiAce,Commuter,Bus,44937.0,Manual,2026-06-03,Diesel,VIC
+2026-02-25T22:27:40,listed,car/14981887/toyota/corolla/vic/tottenham/hatchback,31888.0,,,2024,Toyota,Corolla,Ascent Sport,Hatchback,31651.0,Automatic,2026-06-13,Unleaded,VIC
+2026-02-25T22:27:40,listed,car/14985145/toyota/landcruiser-prado/vic/braybrook/suv,19999.0,,,2008,Toyota,Landcruiser Prado,Gxl (4X4),Wagon,311368.0,Automatic,2026-03-11,Diesel,VIC
+2026-02-25T22:27:40,listed,car/14984663/toyota/corolla/vic/melbourne/hatchback,39990.0,,,2025,Toyota,Corolla,Sx Hybrid,Hatchback,5971.0,Automatic,2026-07-11,Hybrid,VIC
+2026-02-25T22:27:40,listed,car/14984383/toyota/rav4/vic/elsternwick/suv,49990.0,,,2021,Toyota,RAV4,Xse (2Wd) Hybrid,Wagon,39938.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,listed,car/14984056/toyota/hiace/vic/melbourne/othercar,56990.0,,,2020,Toyota,HiAce,HIACE BUS SLWB 2.8L T DIESEL AUTOMATIC,OtherCar,134608.0,Automatic,2026-05-26,Other,VIC
+2026-02-25T22:27:40,relisted,car/14513955/toyota/hilux/vic/west-footscray/dual-cab,37990.0,37990,,2015,Toyota,Hilux,Sr5 (4X4),Dual Cab Utility,150933.0,Automatic,2026-01-22,Diesel,VIC
+2026-02-25T22:27:40,relisted,car/14752659/toyota/rav4/vic/south-melbourne/suv,41490.0,41990,-500.0,2021,Toyota,RAV4,Gxl (Awd) Hybrid,Wagon,33417.0,Automatic,2026-05-28,Hybrid,VIC
+2026-02-25T22:27:40,price_change,car/14752659/toyota/rav4/vic/south-melbourne/suv,41490.0,41990,-500.0,2021,Toyota,RAV4,Gxl (Awd) Hybrid,Wagon,33417.0,Automatic,2026-05-28,Hybrid,VIC
+2026-02-25T22:27:40,relisted,car/14804533/toyota/rav4/vic/south-melbourne/suv,42490.0,42990,-500.0,2022,Toyota,RAV4,Gxl (Awd) Hybrid,Wagon,60584.0,Automatic,2026-06-08,Hybrid,VIC
+2026-02-25T22:27:40,price_change,car/14804533/toyota/rav4/vic/south-melbourne/suv,42490.0,42990,-500.0,2022,Toyota,RAV4,Gxl (Awd) Hybrid,Wagon,60584.0,Automatic,2026-06-08,Hybrid,VIC
+2026-02-25T22:27:40,relisted,car/14942231/toyota/corolla/vic/footscray/hatchback,5750.0,5750,,2000,Toyota,Corolla,Ascent Seca,Liftback,253763.0,Automatic,,Unleaded,VIC
+2026-02-25T22:27:40,relisted,car/14373978/toyota/sienta/vic/maidstone/van,16995.0,16995,,2016,Toyota,Sienta,HYBRID G,Commercial,64790.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,listed,car/14978667/toyota/rav4/vic/footscray/suv,6990.0,,,2004,Toyota,RAV4,Cv (4X4),Wagon,287983.0,Automatic,,Unleaded,VIC
+2026-02-25T22:27:40,relisted,car/14936534/toyota/rav4/vic/alphington/suv,10888.0,10888,,2010,Toyota,RAV4,Cv (4X4),Wagon,193123.0,Automatic,2026-04-01,Unleaded,VIC
+2026-02-25T22:27:40,listed,car/14982140/toyota/corolla/vic/braybrook/sedan,10988.0,,,2013,Toyota,Corolla,Ascent,Sedan,228431.0,Automatic,2026-06-21,Unleaded,VIC
+2026-02-25T22:27:40,listed,car/14981888/toyota/rav4/vic/tottenham/suv,44888.0,,,2022,Toyota,RAV4,Gxl (2Wd) Hybrid,Wagon,45755.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,relisted,car/14975715/toyota/camry/vic/preston/sedan,13990.0,13990,,2014,Toyota,Camry,Atara S,Sedan,186836.0,Automatic,2026-08-28,Unleaded,VIC
+2026-02-25T22:27:40,relisted,car/14662688/toyota/landcruiser-prado/vic/preston/suv,17990.0,17990,,2009,Toyota,Landcruiser Prado,Gxl (4X4),Wagon,372005.0,Automatic,2026-03-12,Diesel,VIC
+2026-02-25T22:27:40,listed,car/14978653/toyota/hilux/vic/footscray/single-cab,10650.0,,,2007,Toyota,Hilux,Workmate,Cab Chassis,288614.0,Manual,,Unleaded,VIC
+2026-02-25T22:27:40,relisted,car/14789897/toyota/mark-x/vic/maidstone/limousine,14995.0,14995,,2010,Toyota,Mark X,PREMIUM,Sedan,73767.0,Automatic,,Unleaded,VIC
+2026-02-25T22:27:40,relisted,car/14793821/toyota/kluger/vic/elsternwick/suv,42450.0,42950,-500.0,2023,Toyota,Kluger,Gx 2Wd,Wagon,49164.0,Automatic,,Unleaded,VIC
+2026-02-25T22:27:40,price_change,car/14793821/toyota/kluger/vic/elsternwick/suv,42450.0,42950,-500.0,2023,Toyota,Kluger,Gx 2Wd,Wagon,49164.0,Automatic,,Unleaded,VIC
+2026-02-25T22:27:40,relisted,car/14793890/toyota/kluger/vic/elsternwick/suv,42450.0,42950,-500.0,2023,Toyota,Kluger,Gx 2Wd,Wagon,41074.0,Automatic,,Unleaded,VIC
+2026-02-25T22:27:40,price_change,car/14793890/toyota/kluger/vic/elsternwick/suv,42450.0,42950,-500.0,2023,Toyota,Kluger,Gx 2Wd,Wagon,41074.0,Automatic,,Unleaded,VIC
+2026-02-25T22:27:40,listed,car/14978663/toyota/corolla/vic/footscray/hatchback,6990.0,,,2003,Toyota,Corolla,Conquest Seca,Hatchback,267131.0,Automatic,,Unleaded,VIC
+2026-02-25T22:27:40,listed,car/14981833/toyota/camry/vic/footscray/sedan,6990.0,,,2006,Toyota,Camry,Sportivo,Sedan,208356.0,Automatic,,Unleaded,VIC
+2026-02-25T22:27:40,relisted,car/14625358/toyota/corolla/vic/maidstone/limousine,20995.0,20995,,2021,Toyota,Corolla,HYBRID EX,Sedan,74038.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,relisted,car/14688276/toyota/hilux/vic/maidstone/single-cab,18989.0,18989,,2015,Toyota,Hilux,Workmate,Cab Chassis,186349.0,Automatic,2025-12-17,Unleaded,VIC
+2026-02-25T22:27:40,relisted,car/14976069/toyota/rav4/vic/tottenham/suv,32888.0,32888,,2020,Toyota,RAV4,Gx (2Wd),Wagon,92292.0,Automatic,2026-05-27,Unleaded,VIC
+2026-02-25T22:27:40,relisted,car/14625364/toyota/corolla/vic/maidstone/suv,19995.0,19995,,2021,Toyota,Corolla,HYBRID EX,SUV,112238.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,relisted,car/14699811/toyota/corolla/vic/maidstone/suv,19995.0,19995,,2022,Toyota,Corolla,HYBRID EX,SUV,101417.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,relisted,car/14719080/toyota/rukus/vic/footscray/wagon,11990.0,11990,,2011,Toyota,Rukus,Build 1,Wagon,175654.0,Automatic,,Unleaded,VIC
+2026-02-25T22:27:40,relisted,car/14804535/toyota/rav4/vic/south-melbourne/suv,41490.0,41990,-500.0,2021,Toyota,RAV4,Gx (Awd) Hybrid,Wagon,38306.0,Automatic,2026-06-19,Hybrid,VIC
+2026-02-25T22:27:40,price_change,car/14804535/toyota/rav4/vic/south-melbourne/suv,41490.0,41990,-500.0,2021,Toyota,RAV4,Gx (Awd) Hybrid,Wagon,38306.0,Automatic,2026-06-19,Hybrid,VIC
+2026-02-25T22:27:40,relisted,car/14924745/toyota/rukus/vic/footscray/wagon,9650.0,9650,,2011,Toyota,Rukus,Build 3,Wagon,239691.0,Automatic,,Unleaded,VIC
+2026-02-25T22:27:40,relisted,car/14966408/toyota/yaris/vic/footscray/sedan,7650.0,7650,,2011,Toyota,Yaris,Yrx,Sedan,279485.0,Automatic,,Unleaded,VIC
+2026-02-25T22:27:40,relisted,car/14819272/toyota/corolla/vic/south-melbourne/sedan,31990.0,31990,,2024,Toyota,Corolla,Ascent Sport,Sedan,13367.0,Automatic,2026-06-03,Unleaded,VIC
+2026-02-25T22:27:40,relisted,car/14784841/toyota/landcruiser/vic/south-melbourne/suv,104990.0,104990,,2023,Toyota,Landcruiser,Lc300 Gxl (4X4),Wagon,49689.0,Automatic,2026-06-03,Diesel,VIC
+2026-02-25T22:27:40,relisted,car/14762948/toyota/c-hr/vic/st-kilda/wagon,25400.0,25400,,2018,Toyota,C-HR,G,Wagon,87850.0,,,,VIC
+2026-02-25T22:27:40,relisted,car/14940061/toyota/corolla/vic/footscray/hatchback,8990.0,8990,,2007,Toyota,Corolla,Ascent Sport Seca,Hatchback,186781.0,Automatic,,Unleaded,VIC
+2026-02-25T22:27:40,relisted,car/14791181/toyota/prius/vic/maidstone/hatchback,22995.0,22995,,2020,Toyota,Prius,A,Hatch,105238.0,Automatic,2026-05-24,Hybrid,VIC
+2026-02-25T22:27:40,relisted,car/14969566/toyota/kluger/vic/preston/suv,14800.0,14800,,2012,Toyota,Kluger,Altitude (4X4) 7 Seat,Wagon,229223.0,Automatic,2026-06-25,Unleaded,VIC
+2026-02-25T22:27:40,relisted,car/14951073/toyota/rav4/vic/elsternwick/suv,40990.0,40990,,2022,Toyota,RAV4,Gx (2Wd) Hybrid,Wagon,58232.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,relisted,car/14789623/toyota/rav4/vic/footscray/suv,12450.0,12450,,2007,Toyota,RAV4,Cruiser (4X4),Wagon,191710.0,Automatic,,Unleaded,VIC
+2026-02-25T22:27:40,relisted,car/14921616/toyota/corolla/vic/preston/hatchback,9500.0,9500,,2010,Toyota,Corolla,Ascent,Hatchback,212298.0,Automatic,2026-10-29,Unleaded,VIC
+2026-02-25T22:27:40,relisted,car/14937291/toyota/hilux/vic/elsternwick/single-cab,18990.0,18990,,2013,Toyota,Hilux,Workmate,Cab Chassis,167324.0,Manual,,Diesel,VIC
+2026-02-25T22:27:40,relisted,car/14789499/toyota/kluger/vic/west-footscray/suv,28990.0,28990,,2018,Toyota,Kluger,Gx (4X4),Wagon,190908.0,Automatic,,Unleaded,VIC
+2026-02-25T22:27:40,relisted,car/14797783/toyota/prius/vic/maidstone/hatchback,21995.0,21995,,2018,Toyota,Prius,S,Hatch,91067.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,relisted,car/14300663/toyota/aurion/vic/west-footscray/sedan,9990.0,9990,,2012,Toyota,Aurion,At-X,Sedan,257500.0,Automatic,2025-05-15,Unleaded,VIC
+2026-02-25T22:27:40,relisted,car/14778128/toyota/gr86/vic/heidelberg/coupe,49555.0,49555,,2024,Toyota,GR86,Gts,Coupe,12362.0,Automatic,2026-06-05,Premium,VIC
+2026-02-25T22:27:40,relisted,car/14697301/toyota/c-hr/vic/fawkner/suv,24990.0,24990,,2018,Toyota,C-HR,(HYBRID) ZYX10,SUV,91960.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,sold,car/14882828/toyota/camry/vic/west-footscray/sedan,21990,21990,,2020,Toyota,Camry,Ascent Sport,Sedan,156022.0,Automatic,2026-03-20,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/14846767/toyota/supra/vic/south-melbourne/coupe,117990,117990,,2024,Toyota,Supra,Gts,Coupe,16203.0,Automatic,2026-07-04,Premium,VIC
+2026-02-25T22:27:40,sold,car/14922939/toyota/kluger/vic/tottenham/suv,43888,43888,,2023,Toyota,Kluger,Gx 2Wd,Wagon,52179.0,Automatic,,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/14908882/toyota/landcruiser-prado/vic/berwick/suv,48720,48720,,2022,Toyota,Landcruiser Prado,Gxl Flat Tailgate,Wagon,90158.0,Automatic,2026-06-10,Diesel,VIC
+2026-02-25T22:27:40,sold,car/14919181/toyota/camry/vic/maidstone/sedan,22990,22990,,2016,Toyota,Camry,Atara Sl,Sedan,70088.0,Automatic,2026-12-30,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/14921073/toyota/camry/vic/tottenham/sedan,38888,38888,,2024,Toyota,Camry,Ascent Hybrid,Sedan,45883.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,sold,car/14914592/toyota/rav4/vic/elsternwick/suv,39450,39450,,2022,Toyota,RAV4,Gx (2Wd) Hybrid,Wagon,40713.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,sold,car/14681754/toyota/hilux/vic/werribee/dual-cab,20999,20999,,2008,Toyota,Hilux,Sr5 (4X4),Dual Cab Pick-up,235532.0,Manual,2025-10-08,Diesel,VIC
+2026-02-25T22:27:40,sold,car/14903425/toyota/kluger/vic/oakleigh/suv,13888,13888,,2008,Toyota,Kluger,Kx-S (Fwd),Wagon,186274.0,Automatic,,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/14733216/toyota/camry/vic/ringwood/sedan,27999,27999,,2020,Toyota,Camry,Sx,Sedan,143170.0,Automatic,2026-04-16,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/14816355/toyota/landcruiser/vic/fawkner/suv,39990,39990,,1999,Toyota,Landcruiser,HDJ101,SUV,141291.0,Automatic,,Diesel,VIC
+2026-02-25T22:27:40,sold,car/14746909/toyota/prius/vic/ringwood/hatchback,13499,13499,,2009,Toyota,Prius,I-Tech Hybrid,Hatchback,119263.0,Automatic,2026-04-24,Hybrid,VIC
+2026-02-25T22:27:40,sold,car/14822289/toyota/hiace/vic/ravenhall/van,15999,15999,,2005,Toyota,HiAce,Lwb,Van,218391.0,Automatic,2026-04-07,Diesel,VIC
+2026-02-25T22:27:40,sold,car/14858060/toyota/landcruiser/vic/bentleigh/dual-cab,91990,91990,,2021,Toyota,Landcruiser,Workmate,Double Cab Chassis,36844.0,Manual,2026-09-26,Diesel,VIC
+2026-02-25T22:27:40,sold,car/14786903/toyota/aurion/vic/murrumbeena/sedan,10990,10990,,2013,Toyota,Aurion,Prodigy,Sedan,212069.0,Automatic,,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/14146077/toyota/landcruiser-prado/vic/ringwood/suv,12990,12990,,2007,Toyota,Landcruiser Prado,GX 4X4,SUV,389687.0,Manual,2025-06-23,Diesel,VIC
+2026-02-25T22:27:40,sold,car/14912319/toyota/hilux/vic/deer-park/dual-cab,49888,49888,,2022,Toyota,Hilux,Sr (4X4),Double Cab Chassis,83902.0,Automatic,,Diesel,VIC
+2026-02-25T22:27:40,sold,car/14632748/toyota/camry/vic/ringwood/sedan,19899,19899,,2016,Toyota,Camry,Atara S,Sedan,95539.0,Automatic,2026-01-25,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/14826792/toyota/camry/vic/coburg-north/sedan,24990,24990,,2018,Toyota,Camry,Ascent,Sedan,96254.0,Automatic,,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/14918518/toyota/corolla/vic/burwood/hatchback,31310,31310,,2024,Toyota,Corolla,Ascent Sport,Hatchback,8782.0,Automatic,2026-05-03,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/14770175/toyota/rav4/vic/mentone/suv,61990,61990,,2024,Toyota,RAV4,Cruiser (Awd) Hybrid,Wagon,20198.0,Automatic,2026-05-29,Hybrid,VIC
+2026-02-25T22:27:40,sold,car/14844546/toyota/hilux/vic/coburg-north/dual-cab,26990,26990,,2019,Toyota,Hilux,Workmate,Double Cab Pick Up,151141.0,Automatic,,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/14909536/toyota/yaris/vic/altona-north/hatchback,12999,12999,,2011,Toyota,Yaris,Yr,Hatchback,56763.0,Automatic,2026-06-03,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/14851861/toyota/rav4/vic/ringwood/suv,13888,13888,,2013,Toyota,RAV4,Gxl (4X4),Wagon,265527.0,Automatic,2026-02-28,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/14821145/toyota/corolla/vic/ringwood/hatchback,18488,18488,,2016,Toyota,Corolla,Ascent Sport,Hatchback,128732.0,Automatic,2026-03-10,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/14823038/toyota/hiace/vic/ringwood/people-mover,28888,28888,,2009,Toyota,HiAce,Commuter,Bus,141488.0,Automatic,2026-04-28,Diesel,VIC
+2026-02-25T22:27:40,sold,car/14816000/toyota/camry/vic/ringwood/sedan,17990,17990,,2016,Toyota,Camry,Atara S,Sedan,157500.0,Automatic,2025-12-18,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/14811893/toyota/kluger/vic/springvale/suv,32480,32480,,2018,Toyota,Kluger,Gxl (4X2),Wagon,106388.0,Automatic,,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/14806597/toyota/rav4/vic/hoppers-crossing/suv,10999,10999,,2006,Toyota,RAV4,Cv (4X4),Wagon,252626.0,Automatic,2025-09-04,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/14924457/toyota/hilux/vic/keysborough/dual-cab,52970,52970,,2022,Toyota,Hilux,Sr5 (4X4),Double Cab Chassis,168553.0,Automatic,2026-06-01,Diesel,VIC
+2026-02-25T22:27:40,sold,car/14928474/toyota/echo/vic/ringwood/sedan,8990,8990,,2003,Toyota,Echo,,Sedan,170232.0,Automatic,2026-03-06,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/14792603/toyota/hilux/vic/moorabbin-airport/single-cab,22990,22990,,2020,Toyota,Hilux,Workmate Hi-Rider,Cab Chassis,150890.0,Manual,2026-01-30,Diesel,VIC
+2026-02-25T22:27:40,sold,car/14804375/toyota/kluger/vic/moorabbin-airport/suv,33990,33990,,2019,Toyota,Kluger,Gxl (4X2),Wagon,94800.0,Automatic,2025-12-06,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/14916198/toyota/kluger/vic/cranbourne-west/suv,12490,12490,,2013,Toyota,Kluger,Kx-R (Fwd) 5 Seat,Wagon,225000.0,Automatic,,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/14865110/toyota/hilux/vic/dandenong-south/pickup,27999,27999,,2018,Toyota,Hilux,SR,Ute Tray,233116.0,Manual,2026-04-08,Diesel,VIC
+2026-02-25T22:27:40,sold,car/14896972/toyota/hilux/vic/frankston/dual-cab,47990,47990,,2022,Toyota,Hilux,Sr (4X4),Double Cab Pick Up,57001.0,Automatic,2026-07-05,Diesel,VIC
+2026-02-25T22:27:40,sold,car/14921239/toyota/corolla/vic/berwick/sedan,28888,28888,,2022,Toyota,Corolla,Ascent Sport Hybrid,Sedan,41062.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,sold,car/14904901/toyota/hilux/vic/cranbourne/dual-cab,60490,60490,,2023,Toyota,Hilux,Sr5 (4X4),Double Cab Pick Up,49993.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,sold,car/14498585/toyota/noah/vic/maidstone/van,20500,20500,,2015,Toyota,Noah,HYBRID X DELIGHT PLUS,Commercial,102445.0,Automatic,2026-05-12,Hybrid,VIC
+2026-02-25T22:27:40,sold,car/14928869/toyota/camry/vic/tottenham/sedan,39388,39388,,2024,Toyota,Camry,Ascent,Sedan,52256.0,Automatic,,Premium,VIC
+2026-02-25T22:27:40,sold,car/14924944/toyota/landcruiser-prado/vic/tottenham/suv,39888,39888,,2012,Toyota,Landcruiser Prado,Gxl (4X4),Wagon,96936.0,Automatic,2026-02-28,Diesel,VIC
+2026-02-25T22:27:40,sold,car/14877333/toyota/rav4/vic/laverton-north/suv,32890,32890,,2020,Toyota,RAV4,Gx Awd Hybrid,Wagon,94200.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,sold,car/14654734/toyota/hiace/vic/brooklyn/van,14999,14999,,2005,Toyota,HiAce,Lwb,Van,228000.0,Manual,,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/14645575/toyota/kluger/vic/avondale-heights/suv,10999,10999,,2007,Toyota,Kluger,Kx-S (Fwd),Wagon,229628.0,Automatic,2026-01-25,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/14608138/toyota/tarago/vic/avondale-heights/people-mover,10499,10499,,2007,Toyota,Tarago,Glx,Wagon,200420.0,Automatic,2026-02-28,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/14883439/toyota/hiace/vic/briar-hill/van,9999,9999,,2000,Toyota,HiAce,LWB,Commercial,444224.0,Automatic,2026-09-14,Diesel,VIC
+2026-02-25T22:27:40,sold,car/14696800/toyota/landcruiser/vic/brooklyn/suv,15999,15999,,2004,Toyota,Landcruiser,Gxl (4X4),Wagon,293000.0,Automatic,,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/14715315/toyota/kluger/vic/altona-north/suv,10999,10999,,2008,Toyota,Kluger,Grande (4X4),Wagon,222586.0,Automatic,2026-03-29,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/14418509/toyota/rav4/vic/ringwood/suv,11450,11450,,2006,Toyota,RAV4,Cv (4X4),Wagon,179527.0,Automatic,2025-10-21,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/13931455/toyota/rav4/vic/hoppers-crossing/suv,15999,15999,,2016,Toyota,RAV4,Gxl (4X4),Wagon,302002.0,Manual,2024-10-15,Diesel,VIC
+2026-02-25T22:27:40,sold,car/14705261/toyota/yaris/vic/ringwood/hatchback,13990,13990,,2012,Toyota,Yaris,Yr,Hatchback,127840.0,Automatic,2026-04-15,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/14705190/toyota/rav4/vic/ringwood/suv,22990,22990,,2017,Toyota,RAV4,Gx (2Wd),Wagon,134858.0,Automatic,2026-05-03,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/14705188/toyota/corolla/vic/ringwood/hatchback,18990,18990,,2013,Toyota,Corolla,Ascent Sport,Hatchback,128356.0,Automatic,2026-04-12,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/14579302/toyota/corolla/vic/ringwood/hatchback,12888,12888,,2007,Toyota,Corolla,Conquest,Hatchback,148441.0,Automatic,2026-04-30,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/14397637/toyota/kluger/vic/hoppers-crossing/suv,9999,9999,,2010,Toyota,Kluger,Kx-R (Fwd) 7 Seat,Wagon,305017.0,Automatic,2025-07-24,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/13939171/toyota/voxy/vic/moorabbin-airport/suv,56990,56990,,2023,Toyota,Voxy,HYBRID S-Z,SUV,197.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,sold,car/14705220/toyota/c-hr/vic/ringwood/suv,25990,25990,,2017,Toyota,C-HR,Koba (Awd),Wagon,74746.0,Automatic,2025-11-16,Premium,VIC
+2026-02-25T22:27:40,sold,car/14705273/toyota/rav4/vic/ringwood/suv,19990,19990,,2014,Toyota,RAV4,Gxl (2Wd),Wagon,154082.0,Automatic,2026-03-30,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/14718808/toyota/hilux/vic/hoppers-crossing/pickup,12499,12499,,2008,Toyota,Hilux,SR,Ute Tray,251918.0,Automatic,2026-03-07,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/14632431/toyota/c-hr/vic/burwood/suv,38000,38000,,2021,Toyota,C-HR,Gr-S (2Wd) Hybrid,Wagon,59117.0,Automatic,2026-03-18,Hybrid,VIC
+2026-02-25T22:27:40,sold,car/14640418/toyota/c-hr/vic/murrumbeena/suv,27990,27990,,2020,Toyota,C-HR,Koba (2Wd),Wagon,93000.0,Automatic,2025-10-20,Premium,VIC
+2026-02-25T22:27:40,sold,car/14710952/toyota/hilux/vic/moorabbin-airport/single-cab,24990,24990,,2021,Toyota,Hilux,Workmate,Cab Chassis,75300.0,Automatic,2025-11-18,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/14925715/toyota/aqua/vic/point-cook/hatchback,,,,2015,Toyota,Aqua,S,Hatch,41991.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,sold,car/14879076/toyota/landcruiser/vic/ringwood/pickup,49990,49990,,1975,Toyota,Landcruiser,FJ45 4X4,Ute Tray,114794.0,Manual,,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/14705138/toyota/camry/vic/ringwood/sedan,14990,14990,,2013,Toyota,Camry,Altise,Sedan,176323.0,Automatic,2025-11-30,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/14912397/toyota/aurion/vic/oakleigh-south/sedan,14990,14990,,2012,Toyota,Aurion,Sportivo Sx6,Sedan,153738.0,Automatic,2026-03-18,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/14696757/toyota/kluger/vic/springvale/suv,24000,24000,,2015,Toyota,Kluger,Gxl (4X2),Wagon,145000.0,Automatic,2026-05-26,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/14823637/toyota/hilux/vic/coburg-north/single-cab,25990,25990,,2019,Toyota,Hilux,Workmate,Cab Chassis,169450.0,Automatic,,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/14830279/toyota/camry/vic/fawkner/sedan,27997,27997,,2020,Toyota,Camry,Ascent Sport,Sedan,91447.0,Automatic,2026-06-29,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/14723762/toyota/crown/vic/dingley-village/sedan,17990,17990,,2011,Toyota,Crown,Majesta (Hybrid),Sedan,116000.0,,,,VIC
+2026-02-25T22:27:40,sold,car/14936203/toyota/kluger/vic/avondale-heights/suv,14999,14999,,2010,Toyota,Kluger,Kx-S (4X4),Wagon,233440.0,Automatic,2026-04-25,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/14952144/toyota/yaris/vic/williamstown-north/hatchback,5990,5990,,2008,Toyota,Yaris,Yr,Hatchback,261000.0,Manual,,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/14953306/toyota/camry/vic/laverton-north/sedan,18090,18090,,2016,Toyota,Camry,Altise,Sedan,99121.0,Automatic,,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/14950919/toyota/camry/vic/south-melbourne/sedan,24990,24990,,2018,Toyota,Camry,Ascent,Sedan,135385.0,Automatic,2027-01-24,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/14906748/toyota/corolla/vic/south-melbourne/hatchback,21990,21990,,2018,Toyota,Corolla,Ascent Sport,Hatchback,83822.0,Automatic,2026-04-08,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/14936449/toyota/estima/vic/ringwood/suv,17999,17999,,2014,Toyota,Estima,,SUV,125360.0,Automatic,2026-04-20,Other,VIC
+2026-02-25T22:27:40,sold,car/14952945/toyota/corolla/vic/camberwell/hatchback,35990,35990,,2024,Toyota,Corolla,Ascent Sport Hybrid,Hatchback,9495.0,Automatic,2026-08-05,Hybrid,VIC
+2026-02-25T22:27:40,sold,car/13345569/toyota/landcruiser-prado/vic/hoppers-crossing/suv,26999,26999,,2012,Toyota,Landcruiser Prado,Altitude (4X4),Wagon,322821.0,Automatic,2023-10-11,Diesel,VIC
+2026-02-25T22:27:40,sold,car/14764862/toyota/prius/vic/point-cook/hatchback,,,,2012,Toyota,Prius,Hybrid,Hatchback,50440.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,sold,car/14953202/toyota/corolla/vic/coburg-north/hatchback,34990,34990,,2021,Toyota,Corolla,Zr Hybrid,Hatchback,43333.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,sold,car/14962369/toyota/corolla/vic/coburg-north/sedan,28990,28990,,2020,Toyota,Corolla,Ascent Sport (Hybrid),Sedan,39147.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,sold,car/14963921/toyota/rav4/vic/oakleigh/suv,25999,25999,,2015,Toyota,RAV4,Cruiser (4X4),Wagon,90110.0,Automatic,2026-05-25,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/14961955/toyota/hilux/vic/heidelberg/dual-cab,49777,49777,,2022,Toyota,Hilux,Sr (4X4),Double Cab Pick Up,67820.0,Automatic,2026-08-10,Diesel,VIC
+2026-02-25T22:27:40,sold,car/14705109/toyota/rav4/vic/ringwood/suv,21990,21990,,2015,Toyota,RAV4,Gxl (4X4),Wagon,140926.0,Automatic,2025-03-20,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/14705275/toyota/rav4/vic/ringwood/suv,21990,21990,,2014,Toyota,RAV4,Gxl (2Wd),Wagon,106115.0,Automatic,2026-06-26,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/14964849/toyota/yaris/vic/west-footscray/hatchback,6990,6990,,2006,Toyota,Yaris,Yrx,Hatchback,111129.0,Automatic,,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/14968065/toyota/corolla/vic/coburg-north/hatchback,12500,12500,,2013,Toyota,Corolla,Ascent,Hatchback,158022.0,Automatic,2026-04-15,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/14953067/toyota/hiace/vic/coburg-north/people-mover,33990,33990,,2014,Toyota,HiAce,Commuter,Bus,231035.0,Automatic,,Diesel,VIC
+2026-02-25T22:27:40,sold,car/14963113/toyota/hiace/vic/blackburn/people-mover,58888,58888,,2019,Toyota,HiAce,Commuter (12 Seats),Bus,22659.0,Automatic,2025-10-13,Diesel,VIC
+2026-02-25T22:27:40,sold,car/14838408/toyota/hilux/vic/tullamarine/dual-cab,45990,45990,,2020,Toyota,Hilux,Sr (4X4),Double Cab Chassis,114274.0,Automatic,2026-03-01,Diesel,VIC
+2026-02-25T22:27:40,sold,car/14964106/toyota/corolla/vic/blackburn/hatchback,17990,17990,,2017,Toyota,Corolla,Ascent Sport,Hatchback,129191.0,Automatic,2026-04-15,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/14968891/toyota/landcruiser-prado/vic/frankston/suv,60990,60990,,2022,Toyota,Landcruiser Prado,Gx,Wagon,79850.0,Automatic,,Diesel,VIC
+2026-02-25T22:27:40,sold,car/14945083/toyota/rav4/vic/narre-warren/suv,44990,44990,,2024,Toyota,RAV4,Gx (2Wd) Hybrid,Wagon,40580.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,sold,car/14969173/toyota/landcruiser-prado/vic/frankston/suv,67990,67990,,2022,Toyota,Landcruiser Prado,Gxl,Wagon,74041.0,Automatic,,Diesel,VIC
+2026-02-25T22:27:40,sold,car/14970202/toyota/hilux/vic/narre-warren/dual-cab,39990,39990,,2018,Toyota,Hilux,Sr (4X4),Dual Cab Chassis,133127.0,Manual,,Diesel,VIC
+2026-02-25T22:27:40,sold,car/14968265/toyota/rav4/vic/highett/suv,26999,26999,,2016,Toyota,RAV4,Gx (2Wd),Wagon,67368.0,Automatic,2026-11-18,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/14974361/toyota/landcruiser-prado/vic/elsternwick/suv,88990,88990,,2021,Toyota,Landcruiser Prado,Kakadu,Wagon,34071.0,Automatic,,Diesel,VIC
+2026-02-25T22:27:40,sold,car/14946259/toyota/c-hr/vic/springvale/suv,26980,26980,,2020,Toyota,C-HR,Gxl (2Wd),Wagon,45381.0,Automatic,,Premium,VIC
+2026-02-25T22:27:40,sold,car/14960359/toyota/camry/vic/briar-hill/limousine,4999,4999,,2003,Toyota,Camry,SPORTIVO,Sedan,379676.0,Automatic,2026-03-30,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/14980026/toyota/corolla/vic/coburg-north/hatchback,23990,23990,,2018,Toyota,Corolla,Hybrid,Hatchback,109023.0,Automatic,2026-03-09,Hybrid,VIC
+2026-02-25T22:27:40,sold,car/14980237/toyota/hilux/vic/south-melbourne/pickup,62888,62888,,2023,Toyota,Hilux,ROGUE,Ute Tray,81488.0,Automatic,2026-04-12,Other,VIC
+2026-02-25T22:27:40,sold,car/14981233/toyota/corolla/vic/oakleigh/hatchback,36990,36990,,2024,Toyota,Corolla,Sx Hybrid,Hatchback,24023.0,Automatic,2027-01-18,Hybrid,VIC
+2026-02-25T22:27:40,sold,car/14975468/toyota/rav4/vic/seaford/suv,9990,9990,,2009,Toyota,RAV4,Cv (4X4),Wagon,200134.0,Manual,2026-10-31,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/14981736/toyota/landcruiser/vic/berwick/dual-cab,109999,109999,,2019,Toyota,Landcruiser,Gxl (4X4),Double Cab Chassis,57942.0,Manual,,Diesel,VIC
+2026-02-25T22:27:40,sold,car/14955433/toyota/camry/vic/narre-warren/sedan,43990,43990,,2025,Toyota,Camry,Ascent Hybrid,Sedan,12901.0,Automatic,,Hybrid,VIC
+2026-02-25T22:27:40,sold,car/14686213/toyota/camry/vic/murrumbeena/sedan,16990,16990,,2017,Toyota,Camry,Altise,Sedan,147919.0,Automatic,2025-12-06,Unleaded,VIC
+2026-02-25T22:27:40,sold,car/14740621/toyota/avensis/vic/sunshine-north/people-mover,7490,7490,,2003,Toyota,Avensis,Verso Glx,Wagon,256112.0,Automatic,2026-04-07,Unleaded,VIC
