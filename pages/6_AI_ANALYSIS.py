@@ -713,6 +713,7 @@ def _score_autotrader_matches(
         or listing_row.get("rego_state")
         or listing_row.get("location")
     )
+    listing_make = _norm_key(listing_row.get("make"))
     listing_fuel = listing_row.get("fuel_type")
     listing_trans = listing_row.get("transmission")
     listing_body = listing_row.get("body_type")
@@ -723,16 +724,17 @@ def _score_autotrader_matches(
 
     stats = {
         "total": len(autotrader_df),
-        "toyota": 0,
+        "make_match": 0,
         "group_match": 0,
         "fuel_trans_body": 0,
         "km_window": 0,
     }
     rows: list[dict[str, object]] = []
     for _, candidate in autotrader_df.iterrows():
-        if _norm_key(candidate.get("make")) != "toyota":
+        candidate_make = _norm_key(candidate.get("make"))
+        if listing_make and candidate_make != listing_make:
             continue
-        stats["toyota"] += 1
+        stats["make_match"] += 1
         candidate_tag = _safe_text(candidate.get("canonical_tag"), fallback="").strip()
         if candidate_tag == UNCLASSIFIED:
             candidate_tag = ""
@@ -1030,13 +1032,17 @@ def _render_curve_section(row: pd.Series) -> None:
             st.info("Curve image not available for this tag.")
         return
 
-    if listing_year is not None and autotrader_points:
+    plot_year = listing_year
+    if lower_year is not None and upper_year is not None and lower_year == upper_year:
+        plot_year = lower_year
+
+    if plot_year is not None:
         plotted = _render_single_curve_plot(
             curves_df,
             curve_tag,
-            listing_year,
+            plot_year,
             parse_numeric(row.get("odometer_reading")),
-            autotrader_points=autotrader_points,
+            autotrader_points=autotrader_points if autotrader_points else None,
         )
         if plotted:
             return
@@ -1066,11 +1072,12 @@ def _render_autotrader_confirmation(row: pd.Series) -> None:
         return
 
     matches, stats = _score_autotrader_matches(row, curve_tag, limit=50)
+    make_label = _safe_text(row.get("make"), fallback="").strip() or "Make"
     if stats and stats.get("total"):
         st.caption(
             "Filter path: "
             f"{stats.get('total', 0)} total → "
-            f"{stats.get('toyota', 0)} Toyota → "
+            f"{stats.get('make_match', 0)} {make_label} → "
             f"{stats.get('group_match', 0)} group → "
             f"{stats.get('fuel_trans_body', 0)} fuel/trans/body → "
         f"{stats.get('km_window', 0)} within ±100,000 km"
@@ -2414,6 +2421,30 @@ def _compute_max_bid_value(row: pd.Series) -> Optional[float]:
     return parse_currency(row.get("recommended_max_bid")) or parse_currency(row.get("price"))
 
 
+def _compute_score_100_value(row: pd.Series) -> Optional[float]:
+    score_10 = row.get("score_out_of_10")
+    if score_10 is not None and not (isinstance(score_10, float) and pd.isna(score_10)):
+        try:
+            value = float(score_10)
+            if 0 <= value <= 10:
+                return round(value * 10, 1)
+        except (TypeError, ValueError):
+            pass
+
+    confidence = row.get("confidence")
+    if confidence is None or (isinstance(confidence, float) and pd.isna(confidence)):
+        return None
+    try:
+        value = float(confidence)
+    except (TypeError, ValueError):
+        return None
+    if 0 <= value <= 1:
+        return round(value * 100, 1)
+    if 1 < value <= 100:
+        return round(value, 1)
+    return None
+
+
 def _split_notes(value: object) -> list[str]:
     if value is None or (isinstance(value, float) and pd.isna(value)):
         return []
@@ -2456,6 +2487,7 @@ output = output.copy()
 output["profit_margin_value"] = output.apply(_compute_profit_margin_value, axis=1)
 output["resale_value"] = output.apply(_compute_resale_value, axis=1)
 output["max_bid_value"] = output.apply(_compute_max_bid_value, axis=1)
+output["score_100_value"] = output.apply(_compute_score_100_value, axis=1)
 output["verdict_label"] = output["computed_verdict"].apply(lambda value: _map_verdict_label(str(value))[0])
 output["verdict_class"] = output["computed_verdict"].apply(lambda value: _map_verdict_label(str(value))[1])
 
@@ -2583,6 +2615,13 @@ def render_listing_card(row: pd.Series) -> None:
     max_bid_display = _format_currency_value(row.get("max_bid_value"))
     resale_display = _format_currency_value(row.get("resale_value"))
     profit_pct_display = _format_percent(row.get("profit_margin_value"))
+    score_100 = row.get("score_100_value")
+    score_100_display = "N/A"
+    if score_100 is not None and not (isinstance(score_100, float) and pd.isna(score_100)):
+        try:
+            score_100_display = f"{float(score_100):.0f}"
+        except (TypeError, ValueError):
+            score_100_display = "N/A"
 
     current_price_display = _format_price_text(row.get("price"))
     raw_time_value = row.get("time_remaining_or_date_sold") or row.get("date_sold")
@@ -2673,6 +2712,7 @@ def render_listing_card(row: pd.Series) -> None:
             _build_metric_box("Max bid", max_bid_display),
             _build_metric_box("Expected resale", resale_display),
             _build_metric_box("Profit %", profit_pct_display),
+            _build_metric_box("Score /100", score_100_display),
             "</div>",
             '<div class="chip-row">',
             f'<span class="{km_chip_class}">{html.escape(km_label)}</span>',

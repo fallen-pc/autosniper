@@ -19,7 +19,7 @@ from bs4 import BeautifulSoup
 from playwright.async_api import Error as PlaywrightError, async_playwright
 
 
-DEFAULT_URL = "https://www.autotrader.com.au/for-sale/used/toyota/vic/melbourne"
+DEFAULT_URL = "https://www.autotrader.com.au/for-sale/used/vic/melbourne"
 OUTPUT_DIR = Path(__file__).resolve().parent / "output"
 DEFAULT_OUTPUT = OUTPUT_DIR / "first_page_results.csv"
 HISTORY_OUTPUT = OUTPUT_DIR / "listing_history.csv"
@@ -1484,12 +1484,55 @@ def _cookie_summary(cookie_header: str) -> dict[str, int]:
     }
 
 
+def _load_seed_urls(url: str, urls_file: Path | None) -> list[str]:
+    urls: list[str] = []
+    if urls_file is not None:
+        raw_lines = urls_file.read_text(encoding="utf-8").splitlines()
+        for line in raw_lines:
+            candidate = line.strip()
+            if not candidate or candidate.startswith("#"):
+                continue
+            urls.append(candidate)
+    else:
+        urls.append(url)
+    deduped: list[str] = []
+    seen: set[str] = set()
+    for candidate in urls:
+        normalized = _normalize_url(candidate)
+        if not normalized or normalized in seen:
+            continue
+        seen.add(normalized)
+        deduped.append(normalized)
+    return deduped
+
+
+def _dedupe_output_df(df: pd.DataFrame) -> pd.DataFrame:
+    if df is None or df.empty:
+        return pd.DataFrame(columns=OUTPUT_COLUMNS)
+    rows = df.fillna("").to_dict("records")
+    seen: set[str] = set()
+    merged_rows: list[dict[str, Any]] = []
+    for row in rows:
+        keys = _row_keys(row)
+        if not keys or any(key in seen for key in keys):
+            continue
+        seen.update(keys)
+        merged_rows.append(row)
+    return _format_output(pd.DataFrame(merged_rows))
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Scrape the first Autotrader results page.")
     parser.add_argument(
         "--url",
         default=DEFAULT_URL,
         help="Autotrader search URL (first page).",
+    )
+    parser.add_argument(
+        "--urls-file",
+        type=Path,
+        default=None,
+        help="Optional file of seed URLs (one per line). Overrides --url when provided.",
     )
     parser.add_argument(
         "--output",
@@ -1642,74 +1685,102 @@ def main() -> None:
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     output_path = args.output
-    if args.all_pages:
-        resume_path = args.resume_file or args.output.with_suffix(
-            args.output.suffix + ".resume.json"
+    if args.urls_file and not args.urls_file.exists():
+        raise RuntimeError(f"URLs file not found: {args.urls_file}")
+    seed_urls = _load_seed_urls(args.url, args.urls_file)
+    if not seed_urls:
+        raise RuntimeError("No valid seed URLs found. Check --url/--urls-file.")
+    if args.resume and len(seed_urls) > 1:
+        raise RuntimeError("--resume is only supported when scraping a single seed URL.")
+
+    combined_frames: list[pd.DataFrame] = []
+    combined_snapshots: list[pd.DataFrame] = []
+    debug_rows: list[dict[str, object]] = []
+
+    for idx, seed_url in enumerate(seed_urls, start=1):
+        print(f"[Seed {idx}/{len(seed_urls)}] {seed_url}")
+        if args.all_pages:
+            resume_path = None
+            if len(seed_urls) == 1:
+                resume_path = args.resume_file or args.output.with_suffix(
+                    args.output.suffix + ".resume.json"
+                )
+                if args.resume:
+                    resume_state = _load_resume_state(resume_path)
+                    if resume_state:
+                        resume_url = resume_state.get("next_url") or resume_state.get("current_url")
+                        if resume_url:
+                            seed_url = str(resume_url)
+                            print(f"Resuming from {seed_url} using {resume_path}")
+            checkpoint_path = output_path if len(seed_urls) == 1 else None
+            df_part, debug, snapshot_part = scrape_all_pages(
+                seed_url,
+                cookie_header,
+                args.storage_state or None,
+                args.playwright_timeout,
+                args.playwright_browser,
+                not args.playwright_headful,
+                args.playwright_slowmo,
+                args.playwright_wait,
+                args.playwright_block_resources,
+                args.max_pages,
+                args.sleep_seconds,
+                checkpoint_path,
+                args.checkpoint_every,
+                args.priority_state,
+                args.skip_existing,
+                not args.overwrite,
+                resume_path,
+                args.page_retries,
+                args.page_retry_delay,
+            )
+        else:
+            df_part, debug = scrape_first_page(
+                seed_url,
+                cookie_header,
+                args.storage_state or None,
+                args.playwright_timeout,
+                args.playwright_browser,
+                not args.playwright_headful,
+                args.playwright_slowmo,
+                args.playwright_wait,
+                args.playwright_block_resources,
+                args.dump_html,
+                args.dump_next_data,
+            )
+            snapshot_part = df_part
+
+        debug_rows.append(
+            {
+                "seed_url": seed_url,
+                "rows": len(df_part),
+                "pages_fetched": debug.get("pages_fetched"),
+                "rows_deduped": debug.get("rows_deduped"),
+                "completed": debug.get("completed"),
+                "fetch_mode": debug.get("fetch_mode"),
+                "status_code": debug.get("status_code"),
+                "final_url": debug.get("final_url"),
+                "next_data_rows": debug.get("next_data_rows", 0),
+                "nuxt_data_rows": debug.get("nuxt_data_rows", 0),
+                "json_ld_rows": debug.get("json_ld_rows", 0),
+                "error": debug.get("error", ""),
+            }
         )
-        start_url = args.url
-        if args.resume:
-            resume_state = _load_resume_state(resume_path)
-            if resume_state:
-                resume_url = resume_state.get("next_url") or resume_state.get("current_url")
-                if resume_url:
-                    start_url = str(resume_url)
-                    print(f"Resuming from {start_url} using {resume_path}")
-        df, debug, snapshot_df = scrape_all_pages(
-            start_url,
-            cookie_header,
-            args.storage_state or None,
-            args.playwright_timeout,
-            args.playwright_browser,
-            not args.playwright_headful,
-            args.playwright_slowmo,
-            args.playwright_wait,
-            args.playwright_block_resources,
-            args.max_pages,
-            args.sleep_seconds,
-            output_path,
-            args.checkpoint_every,
-            args.priority_state,
-            args.skip_existing,
-            not args.overwrite,
-            resume_path,
-            args.page_retries,
-            args.page_retry_delay,
-        )
-    else:
-        df, debug = scrape_first_page(
-            args.url,
-            cookie_header,
-            args.storage_state or None,
-            args.playwright_timeout,
-            args.playwright_browser,
-            not args.playwright_headful,
-            args.playwright_slowmo,
-            args.playwright_wait,
-            args.playwright_block_resources,
-            args.dump_html,
-            args.dump_next_data,
-        )
-        snapshot_df = df
-    if df.empty:
-        print(
-            "No listings extracted. "
-            f"next_data_rows={debug.get('next_data_rows', 0)} "
-            f"nuxt_data_rows={debug.get('nuxt_data_rows', 0)} "
-            f"json_ld_rows={debug.get('json_ld_rows', 0)}"
-        )
-        print(
-            "Fetch details: "
-            f"mode={debug.get('fetch_mode')} "
-            f"status={debug.get('status_code')} "
-            f"final_url={debug.get('final_url')}"
-        )
-        if debug.get("error") == "not_found":
-            print(
-                "Autotrader returned a 404 page. Try a valid search URL such as "
-                "https://www.autotrader.com.au/for-sale"
-        )
-        print("Check the URL or supply AUTOTRADER_COOKIE/AUTOTRADER_STORAGE_STATE.")
+        if not df_part.empty:
+            combined_frames.append(df_part)
+        if snapshot_part is not None and not snapshot_part.empty:
+            combined_snapshots.append(snapshot_part)
+
+    if not combined_frames:
+        print("No listings extracted from any seed URL.")
+        debug_df = pd.DataFrame(debug_rows)
+        if not debug_df.empty:
+            print(debug_df.to_string(index=False))
+        print("Check URL coverage and supply AUTOTRADER_COOKIE/AUTOTRADER_STORAGE_STATE.")
         return
+
+    df = _dedupe_output_df(pd.concat(combined_frames, ignore_index=True))
+    snapshot_df = _dedupe_output_df(pd.concat(combined_snapshots, ignore_index=True))
     df = _apply_canonical_tagging(df)
     snapshot_df = _apply_canonical_tagging(snapshot_df)
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -1726,13 +1797,13 @@ def main() -> None:
             )
         else:
             print(f"Saved {len(merged_df)} rows to {output_path}")
-    if args.all_pages:
-        print(
-            f"Pages fetched: {debug.get('pages_fetched')} "
-            f"rows_deduped: {debug.get('rows_deduped')}"
-        )
+    debug_df = pd.DataFrame(debug_rows)
+    if not debug_df.empty:
+        print("Seed summary:")
+        print(debug_df.to_string(index=False))
 
-    mark_sold = args.all_pages and args.max_pages == 0 and debug.get("completed", True)
+    all_completed = True if debug_df.empty else bool(debug_df["completed"].fillna(True).all())
+    mark_sold = args.all_pages and args.max_pages == 0 and len(seed_urls) == 1 and all_completed
     history_counts = _update_listing_history(
         snapshot_df,
         STATE_OUTPUT,
