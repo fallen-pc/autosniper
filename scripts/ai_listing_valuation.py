@@ -11,6 +11,7 @@ from openai import OpenAI
 
 from shared.data_loader import dataset_path
 from shared.repair_pricing import assess_repairs, apply_repairs_to_max_bid
+from shared.telegram_alerts import send_once
 from shared.top_buy import apply_top_buy_behavior, top_buy_gate_check
 
 
@@ -162,10 +163,66 @@ def load_cached_results() -> pd.DataFrame:
 
 def _save_result_row(row: Dict[str, Any]) -> None:
     df = load_cached_results()
+    existing_row: Dict[str, Any] | None = None
+    url = row.get("url")
+    if url and "url" in df.columns:
+        existing_matches = df[df["url"] == url]
+        if not existing_matches.empty:
+            existing_row = existing_matches.iloc[-1].to_dict()
     new_row = pd.DataFrame([row])
     combined = pd.concat([df, new_row], ignore_index=True)
     combined = combined.drop_duplicates(subset=["url"], keep="last")
     combined.to_csv(AI_RESULTS_PATH, index=False)
+    _maybe_send_good_listing_alert(row, existing_row)
+
+
+def _is_good_verdict(verdict: Any) -> bool:
+    verdict_text = str(verdict or "").strip().lower()
+    return "strong" in verdict_text or verdict_text == "good"
+
+
+def _alert_title(row: Mapping[str, Any]) -> str:
+    parts = [
+        str(row.get("year") or "").strip(),
+        str(row.get("make") or "").strip(),
+        str(row.get("model") or "").strip(),
+        str(row.get("variant") or "").strip(),
+    ]
+    title = " ".join(part for part in parts if part)
+    return title or "Listing"
+
+
+def _maybe_send_good_listing_alert(
+    row: Mapping[str, Any],
+    existing_row: Mapping[str, Any] | None,
+) -> None:
+    if str(row.get("analysis_context") or "").strip().lower() != "active":
+        return
+    if not _is_good_verdict(row.get("computed_verdict")):
+        return
+    if existing_row and _is_good_verdict(existing_row.get("computed_verdict")):
+        return
+
+    title = _alert_title(row)
+    price = row.get("recommended_max_bid") or row.get("price") or "N/A"
+    expected_profit = row.get("expected_profit") or "N/A"
+    margin = row.get("profit_margin_percent") or "N/A"
+    url = str(row.get("url") or "").strip()
+    if not url:
+        return
+    message = (
+        "New Good listing\n"
+        f"{title}\n"
+        f"Verdict: {row.get('computed_verdict')}\n"
+        f"Max bid: {price}\n"
+        f"Expected profit: {expected_profit}\n"
+        f"Profit margin: {margin}\n"
+        f"{url}"
+    )
+    try:
+        send_once("new_good_listing", url, message, verdict=str(row.get("computed_verdict") or ""))
+    except Exception:
+        return
 
 
 def _parse_currency(value: Any) -> Optional[float]:
