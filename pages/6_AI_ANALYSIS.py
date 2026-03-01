@@ -2801,10 +2801,8 @@ def render_listing_card(row: pd.Series) -> None:
         _render_bullets("Comparable sales (Grays)", comps_items)
         tag_value = row.get("canonical_tag")
         if tag_value and not (isinstance(tag_value, float) and pd.isna(tag_value)):
-            comps_df = sold_df[sold_df["canonical_tag"] == tag_value].copy()
             listing_year = _safe_int(row.get("year"))
-            if listing_year is not None and "year_int" in comps_df.columns:
-                comps_df = comps_df[comps_df["year_int"] == listing_year]
+            comps_df = _select_sold_subset(sold_df, tag_value, listing_year).copy()
             if not comps_df.empty:
                 active_profile = build_defect_profile(row.to_dict())
                 comp_profiles: list[dict[str, object]] = []
