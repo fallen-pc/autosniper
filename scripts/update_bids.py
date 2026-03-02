@@ -30,6 +30,7 @@ logger = logging.getLogger(__name__)
 
 CSV_FILE = str(dataset_path("active_vehicle_details.csv"))
 STATIC_SEED_FILE = dataset_path("vehicle_static_details.csv")
+ACTIVE_LINKS_FILE = dataset_path("active_vehicle_links.csv")
 SNAPSHOT_FILE = dataset_path("active_snapshots.csv")
 SNAPSHOT_COLUMNS = [
     "snapshot_ts",
@@ -218,21 +219,66 @@ def persist_dataframe(df: pd.DataFrame, note: str) -> None:
     print(f"{note}: wrote {len(snapshot)} rows to {CSV_FILE}")
 
 
+def _load_active_queue_urls() -> set[str]:
+    if not ACTIVE_LINKS_FILE.exists():
+        return set()
+    try:
+        links_df = pd.read_csv(ACTIVE_LINKS_FILE)
+    except Exception:
+        return set()
+    if "url" not in links_df.columns:
+        return set()
+    queue_urls: set[str] = set()
+    for url in links_df["url"].dropna().astype(str).tolist():
+        cleaned = clean_url(url).strip().lower()
+        if cleaned:
+            queue_urls.add(cleaned)
+    return queue_urls
+
+
 def _load_active_seed_dataframe() -> pd.DataFrame:
     active_df = pd.DataFrame()
     if os.path.exists(CSV_FILE):
         active_df = pd.read_csv(CSV_FILE)
 
+    queue_urls = _load_active_queue_urls()
+    pruned_existing = 0
+    if not active_df.empty and "url" in active_df.columns:
+        active_df = active_df.copy()
+        active_df["url"] = active_df["url"].apply(clean_url)
+        if queue_urls:
+            before_count = len(active_df)
+            active_df = active_df[
+                active_df["url"].fillna("").astype(str).str.strip().str.lower().isin(queue_urls)
+            ].copy()
+            pruned_existing = before_count - len(active_df)
+
     if not STATIC_SEED_FILE.exists():
+        if pruned_existing > 0:
+            persist_dataframe(
+                active_df,
+                f"Pruned {pruned_existing} stale active listing(s) not present in active link queue",
+            )
         return active_df
 
     static_df = pd.read_csv(STATIC_SEED_FILE)
     if static_df.empty:
+        if pruned_existing > 0:
+            persist_dataframe(
+                active_df,
+                f"Pruned {pruned_existing} stale active listing(s) not present in active link queue",
+            )
         return active_df
 
     seed_df = static_df.copy()
     if "drivetrain_source" in seed_df.columns:
         seed_df = seed_df.drop(columns=["drivetrain_source"])
+    if "url" in seed_df.columns:
+        seed_df["url"] = seed_df["url"].apply(clean_url)
+        if queue_urls:
+            seed_df = seed_df[
+                seed_df["url"].fillna("").astype(str).str.strip().str.lower().isin(queue_urls)
+            ].copy()
     for column, default in (
         ("status", "Active"),
         ("time_remaining_or_date_sold", ""),
@@ -245,26 +291,45 @@ def _load_active_seed_dataframe() -> pd.DataFrame:
             seed_df[column] = seed_df[column].fillna(default)
 
     if active_df.empty:
-        persist_dataframe(seed_df, "Seeded active listings from static details")
+        note = "Seeded active listings from static details"
+        if pruned_existing > 0:
+            note = (
+                f"Pruned {pruned_existing} stale active listing(s) not present in active link queue "
+                "and reseeded active listings from static details"
+            )
+        persist_dataframe(seed_df, note)
         return seed_df
 
     if "url" not in active_df.columns or "url" not in seed_df.columns:
+        if pruned_existing > 0:
+            persist_dataframe(
+                active_df,
+                f"Pruned {pruned_existing} stale active listing(s) not present in active link queue",
+            )
         return active_df
 
-    active_df = active_df.copy()
-    active_df["url"] = active_df["url"].apply(clean_url)
-    seed_df["url"] = seed_df["url"].apply(clean_url)
     active_urls = set(active_df["url"].dropna().astype(str).str.strip().str.lower())
     missing_seed = seed_df[
         ~seed_df["url"].fillna("").astype(str).str.strip().str.lower().isin(active_urls)
     ].copy()
     if missing_seed.empty:
+        if pruned_existing > 0:
+            persist_dataframe(
+                active_df,
+                f"Pruned {pruned_existing} stale active listing(s) not present in active link queue",
+            )
         return active_df
 
     combined = pd.concat([active_df, missing_seed], ignore_index=True, sort=False)
     combined["url"] = combined["url"].apply(clean_url)
     combined = combined.drop_duplicates(subset=["url"], keep="first")
-    persist_dataframe(combined, f"Seeded {len(missing_seed)} missing active listing(s) from static details")
+    note_parts: list[str] = []
+    if pruned_existing > 0:
+        note_parts.append(
+            f"Pruned {pruned_existing} stale active listing(s) not present in active link queue"
+        )
+    note_parts.append(f"Seeded {len(missing_seed)} missing active listing(s) from static details")
+    persist_dataframe(combined, " and ".join(note_parts))
     return combined
 
 # ─── Clean URL from HTML anchor tag ─────────────────────────────
