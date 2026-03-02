@@ -915,7 +915,6 @@ def merge_and_save_static(existing_df: pd.DataFrame, new_df: pd.DataFrame) -> pd
         static_export = static_export.drop(columns=["drivetrain_source"])
     static_export = static_export.reindex(columns=STATIC_OUTPUT_COLUMNS, fill_value="")
     atomic_write(static_export, OUTPUT_FILE)
-    seed_active_dataset(static_export)
     return static_export
 
 

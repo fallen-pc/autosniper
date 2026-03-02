@@ -29,6 +29,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 CSV_FILE = str(dataset_path("active_vehicle_details.csv"))
+STATIC_SEED_FILE = dataset_path("vehicle_static_details.csv")
 SNAPSHOT_FILE = dataset_path("active_snapshots.csv")
 SNAPSHOT_COLUMNS = [
     "snapshot_ts",
@@ -216,6 +217,37 @@ def persist_dataframe(df: pd.DataFrame, note: str) -> None:
     shutil.move(temp_file, CSV_FILE)
     print(f"{note}: wrote {len(snapshot)} rows to {CSV_FILE}")
 
+
+def _load_active_seed_dataframe() -> pd.DataFrame:
+    if os.path.exists(CSV_FILE):
+        df = pd.read_csv(CSV_FILE)
+        if not df.empty:
+            return df
+
+    if not STATIC_SEED_FILE.exists():
+        return pd.DataFrame()
+
+    static_df = pd.read_csv(STATIC_SEED_FILE)
+    if static_df.empty:
+        return pd.DataFrame()
+
+    seed_df = static_df.copy()
+    if "drivetrain_source" in seed_df.columns:
+        seed_df = seed_df.drop(columns=["drivetrain_source"])
+    for column, default in (
+        ("status", "Active"),
+        ("time_remaining_or_date_sold", ""),
+        ("price", ""),
+        ("bids", 0),
+    ):
+        if column not in seed_df.columns:
+            seed_df[column] = default
+        else:
+            seed_df[column] = seed_df[column].fillna(default)
+
+    persist_dataframe(seed_df, "Seeded active listings from static details")
+    return seed_df
+
 # ─── Clean URL from HTML anchor tag ─────────────────────────────
 def clean_url(url):
     if not isinstance(url, str):
@@ -355,14 +387,14 @@ async def update_bids(
 ):
     skipped_urls = []
     try:
-        if not os.path.exists(CSV_FILE):
-            print("File not found:", CSV_FILE)
+        df = _load_active_seed_dataframe()
+        if df.empty:
+            print("No active seed dataset found. Expected active or static listings CSV.")
             return [], skipped_urls
 
-        df = pd.read_csv(CSV_FILE)
         df["url"] = df["url"].apply(clean_url)
         if df.empty:
-            print("vehicle_static_details.csv is empty.")
+            print("No listings available to update.")
             return df, skipped_urls
 
         # Use input_links if provided, else use URLs from CSV
