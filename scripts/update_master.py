@@ -680,6 +680,10 @@ def update_master_database() -> None:
 
     active_target = active_df if not active_df.empty else pd.DataFrame(columns=df.columns)
     active_target = _restore_active_columns(active_target, existing_active)
+    if "status" in active_target.columns:
+        active_target["status"] = active_target["status"].fillna("active").astype(str).str.strip().str.lower()
+        active_target = active_target[active_target["status"] == "active"].copy()
+        active_target["status"] = "active"
     if "drivetrain_source" in active_target.columns:
         active_target = active_target.drop(columns=["drivetrain_source"])
     _atomic_write(active_target, ACTIVE_FILE)
