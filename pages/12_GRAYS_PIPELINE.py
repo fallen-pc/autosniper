@@ -318,8 +318,50 @@ def render_stage_5_panel() -> None:
 
 
 def render_stage_6_panel() -> None:
-    st.markdown("## Stage 6 - Schema Audit")
-    if st.button("Run: Audit & Lock", key="panel_stage6_run"):
+    st.markdown("## Stage 6 - Refresh Active Status")
+    col_a, col_b = st.columns(2)
+    if col_a.button("Run: Update Bids", key="panel_stage6_bids_run"):
+        _run_stage_command(
+            [sys.executable, "scripts/update_bids.py", "--limit", "25", "--batch-interval", "5", "--skip-master"],
+            spinner_text="Refreshing active bid/status data...",
+            success_text="Active bid/status refresh completed.",
+        )
+    if col_b.button("Run: Update Master", key="panel_stage6_master_run"):
+        _run_stage_command(
+            [sys.executable, "scripts/update_master.py"],
+            spinner_text="Sorting active, sold, and referred datasets...",
+            success_text="Master update completed.",
+        )
+    _render_dataset_summary_row("Active Vehicle Details", "active_vehicle_details.csv")
+    _render_dataset_summary_row("Sold Cars", "sold_cars.csv")
+    _render_dataset_summary_row("Referred Cars", "referred_cars.csv")
+
+    active_df = _safe_read_csv(dataset_path("active_vehicle_details.csv"))
+    with st.expander("Active status sample", expanded=False):
+        if active_df.empty:
+            st.info("active_vehicle_details.csv is empty.")
+        else:
+            sample_cols = [
+                col
+                for col in [
+                    "status",
+                    "year",
+                    "make",
+                    "model",
+                    "variant",
+                    "price",
+                    "bids",
+                    "time_remaining_or_date_sold",
+                    "url",
+                ]
+                if col in active_df.columns
+            ]
+            st.dataframe(active_df[sample_cols].head(50), use_container_width=True, hide_index=True)
+
+
+def render_stage_7_panel() -> None:
+    st.markdown("## Stage 7 - Schema Audit")
+    if st.button("Run: Audit & Lock", key="panel_stage7_run"):
         _run_stage_command(
             [sys.executable, "scripts/pipeline_stages.py", "audit"],
             spinner_text="Auditing schemas...",
@@ -347,21 +389,28 @@ digraph grays_pipeline {
   node [shape=box, style="rounded,filled", fillcolor="#0f1622", color="#2f8fd8", fontcolor="#e6edf6", fontsize=10];
   edge [color="#6a7d92", arrowsize=0.8];
 
-  n1 [label="1. SCRAPE LINKS\\nall_vehicle_links.csv"];
+  n0 [label="GRAYS\\nsearch pages", fillcolor="#11161d", color="#8fd3ff"];
+  n1 [label="1. EXTRACT LINKS\\nall_vehicle_links.csv"];
   n2 [label="1b. ACTIVE LINKS\\nactive_vehicle_links.csv"];
   n3 [label="2. SCRAPE DETAILS\\nraw_vehicle_data.csv"];
   n4 [label="3. NORMALISE\\nnormalised_data.csv"];
-  n5 [label="4. EXCLUSION LOG\\nexcluded_listings.csv"];
+  n5 [label="4. EXCLUSIONS\\nexcluded_listings.csv"];
   n6 [label="4b. STATIC DETAILS\\nvehicle_static_details.csv"];
-  n7 [label="5. CANONICAL SPLIT\\nmatched/unmatched csv"];
-  n8 [label="6. ACTIVE DETAILS\\nactive_vehicle_details.csv"];
+  n7 [label="5. CANONICAL MATCH\\nmatched / unmatched"];
+  n8 [label="6. UPDATE BIDS\\nactive_vehicle_details.csv"];
+  n9 [label="6b. UPDATE MASTER\\nsold / referred / active"];
+  n10 [label="restricted build\\nactive_vehicle_details_restricted.csv"];
+  n11 [label="AI Analysis", fillcolor="#09131c", color="#ffd166"];
 
-  n1 -> n2 -> n3 -> n4 -> n6 -> n7 -> n8;
+  n0 -> n1 -> n2 -> n3 -> n4 -> n6 -> n7;
   n4 -> n5;
+  n6 -> n8 -> n9 -> n10 -> n11;
+  n9 -> n2;
+  n9 -> n6;
 }
 """
     st.graphviz_chart(dot, use_container_width=True)
-    st.caption("Excluded listings branch from normalised data and do not continue to static/active.")
+    st.caption("Static ends at vehicle_static_details.csv. Active status is refreshed later by update_bids + update_master.")
 
 
 # -----------------------------
@@ -376,7 +425,8 @@ stage_options = [
     "3 Normalise",
     "4 Exclusions",
     "5 Canonical",
-    "6 Audit",
+    "6 Active Refresh",
+    "7 Audit",
 ]
 if hasattr(st, "segmented_control"):
     stage = st.segmented_control("Open Stage", stage_options, default="1 Scrape Links")
@@ -393,5 +443,7 @@ elif stage == "4 Exclusions":
     render_stage_4_panel()
 elif stage == "5 Canonical":
     render_stage_5_panel()
-elif stage == "6 Audit":
+elif stage == "6 Active Refresh":
     render_stage_6_panel()
+elif stage == "7 Audit":
+    render_stage_7_panel()

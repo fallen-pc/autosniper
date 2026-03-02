@@ -35,6 +35,8 @@ UNMATCHED_PATH = dataset_path("unmatched_canonical_details.csv")
 ALL_LINKS_PATH = dataset_path("all_vehicle_links.csv")
 ACTIVE_LINKS_PATH = dataset_path("active_vehicle_links.csv")
 EXCLUDED_PATH = dataset_path("excluded_listings.csv")
+SOLD_PATH = dataset_path("sold_cars.csv")
+REFERRED_PATH = dataset_path("referred_cars.csv")
 STATIC_OUTPUT_COLUMNS = list(
     dict.fromkeys(list(STATIC_VEHICLE_SCHEMA) + ["canonical_tag", "canonical_reason"])
 )
@@ -79,6 +81,23 @@ def _coerce_schema(path: Path, columns: list[str]) -> dict[str, object]:
     }
 
 
+def _completed_url_set() -> set[str]:
+    completed: set[str] = set()
+    for path in (SOLD_PATH, REFERRED_PATH):
+        df = _read_csv_safe(path)
+        if df.empty or "url" not in df.columns:
+            continue
+        urls = (
+            df["url"]
+            .dropna()
+            .astype(str)
+            .str.strip()
+            .str.lower()
+        )
+        completed.update(url for url in urls if url)
+    return completed
+
+
 def audit_and_lock_schemas() -> dict[str, dict[str, object]]:
     reports = {
         "raw_vehicle_data.csv": _coerce_schema(RAW_PATH, list(STATIC_VEHICLE_SCHEMA)),
@@ -117,6 +136,17 @@ def apply_exclusions_from_normalised() -> None:
     if normal_df.empty:
         print("Normalised dataset is empty; nothing to filter.")
         return
+    completed_urls = _completed_url_set()
+    if completed_urls and "url" in normal_df.columns:
+        before = len(normal_df)
+        normal_df = normal_df[
+            ~normal_df["url"].fillna("").astype(str).str.strip().str.lower().isin(completed_urls)
+        ].copy()
+        removed = before - len(normal_df)
+        if removed:
+            print(
+                f"Skipped {removed} completed sold/referred row(s) from normalised data before static merge."
+            )
     existing_static = pd.read_csv(STATIC_PATH) if STATIC_PATH.exists() else pd.DataFrame()
     merge_and_save_static(existing_static, normal_df)
     print(f"Static export refreshed from {NORMAL_PATH}")

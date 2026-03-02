@@ -219,17 +219,16 @@ def persist_dataframe(df: pd.DataFrame, note: str) -> None:
 
 
 def _load_active_seed_dataframe() -> pd.DataFrame:
+    active_df = pd.DataFrame()
     if os.path.exists(CSV_FILE):
-        df = pd.read_csv(CSV_FILE)
-        if not df.empty:
-            return df
+        active_df = pd.read_csv(CSV_FILE)
 
     if not STATIC_SEED_FILE.exists():
-        return pd.DataFrame()
+        return active_df
 
     static_df = pd.read_csv(STATIC_SEED_FILE)
     if static_df.empty:
-        return pd.DataFrame()
+        return active_df
 
     seed_df = static_df.copy()
     if "drivetrain_source" in seed_df.columns:
@@ -245,8 +244,28 @@ def _load_active_seed_dataframe() -> pd.DataFrame:
         else:
             seed_df[column] = seed_df[column].fillna(default)
 
-    persist_dataframe(seed_df, "Seeded active listings from static details")
-    return seed_df
+    if active_df.empty:
+        persist_dataframe(seed_df, "Seeded active listings from static details")
+        return seed_df
+
+    if "url" not in active_df.columns or "url" not in seed_df.columns:
+        return active_df
+
+    active_df = active_df.copy()
+    active_df["url"] = active_df["url"].apply(clean_url)
+    seed_df["url"] = seed_df["url"].apply(clean_url)
+    active_urls = set(active_df["url"].dropna().astype(str).str.strip().str.lower())
+    missing_seed = seed_df[
+        ~seed_df["url"].fillna("").astype(str).str.strip().str.lower().isin(active_urls)
+    ].copy()
+    if missing_seed.empty:
+        return active_df
+
+    combined = pd.concat([active_df, missing_seed], ignore_index=True, sort=False)
+    combined["url"] = combined["url"].apply(clean_url)
+    combined = combined.drop_duplicates(subset=["url"], keep="first")
+    persist_dataframe(combined, f"Seeded {len(missing_seed)} missing active listing(s) from static details")
+    return combined
 
 # ─── Clean URL from HTML anchor tag ─────────────────────────────
 def clean_url(url):
