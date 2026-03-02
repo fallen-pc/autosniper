@@ -260,9 +260,19 @@ def append_failure_log(records: list[dict[str, Any]]) -> None:
     if not records:
         return
     FAILURES_FILE.parent.mkdir(parents=True, exist_ok=True)
-    file_exists = FAILURES_FILE.exists()
-    df = pd.DataFrame(records)
-    df.to_csv(FAILURES_FILE, mode="a", header=not file_exists, index=False)
+    new_df = pd.DataFrame(records)
+    if FAILURES_FILE.exists():
+        try:
+            existing_df = pd.read_csv(FAILURES_FILE, low_memory=False)
+        except (ValueError, pd.errors.EmptyDataError):
+            existing_df = pd.DataFrame(columns=new_df.columns)
+    else:
+        existing_df = pd.DataFrame(columns=new_df.columns)
+    combined = pd.concat([existing_df, new_df], ignore_index=True, sort=False)
+    dedupe_cols = [col for col in ("url", "reason_code") if col in combined.columns]
+    if dedupe_cols:
+        combined = combined.drop_duplicates(subset=dedupe_cols, keep="first")
+    atomic_write(combined, FAILURES_FILE)
 
 
 def filter_static_rows(df: pd.DataFrame, make_whitelist: set[str]) -> tuple[pd.DataFrame, list[dict[str, Any]]]:
