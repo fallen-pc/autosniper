@@ -28,7 +28,7 @@ if __package__ in (None, ""):
         normalize_listing_fields,
         remove_compliance_markers,
     )
-    from shared.canonical_tagging import tag_dataframe
+    from shared.canonical_tagging import is_canonical_eligible, tag_dataframe
     from shared.validators import ValidatorConfig, validate_static_row
     from shared.validators import validate_vehicle_static_df
 else:
@@ -41,7 +41,7 @@ else:
         normalize_listing_fields,
         remove_compliance_markers,
     )
-    from shared.canonical_tagging import tag_dataframe
+    from shared.canonical_tagging import is_canonical_eligible, tag_dataframe
     from shared.validators import ValidatorConfig, validate_static_row
     from shared.validators import validate_vehicle_static_df
 
@@ -324,6 +324,57 @@ def filter_static_rows(df: pd.DataFrame, make_whitelist: set[str]) -> tuple[pd.D
             filtered[column] = pd.NA
     filtered = filtered.reindex(columns=df.columns)
     return filtered.reset_index(drop=True), failures
+
+
+def build_canonical_exclusion_failures(df: pd.DataFrame) -> tuple[pd.DataFrame, list[dict[str, Any]]]:
+    if df.empty:
+        return df, []
+
+    working = df.copy()
+    if "canonical_tag" not in working.columns:
+        working["canonical_tag"] = ""
+    if "canonical_reason" not in working.columns:
+        working["canonical_reason"] = ""
+
+    eligible_mask = working.apply(
+        lambda row: is_canonical_eligible(row.get("canonical_tag"), row.get("canonical_reason")),
+        axis=1,
+    )
+    if eligible_mask.all():
+        return working, []
+
+    now_ts = time.strftime("%Y-%m-%d %H:%M:%S")
+    excluded = working.loc[~eligible_mask].copy()
+    failures: list[dict[str, Any]] = []
+    for _, row in excluded.iterrows():
+        row_dict = row.to_dict()
+        snapshot = {
+            key: row_dict.get(key, "")
+            for key in (
+                "year",
+                "make",
+                "model",
+                "variant",
+                "body_type",
+                "transmission",
+                "fuel_type",
+                "odometer_reading",
+                "vin",
+                "location",
+                "canonical_tag",
+                "canonical_reason",
+            )
+        }
+        failures.append(
+            {
+                "timestamp": now_ts,
+                "url": row_dict.get("url", ""),
+                "reason_code": str(row_dict.get("canonical_reason", "")).strip() or "NOT_CANONICAL_ELIGIBLE",
+                "field_snapshot": json.dumps(snapshot, ensure_ascii=True),
+            }
+        )
+    kept = working.loc[eligible_mask].copy()
+    return kept.reset_index(drop=True), failures
 
 
 def _has_valid_year(value: object) -> bool:
@@ -850,6 +901,22 @@ def remove_from_active_links(urls: Iterable[str]) -> None:
     atomic_write(df, ACTIVE_LINKS_FILE)
 
 
+def remove_from_active_details(urls: Iterable[str]) -> None:
+    if ACTIVE_OUTPUT_FILE is None or not ACTIVE_OUTPUT_FILE.exists():
+        return
+    url_list = [str(url).strip() for url in urls if str(url).strip()]
+    if not url_list:
+        return
+    df = pd.read_csv(ACTIVE_OUTPUT_FILE)
+    if "url" not in df.columns or df.empty:
+        return
+    normalized_remove = {_normalize_url_value(url) for url in url_list if _normalize_url_value(url)}
+    df["_url_norm"] = df["url"].astype(str).str.strip().str.lower()
+    df = df[~df["_url_norm"].isin(normalized_remove)].copy()
+    df.drop(columns=["_url_norm"], inplace=True, errors="ignore")
+    atomic_write(df, ACTIVE_OUTPUT_FILE)
+
+
 def atomic_write(df: pd.DataFrame, path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     fd, temp_path = tempfile.mkstemp(suffix=".csv")
@@ -906,7 +973,9 @@ def merge_and_save_static(existing_df: pd.DataFrame, new_df: pd.DataFrame) -> pd
     combined, failures = filter_static_rows(combined, make_whitelist)
     append_failure_log(failures)
     if failures:
-        remove_from_active_links([record.get("url", "") for record in failures])
+        failure_urls = [record.get("url", "") for record in failures]
+        remove_from_active_links(failure_urls)
+        remove_from_active_details(failure_urls)
     static_export = combined.drop_duplicates(subset=["url"], keep="last")
     static_export = static_export.reindex(columns=STATIC_VEHICLE_SCHEMA, fill_value="")
     static_export, stats = validate_vehicle_static_df(static_export)
@@ -921,6 +990,15 @@ def merge_and_save_static(existing_df: pd.DataFrame, new_df: pd.DataFrame) -> pd
         append_log=False,
     )
     static_export = _normalize_text_columns(static_export)
+    static_export, canonical_failures = build_canonical_exclusion_failures(static_export)
+    if canonical_failures:
+        append_failure_log(canonical_failures)
+        canonical_urls = [record.get("url", "") for record in canonical_failures]
+        remove_from_active_links(canonical_urls)
+        remove_from_active_details(canonical_urls)
+        print(
+            f"Canonical exclusions removed {len(canonical_failures)} listing(s) from static and active links."
+        )
     if "drivetrain_source" in static_export.columns:
         static_export = static_export.drop(columns=["drivetrain_source"])
     static_export = static_export.reindex(columns=STATIC_OUTPUT_COLUMNS, fill_value="")
