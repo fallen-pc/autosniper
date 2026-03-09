@@ -72,9 +72,21 @@ class CompsEngine:
         working = working.dropna(subset=["sale_price_value", "date_sold", "make", "model"])
         working["make"] = working["make"].astype(str).str.upper()
         working["model"] = working["model"].astype(str).str.title()
-        working["body_type"] = working.get("body_type", "").astype(str).str.title()
-        working["transmission"] = working.get("transmission", "").astype(str).str.title()
-        working["location_state"] = working.get("location_state", working.get("location", "")).astype(str).str.strip()
+        working["body_type"] = (
+            working["body_type"] if "body_type" in working.columns
+            else pd.Series("", index=working.index)
+        ).astype(str).str.title()
+        working["transmission"] = (
+            working["transmission"] if "transmission" in working.columns
+            else pd.Series("", index=working.index)
+        ).astype(str).str.title()
+        if "location_state" in working.columns:
+            location_base = working["location_state"]
+        elif "location" in working.columns:
+            location_base = working["location"]
+        else:
+            location_base = pd.Series("", index=working.index)
+        working["location_state"] = location_base.astype(str).str.strip()
         working["location_state"] = working["location_state"].replace("", np.nan)
         return working.reset_index(drop=True)
 

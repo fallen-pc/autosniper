@@ -2701,7 +2701,8 @@ def render_listing_card(row: pd.Series) -> None:
             top_buy_html,
             '<div class="card-actions">',
             f'<a href="{html.escape(_safe_text(row.get("url"), fallback=""))}" target="_blank">Open</a>'
-            if _safe_text(row.get("url"), fallback="") != "N/A"
+            if _safe_text(row.get("url"), fallback="") not in ("N/A", "")
+            and not _safe_text(row.get("url"), fallback="").lower().lstrip().startswith("javascript:")
             else "",
             "</div>",
             "</div>",

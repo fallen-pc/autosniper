@@ -1,4 +1,6 @@
 .venv/
+.venv*/
+venv/
 .venv_backup/
 .venv_wsl/
 logs/
@@ -32,3 +34,5 @@ error_*.html
 status/
 tmp_ai_analysis.txt
 autotrader/output/
+autotrader_isolated/output/
+.pytest_cache/

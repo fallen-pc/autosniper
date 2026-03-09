@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import base64
+import html as _html_module
 from pathlib import Path
 import textwrap
 from typing import Optional
@@ -891,6 +892,27 @@ _BASE_STYLES = textwrap.dedent(
 def clean_html(html: str) -> str:
     """Dedent HTML snippets so Streamlit renders them as markup."""
     return textwrap.dedent(html).strip()
+
+
+def escape_html(value: object) -> str:
+    """HTML-escape a value for safe interpolation into markup.
+
+    Converts the value to a string then escapes ``&``, ``<``, ``>``, ``"``
+    and ``'`` so it cannot break out of an HTML attribute or text node.
+    """
+    return _html_module.escape(str(value) if value is not None else "", quote=True)
+
+
+def safe_url(value: object) -> str:
+    """Return a URL safe for use in an ``href`` attribute.
+
+    Applies HTML-escaping and rejects ``javascript:`` scheme URIs, returning
+    an empty string in their place so no script can execute on click.
+    """
+    url = str(value).strip() if value is not None else ""
+    if url.lower().lstrip().startswith("javascript:"):
+        return ""
+    return _html_module.escape(url, quote=True)
 
 
 def inject_global_styles() -> None:

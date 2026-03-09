@@ -31,7 +31,6 @@ import json
 import os
 import time
 import zipfile
-from functools import lru_cache
 from pathlib import Path
 from typing import Iterable, List
 
@@ -211,9 +210,17 @@ def sync_remote_data(force: bool = False) -> None:
         _download_remote_bundle()
 
 
-@lru_cache(maxsize=1)
+_last_sync_time: float = 0.0
+
+
 def _sync_once() -> None:
-    sync_remote_data(force=False)
+    """Sync at most once per cache window within this process lifetime."""
+    global _last_sync_time
+    cache_minutes = int(os.getenv("AUTOSNIPER_DATA_CACHE_MINUTES", "30"))
+    elapsed_minutes = (time.time() - _last_sync_time) / 60.0
+    if _last_sync_time == 0.0 or elapsed_minutes >= cache_minutes or _missing_required_files():
+        sync_remote_data(force=False)
+        _last_sync_time = time.time()
 
 
 def ensure_datasets_available(required: Iterable[str] | None = None) -> list[str]:

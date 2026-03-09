@@ -10,7 +10,7 @@ import pandas as pd
 import streamlit as st
 
 from shared.data_loader import dataset_path, ensure_datasets_available
-from shared.styling import clean_html, display_banner, inject_global_styles, page_intro, section_heading
+from shared.styling import clean_html, display_banner, escape_html, inject_global_styles, page_intro, safe_url, section_heading
 
 
 st.set_page_config(page_title="AutoSniper - Dashboard", layout="wide")
@@ -361,31 +361,31 @@ else:
                         f"""
                         <div class="top-auction-card">
                             <div class="top-auction-pill">TOP {idx + 1}</div>
-                            <h3>{title}</h3>
-                            <div class="autosniper-body">{variant or "Variant unavailable"}</div>
+                            <h3>{escape_html(title)}</h3>
+                            <div class="autosniper-body">{escape_html(variant) or "Variant unavailable"}</div>
                             <div class="autosniper-body" style="color: var(--autosniper-muted);">
-                                {location} &bullet; {time_remaining}
+                                {escape_html(location)} &bullet; {escape_html(time_remaining)}
                             </div>
                             <div class="top-auction-metrics">
                                 <div class="top-auction-metric">
                                     <span class="top-auction-label">Current bid</span>
-                                    <span class="top-auction-value">{current_price}</span>
+                                    <span class="top-auction-value">{escape_html(current_price)}</span>
                                 </div>
                                 <div class="top-auction-metric">
                                     <span class="top-auction-label">Carsales estimate</span>
-                                    <span class="top-auction-value">{carsales_estimate or "N/A"}</span>
+                                    <span class="top-auction-value">{escape_html(carsales_estimate) or "N/A"}</span>
                                 </div>
                                 <div class="top-auction-metric">
                                     <span class="top-auction-label">Bids / Margin</span>
-                                    <span class="top-auction-value">{bids_display} bids | {profit_margin}</span>
+                                    <span class="top-auction-value">{escape_html(bids_display)} bids | {escape_html(profit_margin)}</span>
                                 </div>
                                 <div class="top-auction-metric">
                                     <span class="top-auction-label">AI view</span>
-                                    <span class="top-auction-value">{score_display}</span>
+                                    <span class="top-auction-value">{escape_html(score_display)}</span>
                                 </div>
                             </div>
                             <div class="top-auction-actions">
-                                <a class="ghost-button" href="{ai_url}" target="_blank">Open Listing</a>
+                                <a class="ghost-button" href="{safe_url(ai_url)}" target="_blank">Open Listing</a>
                             </div>
                         </div>
                         """
@@ -396,7 +396,7 @@ else:
                     if st.button("Open in AI Analysis", key=f"ai-link-{row_index}", width="stretch"):
                         st.session_state["ai_focus_url"] = ai_url
                         try:
-                            st.switch_page("pages/5_AI_ANALYSIS.py")
+                            st.switch_page("pages/6_AI_ANALYSIS.py")
                         except Exception:
                             st.info("Open the AI Pricing Analysis page from the sidebar to view this listing.")
 section_heading("Status Snapshot", "Distribution of tracked listings by workflow state.")
