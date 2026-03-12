@@ -44,6 +44,23 @@ whole workflow can be shared on GitHub and hosted on Streamlit Cloud.
 
 ---
 
+## Commit Hygiene
+
+Enable commit-slicing guardrails once per clone:
+
+```powershell
+.\scripts\setup_git_hooks.ps1
+```
+
+This activates `.githooks/pre-commit`, which blocks:
+- Mixed source + artifact commits
+- Oversized staged files
+- Oversized commit slices
+
+Details: `docs/pr_slicing_and_artifact_hygiene.md`
+
+---
+
 ## Dataset Management
 
 `CSV_data/` holds the working datasets, organized into subfolders:
