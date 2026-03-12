@@ -66,3 +66,60 @@ DISALLOWED_MAKE_PATTERNS = (
     r"\(wovr-?\s*inspected",
     r"\(wovr-?\s*repairable",
 )
+
+# Append-only discovery ledger schema (identity discovery, not runtime state).
+DISCOVERY_LEDGER_SCHEMA: list[str] = [
+    "url",
+    "discovered_at",
+    "source",
+    "discovery_run_id",
+]
+
+# URL-keyed listing lifecycle state table schema.
+STATE_TABLE_SCHEMA: list[str] = [
+    "url",
+    "state",
+    "current_price",
+    "bid_count",
+    "time_remaining",
+    "last_seen_at",
+    "terminal_reason",
+    "state_updated_at",
+    "fetch_fail_count",
+    "last_fetch_error",
+    "last_evidence",
+    "run_id",
+]
+
+# Ordered lifecycle states for Layer 1.
+STATE_DISCOVERED = "discovered"
+STATE_STATIC_PARSED = "static_parsed"
+STATE_ACTIVE = "active"
+STATE_SOLD = "sold"
+STATE_WITHDRAWN = "withdrawn"
+STATE_REFERRED = "referred"
+STATE_DEAD_URL = "dead_url"
+STATE_FETCH_FAILED = "fetch_failed"
+
+TERMINAL_STATES = {STATE_SOLD, STATE_WITHDRAWN, STATE_REFERRED, STATE_DEAD_URL}
+
+ALLOWED_LISTING_STATES = {
+    STATE_DISCOVERED,
+    STATE_STATIC_PARSED,
+    STATE_ACTIVE,
+    STATE_SOLD,
+    STATE_WITHDRAWN,
+    STATE_REFERRED,
+    STATE_DEAD_URL,
+    STATE_FETCH_FAILED,
+}
+
+# Audit log for stage-level exclusions/rejections.
+PIPELINE_EXCLUSION_SCHEMA: list[str] = [
+    "url",
+    "reason_code",
+    "timestamp",
+    "stage",
+    "run_id",
+    "details",
+]

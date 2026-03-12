@@ -10,7 +10,7 @@ if __package__ in (None, ""):
 
     sys.path.append(str(Path(__file__).resolve().parent.parent))
     from shared.data_loader import dataset_path
-    from shared.schema import ACTIVE_LISTING_SCHEMA, STATIC_VEHICLE_SCHEMA
+    from shared.schema import ACTIVE_LISTING_SCHEMA, STATE_TABLE_SCHEMA, STATIC_VEHICLE_SCHEMA
     from scripts.extract_vehicle_details import (
         _prepare_normalised_snapshot,
         atomic_write,
@@ -19,7 +19,7 @@ if __package__ in (None, ""):
     )
 else:  # pragma: no cover
     from shared.data_loader import dataset_path
-    from shared.schema import ACTIVE_LISTING_SCHEMA, STATIC_VEHICLE_SCHEMA
+    from shared.schema import ACTIVE_LISTING_SCHEMA, STATE_TABLE_SCHEMA, STATIC_VEHICLE_SCHEMA
     from scripts.extract_vehicle_details import (
         _prepare_normalised_snapshot,
         atomic_write,
@@ -34,6 +34,7 @@ STATIC_PATH = dataset_path("vehicle_static_details.csv")
 ACTIVE_PATH = dataset_path("active_vehicle_details.csv")
 MATCHED_PATH = dataset_path("matched_canonical_details.csv")
 UNMATCHED_PATH = dataset_path("unmatched_canonical_details.csv")
+STATE_PATH = dataset_path("vehicle_state.csv")
 ALL_LINKS_PATH = dataset_path("all_vehicle_links.csv")
 ACTIVE_LINKS_PATH = dataset_path("active_vehicle_links.csv")
 EXCLUDED_PATH = dataset_path("excluded_listings.csv")
@@ -105,6 +106,7 @@ def audit_and_lock_schemas() -> dict[str, dict[str, object]]:
         "raw_vehicle_data.csv": _coerce_schema(RAW_PATH, list(STATIC_VEHICLE_SCHEMA)),
         "normalised_data.csv": _coerce_schema(NORMAL_PATH, list(STATIC_VEHICLE_SCHEMA)),
         "vehicle_static_details.csv": _coerce_schema(STATIC_PATH, STATIC_OUTPUT_COLUMNS),
+        "vehicle_state.csv": _coerce_schema(STATE_PATH, list(STATE_TABLE_SCHEMA)),
     }
     for name, report in reports.items():
         status = "LOCKED" if report["changed"] else "OK"
@@ -205,10 +207,11 @@ def clear_pipeline() -> None:
         dict.fromkeys(static_cols + ["status", "time_remaining_or_date_sold", "price", "bids"])
     )
     _empty_csv(ACTIVE_PATH, active_cols)
+    _empty_csv(STATE_PATH, list(STATE_TABLE_SCHEMA))
     _empty_csv(EXCLUDED_PATH, ["timestamp", "url", "reason_code", "field_snapshot"])
     _empty_csv(MATCHED_PATH, static_cols)
     _empty_csv(UNMATCHED_PATH, static_cols)
-    print("Pipeline cleared: links, raw, normalised, static, active, exclusions.")
+    print("Pipeline cleared: links, raw, normalised, static, state, active, exclusions.")
     audit_and_lock_schemas()
 
 
