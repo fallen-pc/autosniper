@@ -229,7 +229,10 @@ def upsert_state_row(
 
     row_df = ensure_state_schema(pd.DataFrame([payload]))
     if idx is None:
-        out = pd.concat([out, row_df], ignore_index=True, sort=False)
+        if out.empty:
+            out = row_df.copy()
+        else:
+            out = pd.concat([out, row_df], ignore_index=True, sort=False)
     else:
         for column in STATE_TABLE_SCHEMA:
             out.at[idx, column] = row_df.iloc[0][column]

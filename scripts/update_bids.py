@@ -21,8 +21,10 @@ if __package__ in (None, ""):
 
     sys.path.append(str(Path(__file__).resolve().parent.parent))
     from shared.data_loader import dataset_path
+    from shared.state_machine import ListingObservation, ensure_state_schema, upsert_state_row
 else:  # pragma: no cover
     from shared.data_loader import dataset_path
+    from shared.state_machine import ListingObservation, ensure_state_schema, upsert_state_row
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -31,6 +33,7 @@ logger = logging.getLogger(__name__)
 CSV_FILE = str(dataset_path("active_vehicle_details.csv"))
 STATIC_SEED_FILE = dataset_path("vehicle_static_details.csv")
 ACTIVE_LINKS_FILE = dataset_path("active_vehicle_links.csv")
+STATE_FILE = dataset_path("vehicle_state.csv")
 SNAPSHOT_FILE = dataset_path("active_snapshots.csv")
 SNAPSHOT_COLUMNS = [
     "snapshot_ts",
@@ -57,6 +60,7 @@ USER_AGENTS = [
 ]
 
 BATCH_SAVE_INTERVAL = max(1, int(os.getenv("ACTIVE_LISTING_BATCH_SIZE", "50")))
+STATE_DEAD_URL_THRESHOLD = max(1, int(os.getenv("AUTOSNIPER_DEAD_URL_THRESHOLD", "3")))
 
 TIME_PATTERN = re.compile(
     r"(\d+)\s*(d|day|days|h|hour|hours|m|min|minute|minutes|s|sec|second|seconds)",
@@ -217,6 +221,65 @@ def persist_dataframe(df: pd.DataFrame, note: str) -> None:
     snapshot.to_csv(temp_file, index=False)
     shutil.move(temp_file, CSV_FILE)
     print(f"{note}: wrote {len(snapshot)} rows to {CSV_FILE}")
+
+
+def _load_state_dataframe() -> pd.DataFrame:
+    if not STATE_FILE.exists():
+        return ensure_state_schema(pd.DataFrame())
+    try:
+        df = pd.read_csv(STATE_FILE, low_memory=False)
+    except Exception:
+        df = pd.DataFrame()
+    return ensure_state_schema(df)
+
+
+def persist_state_dataframe(df: pd.DataFrame, note: str) -> None:
+    snapshot = ensure_state_schema(df)
+    snapshot["url"] = snapshot["url"].astype(str).str.strip()
+    fd, temp_path = tempfile.mkstemp(suffix=".csv")
+    os.close(fd)
+    try:
+        snapshot.to_csv(temp_path, index=False)
+        STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
+        shutil.move(temp_path, STATE_FILE)
+    finally:
+        if os.path.exists(temp_path):
+            os.unlink(temp_path)
+    print(f"{note}: wrote {len(snapshot)} rows to {STATE_FILE}")
+
+
+def _state_observation_from_row(
+    row: pd.Series,
+    *,
+    run_id: str,
+    observed_at: str,
+    evidence: str,
+    fetch_failed: bool = False,
+    fetch_error: str = "",
+) -> ListingObservation:
+    status = str(row.get("status", "") or "").strip().lower()
+    price_raw = str(row.get("price", "") or "").strip()
+    bids_raw = str(row.get("bids", "") or "").strip()
+    time_raw = str(row.get("time_remaining_or_date_sold", "") or "").strip()
+    is_active = status == "active"
+    is_referred = status in {"referred", "canceled", "cancelled", "closed"}
+    has_sale_price = status == "sold"
+    is_withdrawn = status in {"withdrawn", "no_price"}
+    return ListingObservation(
+        url=str(row.get("url", "") or ""),
+        observed_at=observed_at,
+        run_id=run_id,
+        is_live=is_active,
+        has_sale_price=has_sale_price,
+        is_referred=is_referred,
+        is_withdrawn=is_withdrawn,
+        fetch_failed=fetch_failed,
+        current_price="" if price_raw.lower() in {"", "n/a", "nan"} else price_raw,
+        bid_count="" if bids_raw.lower() in {"", "n/a", "nan"} else bids_raw,
+        time_remaining="" if time_raw.lower() in {"", "n/a", "nan"} else time_raw,
+        evidence=evidence,
+        fetch_error=fetch_error,
+    )
 
 
 def _load_active_queue_urls() -> set[str]:
@@ -471,10 +534,12 @@ async def update_bids(
 ):
     skipped_urls = []
     try:
+        run_id = datetime.utcnow().strftime("bids_%Y%m%dT%H%M%SZ")
         df = _load_active_seed_dataframe()
         if df.empty:
             print("No active seed dataset found. Expected active or static listings CSV.")
             return [], skipped_urls
+        state_df = _load_state_dataframe()
 
         df["url"] = df["url"].apply(clean_url)
         if df.empty:
@@ -541,6 +606,18 @@ async def update_bids(
                 if not url or not url.startswith("http"):
                     print(f"  Skipped: Invalid URL {url}")
                     skipped_urls.append(url)
+                    state_df, _ = upsert_state_row(
+                        state_df,
+                        ListingObservation(
+                            url=str(url or ""),
+                            observed_at=datetime.utcnow().isoformat(),
+                            run_id=run_id,
+                            fetch_failed=True,
+                            evidence="invalid_url",
+                            fetch_error="invalid_url",
+                        ),
+                        fetch_fail_dead_threshold=STATE_DEAD_URL_THRESHOLD,
+                    )
                     if remaining_urls:
                         remaining_urls.pop(0)
                         if use_resume_queue:
@@ -559,6 +636,30 @@ async def update_bids(
                     if price == "N/A" and bids == "0" and time_remaining is None and date_sold is None and not is_active and not is_referred:
                         print(f"  Skipped: Fetch failed, retaining status {df.loc[df['url'] == url, 'status'].iloc[0] if not df.loc[df['url'] == url].empty else 'N/A'}")
                         skipped_urls.append(url)
+                        row_frame = df.loc[df["url"] == url]
+                        if not row_frame.empty:
+                            obs = _state_observation_from_row(
+                                row_frame.iloc[0],
+                                run_id=run_id,
+                                observed_at=datetime.utcnow().isoformat(),
+                                evidence="fetch_failed_no_signals",
+                                fetch_failed=True,
+                                fetch_error="no_status_signals",
+                            )
+                        else:
+                            obs = ListingObservation(
+                                url=url,
+                                observed_at=datetime.utcnow().isoformat(),
+                                run_id=run_id,
+                                fetch_failed=True,
+                                evidence="fetch_failed_no_signals",
+                                fetch_error="no_status_signals",
+                            )
+                        state_df, _ = upsert_state_row(
+                            state_df,
+                            obs,
+                            fetch_fail_dead_threshold=STATE_DEAD_URL_THRESHOLD,
+                        )
                         continue
 
                     # Update fields
@@ -580,22 +681,42 @@ async def update_bids(
                         print("  Condition: Active countdown found - Set to Active")
                         df.loc[df["url"] == url, "time_remaining_or_date_sold"] = time_remaining if time_remaining else "N/A"
                         df.loc[df["url"] == url, "status"] = "Active"
+                        evidence = "live_countdown_present"
                     elif is_referred:
                         print("  Condition: Referred or Canceled indicator found - Set to Referred")
                         df.loc[df["url"] == url, "time_remaining_or_date_sold"] = "N/A"
                         df.loc[df["url"] == url, "status"] = "Referred"
+                        evidence = "referred_or_cancelled_indicator"
                     elif date_sold and int(bids) > 0:  # Prioritize date_sold and bids for Sold
                         print("  Condition: Date sold and bids found - Set to Sold")
                         df.loc[df["url"] == url, "time_remaining_or_date_sold"] = date_sold
                         df.loc[df["url"] == url, "status"] = "Sold"
+                        evidence = "date_sold_and_bids"
                     elif price != "N/A" and int(bids) > 0:
                         print("  Condition: Price and bids present, no date sold - Set to Sold with current date")
                         df.loc[df["url"] == url, "time_remaining_or_date_sold"] = datetime.now().strftime("%Y-%m-%d")
                         df.loc[df["url"] == url, "status"] = "Sold"
+                        evidence = "price_and_bids_present"
                     else:
                         print("  Condition: No active, referred, or valid sold criteria - Set to Referred")
                         df.loc[df["url"] == url, "time_remaining_or_date_sold"] = "N/A"
                         df.loc[df["url"] == url, "status"] = "Referred"
+                        evidence = "fallback_referred"
+
+                    row_frame = df.loc[df["url"] == url]
+                    if not row_frame.empty:
+                        obs = _state_observation_from_row(
+                            row_frame.iloc[0],
+                            run_id=run_id,
+                            observed_at=datetime.utcnow().isoformat(),
+                            evidence=evidence,
+                            fetch_failed=False,
+                        )
+                        state_df, _ = upsert_state_row(
+                            state_df,
+                            obs,
+                            fetch_fail_dead_threshold=STATE_DEAD_URL_THRESHOLD,
+                        )
 
                     record_snapshot(df, url, price, bids, time_remaining)
 
@@ -605,6 +726,7 @@ async def update_bids(
                     processed_since_last_save += 1
                     if processed_since_last_save >= save_interval:
                         persist_dataframe(df, f"Checkpoint after {idx + 1} listings")
+                        persist_state_dataframe(state_df, f"State checkpoint after {idx + 1} listings")
                         processed_since_last_save = 0
                 finally:
                     if remaining_urls:
@@ -615,6 +737,7 @@ async def update_bids(
 
         # Save updated DataFrame
         persist_dataframe(df, "Final save")
+        persist_state_dataframe(state_df, "Final state save")
         touched_count = len(urls) if input_links else len(df)
         print(f"active_vehicle_details.csv refreshed ({touched_count} listings touched, {len(df)} total records).")
 
@@ -646,6 +769,8 @@ async def update_bids(
         if "df" in locals():
             try:
                 persist_dataframe(df, "Emergency save")
+                if "state_df" in locals():
+                    persist_state_dataframe(state_df, "Emergency state save")
             except Exception as save_error:  # noqa: BLE001
                 logger.error(f"Failed to persist emergency snapshot: {save_error}")
         return df, skipped_urls

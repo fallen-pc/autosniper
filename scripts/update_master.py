@@ -8,7 +8,7 @@ import re
 import shutil
 import sys
 import tempfile
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Callable, Sequence
 
@@ -20,12 +20,14 @@ if __package__ in (None, ""):
     from shared.data_loader import dataset_path
     from shared.sold_cleaning import normalize_listing_fields
     from shared.canonical_tagging import tag_dataframe
+    from shared.state_machine import ListingObservation, ensure_state_schema, upsert_state_row
     from shared.validators import R, validate_sold_cars_df
     from scripts.build_restricted_datasets import build_restricted_datasets
 else:
     from shared.data_loader import dataset_path
     from shared.sold_cleaning import normalize_listing_fields
     from shared.canonical_tagging import tag_dataframe
+    from shared.state_machine import ListingObservation, ensure_state_schema, upsert_state_row
     from shared.validators import R, validate_sold_cars_df
     from scripts.build_restricted_datasets import build_restricted_datasets
 SOLD_FILE = dataset_path("sold_cars.csv")
@@ -33,6 +35,7 @@ REFERRED_FILE = dataset_path("referred_cars.csv")
 ACTIVE_FILE = dataset_path("active_vehicle_details.csv")
 STATIC_FILE = dataset_path("vehicle_static_details.csv")
 SNAPSHOT_FILE = dataset_path("active_snapshots.csv")
+STATE_FILE = dataset_path("vehicle_state.csv")
 SOLD_DISCARD_LOG = dataset_path("scrapers/sold_discard_log.csv")
 
 DEDUP_KEYS: Sequence[str] = ("url", "vin")
@@ -530,6 +533,95 @@ def _restore_active_columns(active_target: pd.DataFrame, existing_active: pd.Dat
     return enriched
 
 
+def _load_state_table() -> pd.DataFrame:
+    if not STATE_FILE.exists():
+        return ensure_state_schema(pd.DataFrame())
+    try:
+        state_df = pd.read_csv(STATE_FILE, low_memory=False)
+    except Exception:
+        state_df = pd.DataFrame()
+    return ensure_state_schema(state_df)
+
+
+def _to_state_observation(
+    row: pd.Series,
+    *,
+    run_id: str,
+    observed_at: str,
+    target_state: str,
+    evidence: str,
+) -> ListingObservation:
+    url = str(row.get("url", "") or "").strip()
+    price = row.get("price", "")
+    bids = row.get("bids", "")
+    time_remaining = row.get("time_remaining_or_date_sold", "")
+    return ListingObservation(
+        url=url,
+        observed_at=observed_at,
+        run_id=run_id,
+        is_live=(target_state == "active"),
+        has_sale_price=(target_state == "sold"),
+        is_referred=(target_state == "referred"),
+        fetch_failed=False,
+        current_price=price if pd.notna(price) else "",
+        bid_count=bids if pd.notna(bids) else "",
+        time_remaining=time_remaining if pd.notna(time_remaining) else "",
+        evidence=evidence,
+        fetch_error="",
+    )
+
+
+def _sync_state_from_views(
+    active_df: pd.DataFrame,
+    sold_df: pd.DataFrame,
+    referred_df: pd.DataFrame,
+    *,
+    run_id: str,
+) -> pd.DataFrame:
+    state_df = _load_state_table()
+    observed_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+    for _, row in active_df.iterrows():
+        obs = _to_state_observation(
+            row,
+            run_id=run_id,
+            observed_at=observed_at,
+            target_state="active",
+            evidence="update_master_active_view",
+        )
+        if not obs.url:
+            continue
+        state_df, _ = upsert_state_row(state_df, obs)
+
+    for _, row in sold_df.iterrows():
+        obs = _to_state_observation(
+            row,
+            run_id=run_id,
+            observed_at=observed_at,
+            target_state="sold",
+            evidence="update_master_sold_view",
+        )
+        if not obs.url:
+            continue
+        state_df, _ = upsert_state_row(state_df, obs)
+
+    for _, row in referred_df.iterrows():
+        obs = _to_state_observation(
+            row,
+            run_id=run_id,
+            observed_at=observed_at,
+            target_state="referred",
+            evidence="update_master_referred_view",
+        )
+        if not obs.url:
+            continue
+        state_df, _ = upsert_state_row(state_df, obs)
+
+    _atomic_write(ensure_state_schema(state_df), STATE_FILE)
+    print(f"Listing state saved to {STATE_FILE} ({len(state_df)} rows).")
+    return state_df
+
+
 def _prune_urls_from_dataset(path: Path, urls: set[str], label: str) -> None:
     if not urls or not path.exists():
         return
@@ -564,6 +656,7 @@ def _prune_static_dataset(urls_to_remove: set[str]) -> None:
 
 
 def update_master_database() -> None:
+    run_id = datetime.now(timezone.utc).strftime("master_%Y%m%dT%H%M%SZ")
     df = _load_dataframe(ACTIVE_FILE)
     if df.empty:
         print("No active listings available; ensure you've promoted the latest scrape into active listings.")
@@ -688,6 +781,8 @@ def update_master_database() -> None:
         active_target = active_target.drop(columns=["drivetrain_source"])
     _atomic_write(active_target, ACTIVE_FILE)
     print(f"Active listings saved to {ACTIVE_FILE} ({len(active_target)} rows).")
+    _sync_state_from_views(active_target, sold_df, referred_df, run_id=run_id)
+
     completed_urls: set[str] = set()
     if "url" in sold_df.columns:
         completed_urls.update(sold_df["url"].dropna().tolist())
@@ -698,7 +793,7 @@ def update_master_database() -> None:
         active_urls = {url.strip() for url in active_target["url"].dropna().tolist() if str(url).strip()}
         if active_urls:
             _prune_urls_from_dataset(SOLD_FILE, active_urls, "sold (now active)")
-    _prune_static_dataset({url.strip() for url in completed_urls if url})
+    # Static identity is durable; lifecycle changes are tracked in vehicle_state.csv.
     try:
         build_restricted_datasets()
     except Exception as exc:
