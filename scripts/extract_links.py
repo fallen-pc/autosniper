@@ -27,7 +27,6 @@ ACTIVE_OUTPUT_FILE = dataset_path("active_vehicle_links.csv")
 SUMMARY_FILE = Path("logs") / "link_scrape_summary.json"
 SOLD_FILE = dataset_path("sold_cars.csv")
 REFERRED_FILE = dataset_path("referred_cars.csv")
-EXCLUDED_FILE = dataset_path("excluded_listings.csv")
 
 PROXY_BASE = "https://r.jina.ai/"
 MAX_PAGES = 60
@@ -207,7 +206,6 @@ def extract_all_vehicle_links() -> None:
     OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
     pipeline_df, pipeline_norm = _load_pipeline_urls(OUTPUT_FILE)
     sold_referred_norm = _load_existing_urls((SOLD_FILE, REFERRED_FILE))
-    excluded_norm = _load_existing_urls((EXCLUDED_FILE,))
 
     skipped_existing = 0
     skipped_sold = 0
@@ -255,9 +253,6 @@ def extract_all_vehicle_links() -> None:
         if not norm:
             continue
         if norm in sold_referred_norm:
-            continue
-        if norm in excluded_norm:
-            skipped_excluded += 1
             continue
         if is_compliance_slug(link):
             continue

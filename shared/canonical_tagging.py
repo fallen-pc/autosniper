@@ -148,6 +148,37 @@ def _normalize_text(value: object) -> str:
     return str(value).strip().lower()
 
 
+def _slug_tag_component(value: object) -> str:
+    text = _normalize_text(value)
+    if not text:
+        return ""
+    text = re.sub(r"[^a-z0-9]+", "-", text)
+    return text.strip("-")
+
+
+def build_canonical_tag(
+    make: object,
+    model: object,
+    badge: object,
+    fuel: object,
+    transmission: object,
+    body: object,
+    series: object,
+) -> str:
+    parts = [
+        _slug_tag_component(make),
+        _slug_tag_component(model),
+        _slug_tag_component(badge),
+        _slug_tag_component(fuel),
+        _slug_tag_component(transmission),
+        _slug_tag_component(body),
+        _slug_tag_component(series),
+    ]
+    if any(not part for part in parts):
+        return ""
+    return "_".join(parts)
+
+
 def _split_pipe(value: object) -> Tuple[str, ...]:
     if value is None:
         return ()
@@ -355,8 +386,8 @@ def _badge_matches(text: str, aliases: Iterable[str]) -> bool:
 def _extract_series_code(text: str) -> str:
     if not text:
         return ""
-    # series codes are like ZRE152R, ZRE18x, MZEA12R, ZWE211R, etc.
-    match = re.search(r"\b([A-Z]{2,4}\d{2,3}[A-Z]?)\b", text, re.IGNORECASE)
+    # series codes are like ZRE152R, ZRE18X, MZEA12R, ZWE211R, BL10F1, etc.
+    match = re.search(r"\b([A-Z]{2,4}\d{2,3}[A-Z]?\d?)\b", text, re.IGNORECASE)
     if not match:
         return ""
     return match.group(1).lower()
@@ -369,6 +400,10 @@ def _normalize_series_code(series_code: str) -> str:
     # Map common series codes to canonical v2 series buckets.
     if code in {"zre182r"}:
         return "zre18x"
+    if code in {"xp90", "ncp90"}:
+        return "ncp90r"
+    if code in {"bl10f"}:
+        return "bl10f1"
     return code
 
 
@@ -476,9 +511,6 @@ def load_allowed_variants(path: Path | None = None) -> Tuple[AllowedVariant, ...
     for source in sources:
         df = pd.read_csv(source)
         for _, row in df.iterrows():
-            canonical_tag = _normalize_text(row.get("canonical_tag"))
-            if not canonical_tag:
-                continue
             make = _normalize_text(row.get("make"))
             model = _normalize_text(row.get("model"))
             body = _normalize_text(row.get("body"))
@@ -486,6 +518,17 @@ def load_allowed_variants(path: Path | None = None) -> Tuple[AllowedVariant, ...
             transmission = _normalize_text(row.get("transmission"))
             badge = _normalize_text(row.get("badge"))
             series = _normalize_text(row.get("series"))
+            canonical_tag = build_canonical_tag(
+                make=make,
+                model=model,
+                badge=badge,
+                fuel=fuel,
+                transmission=transmission,
+                body=body,
+                series=series,
+            ) or _normalize_text(row.get("canonical_tag"))
+            if not canonical_tag:
+                continue
             row_key = (canonical_tag, make, model, body, fuel, transmission, badge)
             if row_key in seen_keys:
                 continue

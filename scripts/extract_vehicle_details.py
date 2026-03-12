@@ -917,6 +917,26 @@ def remove_from_active_details(urls: Iterable[str]) -> None:
     atomic_write(df, ACTIVE_OUTPUT_FILE)
 
 
+def prune_to_active_queue(df: pd.DataFrame) -> tuple[pd.DataFrame, int]:
+    """Keep only rows whose URLs are still present in active_vehicle_links.csv."""
+    if df.empty or "url" not in df.columns:
+        return df, 0
+    if ACTIVE_LINKS_FILE is None or not ACTIVE_LINKS_FILE.exists():
+        return df, 0
+    active_urls = _load_url_set(ACTIVE_LINKS_FILE)
+    # Safety: avoid accidental full wipe when active queue is unexpectedly empty.
+    if not active_urls:
+        print("Active queue is empty; skipping static prune for safety.")
+        return df, 0
+    out = df.copy()
+    out["_url_norm"] = out["url"].astype(str).str.strip().str.lower()
+    mask = out["_url_norm"].isin(active_urls)
+    removed = int((~mask).sum())
+    out = out.loc[mask].copy()
+    out.drop(columns=["_url_norm"], inplace=True, errors="ignore")
+    return out.reset_index(drop=True), removed
+
+
 def atomic_write(df: pd.DataFrame, path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     fd, temp_path = tempfile.mkstemp(suffix=".csv")
@@ -990,18 +1010,18 @@ def merge_and_save_static(existing_df: pd.DataFrame, new_df: pd.DataFrame) -> pd
         append_log=False,
     )
     static_export = _normalize_text_columns(static_export)
-    static_export, canonical_failures = build_canonical_exclusion_failures(static_export)
+    _canonical_kept, canonical_failures = build_canonical_exclusion_failures(static_export)
     if canonical_failures:
         append_failure_log(canonical_failures)
-        canonical_urls = [record.get("url", "") for record in canonical_failures]
-        remove_from_active_links(canonical_urls)
-        remove_from_active_details(canonical_urls)
         print(
-            f"Canonical exclusions removed {len(canonical_failures)} listing(s) from static and active links."
+            f"Canonical audit flagged {len(canonical_failures)} listing(s); keeping rows in static export."
         )
     if "drivetrain_source" in static_export.columns:
         static_export = static_export.drop(columns=["drivetrain_source"])
     static_export = static_export.reindex(columns=STATIC_OUTPUT_COLUMNS, fill_value="")
+    static_export, pruned_rows = prune_to_active_queue(static_export)
+    if pruned_rows:
+        print(f"Pruned {pruned_rows} stale static row(s) not present in active link queue.")
     atomic_write(static_export, OUTPUT_FILE)
     return static_export
 
@@ -1169,6 +1189,7 @@ def main(
                         atomic_write(normalized_merged, NORMALIZED_OUTPUT_FILE)
 
                     existing_df = merge_and_save_static(existing_df, new_df)
+                    seed_active_dataset(existing_df)
                     print(
                         f"Checkpoint saved ({len(new_df)} new rows, total {len(existing_df)})."
                     )
@@ -1213,6 +1234,7 @@ def main(
             atomic_write(normalized_merged, NORMALIZED_OUTPUT_FILE)
 
         existing_df = merge_and_save_static(existing_df, new_df)
+        seed_active_dataset(existing_df)
         print(f"Saved {len(new_df)} rows (total {len(existing_df)}). Output: {OUTPUT_FILE}")
 
     write_skipped(skipped)

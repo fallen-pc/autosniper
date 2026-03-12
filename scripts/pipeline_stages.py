@@ -15,6 +15,7 @@ if __package__ in (None, ""):
         _prepare_normalised_snapshot,
         atomic_write,
         merge_and_save_static,
+        seed_active_dataset,
     )
 else:  # pragma: no cover
     from shared.data_loader import dataset_path
@@ -23,6 +24,7 @@ else:  # pragma: no cover
         _prepare_normalised_snapshot,
         atomic_write,
         merge_and_save_static,
+        seed_active_dataset,
     )
 
 
@@ -148,7 +150,8 @@ def apply_exclusions_from_normalised() -> None:
                 f"Skipped {removed} completed sold/referred row(s) from normalised data before static merge."
             )
     existing_static = pd.read_csv(STATIC_PATH) if STATIC_PATH.exists() else pd.DataFrame()
-    merge_and_save_static(existing_static, normal_df)
+    static_df = merge_and_save_static(existing_static, normal_df)
+    seed_active_dataset(static_df)
     print(f"Static export refreshed from {NORMAL_PATH}")
 
 
