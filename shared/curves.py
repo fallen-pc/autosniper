@@ -9,6 +9,7 @@ from typing import Iterable, List, Optional, Sequence, Tuple
 import pandas as pd
 
 from shared.audit import append_audit_snapshot
+from shared.curve_versioning import snapshot_curve_version
 from shared.data_loader import dataset_path
 
 
@@ -98,6 +99,7 @@ def save_curves(df: pd.DataFrame, path: Path | None = None) -> None:
     working = working.apply(_fill_mid_price, axis=1)
     working.to_csv(curve_path, index=False)
     append_audit_snapshot(working, curve_path)
+    snapshot_curve_version(curve_path, source="save_curves")
 
 
 def get_curve_points(

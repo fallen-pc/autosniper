@@ -56,8 +56,28 @@ This activates `.githooks/pre-commit`, which blocks:
 - Mixed source + artifact commits
 - Oversized staged files
 - Oversized commit slices
+- Unversioned curve updates
+- New legacy-style backup/tmp/copy source filenames
 
 Details: `docs/pr_slicing_and_artifact_hygiene.md`
+
+---
+
+## Governance & CI
+
+Use the governance runner to enforce dataset contracts, curve integrity, and coverage reporting:
+
+```powershell
+python scripts/governance_checks.py check
+python scripts/governance_checks.py coverage-report
+python scripts/governance_checks.py snapshot-curves --note "Describe the curve update"
+```
+
+Curve changes are now versioned under `CSV_data/restricted/versions/` and must be paired with
+`CHANGELOG.md`. The GitHub Actions workflow in `.github/workflows/governance.yml` runs these
+checks in CI and publishes the latest curve coverage report as an artifact/job summary.
+
+More detail: `docs/governance.md`
 
 ---
 

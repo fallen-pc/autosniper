@@ -1,0 +1,47 @@
+name: Governance
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  governance:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt pytest
+
+      - name: Run governance tests
+        run: |
+          pytest tests/test_governance.py tests/test_curve_versioning.py tests/test_curves.py tests/test_canonical_tagging_cache.py
+
+      - name: Run governed checks
+        env:
+          GOVERNANCE_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          python scripts/governance_checks.py check --publish-summary
+
+      - name: Upload governance reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: governance-reports
+          path: output/governance/
+          if-no-files-found: ignore

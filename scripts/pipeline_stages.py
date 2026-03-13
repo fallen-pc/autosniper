@@ -10,7 +10,7 @@ if __package__ in (None, ""):
 
     sys.path.append(str(Path(__file__).resolve().parent.parent))
     from shared.data_loader import dataset_path
-    from shared.schema import ACTIVE_LISTING_SCHEMA, STATE_TABLE_SCHEMA, STATIC_VEHICLE_SCHEMA
+    from shared.schema import ACTIVE_DETAIL_SCHEMA, STATE_TABLE_SCHEMA, STATIC_CANONICAL_SCHEMA, STATIC_VEHICLE_SCHEMA
     from scripts.extract_vehicle_details import (
         _prepare_normalised_snapshot,
         atomic_write,
@@ -19,7 +19,7 @@ if __package__ in (None, ""):
     )
 else:  # pragma: no cover
     from shared.data_loader import dataset_path
-    from shared.schema import ACTIVE_LISTING_SCHEMA, STATE_TABLE_SCHEMA, STATIC_VEHICLE_SCHEMA
+    from shared.schema import ACTIVE_DETAIL_SCHEMA, STATE_TABLE_SCHEMA, STATIC_CANONICAL_SCHEMA, STATIC_VEHICLE_SCHEMA
     from scripts.extract_vehicle_details import (
         _prepare_normalised_snapshot,
         atomic_write,
@@ -40,9 +40,7 @@ ACTIVE_LINKS_PATH = dataset_path("active_vehicle_links.csv")
 EXCLUDED_PATH = dataset_path("excluded_listings.csv")
 SOLD_PATH = dataset_path("sold_cars.csv")
 REFERRED_PATH = dataset_path("referred_cars.csv")
-STATIC_OUTPUT_COLUMNS = list(
-    dict.fromkeys(list(STATIC_VEHICLE_SCHEMA) + ["canonical_tag", "canonical_reason"])
-)
+STATIC_OUTPUT_COLUMNS = list(STATIC_CANONICAL_SCHEMA)
 
 
 def _empty_csv(path: Path, columns: list[str]) -> None:
@@ -201,11 +199,9 @@ def clear_pipeline() -> None:
     _empty_csv(ACTIVE_LINKS_PATH, ["url"])
     _empty_csv(RAW_PATH, list(STATIC_VEHICLE_SCHEMA))
     _empty_csv(NORMAL_PATH, list(STATIC_VEHICLE_SCHEMA))
-    static_cols = list(dict.fromkeys(list(STATIC_VEHICLE_SCHEMA) + ["canonical_tag", "canonical_reason"]))
+    static_cols = list(STATIC_CANONICAL_SCHEMA)
     _empty_csv(STATIC_PATH, static_cols)
-    active_cols = list(
-        dict.fromkeys(static_cols + ["status", "time_remaining_or_date_sold", "price", "bids"])
-    )
+    active_cols = list(ACTIVE_DETAIL_SCHEMA)
     _empty_csv(ACTIVE_PATH, active_cols)
     _empty_csv(STATE_PATH, list(STATE_TABLE_SCHEMA))
     _empty_csv(EXCLUDED_PATH, ["timestamp", "url", "reason_code", "field_snapshot"])

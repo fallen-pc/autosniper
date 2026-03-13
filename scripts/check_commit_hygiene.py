@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -66,6 +67,12 @@ ARTIFACT_EXTENSIONS = {
     ".zip",
 }
 
+CURVES_PRIMARY_FILE = "CSV_data/restricted/curves.csv"
+CURVES_MANIFEST_FILE = "CSV_data/restricted/versions/curves_manifest.csv"
+CHANGELOG_FILE = "CHANGELOG.md"
+BAD_SOURCE_TOKENS = {"backup", "copy", "final", "old", "temp", "tmp"}
+NAMING_GUARD_PREFIXES = ("scripts/", "shared/", "docs/")
+
 
 def _run_git(args: list[str]) -> str:
     result = subprocess.run(
@@ -88,6 +95,20 @@ def _repo_root() -> Path:
 def _staged_paths() -> list[str]:
     output = _run_git(["diff", "--cached", "--name-only", "--diff-filter=ACMR"])
     return [line.replace("\\", "/").strip() for line in output.splitlines() if line.strip()]
+
+
+def _added_paths() -> list[str]:
+    output = _run_git(["diff", "--cached", "--name-status", "--diff-filter=A"])
+    paths: list[str] = []
+    for line in output.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        _, _, rel_path = line.partition("\t")
+        rel_path = rel_path.replace("\\", "/").strip()
+        if rel_path:
+            paths.append(rel_path)
+    return paths
 
 
 def _classify(path: str) -> str:
@@ -113,6 +134,20 @@ def _format_list(values: list[str], max_items: int = 12) -> str:
     return "\n".join(lines)
 
 
+def _find_bad_source_names(paths: list[str]) -> list[str]:
+    flagged: list[str] = []
+    for rel_path in paths:
+        lowered = rel_path.lower()
+        if not any(lowered.startswith(prefix) for prefix in NAMING_GUARD_PREFIXES):
+            continue
+        if "/archive/" in lowered or "/archives/" in lowered:
+            continue
+        stem_tokens = [token for token in re.split(r"[^a-z0-9]+", Path(lowered).stem) if token]
+        if any(token in BAD_SOURCE_TOKENS for token in stem_tokens):
+            flagged.append(rel_path)
+    return flagged
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Guardrail checks for commit slicing/artifact hygiene.")
     parser.add_argument("--staged", action="store_true", help="Validate staged files.")
@@ -125,6 +160,7 @@ def main() -> int:
     try:
         repo_root = _repo_root()
         staged = _staged_paths()
+        added = _added_paths()
     except RuntimeError as exc:
         print(f"[commit-hygiene] {exc}", file=sys.stderr)
         return 2
@@ -139,6 +175,7 @@ def main() -> int:
     source_files: list[str] = []
     artifact_files: list[str] = []
     oversize_files: list[tuple[str, int]] = []
+    bad_source_names = _find_bad_source_names(added)
 
     for rel_path in staged:
         classification = _classify(rel_path)
@@ -178,6 +215,33 @@ def main() -> int:
             f"{detail}\n"
             "Move generated outputs to ignored paths or split into a dedicated artifact commit."
         )
+
+    if bad_source_names and not allow_mixed:
+        errors.append(
+            "Legacy-style source filenames detected.\n"
+            "Archive old scripts instead of adding backup/tmp/copy variants.\n"
+            f"Problem files:\n{_format_list(bad_source_names)}"
+        )
+
+    if CURVES_PRIMARY_FILE in staged and not allow_mixed:
+        version_snapshots = [
+            path
+            for path in staged
+            if path.startswith("CSV_data/restricted/versions/curves_") and path.endswith(".csv")
+        ]
+        missing_followups: list[str] = []
+        if CURVES_MANIFEST_FILE not in staged:
+            missing_followups.append(CURVES_MANIFEST_FILE)
+        if CHANGELOG_FILE not in staged:
+            missing_followups.append(CHANGELOG_FILE)
+        if not version_snapshots:
+            missing_followups.append("CSV_data/restricted/versions/curves_<version>.csv")
+        if missing_followups:
+            errors.append(
+                "Curve changes must include versioning metadata.\n"
+                "Stage a version snapshot, the manifest, and a changelog update.\n"
+                f"Missing:\n{_format_list(missing_followups)}"
+            )
 
     if errors:
         print("[commit-hygiene] Commit blocked:\n", file=sys.stderr)

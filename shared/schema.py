@@ -55,8 +55,63 @@ STATIC_VEHICLE_SCHEMA: list[str] = [
     column for column in SOLD_LISTING_SCHEMA if column not in {"bids", "price", "date_sold"}
 ]
 
+# Static detail export enriched with canonical tagging metadata.
+STATIC_CANONICAL_SCHEMA: list[str] = list(
+    dict.fromkeys(STATIC_VEHICLE_SCHEMA + ["canonical_tag", "canonical_reason"])
+)
+
 # Active listings schema keeps the static fields plus dynamic auction data.
 ACTIVE_LISTING_SCHEMA: list[str] = list(dict.fromkeys(STATIC_VEHICLE_SCHEMA + ["bids", "price", "date_sold"]))
+
+# Full active dataset persisted by update_master.py.
+ACTIVE_DETAIL_SCHEMA: list[str] = list(
+    dict.fromkeys(
+        ["url"]
+        + [column for column in STATIC_CANONICAL_SCHEMA if column != "url"]
+        + ["status", "price", "bids", "time_remaining_or_date_sold", "date_sold"]
+    )
+)
+
+# Full referred dataset persisted by update_master.py.
+REFERRED_LISTING_SCHEMA: list[str] = [
+    "year",
+    "make",
+    "model",
+    "variant",
+    "body_type",
+    "no_of_seats",
+    "build_date",
+    "compliance_date",
+    "vin",
+    "rego_no",
+    "rego_state",
+    "rego_expiry",
+    "no_of_plates",
+    "no_of_cylinders",
+    "engine_capacity",
+    "fuel_type",
+    "transmission",
+    "odometer_reading",
+    "odometer_unit",
+    "exterior_colour",
+    "interior_colour",
+    "key",
+    "spare_key",
+    "owners_manual",
+    "service_history",
+    "engine_turns_over",
+    "location",
+    "url",
+    "general_condition",
+    "features_list",
+    "bids",
+    "price",
+    "time_remaining_or_date_sold",
+    "referral_reason",
+    "status",
+    "canonical_tag",
+    "canonical_reason",
+]
 
 # Values in the make column that should be discarded entirely (e.g., compliance markers).
 DISALLOWED_MAKE_VALUES = {"(comp)", "comp"}

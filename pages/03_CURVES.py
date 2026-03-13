@@ -1,7 +1,9 @@
 import pandas as pd
 import streamlit as st
 
-from shared.ops_utils import build_curve_meta, load_active_df, load_curves_df
+from shared.governance import build_curve_coverage_report, summarize_curve_coverage
+from shared.ops_utils import build_curve_meta, load_active_df, load_curves_df, load_static_df
+from shared.data_loader import dataset_path
 from shared.styling import display_banner, inject_global_styles, page_intro, section_heading
 
 
@@ -11,11 +13,21 @@ display_banner()
 page_intro("CURVES LIBRARY", "Coverage, gaps, and quick links into the curve editor.", show_logo=False)
 
 active_df = load_active_df()
+static_df = load_static_df()
 curves_df = load_curves_df()
 curve_meta = build_curve_meta(curves_df)
+group_map_path = dataset_path("restricted_group_map.csv")
+group_map_df = pd.read_csv(group_map_path) if group_map_path.exists() else pd.DataFrame()
+coverage_df = build_curve_coverage_report(static_df, group_map_df, curves_df)
+coverage_summary = summarize_curve_coverage(coverage_df)
 
 if curves_df.empty:
     st.warning("No curves available yet. Build curves to populate the library.")
+
+metric_a, metric_b, metric_c = st.columns(3)
+metric_a.metric("Observed Tags", f"{coverage_summary['observed_tags']:,}")
+metric_b.metric("Tags Covered", f"{coverage_summary['covered_tags']:,}")
+metric_c.metric("Missing Curves", f"{coverage_summary['missing_tags']:,}")
 
 active_counts = {}
 if not active_df.empty and "canonical_tag" in active_df.columns:
@@ -42,6 +54,19 @@ for tag in canonical_tags:
     )
 
 library_df = pd.DataFrame(rows)
+
+missing_df = coverage_df[~coverage_df["has_curve"]].copy() if not coverage_df.empty else pd.DataFrame()
+section_heading("Coverage Gaps", "Canonical tags observed in live data that still have no curve.")
+if missing_df.empty:
+    st.success("No current curve coverage gaps.")
+else:
+    st.dataframe(
+        missing_df[
+            ["canonical_tag", "observed_rows", "static_rows", "group_map_rows", "sources"]
+        ],
+        use_container_width=True,
+        hide_index=True,
+    )
 
 section_heading("Curves Library", "Search by canonical_tag and jump into the editor.")
 search = st.text_input("Search canonical_tag", value="")
