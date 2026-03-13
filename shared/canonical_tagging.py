@@ -423,9 +423,8 @@ def _has_excluded_keyword(text: str, keywords: Iterable[str]) -> bool:
     return False
 
 
-def _disambiguate_by_year(candidates: Sequence[AllowedVariant], year: int | None) -> AllowedVariant | None:
-    if year is None or not candidates:
-        return None
+@lru_cache(maxsize=1)
+def _load_curve_year_band() -> pd.DataFrame | None:
     curve_path = dataset_path("curves.csv")
     if not curve_path.exists():
         return None
@@ -435,7 +434,7 @@ def _disambiguate_by_year(candidates: Sequence[AllowedVariant], year: int | None
         return None
     if "canonical_tag" not in curves_df.columns or "anchor_year" not in curves_df.columns:
         return None
-    year_band = (
+    return (
         curves_df.dropna(subset=["canonical_tag", "anchor_year"])
         .assign(anchor_year=lambda d: d["anchor_year"].apply(_to_int))
         .dropna(subset=["anchor_year"])
@@ -443,6 +442,14 @@ def _disambiguate_by_year(candidates: Sequence[AllowedVariant], year: int | None
         .agg(["min", "max"])
         .rename(columns={"min": "min_year", "max": "max_year"})
     )
+
+
+def _disambiguate_by_year(candidates: Sequence[AllowedVariant], year: int | None) -> AllowedVariant | None:
+    if year is None or not candidates:
+        return None
+    year_band = _load_curve_year_band()
+    if year_band is None or year_band.empty:
+        return None
     matches = []
     for variant in candidates:
         band = year_band.loc[variant.canonical_tag] if variant.canonical_tag in year_band.index else None
@@ -458,23 +465,9 @@ def _disambiguate_by_year(candidates: Sequence[AllowedVariant], year: int | None
 def _year_in_any_band(candidates: Sequence[AllowedVariant], year: int | None) -> bool:
     if year is None or not candidates:
         return False
-    curve_path = dataset_path("curves.csv")
-    if not curve_path.exists():
+    year_band = _load_curve_year_band()
+    if year_band is None or year_band.empty:
         return False
-    try:
-        curves_df = pd.read_csv(curve_path)
-    except Exception:
-        return False
-    if "canonical_tag" not in curves_df.columns or "anchor_year" not in curves_df.columns:
-        return False
-    year_band = (
-        curves_df.dropna(subset=["canonical_tag", "anchor_year"])
-        .assign(anchor_year=lambda d: d["anchor_year"].apply(_to_int))
-        .dropna(subset=["anchor_year"])
-        .groupby("canonical_tag")["anchor_year"]
-        .agg(["min", "max"])
-        .rename(columns={"min": "min_year", "max": "max_year"})
-    )
     for variant in candidates:
         if variant.canonical_tag not in year_band.index:
             continue
