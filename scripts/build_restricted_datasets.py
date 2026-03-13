@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable, Tuple
 
@@ -32,6 +32,10 @@ SOLD_RESTRICTED = dataset_path("sold_cars_restricted.csv")
 GROUP_MAP_PATH = dataset_path("restricted_group_map.csv")
 ENRICHMENT_BACKLOG_PATH = dataset_path("quality/enrichment_backlog.csv")
 SCOPE_NAME = "toyota_v1"
+
+
+def _utc_now() -> datetime:
+    return datetime.now(timezone.utc)
 
 
 def _has_value(value: object) -> bool:
@@ -94,8 +98,8 @@ def _write_restricted(df: pd.DataFrame, schema: Iterable[str], path: Path) -> No
 def _append_enrichment_backlog(df: pd.DataFrame, source: str) -> None:
     if df.empty:
         return
-    timestamp = datetime.utcnow().isoformat(timespec="seconds")
-    dataset_date = datetime.utcnow().date().isoformat()
+    timestamp = _utc_now().isoformat(timespec="seconds")
+    dataset_date = _utc_now().date().isoformat()
     working = df.copy()
     working["make_norm"] = working.get("make", "").astype(str).str.lower().str.strip()
     working["model_norm"] = working.get("model", "").astype(str).str.lower().str.strip()
@@ -129,7 +133,7 @@ def _append_enrichment_backlog(df: pd.DataFrame, source: str) -> None:
             .agg(" ".join, axis=1)
             .str.lower()
         )
-        hi_rider_mask = text_blob.str.contains(r"\b(4x2|2wd|hi[- ]?rider)\b", na=False)
+        hi_rider_mask = text_blob.str.contains(r"\b(?:4x2|2wd|hi[- ]?rider)\b", na=False)
         if hi_rider_mask.any():
             rows.append(
                 {
@@ -162,7 +166,7 @@ def _append_enrichment_backlog(df: pd.DataFrame, source: str) -> None:
     ENRICHMENT_BACKLOG_PATH.parent.mkdir(parents=True, exist_ok=True)
     file_exists = ENRICHMENT_BACKLOG_PATH.exists()
     if file_exists:
-        existing = pd.read_csv(ENRICHMENT_BACKLOG_PATH)
+        existing = pd.read_csv(ENRICHMENT_BACKLOG_PATH, low_memory=False)
         if not existing.empty:
             existing_key = set(
                 zip(
@@ -193,8 +197,8 @@ def _append_enrichment_backlog(df: pd.DataFrame, source: str) -> None:
 
 
 def build_restricted_datasets() -> None:
-    active_df = pd.read_csv(ACTIVE_SOURCE) if ACTIVE_SOURCE.exists() else pd.DataFrame()
-    sold_df = pd.read_csv(SOLD_SOURCE) if SOLD_SOURCE.exists() else pd.DataFrame()
+    active_df = pd.read_csv(ACTIVE_SOURCE, low_memory=False) if ACTIVE_SOURCE.exists() else pd.DataFrame()
+    sold_df = pd.read_csv(SOLD_SOURCE, low_memory=False) if SOLD_SOURCE.exists() else pd.DataFrame()
 
     active_df = _prepare_frame(active_df)
     sold_df = _prepare_frame(sold_df)

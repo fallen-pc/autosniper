@@ -169,7 +169,8 @@ def ensure_state_schema(df: pd.DataFrame | None = None) -> pd.DataFrame:
     for column in STATE_TABLE_SCHEMA:
         if column not in out.columns:
             out[column] = ""
-    return out.reindex(columns=STATE_TABLE_SCHEMA)
+    out = out.reindex(columns=STATE_TABLE_SCHEMA)
+    return out.astype({column: "object" for column in STATE_TABLE_SCHEMA})
 
 
 def upsert_state_row(
@@ -234,8 +235,8 @@ def upsert_state_row(
         else:
             out = pd.concat([out, row_df], ignore_index=True, sort=False)
     else:
-        for column in STATE_TABLE_SCHEMA:
-            out.at[idx, column] = row_df.iloc[0][column]
+        out = out.drop(index=idx)
+        out = pd.concat([out, row_df], ignore_index=True, sort=False)
     out = ensure_state_schema(out).drop_duplicates(subset=["url"], keep="last").reset_index(drop=True)
     return out, decision
 

@@ -28,9 +28,10 @@ if __package__ in (None, ""):
         normalize_listing_fields,
         remove_compliance_markers,
     )
-    from shared.canonical_tagging import is_canonical_eligible, tag_dataframe
+    from shared.canonical_tagging import ELIGIBLE_CANONICAL_REASONS, UNCLASSIFIED, tag_dataframe
     from shared.validators import ValidatorConfig, validate_static_row
     from shared.validators import validate_vehicle_static_df
+    from shared.exclusions import append_pipeline_exclusions
 else:
     from shared.data_loader import dataset_path
     from shared.schema import SOLD_RAW_SCRAPE_COLUMNS, STATIC_VEHICLE_SCHEMA
@@ -41,9 +42,10 @@ else:
         normalize_listing_fields,
         remove_compliance_markers,
     )
-    from shared.canonical_tagging import is_canonical_eligible, tag_dataframe
+    from shared.canonical_tagging import ELIGIBLE_CANONICAL_REASONS, UNCLASSIFIED, tag_dataframe
     from shared.validators import ValidatorConfig, validate_static_row
     from shared.validators import validate_vehicle_static_df
+    from shared.exclusions import append_pipeline_exclusions
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 ROOT_DIR = SCRIPT_DIR.parent
@@ -60,6 +62,7 @@ SCHEMA_FIELDS = SOLD_RAW_SCRAPE_COLUMNS.copy()
 STATIC_OUTPUT_COLUMNS = list(
     dict.fromkeys(list(STATIC_VEHICLE_SCHEMA) + ["canonical_tag", "canonical_reason"])
 )
+_FAILURE_SEEN_KEYS: set[tuple[str, str]] | None = None
 
 FIELD_MAP = {
     "body_type": "Body Type",
@@ -256,23 +259,66 @@ def load_make_whitelist(existing_df: pd.DataFrame) -> set[str]:
     return whitelist
 
 
-def append_failure_log(records: list[dict[str, Any]]) -> None:
+def _load_failure_seen_keys() -> set[tuple[str, str]]:
+    global _FAILURE_SEEN_KEYS
+    if _FAILURE_SEEN_KEYS is not None:
+        return _FAILURE_SEEN_KEYS
+    keys: set[tuple[str, str]] = set()
+    if FAILURES_FILE.exists():
+        try:
+            existing = pd.read_csv(FAILURES_FILE, usecols=["url", "reason_code"], low_memory=False)
+        except (ValueError, pd.errors.EmptyDataError):
+            existing = pd.DataFrame(columns=["url", "reason_code"])
+        if not existing.empty:
+            urls = existing["url"].fillna("").astype(str).str.strip()
+            reasons = existing["reason_code"].fillna("").astype(str).str.strip()
+            keys = {(url, reason) for url, reason in zip(urls, reasons) if url}
+    _FAILURE_SEEN_KEYS = keys
+    return _FAILURE_SEEN_KEYS
+
+
+def append_failure_log(records: list[dict[str, Any]], *, stage: str = "static_validation") -> None:
     if not records:
         return
     FAILURES_FILE.parent.mkdir(parents=True, exist_ok=True)
     new_df = pd.DataFrame(records)
-    if FAILURES_FILE.exists():
+    if "url" not in new_df.columns:
+        append_pipeline_exclusions(records, stage=stage)
+        return
+    if "reason_code" not in new_df.columns:
+        new_df["reason_code"] = ""
+    new_df["url"] = new_df["url"].fillna("").astype(str).str.strip()
+    new_df["reason_code"] = new_df["reason_code"].fillna("").astype(str).str.strip()
+    new_df = new_df[new_df["url"].ne("")].copy()
+    if new_df.empty:
+        append_pipeline_exclusions(records, stage=stage)
+        return
+    new_df = new_df.drop_duplicates(subset=["url", "reason_code"], keep="first")
+
+    seen_keys = _load_failure_seen_keys()
+    key_series = list(zip(new_df["url"], new_df["reason_code"]))
+    fresh_mask = [key not in seen_keys for key in key_series]
+    to_append = new_df.loc[fresh_mask].copy()
+    if to_append.empty:
+        append_pipeline_exclusions(records, stage=stage)
+        return
+    for key in zip(to_append["url"], to_append["reason_code"]):
+        seen_keys.add(key)
+
+    file_exists = FAILURES_FILE.exists()
+    if file_exists:
         try:
-            existing_df = pd.read_csv(FAILURES_FILE, low_memory=False)
+            existing_columns = list(pd.read_csv(FAILURES_FILE, nrows=0).columns)
         except (ValueError, pd.errors.EmptyDataError):
-            existing_df = pd.DataFrame(columns=new_df.columns)
+            existing_columns = list(to_append.columns)
     else:
-        existing_df = pd.DataFrame(columns=new_df.columns)
-    combined = pd.concat([existing_df, new_df], ignore_index=True, sort=False)
-    dedupe_cols = [col for col in ("url", "reason_code") if col in combined.columns]
-    if dedupe_cols:
-        combined = combined.drop_duplicates(subset=dedupe_cols, keep="first")
-    atomic_write(combined, FAILURES_FILE)
+        existing_columns = list(to_append.columns)
+    for column in existing_columns:
+        if column not in to_append.columns:
+            to_append[column] = ""
+    to_append = to_append.reindex(columns=existing_columns)
+    to_append.to_csv(FAILURES_FILE, mode="a", header=not file_exists, index=False)
+    append_pipeline_exclusions(records, stage=stage)
 
 
 def filter_static_rows(df: pd.DataFrame, make_whitelist: set[str]) -> tuple[pd.DataFrame, list[dict[str, Any]]]:
@@ -336,43 +382,43 @@ def build_canonical_exclusion_failures(df: pd.DataFrame) -> tuple[pd.DataFrame, 
     if "canonical_reason" not in working.columns:
         working["canonical_reason"] = ""
 
-    eligible_mask = working.apply(
-        lambda row: is_canonical_eligible(row.get("canonical_tag"), row.get("canonical_reason")),
-        axis=1,
-    )
+    tags = working["canonical_tag"].fillna("").astype(str).str.strip()
+    reasons = working["canonical_reason"].fillna("").astype(str).str.strip()
+    eligible_mask = tags.ne("") & tags.ne(UNCLASSIFIED) & reasons.isin(ELIGIBLE_CANONICAL_REASONS)
     if eligible_mask.all():
         return working, []
 
     now_ts = time.strftime("%Y-%m-%d %H:%M:%S")
     excluded = working.loc[~eligible_mask].copy()
-    failures: list[dict[str, Any]] = []
-    for _, row in excluded.iterrows():
-        row_dict = row.to_dict()
-        snapshot = {
-            key: row_dict.get(key, "")
-            for key in (
-                "year",
-                "make",
-                "model",
-                "variant",
-                "body_type",
-                "transmission",
-                "fuel_type",
-                "odometer_reading",
-                "vin",
-                "location",
-                "canonical_tag",
-                "canonical_reason",
-            )
+    snapshot_cols = (
+        "year",
+        "make",
+        "model",
+        "variant",
+        "body_type",
+        "transmission",
+        "fuel_type",
+        "odometer_reading",
+        "vin",
+        "location",
+        "canonical_tag",
+        "canonical_reason",
+    )
+    snapshot_records = excluded.reindex(columns=snapshot_cols, fill_value="").fillna("").to_dict("records")
+    if "url" in excluded.columns:
+        url_values = excluded["url"].fillna("").astype(str).tolist()
+    else:
+        url_values = [""] * len(excluded)
+    reason_values = excluded["canonical_reason"].fillna("").astype(str).str.strip().tolist()
+    failures = [
+        {
+            "timestamp": now_ts,
+            "url": url,
+            "reason_code": reason or "NOT_CANONICAL_ELIGIBLE",
+            "field_snapshot": json.dumps(snapshot, ensure_ascii=True),
         }
-        failures.append(
-            {
-                "timestamp": now_ts,
-                "url": row_dict.get("url", ""),
-                "reason_code": str(row_dict.get("canonical_reason", "")).strip() or "NOT_CANONICAL_ELIGIBLE",
-                "field_snapshot": json.dumps(snapshot, ensure_ascii=True),
-            }
-        )
+        for url, reason, snapshot in zip(url_values, reason_values, snapshot_records)
+    ]
     kept = working.loc[eligible_mask].copy()
     return kept.reset_index(drop=True), failures
 
@@ -991,7 +1037,7 @@ def merge_and_save_static(existing_df: pd.DataFrame, new_df: pd.DataFrame) -> pd
     combined = select_best_rows(combined)
     make_whitelist = load_make_whitelist(existing_df)
     combined, failures = filter_static_rows(combined, make_whitelist)
-    append_failure_log(failures)
+    append_failure_log(failures, stage="static_validation")
     if failures:
         failure_urls = [record.get("url", "") for record in failures]
         remove_from_active_links(failure_urls)
@@ -1012,7 +1058,7 @@ def merge_and_save_static(existing_df: pd.DataFrame, new_df: pd.DataFrame) -> pd
     static_export = _normalize_text_columns(static_export)
     _canonical_kept, canonical_failures = build_canonical_exclusion_failures(static_export)
     if canonical_failures:
-        append_failure_log(canonical_failures)
+        append_failure_log(canonical_failures, stage="canonical_eligibility")
         print(
             f"Canonical audit flagged {len(canonical_failures)} listing(s); keeping rows in static export."
         )
@@ -1075,6 +1121,7 @@ def seed_active_dataset(static_df: pd.DataFrame) -> None:
         active_df["_url_norm"] = _normalize_url(active_df["url"])
         existing_active = existing_active.copy()
         existing_active["_url_norm"] = _normalize_url(existing_active["url"])
+        existing_active = existing_active.drop_duplicates(subset=["_url_norm"], keep="last")
         lookup = existing_active.set_index("_url_norm")
         for column in ("time_remaining_or_date_sold", "price", "bids"):
             if column not in active_df.columns:
@@ -1189,7 +1236,6 @@ def main(
                         atomic_write(normalized_merged, NORMALIZED_OUTPUT_FILE)
 
                     existing_df = merge_and_save_static(existing_df, new_df)
-                    seed_active_dataset(existing_df)
                     print(
                         f"Checkpoint saved ({len(new_df)} new rows, total {len(existing_df)})."
                     )
@@ -1201,6 +1247,7 @@ def main(
         if raw_only:
             print(f"Saved {total_scraped} raw rows. Output: {RAW_OUTPUT_FILE}")
         else:
+            seed_active_dataset(existing_df)
             print(f"Saved {total_scraped} rows (total {len(existing_df)}). Output: {OUTPUT_FILE}")
         if total_skipped:
             print(f"{total_skipped} URLs skipped. See {SKIPPED_LOG}")

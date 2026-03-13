@@ -9,7 +9,7 @@ import random
 import re
 import shutil
 import tempfile
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 import pandas as pd
@@ -66,6 +66,14 @@ TIME_PATTERN = re.compile(
     r"(\d+)\s*(d|day|days|h|hour|hours|m|min|minute|minutes|s|sec|second|seconds)",
     re.IGNORECASE,
 )
+
+
+def _utc_now() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+def _utc_now_iso() -> str:
+    return _utc_now().isoformat()
 
 
 def parse_currency_value(value: str | None) -> float | None:
@@ -153,7 +161,7 @@ def record_snapshot(
         bids_numeric = None
     time_hours = parse_time_remaining_to_hours(time_remaining_text)
     record = {
-        "snapshot_ts": datetime.utcnow().isoformat(),
+        "snapshot_ts": _utc_now_iso(),
         "url": url,
         "price_text": price_text or "",
         "price_numeric": price_numeric,
@@ -196,7 +204,7 @@ def save_resume_queue(remaining_urls: list[str]) -> None:
         json.dumps(
             {
                 "remaining_urls": remaining_urls,
-                "updated_at": datetime.utcnow().isoformat(),
+                "updated_at": _utc_now_iso(),
             },
             ensure_ascii=False,
         ),
@@ -534,7 +542,7 @@ async def update_bids(
 ):
     skipped_urls = []
     try:
-        run_id = datetime.utcnow().strftime("bids_%Y%m%dT%H%M%SZ")
+        run_id = _utc_now().strftime("bids_%Y%m%dT%H%M%SZ")
         df = _load_active_seed_dataframe()
         if df.empty:
             print("No active seed dataset found. Expected active or static listings CSV.")
@@ -610,7 +618,7 @@ async def update_bids(
                         state_df,
                         ListingObservation(
                             url=str(url or ""),
-                            observed_at=datetime.utcnow().isoformat(),
+                            observed_at=_utc_now_iso(),
                             run_id=run_id,
                             fetch_failed=True,
                             evidence="invalid_url",
@@ -641,7 +649,7 @@ async def update_bids(
                             obs = _state_observation_from_row(
                                 row_frame.iloc[0],
                                 run_id=run_id,
-                                observed_at=datetime.utcnow().isoformat(),
+                                observed_at=_utc_now_iso(),
                                 evidence="fetch_failed_no_signals",
                                 fetch_failed=True,
                                 fetch_error="no_status_signals",
@@ -649,7 +657,7 @@ async def update_bids(
                         else:
                             obs = ListingObservation(
                                 url=url,
-                                observed_at=datetime.utcnow().isoformat(),
+                                observed_at=_utc_now_iso(),
                                 run_id=run_id,
                                 fetch_failed=True,
                                 evidence="fetch_failed_no_signals",
@@ -708,7 +716,7 @@ async def update_bids(
                         obs = _state_observation_from_row(
                             row_frame.iloc[0],
                             run_id=run_id,
-                            observed_at=datetime.utcnow().isoformat(),
+                            observed_at=_utc_now_iso(),
                             evidence=evidence,
                             fetch_failed=False,
                         )

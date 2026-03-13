@@ -20,21 +20,22 @@ if __package__ in (None, ""):
     from shared.data_loader import dataset_path
     from shared.sold_cleaning import normalize_listing_fields
     from shared.canonical_tagging import tag_dataframe
-    from shared.state_machine import ListingObservation, ensure_state_schema, upsert_state_row
+    from shared.state_machine import ensure_state_schema, normalize_state
     from shared.validators import R, validate_sold_cars_df
+    from shared.exclusions import append_pipeline_exclusions
     from scripts.build_restricted_datasets import build_restricted_datasets
 else:
     from shared.data_loader import dataset_path
     from shared.sold_cleaning import normalize_listing_fields
     from shared.canonical_tagging import tag_dataframe
-    from shared.state_machine import ListingObservation, ensure_state_schema, upsert_state_row
+    from shared.state_machine import ensure_state_schema, normalize_state
     from shared.validators import R, validate_sold_cars_df
+    from shared.exclusions import append_pipeline_exclusions
     from scripts.build_restricted_datasets import build_restricted_datasets
 SOLD_FILE = dataset_path("sold_cars.csv")
 REFERRED_FILE = dataset_path("referred_cars.csv")
 ACTIVE_FILE = dataset_path("active_vehicle_details.csv")
 STATIC_FILE = dataset_path("vehicle_static_details.csv")
-SNAPSHOT_FILE = dataset_path("active_snapshots.csv")
 STATE_FILE = dataset_path("vehicle_state.csv")
 SOLD_DISCARD_LOG = dataset_path("scrapers/sold_discard_log.csv")
 
@@ -47,7 +48,21 @@ WOVR_PATTERN = re.compile(
     re.IGNORECASE,
 )
 VIN_RE = re.compile(r"^[A-HJ-NPR-Z0-9]{17}$")
-YEAR_URL_PATTERN = re.compile(r"\b(19[5-9]\d|20[0-3]\d)\b")
+AU_TZINFOS = {
+    "AEDT": 11 * 3600,
+    "AEST": 10 * 3600,
+    "ACDT": 10 * 3600 + 1800,
+    "ACST": 9 * 3600 + 1800,
+    "AWST": 8 * 3600,
+}
+
+
+def _utc_now() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+def _utc_now_iso() -> str:
+    return _utc_now().isoformat()
 
 
 def _is_blank(value: object) -> bool:
@@ -114,7 +129,7 @@ def _parse_date(value: object) -> str | None:
         return None
     text = str(value).strip()
     try:
-        parsed = date_parser.parse(text, fuzzy=True, dayfirst=True)
+        parsed = date_parser.parse(text, fuzzy=True, dayfirst=True, tzinfos=AU_TZINFOS)
     except (ValueError, TypeError):
         return None
     return parsed.date().isoformat()
@@ -138,6 +153,7 @@ def _append_sold_discard_log(records: list[dict[str, object]]) -> None:
     file_exists = SOLD_DISCARD_LOG.exists()
     df = pd.DataFrame(records)
     df.to_csv(SOLD_DISCARD_LOG, mode="a", header=not file_exists, index=False)
+    append_pipeline_exclusions(records, stage="sold_clean")
 
 
 def _clean_sold_rows(
@@ -155,7 +171,7 @@ def _clean_sold_rows(
         static_lookup = static_vin.set_index("url")["vin"].to_dict()
     cleaned_rows: list[dict[str, object]] = []
     failures: list[dict[str, object]] = []
-    timestamp = datetime.utcnow().isoformat()
+    timestamp = _utc_now_iso()
     for _, row in frame.iterrows():
         row_dict = row.to_dict()
         url = str(row_dict.get("url", "") or "").strip()
@@ -246,82 +262,8 @@ def _clean_sold_rows(
     return cleaned_df, failures
 
 
-def _parse_year_from_url(url: str) -> int | None:
-    if not url:
-        return None
-    match = YEAR_URL_PATTERN.search(str(url))
-    if not match:
-        return None
-    try:
-        return int(match.group(1))
-    except ValueError:
-        return None
-
-
-def _build_snapshot_sold_candidates(snapshot_path: Path, static_path: Path) -> pd.DataFrame:
-    if not snapshot_path.exists():
-        return pd.DataFrame()
-    snapshots = _load_dataframe(snapshot_path)
-    if snapshots.empty or "snapshot_ts" not in snapshots.columns or "url" not in snapshots.columns:
-        return pd.DataFrame()
-
-    snapshots["snapshot_ts"] = pd.to_datetime(snapshots["snapshot_ts"], errors="coerce")
-    snapshots["url"] = snapshots["url"].astype(str).str.strip()
-    snapshots = snapshots.dropna(subset=["snapshot_ts"])
-    snapshots = snapshots[snapshots["url"] != ""]
-    if snapshots.empty:
-        return pd.DataFrame()
-
-    snapshots["snapshot_date"] = snapshots["snapshot_ts"].dt.date
-    dates = sorted(date for date in snapshots["snapshot_date"].unique() if date is not None)
-    if len(dates) < 2:
-        return pd.DataFrame()
-    latest_date = max(dates)
-    prev_date = max(date for date in dates if date < latest_date)
-
-    prev_day = snapshots[snapshots["snapshot_date"] == prev_date].copy()
-    latest_day = snapshots[snapshots["snapshot_date"] == latest_date].copy()
-    missing_urls = set(prev_day["url"]) - set(latest_day["url"])
-    if not missing_urls:
-        return pd.DataFrame()
-
-    prev_day = prev_day[prev_day["url"].isin(missing_urls)]
-    prev_day = prev_day.sort_values("snapshot_ts")
-    last_seen = prev_day.groupby("url", as_index=False).tail(1).copy()
-
-    base = last_seen[["url", "price_numeric", "price_text", "bids_numeric"]].copy()
-    base["price"] = base["price_numeric"]
-    missing_price = base["price"].isna() | (base["price"] == 0)
-    if "price_text" in base.columns and missing_price.any():
-        base.loc[missing_price, "price"] = base.loc[missing_price, "price_text"].apply(_parse_price)
-    if "bids_numeric" in base.columns:
-        base["bids"] = base["bids_numeric"].fillna(0).astype(int)
-    else:
-        base["bids"] = 0
-    base["date_sold"] = prev_date.isoformat()
-    base["time_remaining_or_date_sold"] = base["date_sold"]
-    base["status"] = "sold"
-
-    static_df = _load_dataframe(static_path)
-    if not static_df.empty and "url" in static_df.columns:
-        static_df = static_df.copy()
-        static_df["url"] = static_df["url"].astype(str).str.strip()
-        static_df = static_df.drop_duplicates(subset=["url"], keep="last")
-        merged = base.merge(static_df, on="url", how="left", suffixes=("", "_static"))
-    else:
-        merged = base
-
-    if "year" not in merged.columns:
-        merged["year"] = pd.NA
-    missing_year = _blank_mask(merged["year"])
-    if missing_year.any():
-        merged.loc[missing_year, "year"] = merged.loc[missing_year, "url"].apply(_parse_year_from_url)
-
-    return merged
-
-
 def _load_dataframe(path: Path) -> pd.DataFrame:
-    return pd.read_csv(path) if path.exists() else pd.DataFrame()
+    return pd.read_csv(path, low_memory=False) if path.exists() else pd.DataFrame()
 
 
 def _atomic_write(df: pd.DataFrame, path: Path) -> None:
@@ -376,7 +318,7 @@ def _prepare_sold_rows(frame: pd.DataFrame, *, static_df: pd.DataFrame | None = 
             mask = _blank_mask(prepared["price"])
             if not mask.any():
                 break
-    prepared["price"] = prepared["price"].fillna("")
+    prepared["price"] = prepared["price"].where(prepared["price"].notna(), "")
     cleaned, failures = _clean_sold_rows(prepared, static_df=static_df)
     _append_sold_discard_log(failures)
     drop_cols = [column for column in SOLD_REDUNDANT_COLUMNS if column in cleaned.columns]
@@ -453,8 +395,12 @@ def _merge_preserving_history(
             mask_existing = new_keys.isin(existing_keys) & new_keys.ne("")
             filtered_new = filtered_new[~mask_existing].copy()
             filtered_new = filtered_new.drop_duplicates(subset=dedup_cols, keep="first")
-        combined = pd.concat([prepared_existing, filtered_new], ignore_index=True, sort=False)
-        added = len(filtered_new)
+        if filtered_new.empty:
+            combined = prepared_existing.copy()
+            added = 0
+        else:
+            combined = pd.concat([prepared_existing, filtered_new], ignore_index=True, sort=False)
+            added = len(filtered_new)
 
     if validator is not None:
         combined, stats = validator(combined)
@@ -504,6 +450,20 @@ def _normalize_url(series: pd.Series) -> pd.Series:
     return series.astype(str).str.strip().str.casefold()
 
 
+def _load_active_queue_urls() -> set[str]:
+    queue_path = dataset_path("active_vehicle_links.csv")
+    if not queue_path.exists():
+        return set()
+    queue_df = _load_dataframe(queue_path)
+    if queue_df.empty or "url" not in queue_df.columns:
+        return set()
+    return {
+        url
+        for url in _normalize_url(queue_df["url"]).tolist()
+        if url
+    }
+
+
 def _restore_active_columns(active_target: pd.DataFrame, existing_active: pd.DataFrame) -> pd.DataFrame:
     """Bring forward dynamic auction columns (price/bids/time/status) from the existing active snapshot."""
     if active_target.empty:
@@ -533,6 +493,93 @@ def _restore_active_columns(active_target: pd.DataFrame, existing_active: pd.Dat
     return enriched
 
 
+STATE_DROP_COLUMNS = {
+    "state",
+    "current_price",
+    "bid_count",
+    "time_remaining",
+    "last_seen_at",
+    "terminal_reason",
+    "state_updated_at",
+    "fetch_fail_count",
+    "last_fetch_error",
+    "last_evidence",
+    "run_id",
+}
+
+
+def _join_state_with_static(state_slice: pd.DataFrame, static_df: pd.DataFrame) -> pd.DataFrame:
+    if state_slice.empty:
+        return pd.DataFrame()
+    working = state_slice.copy()
+    if "url" in working.columns:
+        working["url"] = working["url"].astype(str).str.strip()
+        working["_url_norm"] = _normalize_url(working["url"])
+    else:
+        working["_url_norm"] = ""
+
+    if static_df.empty or "url" not in static_df.columns:
+        return working.drop(columns=["_url_norm"], errors="ignore")
+
+    static_lookup = static_df.copy()
+    static_lookup["url"] = static_lookup["url"].astype(str).str.strip()
+    static_lookup["_url_norm"] = _normalize_url(static_lookup["url"])
+    static_lookup = static_lookup.rename(columns={"url": "url_static"})
+    merged = working.merge(static_lookup, on="_url_norm", how="left")
+    if "url_static" in merged.columns:
+        merged["url"] = merged["url_static"].fillna(merged.get("url", ""))
+        merged.drop(columns=["url_static"], inplace=True)
+    merged.drop(columns=["_url_norm"], inplace=True)
+    return merged
+
+
+def _derive_date_sold(row: pd.Series) -> str | None:
+    candidate = _parse_date(row.get("time_remaining"))
+    if candidate:
+        return candidate
+    candidate = _parse_date(row.get("last_seen_at"))
+    return candidate
+
+
+def _materialize_state_view(
+    static_df: pd.DataFrame,
+    state_df: pd.DataFrame,
+    *,
+    target_states: set[str],
+    status_label: str,
+    include_date_sold: bool = False,
+) -> pd.DataFrame:
+    if state_df.empty:
+        return pd.DataFrame()
+    slice_df = state_df[state_df["state"].isin(target_states)].copy()
+    if slice_df.empty:
+        return pd.DataFrame()
+    merged = _join_state_with_static(slice_df, static_df)
+    if merged.empty:
+        return merged
+    merged["status"] = status_label
+    if "current_price" in merged.columns:
+        merged["price"] = merged["current_price"]
+    else:
+        merged["price"] = ""
+    if "bid_count" in merged.columns:
+        merged["bids"] = merged["bid_count"]
+    else:
+        merged["bids"] = ""
+    if "time_remaining" in merged.columns:
+        merged["time_remaining_or_date_sold"] = merged["time_remaining"]
+    else:
+        merged["time_remaining_or_date_sold"] = ""
+    if include_date_sold:
+        merged["date_sold"] = merged.apply(_derive_date_sold, axis=1)
+    if status_label == "referred" and "terminal_reason" in merged.columns:
+        merged["referral_reason"] = merged["terminal_reason"]
+    drop_cols = [col for col in STATE_DROP_COLUMNS if col in merged.columns]
+    if drop_cols:
+        merged = merged.drop(columns=drop_cols)
+    return merged
+
+
 def _load_state_table() -> pd.DataFrame:
     if not STATE_FILE.exists():
         return ensure_state_schema(pd.DataFrame())
@@ -541,85 +588,6 @@ def _load_state_table() -> pd.DataFrame:
     except Exception:
         state_df = pd.DataFrame()
     return ensure_state_schema(state_df)
-
-
-def _to_state_observation(
-    row: pd.Series,
-    *,
-    run_id: str,
-    observed_at: str,
-    target_state: str,
-    evidence: str,
-) -> ListingObservation:
-    url = str(row.get("url", "") or "").strip()
-    price = row.get("price", "")
-    bids = row.get("bids", "")
-    time_remaining = row.get("time_remaining_or_date_sold", "")
-    return ListingObservation(
-        url=url,
-        observed_at=observed_at,
-        run_id=run_id,
-        is_live=(target_state == "active"),
-        has_sale_price=(target_state == "sold"),
-        is_referred=(target_state == "referred"),
-        fetch_failed=False,
-        current_price=price if pd.notna(price) else "",
-        bid_count=bids if pd.notna(bids) else "",
-        time_remaining=time_remaining if pd.notna(time_remaining) else "",
-        evidence=evidence,
-        fetch_error="",
-    )
-
-
-def _sync_state_from_views(
-    active_df: pd.DataFrame,
-    sold_df: pd.DataFrame,
-    referred_df: pd.DataFrame,
-    *,
-    run_id: str,
-) -> pd.DataFrame:
-    state_df = _load_state_table()
-    observed_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
-
-    for _, row in active_df.iterrows():
-        obs = _to_state_observation(
-            row,
-            run_id=run_id,
-            observed_at=observed_at,
-            target_state="active",
-            evidence="update_master_active_view",
-        )
-        if not obs.url:
-            continue
-        state_df, _ = upsert_state_row(state_df, obs)
-
-    for _, row in sold_df.iterrows():
-        obs = _to_state_observation(
-            row,
-            run_id=run_id,
-            observed_at=observed_at,
-            target_state="sold",
-            evidence="update_master_sold_view",
-        )
-        if not obs.url:
-            continue
-        state_df, _ = upsert_state_row(state_df, obs)
-
-    for _, row in referred_df.iterrows():
-        obs = _to_state_observation(
-            row,
-            run_id=run_id,
-            observed_at=observed_at,
-            target_state="referred",
-            evidence="update_master_referred_view",
-        )
-        if not obs.url:
-            continue
-        state_df, _ = upsert_state_row(state_df, obs)
-
-    _atomic_write(ensure_state_schema(state_df), STATE_FILE)
-    print(f"Listing state saved to {STATE_FILE} ({len(state_df)} rows).")
-    return state_df
 
 
 def _prune_urls_from_dataset(path: Path, urls: set[str], label: str) -> None:
@@ -634,84 +602,87 @@ def _prune_urls_from_dataset(path: Path, urls: set[str], label: str) -> None:
     removed = int(mask.sum())
     if removed:
         existing = existing.loc[~mask].copy()
-        existing.drop(columns=["_url_norm"], inplace=True)
-        _atomic_write(existing, path)
-        print(f"Removed {removed} {label} listing(s) now marked as referred.")
-
-
-def _prune_static_dataset(urls_to_remove: set[str]) -> None:
-    """Drop completed listings (sold/referred) from the static vehicle dataset."""
-    if not urls_to_remove:
-        return
-    static_df = _load_dataframe(STATIC_FILE)
-    if static_df.empty or "url" not in static_df.columns:
-        return
-    mask = static_df["url"].isin(urls_to_remove)
-    removed = int(mask.sum())
-    if not removed:
-        return
-    pruned = static_df.loc[~mask].copy()
-    _atomic_write(pruned, STATIC_FILE)
-    print(f"Pruned {removed} completed listing(s) from {STATIC_FILE.name}.")
+    existing.drop(columns=["_url_norm"], inplace=True)
+    _atomic_write(existing, path)
+    print(f"Removed {removed} {label} listing(s) now marked as referred.")
 
 
 def update_master_database() -> None:
-    run_id = datetime.now(timezone.utc).strftime("master_%Y%m%dT%H%M%SZ")
-    df = _load_dataframe(ACTIVE_FILE)
-    if df.empty:
-        print("No active listings available; ensure you've promoted the latest scrape into active listings.")
+    state_df = _load_state_table()
+    if state_df.empty:
+        print("vehicle_state.csv is empty; run update_bids first to populate listing states.")
         return
-    if "status" not in df.columns:
-        df["status"] = "active"
+    state_df = state_df.copy()
+    state_df["state"] = state_df["state"].apply(normalize_state)
 
-    df = normalize_listing_fields(df)
-    optional_dynamic_columns = ("time_remaining_or_date_sold", "price", "bids")
-    for column in optional_dynamic_columns:
-        if column not in df.columns:
-            df[column] = pd.NA
-
-    df = _remove_excluded_variants(df)
-    df["status"] = df["status"].astype(str).str.strip().str.lower()
-    valid_statuses = {"active", "sold", "referred", "canceled", "cancelled", "closed"}
-    df.loc[~df["status"].isin(valid_statuses), "status"] = "active"
-
-    for column in optional_dynamic_columns:
-        if column in df.columns and df[column].dtype == object:
-            df[column] = df[column].replace({"": pd.NA, "nan": pd.NA})
-
-    sold_df = df[df["status"] == "sold"].copy()
-    referred_df = df[df["status"].isin(REFERRED_STATUSES)].copy()
-    active_df = df[df["status"] == "active"].copy()
-    # Snapshot-missing listings are not treated as sold. We only transition to sold/referred
-    # when a listing is explicitly scraped with a terminal status.
-    snapshot_sold_df = pd.DataFrame()
-    if SNAPSHOT_FILE.exists():
-        snapshots = _load_dataframe(SNAPSHOT_FILE)
-        if not snapshots.empty and "snapshot_ts" in snapshots.columns and "url" in snapshots.columns:
-            snapshots["snapshot_ts"] = pd.to_datetime(snapshots["snapshot_ts"], errors="coerce")
-            snapshots = snapshots.dropna(subset=["snapshot_ts"])
-            if not snapshots.empty:
-                snapshots["snapshot_date"] = snapshots["snapshot_ts"].dt.date
-                dates = sorted(date for date in snapshots["snapshot_date"].unique() if date is not None)
-                if len(dates) >= 2:
-                    latest_date = max(dates)
-                    prev_date = max(date for date in dates if date < latest_date)
-                    prev_day = snapshots[snapshots["snapshot_date"] == prev_date]
-                    latest_day = snapshots[snapshots["snapshot_date"] == latest_date]
-                    missing_urls = set(prev_day["url"].astype(str)) - set(latest_day["url"].astype(str))
-                    if missing_urls:
-                        print(
-                            f"[INFO] snapshot-missing URLs detected (no status change): {len(missing_urls)}"
-                        )
-                        snapshot_sold_df = _build_snapshot_sold_candidates(SNAPSHOT_FILE, STATIC_FILE)
-
-    if not snapshot_sold_df.empty:
-        sold_df = pd.concat([sold_df, snapshot_sold_df], ignore_index=True, sort=False)
-        if "url" in sold_df.columns:
-            sold_df = sold_df.drop_duplicates(subset=["url"], keep="last")
-        print(f"[INFO] Added {len(snapshot_sold_df)} snapshot-missing listing(s) to sold candidates.")
-    active_df = _remove_wovr_rows(active_df)
+    static_df = _load_dataframe(STATIC_FILE)
     existing_active = _load_dataframe(ACTIVE_FILE)
+
+    active_df = _materialize_state_view(
+        static_df,
+        state_df,
+        target_states={"active"},
+        status_label="active",
+        include_date_sold=False,
+    )
+    sold_df = _materialize_state_view(
+        static_df,
+        state_df,
+        target_states={"sold"},
+        status_label="sold",
+        include_date_sold=True,
+    )
+    referred_df = _materialize_state_view(
+        static_df,
+        state_df,
+        target_states={"referred"},
+        status_label="referred",
+        include_date_sold=False,
+    )
+    withdrawn_df = _materialize_state_view(
+        static_df,
+        state_df,
+        target_states={"withdrawn"},
+        status_label="referred",
+        include_date_sold=False,
+    )
+    if not withdrawn_df.empty:
+        referred_df = pd.concat([referred_df, withdrawn_df], ignore_index=True, sort=False)
+
+    for frame_name, frame in (("active", active_df), ("sold", sold_df), ("referred", referred_df)):
+        if frame.empty:
+            continue
+        frame = normalize_listing_fields(frame)
+        frame = _remove_excluded_variants(frame)
+        frame["status"] = frame.get("status", frame_name).astype(str).str.strip().str.lower()
+        if frame_name == "active":
+            frame["status"] = "active"
+        elif frame_name == "sold":
+            frame["status"] = "sold"
+        else:
+            frame["status"] = "referred"
+        if frame_name == "active":
+            active_df = frame
+        elif frame_name == "sold":
+            sold_df = frame
+        else:
+            referred_df = frame
+
+    if not active_df.empty:
+        active_df = _remove_wovr_rows(active_df)
+        active_queue_urls = _load_active_queue_urls()
+        if active_queue_urls and "url" in active_df.columns:
+            active_df["_url_norm"] = _normalize_url(active_df["url"])
+            before_count = len(active_df)
+            active_df = active_df[active_df["_url_norm"].isin(active_queue_urls)].copy()
+            active_df.drop(columns=["_url_norm"], inplace=True)
+            removed = before_count - len(active_df)
+            if removed:
+                print(f"Filtered out {removed} stale active state row(s) not present in active link queue.")
+
+    for column in ("time_remaining_or_date_sold", "price", "bids", "date_sold"):
+        if not active_df.empty and column not in active_df.columns:
+            active_df[column] = pd.NA
 
     if not sold_df.empty:
         sold_df = tag_dataframe(
@@ -743,17 +714,6 @@ def update_master_database() -> None:
                 referred_df = pd.concat([referred_df, moved_rows], ignore_index=True, sort=False)
                 sold_df = sold_df.loc[~blank_sale_mask].copy()
                 print(f"Moved {len(moved_rows)} sold listing(s) without sale price into referred dataset.")
-    referred_urls: set[str] = set()
-    if "url" in referred_df.columns and not referred_df.empty:
-        referred_urls = {url.strip() for url in referred_df["url"].dropna().tolist() if str(url).strip()}
-    existing_referred = _load_dataframe(REFERRED_FILE)
-    if not existing_referred.empty and "url" in existing_referred.columns:
-        referred_urls.update(
-            {url.strip() for url in existing_referred["url"].dropna().tolist() if str(url).strip()}
-        )
-    # Do not purge sold based on referred URLs; sold history is authoritative.
-
-    static_df = _load_dataframe(STATIC_FILE)
     _merge_preserving_history(
         SOLD_FILE,
         sold_df,
@@ -771,8 +731,30 @@ def update_master_database() -> None:
         ensure_schema=True,
     )
 
-    active_target = active_df if not active_df.empty else pd.DataFrame(columns=df.columns)
-    active_target = _restore_active_columns(active_target, existing_active)
+    if not active_df.empty:
+        active_target = active_df.copy()
+    else:
+        if not existing_active.empty:
+            seed_columns = list(existing_active.columns)
+        elif not static_df.empty:
+            seed_columns = list(static_df.columns) + [
+                "status",
+                "time_remaining_or_date_sold",
+                "price",
+                "bids",
+                "date_sold",
+            ]
+        else:
+            seed_columns = [
+                "url",
+                "status",
+                "time_remaining_or_date_sold",
+                "price",
+                "bids",
+                "date_sold",
+            ]
+        active_target = pd.DataFrame(columns=seed_columns)
+
     if "status" in active_target.columns:
         active_target["status"] = active_target["status"].fillna("active").astype(str).str.strip().str.lower()
         active_target = active_target[active_target["status"] == "active"].copy()
@@ -781,7 +763,6 @@ def update_master_database() -> None:
         active_target = active_target.drop(columns=["drivetrain_source"])
     _atomic_write(active_target, ACTIVE_FILE)
     print(f"Active listings saved to {ACTIVE_FILE} ({len(active_target)} rows).")
-    _sync_state_from_views(active_target, sold_df, referred_df, run_id=run_id)
 
     completed_urls: set[str] = set()
     if "url" in sold_df.columns:
