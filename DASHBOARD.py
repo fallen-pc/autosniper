@@ -301,6 +301,12 @@ def format_currency_value(value: float | None, default: str = "N/A") -> str:
     return f"${value:,.0f}"
 
 
+def _format_rows(value: int | None) -> str:
+    if value is None:
+        return "N/A"
+    return f"{value:,}"
+
+
 def format_last_run(ts: datetime | None) -> str:
     if ts is None:
         return "Last run - never"
@@ -699,12 +705,6 @@ if not scored_df.empty and "hit" in scored_df.columns:
     if settled_count:
         accuracy = valid_hits.astype(float).mean()
         accuracy_display = f"{accuracy * 100:,.1f}%"
-
-def _format_rows(value: int | None) -> str:
-    if value is None:
-        return "N/A"
-    return f"{value:,}"
-
 
 section_heading("Sample Listings", "Preview the first 10 records from the master file.")
 st.dataframe(df.head(10), width="stretch", hide_index=True)
