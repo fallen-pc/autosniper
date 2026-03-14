@@ -275,6 +275,60 @@ def compute_decision_metrics(
     }
 
 
+def compute_underbid_pct(sold_price: object, max_bid: object) -> float | None:
+    sold_val = _to_float(sold_price)
+    max_bid_val = _to_float(max_bid)
+    if sold_val is None or max_bid_val is None or max_bid_val <= 0:
+        return None
+    return ((max_bid_val - sold_val) / max_bid_val) * 100.0
+
+
+def classify_miss_reason(row: pd.Series) -> str:
+    spec_reason = safe_text(row.get("spec_reason"), "")
+    if spec_reason:
+        return "not covered"
+
+    sold_price = _to_float(row.get("sold_price"))
+    max_bid = _to_float(row.get("max_bid"))
+    curve_estimate = _to_float(row.get("curve_estimate"))
+    curve_high = _to_float(row.get("curve_high"))
+    projected_profit = _to_float(row.get("projected_profit_at_sold"))
+    delta_pct = _to_float(row.get("delta_pct"))
+    risk_buffer = max(_to_float(row.get("risk_buffer")) or 0.0, 0.0)
+    repair_cost = max(_to_float(row.get("repair_cost_estimate")) or 0.0, 0.0)
+    underbid_pct = _to_float(row.get("underbid_pct"))
+    cost_drag = risk_buffer + repair_cost
+
+    if sold_price is None or curve_estimate is None:
+        return "unclassified"
+
+    if curve_high is not None and sold_price > (curve_high * 1.05):
+        return "auction price spike"
+
+    if max_bid is not None and sold_price > max_bid:
+        bid_gap_pct = ((sold_price - max_bid) / max_bid * 100.0) if max_bid > 0 else None
+        if bid_gap_pct is not None and bid_gap_pct <= 5.0:
+            return "bidding delay"
+        if cost_drag > 0 and (curve_estimate - sold_price) > 0 and cost_drag >= (curve_estimate - sold_price) * 0.35:
+            return "risk deduction too large"
+        if delta_pct is not None and delta_pct >= 12.0:
+            return "curve too conservative"
+        return "auction price spike"
+
+    if projected_profit is not None and projected_profit > 0:
+        if underbid_pct is not None and underbid_pct <= 5.0:
+            return "bidding delay"
+        if cost_drag > 0 and (curve_estimate - sold_price) > 0 and cost_drag >= (curve_estimate - sold_price) * 0.35:
+            return "risk deduction too large"
+        if delta_pct is not None and delta_pct <= 8.0:
+            return "curve too conservative"
+        return "bidding delay"
+
+    if cost_drag > 0:
+        return "risk deduction too large"
+    return "curve too conservative"
+
+
 @st.cache_data(ttl=300)
 def enrich_repair_estimates(df: pd.DataFrame, include_cost: bool) -> pd.DataFrame:
     if df.empty:
@@ -343,8 +397,8 @@ st.markdown(
         .section-card{
           background: radial-gradient(120% 140% at 15% 10%, var(--bg2) 0%, var(--bg) 65%, #04070c 100%);
           border: 1px solid rgba(39,182,255,.30);
-          border-radius: 14px;
-          padding: 14px 16px;
+          border-radius: 16px;
+          padding: 16px;
         }
         .kpi-row{
           display:flex; gap:12px; flex-wrap:wrap;
@@ -354,8 +408,8 @@ st.markdown(
           min-width: 210px;
           background: radial-gradient(120% 140% at 15% 10%, var(--bg2) 0%, var(--bg) 65%, #04070c 100%);
           border: 1px solid rgba(39,182,255,.55);
-          border-radius: 14px;
-          padding: 14px 16px;
+          border-radius: 16px;
+          padding: 16px;
           box-shadow: 0 0 0 1px rgba(0,0,0,.25) inset;
         }
         .kpi .k{ font-size: 11px; letter-spacing:.14em; text-transform:uppercase; color: rgba(255,255,255,.70); }
@@ -363,7 +417,7 @@ st.markdown(
         .kpi .s{ margin-top:8px; font-size: 12px; color: var(--muted); }
         .notice{
           margin-top: 10px;
-          padding: 10px 12px;
+          padding: 12px 14px;
           border-radius: 12px;
           border: 1px solid rgba(39,182,255,.18);
           background: rgba(39,182,255,.08);
@@ -385,6 +439,19 @@ st.markdown(
           color: rgba(255,255,255,.75);
           font-size: 12px;
         }
+        .class-badge{
+          display: inline-flex;
+          align-items: center;
+          padding: 3px 8px;
+          border-radius: 999px;
+          border: 1px solid rgba(39,182,255,.24);
+          background: rgba(39,182,255,.10);
+          color: rgba(255,255,255,.82);
+          font-size: 10px;
+          letter-spacing: .08em;
+          text-transform: uppercase;
+          margin-top: 6px;
+        }
         .group-header{
           margin-top: 14px;
           margin-bottom: 6px;
@@ -402,8 +469,8 @@ st.markdown(
         }
         .miss-row{
           position: relative;
-          border-radius: 14px;
-          padding: 8px 10px;
+          border-radius: 16px;
+          padding: 12px;
           margin: 8px 0;
           border: 1px solid rgba(39,182,255,.30);
           background: radial-gradient(120% 140% at 15% 10%, var(--bg2) 0%, var(--bg) 65%, #04070c 100%);
@@ -451,7 +518,7 @@ st.markdown(
         .mm{
           min-width: 120px;
           border-radius: 12px;
-          padding: 8px 10px;
+          padding: 10px 12px;
           border: 1px solid rgba(39,182,255,.35);
           background: rgba(0,0,0,.30);
         }
@@ -624,6 +691,7 @@ for _, row in sold_df.iterrows():
     transport_costs = decision.get("transport")
     admin_costs = decision.get("admin_costs")
     risk_buffer = decision.get("risk_buffer")
+    underbid_pct = compute_underbid_pct(sold_price, max_bid)
 
     missed = False
     if (
@@ -662,6 +730,7 @@ for _, row in sold_df.iterrows():
             "repair_decision": row.get("repair_decision") if include_repairs else None,
             "net_delta": net_delta,
             "max_bid": max_bid,
+            "underbid_pct": underbid_pct,
             "projected_profit_at_sold": projected_profit_at_sold,
             "profit_margin_pct": profit_margin_pct,
             "total_costs": total_costs,
@@ -681,6 +750,10 @@ for _, row in sold_df.iterrows():
     )
 
 results_df = pd.DataFrame(results)
+if not results_df.empty:
+    results_df["miss_classification"] = results_df.apply(classify_miss_reason, axis=1)
+    results_df["date_sold_parsed"] = pd.to_datetime(results_df["date_sold"], errors="coerce")
+    results_df["sold_month"] = results_df["date_sold_parsed"].dt.to_period("M").dt.to_timestamp()
 
 no_curve_mask = results_df["curve_estimate"].isna() | (results_df["spec_reason"] == "NOT_COVERED")
 no_curve_view = results_df[no_curve_mask].copy()
@@ -700,11 +773,34 @@ if only_net_positive:
     view = view[view["projected_profit_at_sold"].fillna(0) > 0]
 
 metric_series = view["projected_profit_at_sold"] if only_missed else view["delta"]
+true_miss_view = eligible_view[
+    eligible_view["missed"] & (eligible_view["projected_profit_at_sold"].fillna(0) > 0)
+].copy()
 sold_count = int(view.shape[0])
 with_curve = int(eligible_view.shape[0]) if not eligible_view.empty else 0
 no_curve_count = int(no_curve_view.shape[0]) if not no_curve_view.empty else 0
 total_missed = float(metric_series.clip(lower=0).sum()) if sold_count else 0.0
 avg_missed = float(metric_series.clip(lower=0).mean()) if sold_count else 0.0
+avg_missed_margin = (
+    float(true_miss_view["profit_margin_pct"].dropna().mean())
+    if not true_miss_view.empty and "profit_margin_pct" in true_miss_view.columns
+    else None
+)
+largest_missed_deal = (
+    float(true_miss_view["projected_profit_at_sold"].dropna().max())
+    if not true_miss_view.empty and true_miss_view["projected_profit_at_sold"].notna().any()
+    else None
+)
+avg_underbid_pct = (
+    float(true_miss_view["underbid_pct"].dropna().mean())
+    if not true_miss_view.empty and "underbid_pct" in true_miss_view.columns and true_miss_view["underbid_pct"].notna().any()
+    else None
+)
+highest_theoretical_profit = (
+    float(eligible_view["projected_profit_at_sold"].dropna().max())
+    if not eligible_view.empty and "projected_profit_at_sold" in eligible_view.columns and eligible_view["projected_profit_at_sold"].notna().any()
+    else None
+)
 
 if sold_count == 0:
     summary_line = "No listings match the current hypotheses."
@@ -759,6 +855,26 @@ kpi_html = f"""
   <div class="v">{no_curve_count:,}</div>
   <div class="s">Excluded from misses</div>
 </div>
+<div class="kpi">
+  <div class="k">Average Missed Margin</div>
+  <div class="v">{pct(avg_missed_margin)}</div>
+  <div class="s">True misses only</div>
+</div>
+<div class="kpi">
+  <div class="k">Largest Missed Deal</div>
+  <div class="v">{money(largest_missed_deal)}</div>
+  <div class="s">Highest realised missed profit</div>
+</div>
+<div class="kpi">
+  <div class="k">Average Underbid %</div>
+  <div class="v">{pct(avg_underbid_pct)}</div>
+  <div class="s">Gap between max bid and sold price</div>
+</div>
+<div class="kpi">
+  <div class="k">Highest Theoretical Profit</div>
+  <div class="v">{money(highest_theoretical_profit)}</div>
+  <div class="s">Best profit signal in covered sold listings</div>
+</div>
 """
 st.markdown(clean_html(kpi_html), unsafe_allow_html=True)
 st.markdown("</div>", unsafe_allow_html=True)
@@ -797,6 +913,66 @@ if sold_count:
 if pattern_bits:
     chips = "".join([f'<div class="chip">{item}</div>' for item in pattern_bits])
     st.markdown(f'<div class="pattern">{chips}</div>', unsafe_allow_html=True)
+
+timeline_source = true_miss_view.copy()
+if min_metric > 0:
+    timeline_source = timeline_source[timeline_source["projected_profit_at_sold"].fillna(0) >= min_metric]
+
+if not timeline_source.empty and "sold_month" in timeline_source.columns:
+    timeline_df = (
+        timeline_source.dropna(subset=["sold_month"])
+        .assign(month_profit=lambda frame: frame["projected_profit_at_sold"].clip(lower=0))
+        .groupby("sold_month", as_index=False)["month_profit"]
+        .sum()
+        .sort_values("sold_month")
+    )
+    if not timeline_df.empty:
+        st.markdown('<div class="section-card" style="margin-top:14px;">', unsafe_allow_html=True)
+        st.markdown("### Missed Profit Timeline")
+        st.caption("True missed profit aggregated by sold month.")
+        chart_df = timeline_df.rename(columns={"sold_month": "Month", "month_profit": "Missed Profit"})
+        st.line_chart(chart_df.set_index("Month"))
+        st.markdown("</div>", unsafe_allow_html=True)
+
+classification_source = true_miss_view.copy()
+if min_metric > 0:
+    classification_source = classification_source[
+        classification_source["projected_profit_at_sold"].fillna(0) >= min_metric
+    ]
+if not classification_source.empty and "miss_classification" in classification_source.columns:
+    classification_df = (
+        classification_source.assign(
+            missed_profit=lambda frame: frame["projected_profit_at_sold"].clip(lower=0)
+        )
+        .groupby("miss_classification", as_index=False)
+        .agg(
+            listings=("url", "count"),
+            missed_profit=("missed_profit", "sum"),
+            avg_profit=("missed_profit", "mean"),
+        )
+        .sort_values(["missed_profit", "listings"], ascending=[False, False])
+    )
+    if not classification_df.empty:
+        st.markdown('<div class="section-card" style="margin-top:14px;">', unsafe_allow_html=True)
+        st.markdown("### Miss Classification")
+        st.caption("Heuristic buckets to explain why opportunities were missed.")
+        summary_chips = "".join(
+            f'<div class="chip">{html.escape(str(row["miss_classification"]))}: '
+            f'{int(row["listings"]):,} listings / {money(row["missed_profit"])}</div>'
+            for _, row in classification_df.iterrows()
+        )
+        st.markdown(f'<div class="pattern">{summary_chips}</div>', unsafe_allow_html=True)
+        display_df = classification_df.rename(
+            columns={
+                "miss_classification": "classification",
+                "missed_profit": "missed_profit_total",
+                "avg_profit": "average_profit",
+            }
+        ).copy()
+        display_df["missed_profit_total"] = display_df["missed_profit_total"].apply(money)
+        display_df["average_profit"] = display_df["average_profit"].apply(money)
+        st.dataframe(display_df, width="stretch", hide_index=True)
+        st.markdown("</div>", unsafe_allow_html=True)
 
 st.markdown("</div>", unsafe_allow_html=True)
 
@@ -932,6 +1108,7 @@ for group in group_order:
         max_bid = row.get("max_bid")
         profit_at_sold = row.get("projected_profit_at_sold")
         profit_margin = row.get("profit_margin_pct")
+        miss_classification = safe_text(row.get("miss_classification"), "unclassified")
 
         title = " ".join([part for part in [str(year) if year else "", make, model] if part]).strip()
         sub = " • ".join([part for part in [variant, f"Sold: {date_sold}" if date_sold else ""] if part])
@@ -939,6 +1116,7 @@ for group in group_order:
         if metric_val is not None and top_threshold is not None and metric_val >= top_threshold:
             top_label = "Top profit" if only_missed else "Top delta"
             top_badge = f'<span class="top-badge">{top_label}</span>'
+        class_badge = f'<div class="class-badge">{html.escape(miss_classification)}</div>'
 
         row_html = f"""
         <div class="miss-row {' '.join(row_classes)}">
@@ -946,6 +1124,7 @@ for group in group_order:
             <div>
               <div class="miss-title">{html.escape(title)}{top_badge}</div>
               <div class="miss-sub">{html.escape(sub)}</div>
+              {class_badge}
             </div>
             <div class="miss-metrics">
               <div class="mm"><div class="k">Sold</div><div class="v">{money(sold_price)}</div></div>
@@ -987,12 +1166,16 @@ for group in group_order:
                     st.markdown("**Repair estimate**")
                     st.write(money(row.get("repair_cost_estimate")))
             with cols[2]:
+                st.markdown("**Miss classification**")
+                st.write(miss_classification)
                 st.markdown("**Spec reason**")
                 st.write(safe_text(row.get("spec_reason"), "N/A"))
                 st.markdown("**Curve delta**")
                 st.write(delta_text)
                 st.markdown("**Delta %**")
                 st.write(pct(row.get("delta_pct")))
+                st.markdown("**Underbid %**")
+                st.write(pct(row.get("underbid_pct")))
                 if include_repairs:
                     st.markdown("**Repair decision**")
                     st.write(safe_text(row.get("repair_decision"), "N/A"))

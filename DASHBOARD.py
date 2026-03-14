@@ -70,11 +70,11 @@ st.markdown(
         """
         <style>
         .top-auction-card {
-            background: var(--autosniper-panel);
-            border-radius: 20px;
-            padding: 1.2rem 1.4rem;
+            background: linear-gradient(145deg, rgba(26, 33, 48, 0.98), rgba(10, 16, 28, 0.98));
+            border-radius: 16px;
+            padding: 1rem;
             border: 1px solid var(--autosniper-border);
-            box-shadow: 0 22px 42px rgba(13, 2, 45, 0.18);
+            box-shadow: 0 22px 42px rgba(5, 10, 18, 0.34);
             min-height: 100%;
         }
         .top-auction-card h3 {
@@ -99,10 +99,10 @@ st.markdown(
             margin-top: 0.75rem;
         }
         .top-auction-metric {
-            background: rgba(255, 255, 255, 0.8);
-            border-radius: 16px;
-            padding: 0.6rem 0.8rem;
-            border: 1px solid rgba(13, 2, 45, 0.06);
+            background: rgba(18, 26, 39, 0.9);
+            border-radius: 12px;
+            padding: 0.7rem 0.8rem;
+            border: 1px solid rgba(31, 166, 255, 0.12);
         }
         .top-auction-metric span {
             display: block;
@@ -126,11 +126,11 @@ st.markdown(
             flex-wrap: wrap;
         }
         .page-status-card {
-            background: rgba(255, 255, 255, 0.86);
-            border-radius: 18px;
-            border: 1px solid rgba(13, 2, 45, 0.1);
-            box-shadow: 0 16px 32px rgba(13, 2, 45, 0.14);
-            padding: 1rem 1.2rem;
+            background: linear-gradient(145deg, rgba(26, 33, 48, 0.98), rgba(10, 16, 28, 0.98));
+            border-radius: 16px;
+            border: 1px solid var(--autosniper-border);
+            box-shadow: 0 16px 32px rgba(5, 10, 18, 0.3);
+            padding: 1rem;
             min-height: 100%;
         }
         .page-status-card h4 {
@@ -154,9 +154,10 @@ st.markdown(
             margin: 0.6rem 0;
         }
         .page-status-metric {
-            background: rgba(40, 71, 53, 0.07);
-            border-radius: 14px;
-            padding: 0.4rem 0.65rem;
+            background: rgba(18, 26, 39, 0.88);
+            border-radius: 12px;
+            padding: 0.55rem 0.7rem;
+            border: 1px solid rgba(31, 166, 255, 0.08);
         }
         .page-status-label {
             font-size: 0.72rem;
@@ -176,11 +177,11 @@ st.markdown(
             margin-top: 0.8rem;
         }
         .pipeline-health-card {
-            background: rgba(255, 255, 255, 0.86);
-            border-radius: 18px;
-            border: 1px solid rgba(13, 2, 45, 0.08);
-            box-shadow: 0 16px 32px rgba(13, 2, 45, 0.14);
-            padding: 1rem 1.1rem;
+            background: linear-gradient(145deg, rgba(26, 33, 48, 0.98), rgba(10, 16, 28, 0.98));
+            border-radius: 16px;
+            border: 1px solid var(--autosniper-border);
+            box-shadow: 0 16px 32px rgba(5, 10, 18, 0.3);
+            padding: 1rem;
         }
         .pipeline-health-card[data-tone="green"] {
             border-left: 6px solid #3cb371;

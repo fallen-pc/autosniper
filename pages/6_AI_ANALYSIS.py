@@ -40,7 +40,7 @@ st.set_page_config(page_title="AI Analysis (Curve)", layout="wide")
 inject_global_styles()
 display_banner()
 page_intro(
-    "AI ANALYSIS (CURVE)",
+    "AI ANALYSIS",
     "Curve-driven pricing cards using year + km anchors (comps shown for context).",
     show_logo=False,
 )
@@ -1167,6 +1167,370 @@ def _render_autotrader_confirmation(row: pd.Series) -> None:
     )
 
 
+def _get_curve_points_for_column(
+    curves_df: pd.DataFrame,
+    canonical_tag: str,
+    anchor_year: int,
+    price_column: str,
+) -> list[tuple[int, int]]:
+    if curves_df.empty or price_column not in curves_df.columns:
+        return []
+    curve_tag = resolve_curve_canonical_tag(canonical_tag)
+    if not curve_tag:
+        return []
+    subset = curves_df[
+        (curves_df["canonical_tag"] == curve_tag)
+        & (curves_df["anchor_year"] == anchor_year)
+    ].copy()
+    subset = subset.dropna(subset=["km_bucket", price_column])
+    if subset.empty:
+        return []
+    subset["km_bucket"] = pd.to_numeric(subset["km_bucket"], errors="coerce")
+    subset[price_column] = pd.to_numeric(subset[price_column], errors="coerce")
+    subset = subset.dropna(subset=["km_bucket", price_column]).sort_values("km_bucket")
+    return [
+        (int(km_bucket), int(price_value))
+        for km_bucket, price_value in subset[["km_bucket", price_column]].itertuples(index=False, name=None)
+    ]
+
+
+def _interpolate_curve_value_by_year(
+    curves_df: pd.DataFrame,
+    canonical_tag: str,
+    year: Optional[int],
+    km: Optional[float],
+    price_column: str,
+) -> Optional[float]:
+    if year is None or km is None:
+        return None
+    lower_year, upper_year = _find_curve_year_bounds(curves_df, canonical_tag, year)
+    if lower_year is None or upper_year is None:
+        return None
+
+    lower_points = _get_curve_points_for_column(curves_df, canonical_tag, lower_year, price_column)
+    upper_points = _get_curve_points_for_column(curves_df, canonical_tag, upper_year, price_column)
+    if not lower_points and not upper_points:
+        return None
+
+    lower_value = interpolate_price_by_km(lower_points, km) if lower_points else None
+    upper_value = interpolate_price_by_km(upper_points, km) if upper_points else None
+
+    if lower_year == upper_year:
+        return lower_value if lower_value is not None else upper_value
+    if lower_value is None:
+        return upper_value
+    if upper_value is None:
+        return lower_value
+
+    ratio = (year - lower_year) / float(upper_year - lower_year)
+    return lower_value + ratio * (upper_value - lower_value)
+
+
+def _curve_range_for_row(row: pd.Series) -> tuple[Optional[float], Optional[float]]:
+    curve_tag = _curve_key_for_row(row)
+    if not curve_tag:
+        return None, None
+    year_value = _safe_int(row.get("year"))
+    km_value = row.get("odometer_numeric")
+    if km_value is None or (isinstance(km_value, float) and pd.isna(km_value)):
+        km_value = parse_numeric(row.get("odometer_reading"))
+    if km_value is None:
+        return None, None
+
+    low_value = _interpolate_curve_value_by_year(
+        curves_df, curve_tag, year_value, float(km_value), "price_low"
+    )
+    high_value = _interpolate_curve_value_by_year(
+        curves_df, curve_tag, year_value, float(km_value), "price_high"
+    )
+    return low_value, high_value
+
+
+def _repair_deduction_value(row: pd.Series) -> int:
+    raw_notes = _safe_text(row.get("general_condition"), fallback="").strip()
+    display_notes = _safe_text(row.get("normalized_condition_text"), fallback="").strip() or raw_notes
+    adas_windscreen = bool(
+        row.get("adas_windscreen") or row.get("windscreen_adas") or row.get("windshield_adas")
+    )
+    assessment = assess_repairs(display_notes, adas_windscreen=adas_windscreen)
+    return int(assessment.total_cost or 0)
+
+
+def _render_grays_comparables(row: pd.Series, comps_items: list[str]) -> None:
+    _render_bullets("Comparable sales (Grays)", comps_items)
+    tag_value = row.get("canonical_tag")
+    if not tag_value or (isinstance(tag_value, float) and pd.isna(tag_value)):
+        st.info("Canonical tag missing. Historical Grays comparables unavailable.")
+        return
+
+    listing_year = _safe_int(row.get("year"))
+    comps_df = _select_sold_subset(sold_df, tag_value, listing_year).copy()
+    if comps_df.empty:
+        st.info("No matching Grays sold comparables found for this listing.")
+        return
+
+    active_profile = build_defect_profile(row.to_dict())
+    scores: list[int] = []
+    qualities: list[str] = []
+    defects: list[str] = []
+    for _, comp_row in comps_df.iterrows():
+        profile = build_defect_profile(comp_row.to_dict())
+        score = similarity_score(active_profile, profile)
+        scores.append(score)
+        qualities.append(match_quality_from_score(score))
+        defects.append(_defects_compact(profile))
+
+    comps_df = comps_df.copy()
+    comps_df["defect_match_score"] = scores
+    comps_df["defect_match_quality"] = qualities
+    comps_df["defects"] = defects
+    comps_df["date_sold_parsed"] = pd.to_datetime(
+        comps_df["date_sold"], errors="coerce"
+    )
+    comps_df = comps_df.sort_values(
+        by=["defect_match_score", "date_sold_parsed"],
+        ascending=[True, False],
+        na_position="last",
+    ).head(6)
+
+    display_cols = [
+        "year",
+        "make",
+        "model",
+        "variant",
+        "odometer_reading",
+        "price",
+        "date_sold",
+        "defect_match_quality",
+        "defects",
+    ]
+    table_df = comps_df[[col for col in display_cols if col in comps_df.columns]].copy()
+    if "url" in comps_df.columns:
+        table_df["listing"] = comps_df["url"]
+        ordered_cols = [col for col in display_cols if col in table_df.columns] + ["listing"]
+        table_df = table_df[ordered_cols]
+    if "price" in table_df.columns:
+        table_df["price"] = table_df["price"].apply(_format_price_text)
+    if "odometer_reading" in table_df.columns:
+        table_df["odometer_reading"] = table_df["odometer_reading"].apply(_format_odometer)
+
+    st.markdown("**Top comps (latest)**")
+    column_config = {}
+    if "listing" in table_df.columns:
+        column_config["listing"] = st.column_config.LinkColumn(
+            "Listing",
+            display_text="Open",
+        )
+    st.dataframe(
+        table_df,
+        width="stretch",
+        hide_index=True,
+        column_config=column_config,
+    )
+
+    comp_matrix = _build_grays_comparison_rows(row, comps_df)
+    if not comp_matrix.empty:
+        st.markdown("**Grays comparison (flags)**")
+        headers = [
+            "listing",
+            "rego",
+            "spare_key",
+            "owners_manual",
+            "service_history",
+            "engine_starts",
+            "cosmetic",
+            "glass",
+            "replacement",
+            "structural",
+            "mechanical",
+            "interior",
+            "odometer",
+            "price",
+        ]
+        column_map = {
+            "rego": "rego_ok",
+            "spare_key": "spare_key_ok",
+            "owners_manual": "owners_manual_ok",
+            "service_history": "service_history_ok",
+            "engine_starts": "engine_turns_over_ok",
+        }
+        tip_map = {
+            "rego": "tip_rego_ok",
+            "spare_key": "tip_spare_key_ok",
+            "owners_manual": "tip_owners_manual_ok",
+            "service_history": "tip_service_history_ok",
+            "engine_starts": "tip_engine_turns_over_ok",
+            "cosmetic": "tip_cosmetic",
+            "glass": "tip_glass",
+            "replacement": "tip_replacement",
+            "structural": "tip_structural",
+            "mechanical": "tip_mechanical",
+            "interior": "tip_interior",
+        }
+        rows_html = []
+        for _, matrix_row in comp_matrix.iterrows():
+            cells = []
+            for col in headers:
+                source_col = column_map.get(col, col)
+                val = matrix_row.get(source_col, "")
+                tip_val = matrix_row.get(tip_map.get(col, ""), "")
+                if col in (
+                    "rego",
+                    "spare_key",
+                    "owners_manual",
+                    "service_history",
+                    "engine_starts",
+                ):
+                    cell = _bool_pill_html(val, tooltip=str(tip_val))
+                elif col in (
+                    "cosmetic",
+                    "glass",
+                    "replacement",
+                    "structural",
+                    "mechanical",
+                    "interior",
+                ):
+                    sev = int(val) if str(val).isdigit() else 0
+                    cell = _severity_pill_html(sev, tooltip=str(tip_val))
+                else:
+                    text_val = str(val)
+                    if col == "odometer":
+                        text_val = text_val.replace(" km", "").replace("km", "").strip()
+                    cell = html.escape(text_val)
+                cells.append(f"<td>{cell}</td>")
+            rows_html.append("<tr>" + "".join(cells) + "</tr>")
+
+        header_html = "".join(
+            f"<th>{html.escape(col).replace('_', '<br>')}</th>" for col in headers
+        )
+        table_html = (
+            '<div class="autosniper-table" style="font-size: 0.85rem;">'
+            "<table>"
+            f"<thead><tr>{header_html}</tr></thead>"
+            f"<tbody>{''.join(rows_html)}</tbody>"
+            "</table>"
+            "</div>"
+        )
+        st.markdown(table_html, unsafe_allow_html=True)
+
+    unmatched = active_profile.get("unmatched_lines", [])
+    if unmatched:
+        with st.expander("Unclassified condition lines", expanded=False):
+            st.markdown("\n".join(f"- {line}" for line in unmatched))
+
+    comp_unmatched: list[str] = []
+    for _, comp_row in comps_df.iterrows():
+        comp_profile = build_defect_profile(comp_row.to_dict())
+        comp_unmatched.extend(comp_profile.get("unmatched_lines", []))
+    comp_unmatched = sorted({line for line in comp_unmatched if line})
+    if comp_unmatched:
+        with st.expander("Unclassified comp lines (Grays)", expanded=False):
+            st.markdown("\n".join(f"- {line}" for line in comp_unmatched))
+
+
+def _render_overview_tab(
+    row: pd.Series,
+    *,
+    ai_notes: list[str],
+    risk_items: list[str],
+    combined_flags: list[str],
+) -> None:
+    curve_confidence = _curve_confidence_label(row.get("confidence"))
+    comps_count = _format_count(row.get("comps_count"))
+    risk_count = str(len(combined_flags))
+    summary_cols = st.columns(3)
+    summary_cols[0].metric("Curve confidence", curve_confidence)
+    summary_cols[1].metric("Comparable sales", comps_count)
+    summary_cols[2].metric("Risk flags", risk_count)
+
+    profile_items = [
+        f"Canonical tag: {_safe_text(row.get('canonical_tag'), fallback='N/A')}",
+        f"Expected sale source: {_safe_text(row.get('expected_sale_note'), fallback='N/A')}",
+        f"Curve tag: {_curve_key_for_row(row) or 'N/A'}",
+    ]
+    _render_bullets("Listing profile", profile_items)
+    _render_bullets("AI reasoning", ai_notes[:4])
+    _render_bullets("Notes / risks", risk_items[:4])
+
+    listing_url = _safe_text(row.get("url"), fallback="")
+    if listing_url:
+        st.markdown(f"[Open listing]({listing_url})")
+
+
+def _render_curve_tab(row: pd.Series) -> None:
+    resale_display = _format_currency_value(_compute_resale_value(row))
+    odometer_value = row.get("odometer_numeric")
+    if odometer_value is None or (isinstance(odometer_value, float) and pd.isna(odometer_value)):
+        odometer_value = row.get("odometer_reading")
+    odometer_display = _format_odometer(odometer_value)
+    curve_low, curve_high = _curve_range_for_row(row)
+    range_display = (
+        f"{_format_currency_value(curve_low)} - {_format_currency_value(curve_high)}"
+        if curve_low is not None or curve_high is not None
+        else "N/A"
+    )
+
+    metric_cols = st.columns(3)
+    metric_cols[0].metric("Odometer anchor", odometer_display)
+    metric_cols[1].metric("Resale estimate", resale_display)
+    metric_cols[2].metric("Resale range", range_display)
+    _render_curve_section(row)
+
+
+def _render_comparables_tab(row: pd.Series, comps_items: list[str]) -> None:
+    _render_autotrader_confirmation(row)
+    st.divider()
+    _render_grays_comparables(row, comps_items)
+
+
+def _render_condition_tab(row: pd.Series, defect_profile: dict[str, object]) -> None:
+    repair_deduction = _repair_deduction_value(row)
+    metric_cols = st.columns(4)
+    metric_cols[0].metric("Cosmetic damage", str(int(defect_profile.get("cosmetic", 0) or 0)))
+    metric_cols[1].metric("Structural flags", str(int(defect_profile.get("structural", 0) or 0)))
+    metric_cols[2].metric("Mechanical notes", str(int(defect_profile.get("mechanical", 0) or 0)))
+    metric_cols[3].metric("Repair deduction", _format_currency_value(repair_deduction))
+    _render_condition_summary(row)
+
+
+def _render_bid_logic_tab(
+    row: pd.Series,
+    *,
+    top_buy_passed: list[str],
+    top_buy_failed: list[str],
+    risk_items: list[str],
+) -> None:
+    repair_deduction = _repair_deduction_value(row)
+    metric_rows = [
+        ("Resale estimate", _format_currency_value(_compute_resale_value(row))),
+        ("Auction price", _format_price_text(row.get("price"))),
+        ("Fees", _format_price_text(row.get("fees_estimate"))),
+        ("Transport", _format_price_text(row.get("transport_estimate"))),
+        ("Repairs", _format_currency_value(repair_deduction)),
+        ("Net profit", _format_price_text(row.get("net_profit_worst") or row.get("net_profit_mid"))),
+        ("Max bid", _format_currency_value(row.get("max_bid_value"))),
+    ]
+
+    first_row = st.columns(4)
+    second_row = st.columns(3)
+    for column, (label, value) in zip(first_row, metric_rows[:4]):
+        column.metric(label, value)
+    for column, (label, value) in zip(second_row, metric_rows[4:]):
+        column.metric(label, value)
+
+    _render_bullets(
+        "Profit notes",
+        [
+            f"Net profit (mid): {_format_price_text(row.get('net_profit_mid'))}",
+            f"Net profit (worst): {_format_price_text(row.get('net_profit_worst'))}",
+            f"Profit margin: {_format_percent(row.get('profit_margin_value'))}",
+        ],
+    )
+    _render_bullets("Top Buy passed", top_buy_passed[:4])
+    _render_bullets("Top Buy failed", top_buy_failed[:4])
+    _render_bullets("Notes / risks", risk_items[:4])
+
+
 def _build_grays_comparison_rows(listing_row: pd.Series, comps_df: pd.DataFrame) -> pd.DataFrame:
     rows: list[dict[str, object]] = []
 
@@ -1899,8 +2263,8 @@ st.markdown(
             z-index: 40;
             background: rgba(11, 15, 20, 0.96);
             border: 1px solid rgba(31, 182, 255, 0.45);
-            border-radius: 14px;
-            padding: 0.85rem 1rem;
+            border-radius: 16px;
+            padding: 1rem;
             margin-bottom: 1.2rem;
             box-shadow: 0 10px 26px rgba(0, 0, 0, 0.3);
             backdrop-filter: blur(6px);
@@ -1959,9 +2323,9 @@ st.markdown(
             background: linear-gradient(180deg, #08121d 0%, #0b0f14 30%, #0b0f14 100%);
             border: 1px solid rgba(39, 182, 255, 0.35);
             border-top: 3px solid var(--sniper-cyan);
-            border-radius: 14px;
-            padding: 0.5rem 0.75rem 0.45rem;
-            margin-bottom: 0.55rem;
+            border-radius: 16px;
+            padding: 0.9rem 1rem 0.85rem;
+            margin-bottom: 0.8rem;
             box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25), var(--card-glow), var(--card-hover);
             transition: box-shadow 0.15s ease, transform 0.15s ease;
         }
@@ -2044,37 +2408,37 @@ st.markdown(
             background: rgba(39, 182, 255, 0.12);
         }
         .card-metrics {
-            margin-top: 0.35rem;
+            margin-top: 0.5rem;
             display: grid;
             grid-template-columns: repeat(5, minmax(0, 1fr));
-            gap: 0.35rem;
+            gap: 0.5rem;
             align-items: stretch;
         }
         .metric-box {
             background: rgba(8, 12, 18, 0.65);
             border: 1px solid rgba(39, 182, 255, 0.3);
-            border-radius: 9px;
-            padding: 0.3rem 0.4rem;
-            min-height: 40px;
+            border-radius: 12px;
+            padding: 0.55rem 0.7rem;
+            min-height: 56px;
             display: flex;
             flex-direction: column;
             justify-content: center;
         }
         .metric-label {
-            font-size: 0.52rem;
+            font-size: 0.58rem;
             text-transform: uppercase;
             letter-spacing: 0.12em;
             color: var(--autosniper-muted);
-            margin-bottom: 0.08rem;
+            margin-bottom: 0.14rem;
         }
         .metric-value {
-            font-size: 1.28rem;
+            font-size: 1.18rem;
             font-weight: 800;
             color: var(--autosniper-primary);
-            line-height: 0.95;
+            line-height: 1.05;
         }
         .metric-box.primary .metric-value {
-            font-size: 1.28rem;
+            font-size: 1.18rem;
         }
         .metric-sub {
             font-size: 0.62rem;
@@ -2737,241 +3101,77 @@ def render_listing_card(row: pd.Series) -> None:
     )
     st.markdown(card_html, unsafe_allow_html=True)
 
-    with st.expander("Details", expanded=False):
-        confidence_value = row.get("confidence")
-        confidence_percent = None
-        if confidence_value is not None and not (isinstance(confidence_value, float) and pd.isna(confidence_value)):
-            try:
-                confidence_percent = float(confidence_value) * 100
-            except (TypeError, ValueError):
-                confidence_percent = None
-        confidence_text = _format_percent(confidence_percent)
-        if confidence_text == "N/A":
-            confidence_text = _format_percent(_parse_percent(row.get("profit_margin_percent")))
+    confidence_value = row.get("confidence")
+    confidence_percent = None
+    if confidence_value is not None and not (isinstance(confidence_value, float) and pd.isna(confidence_value)):
+        try:
+            confidence_percent = float(confidence_value) * 100
+        except (TypeError, ValueError):
+            confidence_percent = None
+    confidence_text = _format_percent(confidence_percent)
+    if confidence_text == "N/A":
+        confidence_text = _format_percent(_parse_percent(row.get("profit_margin_percent")))
 
-        ai_notes = _split_notes(row.get("confidence_notes"))
-        expected_note = _safe_text(row.get("expected_sale_note"), fallback="")
-        if expected_note:
-            ai_notes.append(expected_note)
-        if not ai_notes:
-            ai_notes = [
-                f"Confidence: {confidence_text}",
-                f"Margin target: {profit_pct_display}",
-            ]
+    ai_notes = _split_notes(row.get("confidence_notes"))
+    expected_note = _safe_text(row.get("expected_sale_note"), fallback="")
+    if expected_note:
+        ai_notes.append(expected_note)
+    if not ai_notes:
+        ai_notes = [
+            f"Confidence: {confidence_text}",
+            f"Margin target: {profit_pct_display}",
+        ]
 
-        comps_min = _format_currency_value(row.get("comps_min"))
-        comps_max = _format_currency_value(row.get("comps_max"))
-        comps_range = (
-            f"{comps_min} - {comps_max}"
-            if comps_min != "N/A" or comps_max != "N/A"
-            else "N/A"
+    comps_min = _format_currency_value(row.get("comps_min"))
+    comps_max = _format_currency_value(row.get("comps_max"))
+    comps_range = (
+        f"{comps_min} - {comps_max}"
+        if comps_min != "N/A" or comps_max != "N/A"
+        else "N/A"
+    )
+    comps_items = [
+        f"Comps count: {_format_count(row.get('comps_count'))}",
+        f"Median: {_format_currency_value(row.get('comps_median'))}",
+        f"Range: {comps_range}",
+        f"Expected sale: {resale_display}",
+    ]
+
+    risk_items = []
+    if combined_flags:
+        risk_items.append(f"Flags: {', '.join(combined_flags[:6])}")
+    edge_note = _safe_text(row.get("edge_note"), fallback="")
+    if edge_note:
+        risk_items.append(edge_note)
+    spec_reason = _safe_text(row.get("spec_reason"), fallback="")
+    if spec_reason:
+        risk_items.append(f"Spec coverage: {spec_reason}")
+
+    top_buy_failed = _parse_reason_list(row.get("top_buy_failed_reasons"))
+    top_buy_passed = _parse_reason_list(row.get("top_buy_passed_reasons"))
+
+    overview_tab, curve_tab, comparables_tab, condition_tab, bid_logic_tab = st.tabs(
+        ["Overview", "Curve", "Comparables", "Condition", "Bid Logic"]
+    )
+    with overview_tab:
+        _render_overview_tab(
+            row,
+            ai_notes=ai_notes,
+            risk_items=risk_items,
+            combined_flags=combined_flags,
         )
-        comps_items = [
-            f"Comps count: {_format_count(row.get('comps_count'))}",
-            f"Median: {_format_currency_value(row.get('comps_median'))}",
-            f"Range: {comps_range}",
-            f"Expected sale: {resale_display}",
-        ]
-
-        calc_items = [
-            f"Fees: {_format_price_text(row.get('fees_estimate'))}",
-            f"Transport: {_format_price_text(row.get('transport_estimate'))}",
-            f"Rego: {_format_price_text(row.get('rego_estimate'))}",
-            f"Prep: {_format_price_text(row.get('prep_estimate'))}",
-            f"Net profit (mid): {_format_price_text(row.get('net_profit_mid'))}",
-            f"Net profit (worst): {_format_price_text(row.get('net_profit_worst'))}",
-        ]
-
-        risk_items = []
-        if combined_flags:
-            risk_items.append(f"Flags: {', '.join(combined_flags[:6])}")
-        edge_note = _safe_text(row.get("edge_note"), fallback="")
-        if edge_note:
-            risk_items.append(edge_note)
-        spec_reason = _safe_text(row.get("spec_reason"), fallback="")
-        if spec_reason:
-            risk_items.append(f"Spec coverage: {spec_reason}")
-
-        top_buy_failed = _parse_reason_list(row.get("top_buy_failed_reasons"))
-        top_buy_passed = _parse_reason_list(row.get("top_buy_passed_reasons"))
-
-        _render_curve_section(row)
-        _render_autotrader_confirmation(row)
-    with st.expander("Repairs / condition", expanded=False):
-        _render_condition_summary(row)
-
-        _render_bullets("Comparable sales (Grays)", comps_items)
-        tag_value = row.get("canonical_tag")
-        if tag_value and not (isinstance(tag_value, float) and pd.isna(tag_value)):
-            listing_year = _safe_int(row.get("year"))
-            comps_df = _select_sold_subset(sold_df, tag_value, listing_year).copy()
-            if not comps_df.empty:
-                active_profile = build_defect_profile(row.to_dict())
-                comp_profiles: list[dict[str, object]] = []
-                scores: list[int] = []
-                qualities: list[str] = []
-                defects: list[str] = []
-                for _, comp_row in comps_df.iterrows():
-                    profile = build_defect_profile(comp_row.to_dict())
-                    score = similarity_score(active_profile, profile)
-                    comp_profiles.append(profile)
-                    scores.append(score)
-                    qualities.append(match_quality_from_score(score))
-                    defects.append(_defects_compact(profile))
-                comps_df = comps_df.copy()
-                comps_df["defect_match_score"] = scores
-                comps_df["defect_match_quality"] = qualities
-                comps_df["defects"] = defects
-                comps_df["date_sold_parsed"] = pd.to_datetime(
-                    comps_df["date_sold"], errors="coerce"
-                )
-                comps_df = comps_df.sort_values(
-                    by=["defect_match_score", "date_sold_parsed"],
-                    ascending=[True, False],
-                    na_position="last",
-                )
-                comps_df = comps_df.head(6)
-                display_cols = [
-                    "year",
-                    "make",
-                    "model",
-                    "variant",
-                    "odometer_reading",
-                    "price",
-                    "date_sold",
-                    "defect_match_quality",
-                    "defects",
-                ]
-                table_df = comps_df[[col for col in display_cols if col in comps_df.columns]].copy()
-                if "url" in comps_df.columns:
-                    table_df["listing"] = comps_df["url"]
-                    ordered_cols = [col for col in display_cols if col in table_df.columns] + ["listing"]
-                    table_df = table_df[ordered_cols]
-                if "price" in table_df.columns:
-                    table_df["price"] = table_df["price"].apply(_format_price_text)
-                if "odometer_reading" in table_df.columns:
-                    table_df["odometer_reading"] = table_df["odometer_reading"].apply(_format_odometer)
-                st.markdown("**Top comps (latest)**")
-                column_config = {}
-                if "listing" in table_df.columns:
-                    column_config["listing"] = st.column_config.LinkColumn(
-                        "Listing",
-                        display_text="Open",
-                    )
-                st.dataframe(
-                    table_df,
-                    width="stretch",
-                    hide_index=True,
-                    column_config=column_config,
-                )
-
-                comp_matrix = _build_grays_comparison_rows(row, comps_df)
-                if not comp_matrix.empty:
-                    st.markdown("**Grays comparison (flags)**")
-                    headers = [
-                        "listing",
-                        "rego",
-                        "spare_key",
-                        "owners_manual",
-                        "service_history",
-                        "engine_starts",
-                        "cosmetic",
-                        "glass",
-                        "replacement",
-                        "structural",
-                        "mechanical",
-                        "interior",
-                        "odometer",
-                        "price",
-                    ]
-                    column_map = {
-                        "rego": "rego_ok",
-                        "spare_key": "spare_key_ok",
-                        "owners_manual": "owners_manual_ok",
-                        "service_history": "service_history_ok",
-                        "engine_starts": "engine_turns_over_ok",
-                    }
-                    tip_map = {
-                        "rego": "tip_rego_ok",
-                        "spare_key": "tip_spare_key_ok",
-                        "owners_manual": "tip_owners_manual_ok",
-                        "service_history": "tip_service_history_ok",
-                        "engine_starts": "tip_engine_turns_over_ok",
-                        "cosmetic": "tip_cosmetic",
-                        "glass": "tip_glass",
-                        "replacement": "tip_replacement",
-                        "structural": "tip_structural",
-                        "mechanical": "tip_mechanical",
-                        "interior": "tip_interior",
-                    }
-                    rows_html = []
-                    for _, r in comp_matrix.iterrows():
-                        cells = []
-                        for col in headers:
-                            source_col = column_map.get(col, col)
-                            val = r.get(source_col, "")
-                            tip_val = r.get(tip_map.get(col, ""), "")
-                            if col in (
-                                "rego",
-                                "spare_key",
-                                "owners_manual",
-                                "service_history",
-                                "engine_starts",
-                            ):
-                                cell = _bool_pill_html(val, tooltip=str(tip_val))
-                            elif col in (
-                                "cosmetic",
-                                "glass",
-                                "replacement",
-                                "structural",
-                                "mechanical",
-                                "interior",
-                            ):
-                                sev = int(val) if str(val).isdigit() else 0
-                                cell = _severity_pill_html(sev, tooltip=str(tip_val))
-                            else:
-                                text_val = str(val)
-                                if col == "odometer":
-                                    text_val = text_val.replace(" km", "").replace("km", "").strip()
-                                cell = html.escape(text_val)
-                            cells.append(f"<td>{cell}</td>")
-                        rows_html.append("<tr>" + "".join(cells) + "</tr>")
-
-                    header_html = "".join(
-                        f"<th>{html.escape(col).replace('_', '<br>')}</th>" for col in headers
-                    )
-                    table_html = (
-                        '<div class="autosniper-table" style="font-size: 0.85rem;">'
-                        "<table>"
-                        f"<thead><tr>{header_html}</tr></thead>"
-                        f"<tbody>{''.join(rows_html)}</tbody>"
-                        "</table>"
-                        "</div>"
-                    )
-                    st.markdown(table_html, unsafe_allow_html=True)
-                active_profile = build_defect_profile(row.to_dict())
-                unmatched = active_profile.get("unmatched_lines", [])
-                if unmatched:
-                    with st.expander("Unclassified condition lines", expanded=False):
-                        st.markdown("\n".join(f"- {line}" for line in unmatched))
-                comp_unmatched: list[str] = []
-                for _, comp_row in comps_df.iterrows():
-                    comp_profile = build_defect_profile(comp_row.to_dict())
-                    comp_unmatched.extend(comp_profile.get("unmatched_lines", []))
-                comp_unmatched = sorted({line for line in comp_unmatched if line})
-                if comp_unmatched:
-                    with st.expander("Unclassified comp lines (Grays)", expanded=False):
-                        st.markdown("\n".join(f"- {line}" for line in comp_unmatched))
-
-        _render_bullets("AI reasoning", ai_notes[:4])
-        _render_bullets("Calculation breakdown", calc_items[:6])
-        top_buy_flag = "Yes" if row.get("is_top_buy") else "No"
-        _render_bullets("Top Buy", [f"Top Buy: {top_buy_flag}"])
-        _render_bullets("Notes / risks", risk_items[:4])
-
-        listing_url = _safe_text(row.get("url"), fallback="")
-        if listing_url:
-            st.markdown(f"[Open listing]({listing_url})")
+    with curve_tab:
+        _render_curve_tab(row)
+    with comparables_tab:
+        _render_comparables_tab(row, comps_items)
+    with condition_tab:
+        _render_condition_tab(row, defect_profile)
+    with bid_logic_tab:
+        _render_bid_logic_tab(
+            row,
+            top_buy_passed=top_buy_passed,
+            top_buy_failed=top_buy_failed,
+            risk_items=risk_items,
+        )
 
 
 for _, row in filtered_output.iterrows():

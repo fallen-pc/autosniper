@@ -35,6 +35,16 @@ _BASE_STYLES = textwrap.dedent(
         --autosniper-border: #263243;
         --autosniper-shadow: rgba(0, 0, 0, 0.35);
         --autosniper-banner-navy: #0f1724;
+        --autosniper-radius-sm: 10px;
+        --autosniper-radius-md: 12px;
+        --autosniper-radius-lg: 16px;
+        --autosniper-radius-xl: 20px;
+        --autosniper-space-1: 0.35rem;
+        --autosniper-space-2: 0.6rem;
+        --autosniper-space-3: 0.9rem;
+        --autosniper-space-4: 1rem;
+        --autosniper-space-5: 1.25rem;
+        --autosniper-space-6: 1.5rem;
     }
     [data-testid="stAppViewContainer"] {
         background: radial-gradient(circle at 20% -10%, rgba(31, 166, 255, 0.08), transparent 42%), radial-gradient(circle at 80% 0%, rgba(12, 139, 235, 0.1), transparent 52%), var(--autosniper-bg);
@@ -54,8 +64,8 @@ _BASE_STYLES = textwrap.dedent(
         color: inherit;
     }
     .block-container {
-        padding-top: 1.25rem;
-        padding-bottom: 2.5rem;
+        padding-top: 1rem;
+        padding-bottom: 2rem;
     }
     h1, h2, h3 {
         color: var(--autosniper-primary);
@@ -85,11 +95,11 @@ _BASE_STYLES = textwrap.dedent(
     }
     .autosniper-section {
         background: linear-gradient(135deg, rgba(26, 33, 48, 0.96) 0%, rgba(18, 23, 36, 0.92) 100%);
-        border-radius: 16px;
+        border-radius: var(--autosniper-radius-lg);
         border: 1px solid var(--autosniper-border);
         box-shadow: 0 16px 36px rgba(0, 0, 0, 0.28);
-        padding: 1.5rem 1.75rem;
-        margin-bottom: 1.5rem;
+        padding: var(--autosniper-space-5);
+        margin-bottom: var(--autosniper-space-5);
     }
     .autosniper-section .section-title {
         font-size: 1.2rem;
@@ -114,7 +124,7 @@ _BASE_STYLES = textwrap.dedent(
     .stButton>button {
         background: linear-gradient(135deg, var(--autosniper-accent) 0%, var(--autosniper-accent-strong) 100%);
         color: #f6f9ff;
-        border-radius: 12px;
+        border-radius: var(--autosniper-radius-md);
         border: none;
         padding: 0.7rem 1.35rem;
         font-weight: 700;
@@ -138,7 +148,7 @@ _BASE_STYLES = textwrap.dedent(
     [data-testid="stSidebar"] .stButton>button {
         background: linear-gradient(135deg, var(--autosniper-accent) 0%, var(--autosniper-accent-strong) 100%);
         color: #f6f9ff;
-        border-radius: 12px;
+        border-radius: var(--autosniper-radius-md);
         border: none;
         padding: 0.65rem 1.1rem;
         font-weight: 700;
@@ -206,25 +216,25 @@ _BASE_STYLES = textwrap.dedent(
         box-shadow: 0 0 12px rgba(0, 0, 0, 0.4);
     }
     .stDataFrame {
-        border-radius: 14px;
+        border-radius: var(--autosniper-radius-lg);
         box-shadow: 0 22px 40px rgba(0, 0, 0, 0.32);
         border: 1px solid var(--autosniper-border);
         background: rgba(18, 23, 36, 0.9);
         overflow: hidden;
     }
     .stAlert {
-        border-radius: 14px;
+        border-radius: var(--autosniper-radius-lg);
         border: 1px solid var(--autosniper-border);
         box-shadow: 0 12px 26px rgba(0, 0, 0, 0.26);
         background: rgba(31, 166, 255, 0.08);
         color: var(--autosniper-text);
     }
     [data-testid="stMetric"] {
-        border-radius: 14px;
+        border-radius: var(--autosniper-radius-md);
         border: 1px solid var(--autosniper-border);
         background: rgba(26, 33, 48, 0.9);
         box-shadow: 0 12px 26px rgba(0, 0, 0, 0.22);
-        padding: 1.1rem 1.25rem;
+        padding: 1rem;
     }
     [data-testid="stMetric"] > div {
         justify-content: flex-start;
@@ -252,11 +262,11 @@ _BASE_STYLES = textwrap.dedent(
     }
     .autosniper-panel {
         background: linear-gradient(135deg, rgba(26, 33, 48, 0.92), rgba(18, 23, 36, 0.94));
-        border-radius: 18px;
+        border-radius: var(--autosniper-radius-lg);
         border: 1px solid var(--autosniper-border);
         box-shadow: 0 16px 32px rgba(0, 0, 0, 0.28);
-        padding: 1.5rem 1.75rem;
-        margin-bottom: 1.5rem;
+        padding: var(--autosniper-space-5);
+        margin-bottom: var(--autosniper-space-5);
     }
     .autosniper-panel h3 {
         margin-top: 0;
@@ -270,7 +280,7 @@ _BASE_STYLES = textwrap.dedent(
         line-height: 1.55;
     }
     .stExpander {
-        border-radius: 16px;
+        border-radius: var(--autosniper-radius-lg);
         border: 1px solid var(--autosniper-border);
         background: rgba(26, 33, 48, 0.92);
         box-shadow: 0 18px 32px rgba(0, 0, 0, 0.24);
@@ -670,9 +680,9 @@ _BASE_STYLES = textwrap.dedent(
         background-color: #0A0A0C !important;
     }
     .main .block-container {
-        padding-top: 1.5rem;
+        padding-top: 1rem;
         padding-bottom: 1.5rem;
-        max-width: 1200px;
+        max-width: 1280px;
     }
     section[data-testid="stSidebar"] {
         background: linear-gradient(180deg, #0A0A0C 0%, #1A1A1C 60%, #0A0A0C 100%);
@@ -691,21 +701,59 @@ _BASE_STYLES = textwrap.dedent(
     section[data-testid="stSidebar"] .stCheckbox,
     section[data-testid="stSidebar"] .stSlider {
         background-color: #1A1A1C !important;
-        border-radius: 10px;
+        border-radius: var(--autosniper-radius-sm);
         padding: 6px 8px;
     }
+    .stSelectbox [data-baseweb="select"],
+    .stMultiSelect [data-baseweb="select"],
+    .stTextInput input,
+    .stNumberInput input,
+    .stTextArea textarea,
+    .stDateInput input,
+    .stTimeInput input {
+        min-height: 42px;
+        border-radius: var(--autosniper-radius-sm) !important;
+        border: 1px solid rgba(80, 120, 170, 0.24) !important;
+        background: rgba(17, 22, 31, 0.92) !important;
+        color: #E5E5E5 !important;
+        box-shadow: none !important;
+    }
+    .stTextArea textarea {
+        min-height: 120px;
+    }
+    .stSelectbox [data-baseweb="select"]:focus-within,
+    .stMultiSelect [data-baseweb="select"]:focus-within,
+    .stTextInput input:focus,
+    .stNumberInput input:focus,
+    .stTextArea textarea:focus,
+    .stDateInput input:focus,
+    .stTimeInput input:focus {
+        border-color: rgba(0, 175, 255, 0.65) !important;
+        box-shadow: 0 0 0 1px rgba(0, 175, 255, 0.18), 0 0 12px rgba(0, 175, 255, 0.18) !important;
+    }
     div[data-testid="stDataFrame"] {
-        background: #1A1A1C;
-        border-radius: 12px;
-        padding: 10px;
-        border: 1px solid #0066CC;
-        box-shadow: 0 0 18px rgba(0, 175, 255, 0.18);
+        background: linear-gradient(145deg, rgba(26, 33, 48, 0.96), rgba(10, 16, 28, 0.96));
+        border-radius: var(--autosniper-radius-lg);
+        padding: 0;
+        border: 1px solid rgba(31, 166, 255, 0.18);
+        box-shadow: 0 16px 30px rgba(4, 9, 17, 0.3);
+        overflow: hidden;
     }
     div[data-testid="stDataFrame"] table {
         color: #E5E5E5;
+        border-collapse: separate;
+        border-spacing: 0;
     }
     div[data-testid="stDataFrame"] thead tr {
         background-color: #111319 !important;
+    }
+    div[data-testid="stDataFrame"] thead tr th,
+    div[data-testid="stDataFrame"] [role="columnheader"] {
+        position: sticky !important;
+        top: 0;
+        z-index: 3;
+        background: #111319 !important;
+        backdrop-filter: blur(6px);
     }
     div[data-testid="stDataFrame"] tbody tr:nth-child(even) {
         background-color: #15171C !important;
@@ -713,12 +761,16 @@ _BASE_STYLES = textwrap.dedent(
     div[data-testid="stDataFrame"] tbody tr:nth-child(odd) {
         background-color: #101218 !important;
     }
+    div[data-testid="stDataFrame"] tbody tr:hover td,
+    div[data-testid="stDataFrame"] [role="row"]:hover > div {
+        background-color: rgba(31, 166, 255, 0.09) !important;
+    }
     [data-testid="stMetric"] {
-        background: radial-gradient(circle at top, #1A1A1C 0%, #0A0A0C 65%);
-        border-radius: 16px;
-        padding: 16px 18px;
-        border: 1px solid #0066CC;
-        box-shadow: 0 0 18px rgba(0, 175, 255, 0.18);
+        background: linear-gradient(145deg, rgba(26, 33, 48, 0.98), rgba(10, 16, 28, 0.98));
+        border-radius: var(--autosniper-radius-md);
+        padding: 16px;
+        border: 1px solid rgba(31, 166, 255, 0.18);
+        box-shadow: 0 16px 30px rgba(4, 9, 17, 0.28);
     }
     [data-testid="stMetricLabel"] {
         color: #B6B6B6 !important;
@@ -770,7 +822,43 @@ _BASE_STYLES = textwrap.dedent(
     button[aria-expanded="false"] {
         background-color: #14161C !important;
         color: #E5E5E5 !important;
-        border-radius: 10px !important;
+        border-radius: var(--autosniper-radius-md) !important;
+    }
+    [data-testid="stTabs"] [data-baseweb="tab-list"] {
+        gap: 0.45rem;
+        padding-bottom: 0.3rem;
+        border-bottom: 1px solid rgba(31, 166, 255, 0.14);
+    }
+    [data-testid="stTabs"] [data-baseweb="tab"] {
+        height: auto !important;
+        padding: 0.65rem 0.95rem !important;
+        border-radius: var(--autosniper-radius-md) var(--autosniper-radius-md) 0 0;
+        background: rgba(16, 22, 31, 0.82);
+        border: 1px solid transparent;
+        color: rgba(230, 237, 246, 0.72) !important;
+        font-size: 0.82rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+    [data-testid="stTabs"] [aria-selected="true"] {
+        background: linear-gradient(180deg, rgba(31, 166, 255, 0.18), rgba(17, 22, 31, 0.96)) !important;
+        border-color: rgba(31, 166, 255, 0.24) !important;
+        color: #E5E5E5 !important;
+    }
+    [data-testid="stTabs"] [data-baseweb="tab-highlight"] {
+        background: rgba(0, 175, 255, 0.85) !important;
+        height: 2px !important;
+    }
+    [data-testid="stTabs"] [data-baseweb="tab-panel"] {
+        padding-top: 1rem;
+    }
+    .streamlit-expanderHeader {
+        padding: 0.9rem 1rem !important;
+        font-weight: 700;
+    }
+    .streamlit-expanderContent {
+        padding: 0 1rem 1rem !important;
     }
     /* Chrome gradient title */
     .autosniper-title {
