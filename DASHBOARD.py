@@ -9,6 +9,7 @@ import re
 import pandas as pd
 import streamlit as st
 
+from shared.curves import list_curve_tags, load_curves
 from shared.data_loader import dataset_path, ensure_datasets_available
 from shared.styling import clean_html, display_banner, escape_html, inject_global_styles, page_intro, safe_url, section_heading
 
@@ -31,6 +32,9 @@ CSV_FILE = dataset_path("vehicle_static_details.csv")
 VALUATIONS_FILE = dataset_path("ai_listing_valuations.csv")
 LINKS_FILE = dataset_path("all_vehicle_links.csv")
 ACTIVE_FILE = dataset_path("active_vehicle_details.csv")
+RAW_FILE = dataset_path("raw_vehicle_data.csv")
+NORMALISED_FILE = dataset_path("normalised_data.csv")
+EXCLUDED_FILE = dataset_path("excluded_listings.csv")
 SOLD_FILE = dataset_path("sold_cars.csv")
 REFERRED_FILE = dataset_path("referred_cars.csv")
 SCORED_FILE = dataset_path("scored_listings.csv")
@@ -165,6 +169,50 @@ st.markdown(
             font-weight: 600;
             color: var(--autosniper-text);
         }
+        .pipeline-health-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 0.9rem;
+            margin-top: 0.8rem;
+        }
+        .pipeline-health-card {
+            background: rgba(255, 255, 255, 0.86);
+            border-radius: 18px;
+            border: 1px solid rgba(13, 2, 45, 0.08);
+            box-shadow: 0 16px 32px rgba(13, 2, 45, 0.14);
+            padding: 1rem 1.1rem;
+        }
+        .pipeline-health-card[data-tone="green"] {
+            border-left: 6px solid #3cb371;
+        }
+        .pipeline-health-card[data-tone="orange"] {
+            border-left: 6px solid #ffa726;
+        }
+        .pipeline-health-card[data-tone="red"] {
+            border-left: 6px solid #ff5a5f;
+        }
+        .pipeline-health-status {
+            font-size: 0.74rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            font-weight: 700;
+            margin-bottom: 0.35rem;
+        }
+        .pipeline-health-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--autosniper-primary);
+        }
+        .pipeline-health-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--autosniper-primary);
+            margin: 0.35rem 0 0.15rem;
+        }
+        .pipeline-health-note {
+            color: var(--autosniper-muted);
+            font-size: 0.85rem;
+        }
         </style>
         """
     ),
@@ -285,6 +333,12 @@ def describe_latest_run(*paths: "os.PathLike[str] | str") -> str:
     return format_last_run(latest)
 
 
+active_live_df = safe_read_csv(ACTIVE_FILE)
+sold_df = safe_read_csv(SOLD_FILE)
+referred_df = safe_read_csv(REFERRED_FILE)
+links_df = safe_read_csv(LINKS_FILE)
+
+
 def extract_hours_remaining(value: object) -> float | None:
     if value is None or (isinstance(value, float) and pd.isna(value)):
         return None
@@ -296,6 +350,41 @@ def extract_hours_remaining(value: object) -> float | None:
     days = int(day_match.group(1)) if day_match else 0
     hours = int(hour_match.group(1)) if hour_match else 0
     return days * 24 + hours
+
+
+def _health_tone(value: int | None, *, expected_min: int = 1, partial_min: int = 1) -> str:
+    numeric = int(value or 0)
+    if numeric >= expected_min:
+        return "green"
+    if numeric >= partial_min:
+        return "orange"
+    return "red"
+
+
+def _coverage_tone(ratio: float | None) -> str:
+    if ratio is None:
+        return "red"
+    if ratio >= 0.75:
+        return "green"
+    if ratio > 0:
+        return "orange"
+    return "red"
+
+
+def _render_health_card(title: str, value_text: str, note: str, tone: str) -> None:
+    st.markdown(
+        clean_html(
+            f"""
+            <div class="pipeline-health-card" data-tone="{tone}">
+                <div class="pipeline-health-status">{tone}</div>
+                <div class="pipeline-health-title">{title}</div>
+                <div class="pipeline-health-value">{value_text}</div>
+                <div class="pipeline-health-note">{note}</div>
+            </div>
+            """
+        ),
+        unsafe_allow_html=True,
+    )
 
 
 valuations_df = pd.DataFrame()
@@ -310,27 +399,29 @@ if VALUATIONS_FILE.exists():
         valuations_df["expected_profit_value"] = valuations_df["expected_profit"].apply(parse_currency_value)
         valuations_df["profit_margin_value"] = valuations_df["profit_margin_percent"].apply(parse_percent_value)
         valuations_df["score_value"] = pd.to_numeric(valuations_df.get("score_out_of_10"), errors="coerce")
-
 section_heading(
-    "Top Live Auctions",
-    "AI valuation signals blended with real-time bids to highlight the three sharpest buying windows.",
+    "Live Opportunities",
+    "Top 5 profitable active vehicles ranked from current AI valuation outputs and live auction status.",
 )
-if valuations_df.empty or active_df.empty:
-    st.info("Need both active listings and AI valuations to rank live auctions. Run the AI pricing analysis once.")
+if valuations_df.empty or active_live_df.empty:
+    st.info("Need both active listings and AI valuations to rank live opportunities. Run the AI pricing analysis once.")
 else:
-    merged_top = active_df.merge(valuations_df, on="url", how="inner", suffixes=("", "_ai"))
+    merged_top = active_live_df.merge(valuations_df, on="url", how="inner", suffixes=("", "_ai"))
     merged_top["current_price_value"] = merged_top["price"].apply(parse_currency_value)
-    merged_top["bids_value"] = pd.to_numeric(merged_top.get("bids"), errors="coerce")
+    merged_top["max_bid_value"] = merged_top["recommended_max_bid"].apply(parse_currency_value)
+    merged_top["resale_mid_value"] = merged_top["resale_mid"].apply(parse_currency_value)
+    merged_top["profit_value"] = merged_top["net_profit_mid"].apply(parse_currency_value)
+    merged_top["margin_value"] = merged_top["profit_margin_percent"].apply(parse_percent_value)
     merged_top["potential_rank"] = (
-        merged_top["score_value"].fillna(0) * 100
-        + merged_top["profit_margin_value"].fillna(0)
-        + merged_top["expected_profit_value"].fillna(0) / 1000
+        merged_top["profit_value"].fillna(0)
+        + merged_top["margin_value"].fillna(0) * 50
+        + merged_top["confidence"].fillna(0) * 1000
     )
     merged_top = merged_top.sort_values(by=["potential_rank"], ascending=False)
-    top_rows = merged_top.head(3)
+    top_rows = merged_top.head(5)
 
     if top_rows.empty:
-        st.info("AI valuations have not touched any of the current live listings yet.")
+        st.info("AI valuations have not touched any of the current active listings yet.")
     else:
         cards = st.columns(len(top_rows))
         for idx, (row_index, row) in enumerate(top_rows.iterrows()):
@@ -341,20 +432,10 @@ else:
                 variant = str(row.get("variant", "") or "").strip()
                 location = str(row.get("location", "") or "Unknown location")
                 time_remaining = str(row.get("time_remaining_or_date_sold", "N/A"))
-                current_price = format_currency_value(row.get("current_price_value"))
-                carsales_estimate = row.get("carsales_price_estimate") or format_currency_value(
-                    parse_currency_value(row.get("carsales_price_estimate"))
-                )
-                expected_profit = format_currency_value(row.get("expected_profit_value"))
-                profit_margin = row.get("profit_margin_percent") or (
-                    f"{row['profit_margin_value']:.0f}%" if pd.notna(row.get("profit_margin_value")) else "N/A"
-                )
-                bids_display = (
-                    f"{int(row['bids_value'])}" if pd.notna(row.get("bids_value")) else str(row.get("bids") or "0")
-                )
-                score_display = (
-                    f"{row['score_value']:.1f}/10" if pd.notna(row.get("score_value")) else "Not scored yet"
-                )
+                max_bid = format_currency_value(row.get("max_bid_value"))
+                resale_estimate = format_currency_value(row.get("resale_mid_value"))
+                profit = format_currency_value(row.get("profit_value"))
+                margin = f"{row['margin_value']:.0f}%" if pd.notna(row.get("margin_value")) else "N/A"
                 ai_url = row.get("url", "")
                 st.markdown(
                     clean_html(
@@ -368,20 +449,24 @@ else:
                             </div>
                             <div class="top-auction-metrics">
                                 <div class="top-auction-metric">
-                                    <span class="top-auction-label">Current bid</span>
-                                    <span class="top-auction-value">{escape_html(current_price)}</span>
+                                    <span class="top-auction-label">Max bid</span>
+                                    <span class="top-auction-value">{escape_html(max_bid)}</span>
                                 </div>
                                 <div class="top-auction-metric">
-                                    <span class="top-auction-label">Carsales estimate</span>
-                                    <span class="top-auction-value">{escape_html(carsales_estimate) or "N/A"}</span>
+                                    <span class="top-auction-label">Resale estimate</span>
+                                    <span class="top-auction-value">{escape_html(resale_estimate)}</span>
                                 </div>
                                 <div class="top-auction-metric">
-                                    <span class="top-auction-label">Bids / Margin</span>
-                                    <span class="top-auction-value">{escape_html(bids_display)} bids | {escape_html(profit_margin)}</span>
+                                    <span class="top-auction-label">Profit</span>
+                                    <span class="top-auction-value">{escape_html(profit)}</span>
                                 </div>
                                 <div class="top-auction-metric">
-                                    <span class="top-auction-label">AI view</span>
-                                    <span class="top-auction-value">{escape_html(score_display)}</span>
+                                    <span class="top-auction-label">Margin</span>
+                                    <span class="top-auction-value">{escape_html(margin)}</span>
+                                </div>
+                                <div class="top-auction-metric">
+                                    <span class="top-auction-label">Time remaining</span>
+                                    <span class="top-auction-value">{escape_html(time_remaining)}</span>
                                 </div>
                             </div>
                             <div class="top-auction-actions">
@@ -399,21 +484,96 @@ else:
                             st.switch_page("pages/6_AI_ANALYSIS.py")
                         except Exception:
                             st.info("Open the AI Pricing Analysis page from the sidebar to view this listing.")
+
+section_heading("Pipeline Health", "Current processing health across link intake, normalisation, exclusions, and AI analysis.")
+links_count = count_csv_rows(LINKS_FILE)
+raw_count = count_csv_rows(RAW_FILE)
+normalised_count = count_csv_rows(NORMALISED_FILE)
+excluded_count = count_csv_rows(EXCLUDED_FILE)
+analysed_count = len(valuations_df) if not valuations_df.empty else 0
+analysis_target = len(active_live_df) if not active_live_df.empty else 0
+analysis_ratio = (analysed_count / analysis_target) if analysis_target else None
+
+health_cols = st.columns(4)
+with health_cols[0]:
+    _render_health_card(
+        "Links scraped",
+        _format_rows(links_count),
+        describe_last_run(LINKS_FILE)[0],
+        _health_tone(links_count, expected_min=1),
+    )
+with health_cols[1]:
+    normalise_tone = "red"
+    if normalised_count and raw_count and normalised_count >= max(int(raw_count * 0.8), 1):
+        normalise_tone = "green"
+    elif normalised_count:
+        normalise_tone = "orange"
+    _render_health_card(
+        "Vehicles normalized",
+        _format_rows(normalised_count),
+        describe_last_run(NORMALISED_FILE)[0],
+        normalise_tone,
+    )
+with health_cols[2]:
+    exclusion_tone = "green" if EXCLUDED_FILE.exists() else "red"
+    _render_health_card(
+        "Vehicles excluded",
+        _format_rows(excluded_count),
+        describe_last_run(EXCLUDED_FILE)[0],
+        exclusion_tone,
+    )
+with health_cols[3]:
+    _render_health_card(
+        "Vehicles analysed",
+        _format_rows(analysed_count),
+        f"{analysis_ratio:.0%} of active listings" if analysis_ratio is not None else "No active listings loaded",
+        _coverage_tone(analysis_ratio),
+    )
+
+section_heading("AI Coverage", "Curve coverage health across the current active listing set.")
+curve_tags = list_curve_tags(load_curves())
+active_curve_count = 0
+active_no_curve_count = 0
+curve_coverage_pct = None
+if not active_live_df.empty and "canonical_tag" in active_live_df.columns:
+    canonical_series = active_live_df["canonical_tag"].fillna("").astype(str).str.strip()
+    active_curve_count = int(canonical_series.isin(curve_tags).sum())
+    active_no_curve_count = int((~canonical_series.isin(curve_tags)).sum())
+    total_active_curve_rows = active_curve_count + active_no_curve_count
+    curve_coverage_pct = (active_curve_count / total_active_curve_rows) if total_active_curve_rows else None
+
+coverage_cols = st.columns(3)
+coverage_cols[0].metric("Listings With Curves", f"{active_curve_count:,}")
+coverage_cols[1].metric("Listings Without Curves", f"{active_no_curve_count:,}")
+coverage_cols[2].metric(
+    "Curve Coverage %",
+    f"{curve_coverage_pct * 100:,.1f}%" if curve_coverage_pct is not None else "N/A",
+)
 section_heading("Status Snapshot", "Distribution of tracked listings by workflow state.")
+tracked_counts = {
+    "active": int(len(active_live_df)),
+    "sold": int(len(sold_df)),
+    "referred": int(len(referred_df)),
+}
+tracked_total = sum(tracked_counts.values())
+other_total = max(total_listings - tracked_total, 0)
 status_columns = st.columns(5)
 render_metric(status_columns[0], "Total Listings", total_listings)
 for idx, (code, label) in enumerate(tracked_statuses, start=1):
-    count = int(status_counts.get(code, 0))
+    count = tracked_counts.get(code, 0)
     share = (count / total_listings) if total_listings else None
     render_metric(status_columns[idx], label, count, share)
 share_other = (other_total / total_listings) if total_listings else None
 render_metric(status_columns[-1], "Other / Unknown", other_total, share_other)
 
-status_table = (
-    status_counts.rename_axis("Status")
-    .reset_index(name="Listings")
-    .assign(Share=lambda frame: frame["Listings"] / total_listings)
-)
+status_table = pd.DataFrame(
+    [
+        {"Status": "Active", "Listings": tracked_counts["active"]},
+        {"Status": "Sold", "Listings": tracked_counts["sold"]},
+        {"Status": "Referred", "Listings": tracked_counts["referred"]},
+        {"Status": "Other / Unknown", "Listings": other_total},
+    ]
+).assign(Share=lambda frame: frame["Listings"] / total_listings if total_listings else 0)
 status_table["Status"] = status_table["Status"].astype(str).str.replace("_", " ").str.title()
 status_table["Share"] = status_table["Share"].map(lambda value: f"{value:.1%}")
 
@@ -478,9 +638,6 @@ with top_columns[1]:
     else:
         st.info("No make data available.")
 
-links_df = safe_read_csv(LINKS_FILE)
-sold_df = safe_read_csv(SOLD_FILE)
-referred_df = safe_read_csv(REFERRED_FILE)
 scored_df = safe_read_csv(SCORED_FILE)
 
 links_last_text, _ = describe_last_run(LINKS_FILE)
@@ -513,17 +670,17 @@ def _format_number(value: float | int | None) -> str:
 
 
 closing_24h = 0
-if not active_df.empty and "time_remaining_or_date_sold" in active_df.columns:
-    hours_series = active_df["time_remaining_or_date_sold"].apply(extract_hours_remaining)
+if not active_live_df.empty and "time_remaining_or_date_sold" in active_live_df.columns:
+    hours_series = active_live_df["time_remaining_or_date_sold"].apply(extract_hours_remaining)
     closing_24h = int(sum(1 for value in hours_series if value is not None and value <= 24))
 
 median_bids = None
 avg_active_price = None
-if not active_df.empty:
-    bids_series = pd.to_numeric(active_df.get("bids"), errors="coerce")
+if not active_live_df.empty:
+    bids_series = pd.to_numeric(active_live_df.get("bids"), errors="coerce")
     if bids_series.notna().any():
         median_bids = bids_series.median()
-    price_series = active_df["price"].apply(parse_currency_value).dropna()
+    price_series = active_live_df["price"].apply(parse_currency_value).dropna()
     if not price_series.empty:
         avg_active_price = float(price_series.mean())
 

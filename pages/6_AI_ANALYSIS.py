@@ -19,7 +19,9 @@ from shared.curves import (
     get_curve_points,
     interpolate_base_by_year,
     interpolate_price_by_km,
+    list_curve_tags,
     load_curves,
+    resolve_curve_canonical_tag,
 )
 from shared.data_loader import dataset_path, ensure_datasets_available
 from shared.location_utils import extract_state
@@ -193,7 +195,7 @@ def _curve_confidence_label(value: Optional[float]) -> str:
 
 
 def _curve_key_for_row(row: pd.Series) -> str:
-    return _safe_text(row.get("canonical_tag"), fallback="").strip()
+    return resolve_curve_canonical_tag(_safe_text(row.get("canonical_tag"), fallback="").strip())
 
 
 def _curve_image_filename(canonical_tag: str) -> str:
@@ -206,7 +208,8 @@ def _find_curve_year_bounds(
 ) -> tuple[Optional[int], Optional[int]]:
     if curves_df.empty or not canonical_tag or year is None:
         return None, None
-    subset = curves_df[curves_df["canonical_tag"] == canonical_tag].copy()
+    curve_tag = resolve_curve_canonical_tag(canonical_tag)
+    subset = curves_df[curves_df["canonical_tag"] == curve_tag].copy()
     if subset.empty or "anchor_year" not in subset.columns:
         return None, None
     years = sorted({int(y) for y in subset["anchor_year"].dropna()})
@@ -1402,7 +1405,9 @@ def _select_sold_subset(
 ) -> pd.DataFrame:
     if sold_df.empty or not canonical_tag:
         return pd.DataFrame()
-    subset = sold_df[sold_df["canonical_tag"] == canonical_tag]
+    curve_key = resolve_curve_canonical_tag(canonical_tag)
+    tag_column = "curve_tag" if "curve_tag" in sold_df.columns else "canonical_tag"
+    subset = sold_df[sold_df[tag_column] == curve_key]
     if year_val is None or "year_int" not in subset.columns:
         return subset
     year_subset = subset[subset["year_int"] == year_val]
@@ -1547,14 +1552,7 @@ def load_autotrader_data(raw_mtime: float | None = None) -> pd.DataFrame:
             df["canonical_reason"] = tagged_df["canonical_reason"].where(reason_series.eq(""), df["canonical_reason"])
         tagged_path.parent.mkdir(parents=True, exist_ok=True)
         df.to_csv(tagged_path, index=False)
-    allowed_tags = set(
-        load_curves()
-        .get("canonical_tag", pd.Series(dtype=str))
-        .dropna()
-        .astype(str)
-        .str.strip()
-        .tolist()
-    )
+    allowed_tags = list_curve_tags(load_curves())
     if allowed_tags:
         df["canonical_tag"] = df["canonical_tag"].fillna("").astype(str).str.strip()
         df["canonical_tag"] = df["canonical_tag"].where(df["canonical_tag"].isin(allowed_tags), "UNCLASSIFIED")
@@ -1746,6 +1744,7 @@ else:
     if "canonical_tag" not in active_df.columns:
         active_df["canonical_tag"] = ""
     active_df["canonical_tag"] = active_df["canonical_tag"].astype(str).str.strip()
+    active_df["curve_tag"] = active_df["canonical_tag"].apply(resolve_curve_canonical_tag)
     active_df["tag_in_curves"] = active_df["canonical_tag"].isin(allowed_tags)
     active_df["canonical_eligible"] = active_df.apply(
         lambda r: is_canonical_eligible(r.get("canonical_tag"), r.get("canonical_reason")),
@@ -1761,7 +1760,7 @@ else:
             .agg(["min", "max"])
             .rename(columns={"min": "min_year", "max": "max_year"})
         )
-        active_df = active_df.merge(year_band, left_on="canonical_tag", right_index=True, how="left")
+        active_df = active_df.merge(year_band, left_on="curve_tag", right_index=True, how="left")
         active_df["year_int"] = active_df["year"].apply(_safe_int)
         active_df["year_in_range"] = (
             active_df["year_int"].notna()
@@ -1781,7 +1780,7 @@ else:
             .agg(["min", "max"])
             .rename(columns={"min": "min_km", "max": "max_km"})
         )
-        active_df = active_df.merge(km_band, left_on="canonical_tag", right_index=True, how="left")
+        active_df = active_df.merge(km_band, left_on="curve_tag", right_index=True, how="left")
         if "odometer_numeric" not in active_df.columns:
             active_df["odometer_numeric"] = active_df["odometer_reading"].apply(parse_numeric)
         active_df["km_in_range"] = (
@@ -1822,6 +1821,7 @@ else:
         "year_in_range",
         "km_in_range",
         "curve_coverage",
+        "curve_tag",
         "min_year",
         "max_year",
         "min_km",
@@ -1839,8 +1839,9 @@ else:
 sold_df = _exclude_corolla_sport_comps(sold_df)
 sold_df = _exclude_major_engine_defects(sold_df)
 sold_df["year_int"] = sold_df["year"].apply(_safe_int) if "year" in sold_df.columns else None
+sold_df["curve_tag"] = sold_df["canonical_tag"].apply(resolve_curve_canonical_tag)
 
-curve_key_col = "canonical_tag"
+curve_key_col = "curve_tag"
 
 sold_stats_group = (
     sold_df.dropna(subset=[curve_key_col, "price_numeric"])
@@ -2291,7 +2292,7 @@ for _, row in filtered.iterrows():
     if not is_canonical_eligible(canonical_tag, canonical_reason):
         continue
 
-    curve_key = canonical_tag
+    curve_key = resolve_curve_canonical_tag(canonical_tag)
     curve_subset = curves_df[curves_df["canonical_tag"] == curve_key] if curve_key else pd.DataFrame()
     if curve_subset.empty:
         spec_reason = "NO_CURVE"

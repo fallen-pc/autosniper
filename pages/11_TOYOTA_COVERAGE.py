@@ -6,7 +6,7 @@ import pandas as pd
 import streamlit as st
 
 from shared.canonical_tagging import is_canonical_eligible
-from shared.curves import load_curves
+from shared.curves import list_curve_tags, load_curves
 from shared.data_loader import dataset_path
 from shared.styling import clean_html, display_banner, inject_global_styles, page_intro
 
@@ -170,7 +170,7 @@ curves_df = load_curves()
 if curves_df.empty:
     st.warning("curves.csv is empty; showing all tags.")
 else:
-    allowed_tags = set(curves_df["canonical_tag"].dropna().astype(str).str.strip().tolist())
+    allowed_tags = list_curve_tags(curves_df)
     if not allowed_tags:
         st.warning("No canonical tags found in curves.csv; showing all tags.")
     else:

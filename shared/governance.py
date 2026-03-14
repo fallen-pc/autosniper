@@ -10,7 +10,13 @@ from typing import Iterable
 import pandas as pd
 
 from shared.canonical_tagging import UNCLASSIFIED
-from shared.curves import CURVE_COLUMNS, detect_legacy_columns, validate_curve_columns
+from shared.curves import (
+    CURVE_COLUMNS,
+    detect_legacy_columns,
+    list_curve_tags,
+    resolve_curve_canonical_tag,
+    validate_curve_columns,
+)
 from shared.data_loader import dataset_path
 from shared.schema import (
     ACTIVE_DETAIL_SCHEMA,
@@ -286,25 +292,33 @@ def build_curve_coverage_report(
             )
         )
 
+    visible_curve_tags = list_curve_tags(curves_working)
     tag_index = pd.DataFrame(
         {
             "canonical_tag": sorted(
                 set(observed_summary.get("canonical_tag", pd.Series(dtype=object)).tolist())
-                | set(curve_summary.get("canonical_tag", pd.Series(dtype=object)).tolist())
+                | set(visible_curve_tags)
             )
         }
     )
-    coverage = tag_index.merge(observed_summary, on="canonical_tag", how="left").merge(
+    coverage = tag_index.merge(observed_summary, on="canonical_tag", how="left")
+    coverage["resolved_curve_tag"] = coverage["canonical_tag"].map(resolve_curve_canonical_tag)
+    coverage = coverage.merge(
         curve_summary,
-        on="canonical_tag",
+        left_on="resolved_curve_tag",
+        right_on="canonical_tag",
         how="left",
+        suffixes=("", "_curve"),
     )
+    if "canonical_tag_curve" in coverage.columns:
+        coverage = coverage.drop(columns=["canonical_tag_curve"])
     for column in ("observed_rows", "static_rows", "group_map_rows", "curve_rows", "anchor_year_count"):
         coverage[column] = coverage[column].fillna(0).astype(int)
     for column in ("sources", "anchor_years"):
         coverage[column] = coverage[column].fillna("")
     coverage["has_curve"] = coverage["curve_rows"] > 0
     coverage["status"] = coverage["has_curve"].map({True: "covered", False: "missing_curve"})
+    coverage = coverage.drop(columns=["resolved_curve_tag"])
     coverage = coverage.sort_values(
         by=["has_curve", "observed_rows", "canonical_tag"],
         ascending=[True, False, True],

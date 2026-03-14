@@ -3,7 +3,7 @@ import pandas as pd
 import streamlit as st
 
 from shared.data_loader import dataset_path
-from shared.curves import load_curves, save_curves
+from shared.curves import load_curves, resolve_curve_canonical_tag, save_curves
 
 
 CURVES_PATH = dataset_path("curves.csv")
@@ -25,6 +25,7 @@ if not curves.empty and "canonical_tag" in curves.columns:
 canonical_tags = sorted({tag for tag in tag_candidates if tag and tag != "UNCLASSIFIED"})
 
 preferred_tag = st.session_state.get("curve_builder_tag")
+preferred_tag = resolve_curve_canonical_tag(preferred_tag)
 default_index = canonical_tags.index(preferred_tag) if preferred_tag in canonical_tags else 0
 
 left, right = st.columns([2, 2])
@@ -38,7 +39,7 @@ with right:
     new_tag = st.text_input("Or enter a new tag", value="")
 
 if new_tag.strip():
-    selected_tag = new_tag.strip()
+    selected_tag = resolve_curve_canonical_tag(new_tag.strip())
 
 if not selected_tag:
     st.info("Add a canonical_tag to start building curves.")
@@ -137,4 +138,3 @@ if not tag_rows.empty:
     st.pyplot(fig)
 else:
     st.info("No data to plot.")
-

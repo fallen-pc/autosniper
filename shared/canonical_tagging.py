@@ -12,6 +12,7 @@ from typing import Iterable, Mapping, Sequence, Tuple
 
 import pandas as pd
 
+from shared.curves import resolve_curve_canonical_tag
 from shared.data_loader import dataset_path
 from shared.validators import R
 
@@ -452,7 +453,8 @@ def _disambiguate_by_year(candidates: Sequence[AllowedVariant], year: int | None
         return None
     matches = []
     for variant in candidates:
-        band = year_band.loc[variant.canonical_tag] if variant.canonical_tag in year_band.index else None
+        curve_tag = resolve_curve_canonical_tag(variant.canonical_tag)
+        band = year_band.loc[curve_tag] if curve_tag in year_band.index else None
         if band is None or pd.isna(band["min_year"]) or pd.isna(band["max_year"]):
             continue
         if int(band["min_year"]) <= year <= int(band["max_year"]):
@@ -469,9 +471,10 @@ def _year_in_any_band(candidates: Sequence[AllowedVariant], year: int | None) ->
     if year_band is None or year_band.empty:
         return False
     for variant in candidates:
-        if variant.canonical_tag not in year_band.index:
+        curve_tag = resolve_curve_canonical_tag(variant.canonical_tag)
+        if curve_tag not in year_band.index:
             continue
-        band = year_band.loc[variant.canonical_tag]
+        band = year_band.loc[curve_tag]
         if int(band["min_year"]) <= year <= int(band["max_year"]):
             return True
     return False
@@ -511,7 +514,8 @@ def load_allowed_variants(path: Path | None = None) -> Tuple[AllowedVariant, ...
             transmission = _normalize_text(row.get("transmission"))
             badge = _normalize_text(row.get("badge"))
             series = _normalize_text(row.get("series"))
-            canonical_tag = build_canonical_tag(
+            explicit_canonical_tag = _normalize_text(row.get("canonical_tag"))
+            canonical_tag = explicit_canonical_tag or build_canonical_tag(
                 make=make,
                 model=model,
                 badge=badge,
@@ -519,7 +523,7 @@ def load_allowed_variants(path: Path | None = None) -> Tuple[AllowedVariant, ...
                 transmission=transmission,
                 body=body,
                 series=series,
-            ) or _normalize_text(row.get("canonical_tag"))
+            )
             if not canonical_tag:
                 continue
             row_key = (canonical_tag, make, model, body, fuel, transmission, badge)

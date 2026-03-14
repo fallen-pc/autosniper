@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-03-15
+- Added first-class curve aliases so multiple canonical trim tags can resolve to a single valuation curve without duplicating curve rows.
+- Consolidated Mazda 3 BL 2.0 petrol auto hatch valuation into one shared base curve, with Neo, Neo Sport, Maxx, Maxx Sport, and Touring tags resolving through aliases.
+
 ## 2026-03-13
 - Added governed dataset checks for exact schema contracts, curve integrity, and CI dataset delta enforcement via `scripts/governance_checks.py`.
 - Added curve coverage reporting for dashboards and CI artifacts, with the current baseline reporting full coverage across observed canonical tags.

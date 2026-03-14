@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import pandas as pd
 
+import shared.curves as curves
 import shared.governance as gov
 from shared.governance import DatasetContract
 
@@ -110,3 +111,36 @@ def test_classify_dataset_deltas_respects_allowlist():
     ]
     assert report["allowed"] == ["CSV_data/restricted/curves.csv"]
     assert report["unexpected"] == ["CSV_data/scrapers/sold_cars.csv"]
+
+
+def test_build_curve_coverage_report_marks_alias_tags_as_covered(monkeypatch, tmp_path):
+    alias_path = tmp_path / "curve_aliases.csv"
+    alias_path.write_text(
+        "canonical_tag,base_curve\n"
+        "tag_alias,tag_base\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(curves, "CURVE_ALIASES_PATH", alias_path)
+    curves.load_curve_aliases.cache_clear()
+
+    static_df = pd.DataFrame([{"canonical_tag": "tag_alias"}])
+    group_map_df = pd.DataFrame()
+    curves_df = pd.DataFrame(
+        [
+            {
+                "canonical_tag": "tag_base",
+                "anchor_year": 2022,
+                "km_bucket": 50000,
+                "price_low": 10000,
+                "price_mid": 11000,
+                "price_high": 12000,
+            }
+        ]
+    )
+
+    coverage_df = gov.build_curve_coverage_report(static_df, group_map_df, curves_df)
+    tag_alias = coverage_df.loc[coverage_df["canonical_tag"] == "tag_alias"].iloc[0]
+
+    assert bool(tag_alias["has_curve"]) is True
+    assert int(tag_alias["curve_rows"]) == 1
+    curves.load_curve_aliases.cache_clear()

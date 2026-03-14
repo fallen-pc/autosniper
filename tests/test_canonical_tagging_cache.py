@@ -49,3 +49,17 @@ def test_curve_year_band_is_cached(monkeypatch, tmp_path):
     assert ct._year_in_any_band([variant], 2021) is True
     assert ct._disambiguate_by_year([variant], 2020) == variant
     assert read_count["curves"] == 1
+
+
+def test_load_allowed_variants_preserves_explicit_canonical_tag(tmp_path):
+    allowed_path = tmp_path / "allowed_variants.csv"
+    allowed_path.write_text(
+        "canonical_tag,make,model,body,fuel,transmission,badge,series,allowed_badge_aliases,allowed_body_aliases,excluded_keywords\n"
+        "mazda_3_maxx_sport_petrol_auto_hatch_bl,mazda,3,hatch,petrol,auto,maxx sport,bl10f1,maxx sport|maxx-sport,hatch|hatchback,manual\n",
+        encoding="utf-8",
+    )
+
+    variants = ct.load_allowed_variants(allowed_path)
+
+    assert len(variants) == 1
+    assert variants[0].canonical_tag == "mazda_3_maxx_sport_petrol_auto_hatch_bl"

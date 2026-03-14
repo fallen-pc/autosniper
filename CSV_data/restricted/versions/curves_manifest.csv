@@ -1,2 +1,3 @@
 version_id,created_at,source,curve_path,snapshot_path,row_count,canonical_tag_count,sha256,change_summary
 20260313T093058Z,2026-03-13T09:30:58+00:00,baseline,CSV_data/restricted/curves.csv,CSV_data/restricted/versions/curves_20260313T093058Z.csv,205,14,6d438e359116bf1dc33df6800e5117d74fd03585ff823fefab0edd00aabfccf6,Establish governed curve baseline and fix Corolla 2019 monotonic drift.
+20260314T142748Z,2026-03-14T14:27:48+00:00,manual,CSV_data/restricted/curves.csv,CSV_data/restricted/versions/curves_20260314T142748Z.csv,190,13,a900a1223a54e0467b15f962306c25d881afdea97c16f30df3291158e2edd9ff,Consolidate Mazda 3 BL 2.0 petrol auto hatch trims onto one base curve with alias resolution.

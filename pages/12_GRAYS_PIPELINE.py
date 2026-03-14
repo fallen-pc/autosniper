@@ -9,7 +9,7 @@ import streamlit as st
 
 from shared.data_loader import dataset_path
 from shared.schema import STATIC_VEHICLE_SCHEMA
-from shared.curves import load_curves
+from shared.curves import list_curve_tags, load_curves
 from shared.styling import clean_html, display_banner, inject_global_styles, page_intro
 
 
@@ -26,6 +26,101 @@ st.markdown(
     clean_html(
         """
         <style>
+        .pipeline-shell {
+            display: grid;
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+        }
+        .pipeline-diagram {
+            display: grid;
+            gap: 0.8rem;
+            justify-items: center;
+            margin-top: 0.8rem;
+        }
+        .pipeline-arrow {
+            color: var(--autosniper-muted);
+            font-size: 1.2rem;
+            line-height: 1;
+        }
+        .pipeline-node {
+            width: min(100%, 340px);
+            background: linear-gradient(160deg, rgba(9, 19, 28, 0.96) 0%, rgba(15, 22, 34, 0.94) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 0.9rem 1rem;
+            box-shadow: 0 14px 30px rgba(0, 0, 0, 0.28);
+        }
+        .pipeline-node.is-selected {
+            border-color: rgba(31, 166, 255, 0.9);
+            box-shadow: 0 0 0 1px rgba(31, 166, 255, 0.35), 0 20px 34px rgba(12, 139, 235, 0.2);
+            transform: translateY(-1px);
+        }
+        .pipeline-node-step {
+            font-size: 0.74rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--autosniper-accent);
+            margin-bottom: 0.25rem;
+        }
+        .pipeline-node-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--autosniper-primary);
+        }
+        .pipeline-node-subtitle {
+            font-size: 0.84rem;
+            color: var(--autosniper-muted);
+            margin-top: 0.15rem;
+        }
+        .pipeline-selector-note {
+            color: var(--autosniper-muted);
+            font-size: 0.9rem;
+            margin-top: 0.35rem;
+        }
+        .pipeline-panel {
+            padding: 1.15rem 1.25rem 1.3rem;
+        }
+        .pipeline-panel-header {
+            display: grid;
+            gap: 0.25rem;
+            margin-bottom: 0.9rem;
+        }
+        .pipeline-panel-kicker {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            color: var(--autosniper-accent);
+        }
+        .pipeline-panel-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--autosniper-primary);
+        }
+        .pipeline-panel-copy {
+            color: var(--autosniper-muted);
+            max-width: 70ch;
+        }
+        .pipeline-subsection-title {
+            font-size: 0.76rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--autosniper-muted);
+            margin: 0.9rem 0 0.5rem;
+        }
+        .pipeline-rules {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 0.9rem 1rem;
+        }
+        .pipeline-rules ul {
+            margin: 0;
+            padding-left: 1rem;
+        }
+        .pipeline-rules li {
+            margin: 0.3rem 0;
+            color: var(--autosniper-primary-dark);
+        }
         .pipeline-stage {
             background: linear-gradient(160deg, rgba(26, 33, 48, 0.96) 0%, rgba(18, 23, 36, 0.92) 100%);
             border: 1px solid var(--autosniper-border);
@@ -148,6 +243,38 @@ def _render_dataset_summary_row(title: str, filename: str) -> None:
     col_d.metric("Last modified", summary["modified"])
 
 
+def _render_stage_header(step_label: str, title: str, subtitle: str) -> None:
+    st.markdown(
+        clean_html(
+            f"""
+            <div class="autosniper-section pipeline-stage pipeline-panel">
+                <div class="pipeline-panel-header">
+                    <div class="pipeline-panel-kicker">{step_label}</div>
+                    <div class="pipeline-panel-title">{title}</div>
+                    <div class="pipeline-panel-copy">{subtitle}</div>
+                </div>
+            </div>
+            """
+        ),
+        unsafe_allow_html=True,
+    )
+
+
+def _render_rules_block(title: str, lines: Iterable[str]) -> None:
+    bullet_items = "".join(f"<li>{line.lstrip('- ').strip()}</li>" for line in lines if str(line).strip())
+    st.markdown(
+        clean_html(
+            f"""
+            <div class="pipeline-subsection-title">{title}</div>
+            <div class="pipeline-rules">
+                <ul>{bullet_items}</ul>
+            </div>
+            """
+        ),
+        unsafe_allow_html=True,
+    )
+
+
 def _render_schema_audit_block(*, show_header: bool = True) -> None:
     expected = {
         "raw_vehicle_data.csv": list(STATIC_VEHICLE_SCHEMA),
@@ -196,16 +323,29 @@ def _render_schema_audit_block(*, show_header: bool = True) -> None:
 
 
 def render_stage_1_panel() -> None:
-    st.markdown("## Stage 1 - Scrape Links")
+    _render_stage_header(
+        "Stage 1",
+        "Links",
+        "Collect the raw Grays listing URLs that seed the rest of the pipeline.",
+    )
     if st.button("Run: Scrape Links", key="panel_stage1_run"):
         _run_stage_command(
             [sys.executable, "scripts/extract_links.py"],
             spinner_text="Running link scraper...",
             success_text="Link scraping completed.",
         )
+    _render_rules_block(
+        "Rules",
+        [
+            "- Crawl Grays search results and lot pages.",
+            "- Store the full queue in all_vehicle_links.csv.",
+            "- Maintain active_vehicle_links.csv as the working intake subset.",
+        ],
+    )
+    st.markdown('<div class="pipeline-subsection-title">Dataset Summary</div>', unsafe_allow_html=True)
     _render_dataset_summary_row("All Vehicle Links", "all_vehicle_links.csv")
     _render_dataset_summary_row("Active Link Queue", "active_vehicle_links.csv")
-    with st.expander("Preview data", expanded=False):
+    with st.expander("Preview tables", expanded=False):
         for fname in ["all_vehicle_links.csv", "active_vehicle_links.csv"]:
             st.markdown(f"### {fname}")
             path = dataset_path(fname)
@@ -216,15 +356,28 @@ def render_stage_1_panel() -> None:
 
 
 def render_stage_2_panel() -> None:
-    st.markdown("## Stage 2 - Scrape Details")
+    _render_stage_header(
+        "Stage 2",
+        "Details",
+        "Extract raw vehicle attributes from each queued Grays listing before cleanup.",
+    )
     if st.button("Run: Scrape Details", key="panel_stage2_run"):
         _run_stage_command(
             [sys.executable, "scripts/extract_vehicle_details.py", "--raw-only"],
             spinner_text="Running detail scrape...",
             success_text="Detail scraping completed.",
         )
+    st.markdown('<div class="pipeline-subsection-title">Dataset Summary</div>', unsafe_allow_html=True)
     _render_dataset_summary_row("Raw Vehicle Data", "raw_vehicle_data.csv")
-    with st.expander("Schema + Sample", expanded=False):
+    _render_rules_block(
+        "Rules",
+        [
+            "- Capture the raw listing payload before normalisation.",
+            "- Preserve original field values for auditability.",
+            "- Keep schema aligned with STATIC_VEHICLE_SCHEMA.",
+        ],
+    )
+    with st.expander("Schema + Preview", expanded=False):
         st.dataframe(_schema_table(STATIC_VEHICLE_SCHEMA), use_container_width=True, hide_index=True)
         st.dataframe(
             _safe_read_csv(dataset_path("raw_vehicle_data.csv")).head(50),
@@ -234,16 +387,21 @@ def render_stage_2_panel() -> None:
 
 
 def render_stage_3_panel() -> None:
-    st.markdown("## Stage 3 - Normalise")
+    _render_stage_header(
+        "Stage 3",
+        "Normalise",
+        "Standardise vehicle fields so exclusions, tagging, and valuation run on consistent inputs.",
+    )
     if st.button("Run: Normalise", key="panel_stage3_run"):
         _run_stage_command(
             [sys.executable, "scripts/pipeline_stages.py", "normalize"],
             spinner_text="Running normalisation stage...",
             success_text="Normalisation completed.",
         )
+    st.markdown('<div class="pipeline-subsection-title">Dataset Summary</div>', unsafe_allow_html=True)
     _render_dataset_summary_row("Normalised Data", "normalised_data.csv")
-    with st.expander("Rules + Sample", expanded=False):
-        st.markdown("\n".join(_normalise_rule_lines()))
+    _render_rules_block("Rules", _normalise_rule_lines())
+    with st.expander("Preview tables", expanded=False):
         st.dataframe(
             _safe_read_csv(dataset_path("normalised_data.csv")).head(50),
             use_container_width=True,
@@ -252,13 +410,18 @@ def render_stage_3_panel() -> None:
 
 
 def render_stage_4_panel() -> None:
-    st.markdown("## Stage 4 - Apply Exclusions")
+    _render_stage_header(
+        "Stage 4",
+        "Exclude",
+        "Remove out-of-policy or malformed records and produce the static canonical-ready dataset.",
+    )
     if st.button("Run: Exclusions", key="panel_stage4_run"):
         _run_stage_command(
             [sys.executable, "scripts/pipeline_stages.py", "exclude"],
             spinner_text="Applying exclusion rules...",
             success_text="Exclusion stage completed.",
         )
+    st.markdown('<div class="pipeline-subsection-title">Dataset Summary</div>', unsafe_allow_html=True)
     _render_dataset_summary_row("Excluded Listings", "excluded_listings.csv")
     _render_dataset_summary_row("Static Vehicle Details", "vehicle_static_details.csv")
 
@@ -277,8 +440,8 @@ def render_stage_4_panel() -> None:
     metric_col_b.metric("Written to static", f"{written_from_normalised:,}")
     metric_col_c.metric("Static total rows", f"{len(static_df):,}")
 
-    with st.expander("Exclusion Rules + Table", expanded=False):
-        st.markdown("\n".join(_exclusion_rule_lines()))
+    _render_rules_block("Rules", _exclusion_rule_lines())
+    with st.expander("Preview tables", expanded=False):
         if excluded_df.empty:
             st.info("excluded_listings.csv is empty.")
         else:
@@ -288,23 +451,31 @@ def render_stage_4_panel() -> None:
 
 
 def render_stage_5_panel() -> None:
-    st.markdown("## Stage 5 - Canonical Match")
+    _render_stage_header(
+        "Stage 5",
+        "Canonical",
+        "Map normalised records onto supported canonical tags and show the live curve universe.",
+    )
     if st.button("Run: Match Canonical Tags", key="panel_stage5_run"):
         _run_stage_command(
             [sys.executable, "scripts/pipeline_stages.py", "match"],
             spinner_text="Running canonical match...",
             success_text="Canonical match completed.",
         )
+    st.markdown('<div class="pipeline-subsection-title">Dataset Summary</div>', unsafe_allow_html=True)
     _render_dataset_summary_row("Matched Canonical", "matched_canonical_details.csv")
     _render_dataset_summary_row("Unmatched Canonical", "unmatched_canonical_details.csv")
+    _render_rules_block(
+        "Rules",
+        [
+            "- Match make/model/body/fuel/transmission against allowed variants.",
+            "- Use badge aliases and series codes to disambiguate trims.",
+            "- Fail closed to unmatched when policy checks do not pass.",
+        ],
+    )
 
     curves_df = load_curves()
-    available_tags = (
-        curves_df["canonical_tag"].dropna().astype(str).str.strip().tolist()
-        if not curves_df.empty and "canonical_tag" in curves_df.columns
-        else []
-    )
-    available_tags = sorted({tag for tag in available_tags if tag})
+    available_tags = sorted(list_curve_tags(curves_df))
     with st.expander("Available canonical tags", expanded=False):
         st.metric("Available tags", f"{len(available_tags):,}")
         if available_tags:
@@ -318,7 +489,11 @@ def render_stage_5_panel() -> None:
 
 
 def render_stage_6_panel() -> None:
-    st.markdown("## Stage 6 - Refresh Active Status")
+    _render_stage_header(
+        "Stage 6",
+        "Active Listings",
+        "Refresh bidding/status data and roll records into active, sold, and referred outputs.",
+    )
     col_a, col_b = st.columns(2)
     if col_a.button("Run: Update Bids", key="panel_stage6_bids_run"):
         _run_stage_command(
@@ -332,12 +507,21 @@ def render_stage_6_panel() -> None:
             spinner_text="Sorting active, sold, and referred datasets...",
             success_text="Master update completed.",
         )
+    _render_rules_block(
+        "Rules",
+        [
+            "- Update live bids and countdowns for active lots.",
+            "- Promote ended lots into sold or referred outputs.",
+            "- Feed downstream restricted builds and AI analysis inputs.",
+        ],
+    )
+    st.markdown('<div class="pipeline-subsection-title">Dataset Summary</div>', unsafe_allow_html=True)
     _render_dataset_summary_row("Active Vehicle Details", "active_vehicle_details.csv")
     _render_dataset_summary_row("Sold Cars", "sold_cars.csv")
     _render_dataset_summary_row("Referred Cars", "referred_cars.csv")
 
     active_df = _safe_read_csv(dataset_path("active_vehicle_details.csv"))
-    with st.expander("Active status sample", expanded=False):
+    with st.expander("Preview tables", expanded=False):
         if active_df.empty:
             st.info("active_vehicle_details.csv is empty.")
         else:
@@ -360,90 +544,135 @@ def render_stage_6_panel() -> None:
 
 
 def render_stage_7_panel() -> None:
-    st.markdown("## Stage 7 - Schema Audit")
+    _render_stage_header(
+        "Stage 7",
+        "Audit",
+        "Check locked schemas and validate the handoff between raw, normalised, and static datasets.",
+    )
     if st.button("Run: Audit & Lock", key="panel_stage7_run"):
         _run_stage_command(
             [sys.executable, "scripts/pipeline_stages.py", "audit"],
             spinner_text="Auditing schemas...",
             success_text="Schema audit completed.",
         )
+    _render_rules_block(
+        "Rules",
+        [
+            "- Raw, normalised, and static datasets must match exact schema contracts.",
+            "- Schema mismatches are surfaced before later stages consume the data.",
+            "- This stage is the quality gate for pipeline stability.",
+        ],
+    )
+    st.markdown('<div class="pipeline-subsection-title">Dataset Summary</div>', unsafe_allow_html=True)
     _render_dataset_summary_row("Active Vehicle Details", "active_vehicle_details.csv")
-    with st.expander("Schema Audit Results", expanded=True):
+    with st.expander("Audit results", expanded=True):
         _render_schema_audit_block(show_header=False)
 
 
-def _render_pipeline_graph() -> None:
+STAGE_CONFIG = {
+    "Links": {
+        "step": "Stage 1",
+        "title": "Links",
+        "subtitle": "Collect source URLs from Grays.",
+        "panel": render_stage_1_panel,
+    },
+    "Details": {
+        "step": "Stage 2",
+        "title": "Details",
+        "subtitle": "Extract raw vehicle attributes.",
+        "panel": render_stage_2_panel,
+    },
+    "Normalise": {
+        "step": "Stage 3",
+        "title": "Normalise",
+        "subtitle": "Standardise fields and formats.",
+        "panel": render_stage_3_panel,
+    },
+    "Exclude": {
+        "step": "Stage 4",
+        "title": "Exclude",
+        "subtitle": "Remove invalid and out-of-scope rows.",
+        "panel": render_stage_4_panel,
+    },
+    "Canonical": {
+        "step": "Stage 5",
+        "title": "Canonical",
+        "subtitle": "Assign canonical tags and mappings.",
+        "panel": render_stage_5_panel,
+    },
+    "Active": {
+        "step": "Stage 6",
+        "title": "Active Listings",
+        "subtitle": "Refresh live bids and output tables.",
+        "panel": render_stage_6_panel,
+    },
+    "Audit": {
+        "step": "Stage 7",
+        "title": "Audit",
+        "subtitle": "Run schema and handoff checks.",
+        "panel": render_stage_7_panel,
+    },
+}
+
+
+def _render_pipeline_graph(selected_stage: str) -> None:
     section_html = clean_html(
         """
         <div class="autosniper-section pipeline-block">
             <div class="section-title">Pipeline Flow Chart</div>
-            <div class="section-subtitle">Clear stage-to-stage flow from links to active listings.</div>
+            <div class="section-subtitle">Primary system flow from intake to live outputs. The selected stage is highlighted.</div>
         </div>
         """
     )
     st.markdown(section_html, unsafe_allow_html=True)
-    dot = """
-digraph grays_pipeline {
-  rankdir=TB;
-  graph [bgcolor="transparent", ranksep="1.0", nodesep="0.6"];
-  node [shape=box, style="rounded,filled", fillcolor="#0f1622", color="#2f8fd8", fontcolor="#e6edf6", fontsize=10];
-  edge [color="#6a7d92", arrowsize=0.8];
-
-  n0 [label="GRAYS\\nsearch pages", fillcolor="#11161d", color="#8fd3ff"];
-  n1 [label="1. EXTRACT LINKS\\nall_vehicle_links.csv"];
-  n2 [label="1b. ACTIVE LINKS\\nactive_vehicle_links.csv"];
-  n3 [label="2. SCRAPE DETAILS\\nraw_vehicle_data.csv"];
-  n4 [label="3. NORMALISE\\nnormalised_data.csv"];
-  n5 [label="4. EXCLUSIONS\\nexcluded_listings.csv"];
-  n6 [label="4b. STATIC DETAILS\\nvehicle_static_details.csv"];
-  n7 [label="5. CANONICAL MATCH\\nmatched / unmatched"];
-  n8 [label="6. UPDATE BIDS\\nactive_vehicle_details.csv"];
-  n9 [label="6b. UPDATE MASTER\\nsold / referred / active"];
-  n10 [label="restricted build\\nactive_vehicle_details_restricted.csv"];
-  n11 [label="AI Analysis", fillcolor="#09131c", color="#ffd166"];
-
-  n0 -> n1 -> n2 -> n3 -> n4 -> n6 -> n7;
-  n4 -> n5;
-  n6 -> n8 -> n9 -> n10 -> n11;
-  n9 -> n2;
-  n9 -> n6;
-}
-"""
-    st.graphviz_chart(dot, use_container_width=True)
-    st.caption("Static ends at vehicle_static_details.csv. Active status is refreshed later by update_bids + update_master.")
+    nodes = [
+        ("Source", "Grays", "Search pages and lot pages."),
+        ("Links", "Links", "all_vehicle_links.csv + active queue"),
+        ("Details", "Details", "raw_vehicle_data.csv"),
+        ("Normalise", "Normalise", "normalised_data.csv"),
+        ("Exclude", "Exclude", "excluded_listings.csv + static rows"),
+        ("Canonical", "Canonical", "matched / unmatched canonical details"),
+        ("Active", "Active Listings", "active, sold, and referred outputs"),
+    ]
+    parts = ['<div class="pipeline-shell"><div class="pipeline-diagram">']
+    for index, (node_key, title, subtitle) in enumerate(nodes):
+        selected_class = " is-selected" if node_key == selected_stage else ""
+        kicker = STAGE_CONFIG.get(node_key, {}).get("step", "Source")
+        parts.append(
+            f"""
+            <div class="pipeline-node{selected_class}">
+                <div class="pipeline-node-step">{kicker}</div>
+                <div class="pipeline-node-title">{title}</div>
+                <div class="pipeline-node-subtitle">{subtitle}</div>
+            </div>
+            """
+        )
+        if index < len(nodes) - 1:
+            parts.append('<div class="pipeline-arrow">↓</div>')
+    parts.append("</div></div>")
+    st.markdown(clean_html("".join(parts)), unsafe_allow_html=True)
+    st.caption("The canonical stage feeds live active outputs, which then drive restricted datasets and AI analysis.")
 
 
 # -----------------------------
 # MAIN LAYOUT
 # -----------------------------
+default_stage = "Links"
+stage_options = list(STAGE_CONFIG.keys())
+selected_stage = st.session_state.get("pipeline_stage_selector", default_stage)
+if selected_stage not in STAGE_CONFIG:
+    selected_stage = default_stage
 st.markdown("## Pipeline Overview")
-_render_pipeline_graph()
-
-stage_options = [
-    "1 Scrape Links",
-    "2 Scrape Details",
-    "3 Normalise",
-    "4 Exclusions",
-    "5 Canonical",
-    "6 Active Refresh",
-    "7 Audit",
-]
+_render_pipeline_graph(selected_stage)
 if hasattr(st, "segmented_control"):
-    stage = st.segmented_control("Open Stage", stage_options, default="1 Scrape Links")
+    stage = st.segmented_control("Stage Selector", stage_options, default=selected_stage, key="pipeline_stage_selector")
 else:
-    stage = st.radio("Open Stage", stage_options, horizontal=True, index=0)
-
-if stage == "1 Scrape Links":
-    render_stage_1_panel()
-elif stage == "2 Scrape Details":
-    render_stage_2_panel()
-elif stage == "3 Normalise":
-    render_stage_3_panel()
-elif stage == "4 Exclusions":
-    render_stage_4_panel()
-elif stage == "5 Canonical":
-    render_stage_5_panel()
-elif stage == "6 Active Refresh":
-    render_stage_6_panel()
-elif stage == "7 Audit":
-    render_stage_7_panel()
+    stage = st.radio(
+        "Stage Selector",
+        stage_options,
+        horizontal=True,
+        index=stage_options.index(selected_stage),
+        key="pipeline_stage_selector",
+    )
+st.caption("Select one stage to inspect its controls, summaries, rules, logs, and preview tables.")
+STAGE_CONFIG[stage]["panel"]()

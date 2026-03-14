@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 from datetime import datetime
+from functools import lru_cache
 from pathlib import Path
-from typing import Iterable, List, Optional, Sequence, Tuple
+from typing import Iterable, List, Mapping, Optional, Sequence, Tuple
 
 import pandas as pd
 
@@ -23,6 +24,9 @@ CURVE_COLUMNS: Sequence[str] = (
 )
 
 LEGACY_COLUMNS = {"group_id", "series", "km_anchor", "price_median"}
+CONFIG_DIR = Path(__file__).resolve().parent.parent / "config"
+CURVE_ALIASES_PATH = CONFIG_DIR / "curve_aliases.csv"
+CURVE_ALIAS_COLUMNS: Sequence[str] = ("canonical_tag", "base_curve")
 
 
 def detect_legacy_columns(df: pd.DataFrame) -> None:
@@ -73,6 +77,70 @@ def _fill_mid_price(row: pd.Series) -> pd.Series:
     return row
 
 
+@lru_cache(maxsize=1)
+def load_curve_aliases(path: Path | None = None) -> dict[str, str]:
+    alias_path = path or CURVE_ALIASES_PATH
+    if not alias_path.exists():
+        return {}
+    try:
+        alias_df = pd.read_csv(alias_path)
+    except (ValueError, pd.errors.EmptyDataError):
+        return {}
+
+    missing = [column for column in CURVE_ALIAS_COLUMNS if column not in alias_df.columns]
+    if missing:
+        raise ValueError(
+            "Invalid curve alias schema. Missing columns: " + ", ".join(sorted(missing))
+        )
+
+    aliases: dict[str, str] = {}
+    for _, row in alias_df.iterrows():
+        alias_tag = str(row.get("canonical_tag", "")).strip()
+        base_curve = str(row.get("base_curve", "")).strip()
+        if not alias_tag or not base_curve or alias_tag == base_curve:
+            continue
+        aliases[alias_tag] = base_curve
+    return aliases
+
+
+def resolve_curve_canonical_tag(
+    canonical_tag: object,
+    aliases: Mapping[str, str] | None = None,
+) -> str:
+    resolved = str(canonical_tag or "").strip()
+    if not resolved:
+        return ""
+
+    alias_map = dict(aliases) if aliases is not None else load_curve_aliases()
+    seen: set[str] = set()
+    while resolved in alias_map and resolved not in seen:
+        seen.add(resolved)
+        next_tag = str(alias_map.get(resolved, "")).strip()
+        if not next_tag:
+            break
+        resolved = next_tag
+    return resolved
+
+
+def list_curve_tags(curves_df: pd.DataFrame | None, *, include_aliases: bool = True) -> set[str]:
+    if curves_df is None or curves_df.empty or "canonical_tag" not in curves_df.columns:
+        return set()
+
+    tags = {
+        str(tag).strip()
+        for tag in curves_df["canonical_tag"].dropna().astype(str).tolist()
+        if str(tag).strip()
+    }
+    if not include_aliases or not tags:
+        return tags
+
+    aliases = load_curve_aliases()
+    for alias_tag, base_curve in aliases.items():
+        if resolve_curve_canonical_tag(base_curve, aliases) in tags:
+            tags.add(alias_tag)
+    return tags
+
+
 def load_curves(path: Path | None = None) -> pd.DataFrame:
     curve_path = path or dataset_path("curves.csv")
     if not curve_path.exists():
@@ -107,8 +175,11 @@ def get_curve_points(
 ) -> List[Tuple[int, int]]:
     if curves_df.empty:
         return []
+    curve_tag = resolve_curve_canonical_tag(canonical_tag)
+    if not curve_tag:
+        return []
     subset = curves_df[
-        (curves_df["canonical_tag"] == canonical_tag)
+        (curves_df["canonical_tag"] == curve_tag)
         & (curves_df["anchor_year"] == anchor_year)
     ].copy()
     subset = subset.dropna(subset=["km_bucket", "price_mid"])
@@ -153,9 +224,10 @@ def interpolate_base_by_year(
     year: int | None,
     km: float | int | None,
 ) -> Optional[float]:
-    if curves_df.empty or not canonical_tag or year is None or km is None:
+    curve_tag = resolve_curve_canonical_tag(canonical_tag)
+    if curves_df.empty or not curve_tag or year is None or km is None:
         return None
-    subset = curves_df[curves_df["canonical_tag"] == canonical_tag].copy()
+    subset = curves_df[curves_df["canonical_tag"] == curve_tag].copy()
     subset = subset.dropna(subset=["anchor_year"])
     if subset.empty:
         return None
@@ -164,7 +236,7 @@ def interpolate_base_by_year(
         return None
 
     def _price_for_anchor(anchor_year: int) -> Optional[float]:
-        points = get_curve_points(subset, canonical_tag, anchor_year)
+        points = get_curve_points(subset, curve_tag, anchor_year)
         return interpolate_price_by_km(points, km)
 
     if year < anchor_years[0] or year > anchor_years[-1]:

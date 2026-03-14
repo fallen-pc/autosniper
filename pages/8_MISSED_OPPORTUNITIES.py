@@ -7,7 +7,13 @@ import streamlit as st
 
 from shared.comps_engine import parse_currency, parse_numeric
 from shared.canonical_tagging import is_canonical_eligible
-from shared.curves import load_curves, interpolate_base_by_year, interpolate_price_by_km
+from shared.curves import (
+    interpolate_base_by_year,
+    interpolate_price_by_km,
+    list_curve_tags,
+    load_curves,
+    resolve_curve_canonical_tag,
+)
 from shared.data_loader import dataset_path, ensure_datasets_available
 from shared.parts_cost import estimate_parts_cost
 from shared.repair_pricing import assess_repairs, apply_repairs_to_max_bid
@@ -144,9 +150,10 @@ def interpolate_curve_value(
     km: float | int | None,
     value_col: str,
 ) -> float | None:
-    if curves_df.empty or not canonical_tag or year is None or km is None:
+    curve_tag = resolve_curve_canonical_tag(canonical_tag)
+    if curves_df.empty or not curve_tag or year is None or km is None:
         return None
-    subset = curves_df[curves_df["canonical_tag"] == canonical_tag].copy()
+    subset = curves_df[curves_df["canonical_tag"] == curve_tag].copy()
     subset = subset.dropna(subset=["anchor_year"])
     if subset.empty:
         return None
@@ -497,13 +504,7 @@ st.markdown(
 allow_repairs = "general_condition" in sold_df.columns
 tag_options = ["All"]
 curves_df = load_curves()
-allowed_tags = set(
-    curves_df.get("canonical_tag", pd.Series(dtype=str))
-    .dropna()
-    .astype(str)
-    .str.strip()
-    .tolist()
-)
+allowed_tags = list_curve_tags(curves_df)
 if not allowed_tags:
     st.warning("curves.csv has no canonical tags; showing all sold tags.")
     tag_values = sorted({str(value).strip() for value in sold_df["canonical_tag"].dropna().tolist()})
@@ -568,7 +569,7 @@ else:
 results: list[dict[str, object]] = []
 for _, row in sold_df.iterrows():
     canonical_tag = safe_text(row.get("canonical_tag"), "")
-    curve_key = canonical_tag
+    curve_key = resolve_curve_canonical_tag(canonical_tag)
     canonical_reason = safe_text(row.get("canonical_reason"), "")
     year_val = safe_int(row.get("year"))
     odo_val = row.get("odometer_numeric")
@@ -587,9 +588,7 @@ for _, row in sold_df.iterrows():
         curve_low = None
         curve_high = None
 
-    curve_subset = curves_df
-    if curve_key:
-        curve_subset = curve_subset[curve_subset["canonical_tag"] == curve_key]
+    curve_subset = curves_df[curves_df["canonical_tag"] == curve_key] if curve_key else pd.DataFrame()
 
     if not spec_reason:
         curve_estimate = interpolate_base_by_year(curve_subset, curve_key, year_val, odo_val)

@@ -11,7 +11,7 @@ from typing import Iterable
 import pandas as pd
 
 from shared.canonical_tagging import UNCLASSIFIED
-from shared.curves import load_curves
+from shared.curves import load_curve_aliases, load_curves
 from shared.data_loader import dataset_path, ensure_datasets_available
 
 
@@ -52,6 +52,7 @@ class CurveMeta:
     canonical_tag: str
     last_updated: datetime | None
     anchor_years: list[int]
+    curve_source_tag: str | None = None
 
 
 def _is_blank(value: object) -> bool:
@@ -262,6 +263,18 @@ def build_curve_meta(curves_df: pd.DataFrame) -> dict[str, CurveMeta]:
             canonical_tag=str(canonical_tag),
             last_updated=None,
             anchor_years=anchor_years,
+            curve_source_tag=str(canonical_tag),
+        )
+    aliases = load_curve_aliases()
+    for alias_tag, base_curve in aliases.items():
+        if alias_tag in meta or base_curve not in meta:
+            continue
+        base_meta = meta[base_curve]
+        meta[alias_tag] = CurveMeta(
+            canonical_tag=alias_tag,
+            last_updated=base_meta.last_updated,
+            anchor_years=list(base_meta.anchor_years),
+            curve_source_tag=base_curve,
         )
     return meta
 

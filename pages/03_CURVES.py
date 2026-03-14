@@ -1,6 +1,7 @@
 import pandas as pd
 import streamlit as st
 
+from shared.curves import list_curve_tags, resolve_curve_canonical_tag
 from shared.governance import build_curve_coverage_report, summarize_curve_coverage
 from shared.ops_utils import build_curve_meta, load_active_df, load_curves_df, load_static_df
 from shared.data_loader import dataset_path
@@ -37,12 +38,12 @@ if not active_df.empty and "canonical_tag" in active_df.columns:
 
 rows = []
 tag_sources = set(active_counts.keys())
-if not curves_df.empty and "canonical_tag" in curves_df.columns:
-    tag_sources.update(curves_df["canonical_tag"].astype(str).str.strip().tolist())
+tag_sources.update(list_curve_tags(curves_df))
 canonical_tags = sorted({tag for tag in tag_sources if tag and tag != "UNCLASSIFIED"})
 for tag in canonical_tags:
     meta = curve_meta.get(tag)
-    curve_rows = curves_df[curves_df["canonical_tag"] == tag] if tag else pd.DataFrame()
+    resolved_tag = resolve_curve_canonical_tag(tag)
+    curve_rows = curves_df[curves_df["canonical_tag"] == resolved_tag] if resolved_tag else pd.DataFrame()
     rows.append(
         {
             "canonical_tag": tag,
@@ -116,7 +117,7 @@ with right:
                 }
             )
             if st.button("Open curve builder", key="curves_open_builder"):
-                st.session_state["curve_builder_tag"] = row.get("canonical_tag")
+                st.session_state["curve_builder_tag"] = resolve_curve_canonical_tag(row.get("canonical_tag"))
                 try:
                     st.switch_page("pages/13_CURVE_BUILDER.py")
                 except Exception:
