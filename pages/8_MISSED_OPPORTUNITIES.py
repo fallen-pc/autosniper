@@ -15,6 +15,7 @@ from shared.curves import (
     resolve_curve_canonical_tag,
 )
 from shared.data_loader import dataset_path, ensure_datasets_available
+from shared.global_filters import apply_global_sidebar_filters, render_global_sidebar_filters
 from shared.parts_cost import estimate_parts_cost
 from shared.repair_pricing import assess_repairs, apply_repairs_to_max_bid
 from shared.repair_features import build_repair_features, serialize_tags
@@ -33,6 +34,7 @@ from scripts.ai_listing_valuation import (
 
 
 st.set_page_config(page_title="MISSED OPPORTUNITIES", layout="wide")
+render_global_sidebar_filters()
 inject_global_styles()
 display_banner()
 page_intro(
@@ -754,6 +756,14 @@ if not results_df.empty:
     results_df["miss_classification"] = results_df.apply(classify_miss_reason, axis=1)
     results_df["date_sold_parsed"] = pd.to_datetime(results_df["date_sold"], errors="coerce")
     results_df["sold_month"] = results_df["date_sold_parsed"].dt.to_period("M").dt.to_timestamp()
+    results_df = apply_global_sidebar_filters(
+        results_df,
+        state_columns=("location_state", "location", "yard"),
+        vehicle_type_columns=("body_type", "body"),
+        margin_columns=("profit_margin_pct", "delta_pct"),
+        canonical_tag_column="canonical_tag",
+        curve_tags=allowed_tags,
+    )
 
 no_curve_mask = results_df["curve_estimate"].isna() | (results_df["spec_reason"] == "NOT_COVERED")
 no_curve_view = results_df[no_curve_mask].copy()

@@ -11,10 +11,12 @@ import streamlit as st
 
 from shared.curves import list_curve_tags, load_curves
 from shared.data_loader import dataset_path, ensure_datasets_available
+from shared.global_filters import apply_global_sidebar_filters, render_global_sidebar_filters
 from shared.styling import clean_html, display_banner, escape_html, inject_global_styles, page_intro, safe_url, section_heading
 
 
 st.set_page_config(page_title="AutoSniper - Dashboard", layout="wide")
+render_global_sidebar_filters()
 inject_global_styles()
 display_banner()
 
@@ -406,6 +408,42 @@ if VALUATIONS_FILE.exists():
         valuations_df["expected_profit_value"] = valuations_df["expected_profit"].apply(parse_currency_value)
         valuations_df["profit_margin_value"] = valuations_df["profit_margin_percent"].apply(parse_percent_value)
         valuations_df["score_value"] = pd.to_numeric(valuations_df.get("score_out_of_10"), errors="coerce")
+
+curve_tags = list_curve_tags(load_curves())
+active_scope_df = active_live_df.copy()
+if not valuations_df.empty and not active_scope_df.empty:
+    valuation_scope_cols = ["url"]
+    for column in ("profit_margin_percent", "profit_margin_value", "expected_profit", "expected_profit_value"):
+        if column in valuations_df.columns and column not in valuation_scope_cols:
+            valuation_scope_cols.append(column)
+    active_scope_df = active_scope_df.merge(
+        valuations_df[valuation_scope_cols].drop_duplicates("url"),
+        on="url",
+        how="left",
+        suffixes=("", "_ai"),
+    )
+active_scope_df = apply_global_sidebar_filters(
+    active_scope_df,
+    state_columns=("location_state", "rego_state", "location"),
+    vehicle_type_columns=("body_type", "body"),
+    margin_columns=("profit_margin_value", "profit_margin_percent"),
+    canonical_tag_column="canonical_tag",
+    curve_tags=curve_tags,
+)
+sold_scope_df = apply_global_sidebar_filters(
+    sold_df,
+    state_columns=("location_state", "state", "location"),
+    vehicle_type_columns=("body_type", "body"),
+    canonical_tag_column="canonical_tag",
+    curve_tags=curve_tags,
+)
+referred_scope_df = apply_global_sidebar_filters(
+    referred_df,
+    state_columns=("location_state", "state", "location"),
+    vehicle_type_columns=("body_type", "body"),
+    canonical_tag_column="canonical_tag",
+    curve_tags=curve_tags,
+)
 section_heading(
     "Live Opportunities",
     "Top 5 profitable active vehicles ranked from current AI valuation outputs and live auction status.",
@@ -413,7 +451,7 @@ section_heading(
 if valuations_df.empty or active_live_df.empty:
     st.info("Need both active listings and AI valuations to rank live opportunities. Run the AI pricing analysis once.")
 else:
-    merged_top = active_live_df.merge(valuations_df, on="url", how="inner", suffixes=("", "_ai"))
+    merged_top = active_scope_df.merge(valuations_df, on="url", how="inner", suffixes=("", "_ai"))
     merged_top["current_price_value"] = merged_top["price"].apply(parse_currency_value)
     merged_top["max_bid_value"] = merged_top["recommended_max_bid"].apply(parse_currency_value)
     merged_top["resale_mid_value"] = merged_top["resale_mid"].apply(parse_currency_value)
@@ -498,7 +536,7 @@ raw_count = count_csv_rows(RAW_FILE)
 normalised_count = count_csv_rows(NORMALISED_FILE)
 excluded_count = count_csv_rows(EXCLUDED_FILE)
 analysed_count = len(valuations_df) if not valuations_df.empty else 0
-analysis_target = len(active_live_df) if not active_live_df.empty else 0
+analysis_target = len(active_scope_df) if not active_scope_df.empty else 0
 analysis_ratio = (analysed_count / analysis_target) if analysis_target else None
 
 health_cols = st.columns(4)
@@ -533,17 +571,16 @@ with health_cols[3]:
     _render_health_card(
         "Vehicles analysed",
         _format_rows(analysed_count),
-        f"{analysis_ratio:.0%} of active listings" if analysis_ratio is not None else "No active listings loaded",
+        f"{analysis_ratio:.0%} of filtered active listings" if analysis_ratio is not None else "No active listings loaded",
         _coverage_tone(analysis_ratio),
     )
 
 section_heading("AI Coverage", "Curve coverage health across the current active listing set.")
-curve_tags = list_curve_tags(load_curves())
 active_curve_count = 0
 active_no_curve_count = 0
 curve_coverage_pct = None
-if not active_live_df.empty and "canonical_tag" in active_live_df.columns:
-    canonical_series = active_live_df["canonical_tag"].fillna("").astype(str).str.strip()
+if not active_scope_df.empty and "canonical_tag" in active_scope_df.columns:
+    canonical_series = active_scope_df["canonical_tag"].fillna("").astype(str).str.strip()
     active_curve_count = int(canonical_series.isin(curve_tags).sum())
     active_no_curve_count = int((~canonical_series.isin(curve_tags)).sum())
     total_active_curve_rows = active_curve_count + active_no_curve_count
@@ -558,19 +595,19 @@ coverage_cols[2].metric(
 )
 section_heading("Status Snapshot", "Distribution of tracked listings by workflow state.")
 tracked_counts = {
-    "active": int(len(active_live_df)),
-    "sold": int(len(sold_df)),
-    "referred": int(len(referred_df)),
+    "active": int(len(active_scope_df)),
+    "sold": int(len(sold_scope_df)),
+    "referred": int(len(referred_scope_df)),
 }
 tracked_total = sum(tracked_counts.values())
-other_total = max(total_listings - tracked_total, 0)
+other_total = 0
 status_columns = st.columns(5)
-render_metric(status_columns[0], "Total Listings", total_listings)
+render_metric(status_columns[0], "Visible Listings", tracked_total)
 for idx, (code, label) in enumerate(tracked_statuses, start=1):
     count = tracked_counts.get(code, 0)
-    share = (count / total_listings) if total_listings else None
+    share = (count / tracked_total) if tracked_total else None
     render_metric(status_columns[idx], label, count, share)
-share_other = (other_total / total_listings) if total_listings else None
+share_other = (other_total / tracked_total) if tracked_total else None
 render_metric(status_columns[-1], "Other / Unknown", other_total, share_other)
 
 status_table = pd.DataFrame(
@@ -580,7 +617,7 @@ status_table = pd.DataFrame(
         {"Status": "Referred", "Listings": tracked_counts["referred"]},
         {"Status": "Other / Unknown", "Listings": other_total},
     ]
-).assign(Share=lambda frame: frame["Listings"] / total_listings if total_listings else 0)
+).assign(Share=lambda frame: frame["Listings"] / tracked_total if tracked_total else 0)
 status_table["Status"] = status_table["Status"].astype(str).str.replace("_", " ").str.title()
 status_table["Share"] = status_table["Share"].map(lambda value: f"{value:.1%}")
 

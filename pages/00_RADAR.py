@@ -1,6 +1,7 @@
 import pandas as pd
 import streamlit as st
 
+from shared.global_filters import apply_global_sidebar_filters, render_global_sidebar_filters
 from shared.ops_utils import (
     apply_global_filters,
     build_curve_meta,
@@ -16,13 +17,104 @@ from shared.ops_utils import (
     parse_time_remaining_hours,
     time_bucket,
 )
-from shared.styling import display_banner, inject_global_styles, page_intro, section_heading
+from shared.styling import clean_html, display_banner, inject_global_styles, page_intro, section_heading
 
 
-st.set_page_config(page_title="Radar - Ops", layout="wide")
+st.set_page_config(page_title="Radar", layout="wide")
+render_global_sidebar_filters()
 inject_global_styles()
 display_banner()
-page_intro("RADAR", "Ops view: what to bid, ignore, and fix today.", show_logo=False)
+page_intro("RADAR", "Live trading console ranked by profit potential.", show_logo=False)
+
+
+def _safe_text(value: object) -> str:
+    if value is None or (isinstance(value, float) and pd.isna(value)):
+        return ""
+    return str(value).strip()
+
+
+def _build_profit_value(row: pd.Series) -> float | None:
+    for key in ("expected_profit", "net_profit_mid", "net_profit_worst"):
+        value = parse_currency(row.get(key))
+        if value is not None:
+            return value
+    resale_mid = parse_currency(row.get("resale_mid"))
+    current_bid = parse_currency(row.get("price"))
+    if resale_mid is not None and current_bid is not None:
+        return resale_mid - current_bid
+    return None
+
+
+def _risk_level(row: pd.Series) -> str:
+    if bool(row.get("is_flagged")) or not bool(row.get("has_curve")):
+        return "High"
+    if str(row.get("severity", "")).lower() in {"red", "yellow"}:
+        return "High"
+    if float(row.get("issue_count") or 0) >= 2:
+        return "Medium"
+    if str(row.get("confidence_bucket", "")).lower() == "low":
+        return "Medium"
+    return "Low"
+
+
+def _radar_signals(row: pd.Series) -> str:
+    signals: list[str] = []
+    profit_value = parse_currency(row.get("profit_value"))
+    margin_value = parse_percent(row.get("profit_margin_percent")) or parse_percent(row.get("profit_margin_value"))
+    time_hours = row.get("time_remaining_hours")
+    risk_level = _risk_level(row)
+    if (profit_value is not None and profit_value >= 5000) or (margin_value is not None and margin_value >= 20):
+        signals.append("🔥")
+    if risk_level in {"High", "Medium"}:
+        signals.append("⚠")
+    if time_hours is not None and float(time_hours) <= 24:
+        signals.append("⏳")
+    return " ".join(signals) if signals else "·"
+
+
+def _vehicle_label(row: pd.Series) -> str:
+    parts = [
+        _safe_text(row.get("year")),
+        _safe_text(row.get("make")),
+        _safe_text(row.get("model")),
+        _safe_text(row.get("variant")),
+    ]
+    return " ".join(part for part in parts if part) or "Listing"
+
+
+st.markdown(
+    clean_html(
+        """
+        <style>
+        .radar-summary-card {
+            background: linear-gradient(145deg, rgba(26, 33, 48, 0.98), rgba(10, 16, 28, 0.98));
+            border: 1px solid rgba(31, 166, 255, 0.16);
+            border-radius: 16px;
+            padding: 1rem;
+            box-shadow: 0 16px 30px rgba(4, 9, 17, 0.28);
+        }
+        .radar-summary-card .label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--autosniper-muted);
+        }
+        .radar-summary-card .value {
+            margin-top: 0.35rem;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--autosniper-primary);
+        }
+        .radar-summary-card .note {
+            margin-top: 0.25rem;
+            font-size: 0.85rem;
+            color: var(--autosniper-muted);
+        }
+        </style>
+        """
+    ),
+    unsafe_allow_html=True,
+)
 
 static_df = load_static_df()
 active_df = load_active_df()
@@ -48,15 +140,12 @@ if "verdict" not in radar_df.columns and "computed_verdict" in radar_df.columns:
 radar_df["time_remaining_hours"] = radar_df["time_remaining_or_date_sold"].apply(parse_time_remaining_hours)
 radar_df["time_bucket"] = radar_df["time_remaining_hours"].apply(time_bucket)
 radar_df["confidence_bucket"] = radar_df["confidence"].apply(confidence_bucket)
-radar_df["has_curve"] = radar_df["canonical_tag"].apply(
-    lambda tag: bool(tag) and str(tag).strip() in curve_meta
-)
-
+radar_df["has_curve"] = radar_df["canonical_tag"].apply(lambda tag: bool(tag) and str(tag).strip() in curve_meta)
 radar_df["profit_margin_value"] = radar_df.get("profit_margin_percent", pd.Series(dtype=float)).apply(parse_percent)
 radar_df["recommended_max_bid_value"] = radar_df.get("recommended_max_bid", pd.Series(dtype=float)).apply(parse_currency)
 radar_df["resale_mid_value"] = radar_df.get("resale_mid", pd.Series(dtype=float)).apply(parse_currency)
-radar_df["expected_profit_value"] = radar_df.get("expected_profit", pd.Series(dtype=float)).apply(parse_currency)
-
+radar_df["current_bid_value"] = radar_df.get("price", pd.Series(dtype=float)).apply(parse_currency)
+radar_df["profit_value"] = radar_df.apply(_build_profit_value, axis=1)
 radar_df["severity"] = radar_df["severity"].fillna("green")
 radar_df["issue_summary"] = radar_df["issue_summary"].fillna("")
 radar_df["issue_codes"] = radar_df["issue_codes"].apply(
@@ -73,157 +162,178 @@ if not flags_df.empty and "url" in flags_df.columns:
 radar_df["flag"] = radar_df["url"].map(lambda url: flag_lookup.get(url, {}).get("flag", ""))
 radar_df["flag_reason"] = radar_df["url"].map(lambda url: flag_lookup.get(url, {}).get("reason", ""))
 radar_df["is_flagged"] = radar_df["flag"].astype(str).str.strip().ne("")
+radar_df["risk_level"] = radar_df.apply(_risk_level, axis=1)
+radar_df["signals"] = radar_df.apply(_radar_signals, axis=1)
+radar_df["vehicle"] = radar_df.apply(_vehicle_label, axis=1)
 
-section_heading("Global Filters", "Filters persist across the Ops + QA + Builder pages.")
-filter_container = st.container()
-with filter_container:
-    c1, c2, c3, c4, c5, c6 = st.columns(6)
-    makes = sorted(radar_df["make"].dropna().unique().tolist()) if "make" in radar_df.columns else []
-    models = sorted(radar_df["model"].dropna().unique().tolist()) if "model" in radar_df.columns else []
-    statuses = sorted(radar_df["status"].dropna().unique().tolist()) if "status" in radar_df.columns else []
-    verdicts = sorted(radar_df["verdict"].dropna().unique().tolist()) if "verdict" in radar_df.columns else []
-    time_buckets = ["<24h", "1-2d", "2-3d", "3+d", "Unknown"]
-    confidence_levels = ["High", "Medium", "Low", "Unknown"]
+radar_df = apply_global_sidebar_filters(
+    radar_df,
+    state_columns=("location_state", "rego_state", "location"),
+    vehicle_type_columns=("body_type", "body"),
+    margin_columns=("profit_margin_value", "profit_margin_percent"),
+    canonical_tag_column="canonical_tag",
+    curve_tags=curve_meta.keys(),
+)
 
-    make_filter = c1.multiselect("Make", makes, key="ops_make_filter")
-    model_filter = c2.multiselect("Model", models, key="ops_model_filter")
-    status_filter = c3.multiselect("Status", statuses, default=statuses, key="ops_status_filter")
-    verdict_filter = c4.multiselect("Verdict", verdicts, key="ops_verdict_filter")
-    time_filter = c5.multiselect("Time bucket", time_buckets, default=time_buckets, key="ops_time_filter")
-    confidence_filter = c6.multiselect(
-        "Confidence", confidence_levels, default=confidence_levels, key="ops_conf_filter"
-    )
-
-    c7, c8, c9 = st.columns(3)
-    has_curve_filter = c7.selectbox("Has curve", ["All", "Yes", "No"], key="ops_curve_filter")
-    hide_flagged = c8.checkbox("Hide flagged listings", value=False, key="ops_hide_flagged")
-    issues_only = c9.checkbox("Only listings with issues", value=False, key="ops_issues_only")
+section_heading("Radar Controls", "Live auction controls layered on top of the global sidebar filters.")
+control_a, control_b, control_c, control_d = st.columns(4)
+make_filter = control_a.multiselect(
+    "Make",
+    sorted(radar_df["make"].dropna().astype(str).unique().tolist()) if "make" in radar_df.columns else [],
+)
+verdict_filter = control_b.multiselect(
+    "Verdict",
+    sorted(radar_df["verdict"].dropna().astype(str).unique().tolist()) if "verdict" in radar_df.columns else [],
+)
+time_filter = control_c.multiselect(
+    "Time Bucket",
+    ["<24h", "1-2d", "2-3d", "3+d", "Unknown"],
+    default=["<24h", "1-2d", "2-3d", "3+d", "Unknown"],
+)
+confidence_filter = control_d.multiselect(
+    "Confidence",
+    ["High", "Medium", "Low", "Unknown"],
+    default=["High", "Medium", "Low", "Unknown"],
+)
+toggle_a, toggle_b, toggle_c = st.columns(3)
+hide_flagged = toggle_a.checkbox("Hide flagged", value=False)
+only_high_value = toggle_b.checkbox("Only high value", value=False)
+ending_soon_only = toggle_c.checkbox("Ending within 24h", value=False)
 
 filtered_df = apply_global_filters(
     radar_df,
     make_filter=make_filter,
-    model_filter=model_filter,
-    status_filter=status_filter,
     verdict_filter=verdict_filter,
     confidence_filter=confidence_filter,
     time_bucket_filter=time_filter,
-    has_curve_filter=None if has_curve_filter == "All" else has_curve_filter,
 )
-
 if hide_flagged:
     filtered_df = filtered_df[~filtered_df["is_flagged"]]
-if issues_only:
-    filtered_df = filtered_df[filtered_df["issue_count"].fillna(0) > 0]
-
-filtered_df["profit_sort"] = filtered_df["profit_margin_value"].where(
-    filtered_df["confidence"].fillna(0) >= 0.7, -9999
-)
-filtered_df = filtered_df.sort_values(by=["profit_sort", "confidence"], ascending=[False, False])
-
-metrics = st.columns(4)
-metrics[0].metric("Active listings", f"{len(active_df):,}")
-metrics[1].metric("Visible", f"{len(filtered_df):,}")
-metrics[2].metric("With issues", f"{int((filtered_df['issue_count'].fillna(0) > 0).sum()):,}")
-metrics[3].metric("No curve", f"{int((filtered_df['has_curve'] == False).sum()):,}")
-
-left, right = st.columns([3, 2])
-
-with left:
-    section_heading("Scan View", "Fast decisions. Click a row to inspect in the side panel.")
-
-    display_cols = [
-        "severity",
-        "issue_codes",
-        "verdict",
-        "recommended_max_bid",
-        "resale_mid",
-        "profit_margin_percent",
-        "year",
-        "make",
-        "model",
-        "variant",
-        "odometer_reading",
-        "fuel_type",
-        "transmission",
-        "confidence",
-        "time_remaining_or_date_sold",
-        "price",
-        "bids",
-        "location",
-        "canonical_tag",
-        "url",
+if only_high_value:
+    filtered_df = filtered_df[
+        (filtered_df["profit_value"].fillna(0) >= 5000)
+        | (filtered_df["profit_margin_value"].fillna(0) >= 20)
     ]
-    display_cols = [col for col in display_cols if col in filtered_df.columns]
-    table_df = filtered_df[display_cols].copy()
-    table_df.insert(0, "Select", False)
+if ending_soon_only:
+    filtered_df = filtered_df[filtered_df["time_remaining_hours"].fillna(9999) <= 24]
 
-    edited = st.data_editor(
-        table_df,
-        hide_index=True,
-        use_container_width=True,
-        disabled=[col for col in table_df.columns if col != "Select"],
-        column_config={
-            "Select": st.column_config.CheckboxColumn("Select"),
-            "url": st.column_config.LinkColumn("Listing", display_text="Open"),
-        },
+filtered_df["ranking_score"] = (
+    filtered_df["profit_value"].fillna(0)
+    + filtered_df["profit_margin_value"].fillna(0) * 45
+    + filtered_df["confidence"].fillna(0) * 800
+    - filtered_df["issue_count"].fillna(0) * 400
+)
+filtered_df = filtered_df.sort_values(
+    by=["ranking_score", "profit_value", "confidence", "time_remaining_hours"],
+    ascending=[False, False, False, True],
+    na_position="last",
+)
+
+summary_cols = st.columns(4)
+summary_cards = [
+    ("Visible auctions", f"{len(filtered_df):,}", "After global + radar filters"),
+    ("High value", f"{int((filtered_df['signals'].astype(str).str.contains('🔥')).sum()):,}", "Profit-led opportunities"),
+    ("Risk flagged", f"{int((filtered_df['signals'].astype(str).str.contains('⚠')).sum()):,}", "Needs caution"),
+    ("Ending soon", f"{int((filtered_df['signals'].astype(str).str.contains('⏳')).sum()):,}", "Within 24 hours"),
+]
+for column, (label, value, note) in zip(summary_cols, summary_cards):
+    column.markdown(
+        clean_html(
+            f"""
+            <div class="radar-summary-card">
+                <div class="label">{label}</div>
+                <div class="value">{value}</div>
+                <div class="note">{note}</div>
+            </div>
+            """
+        ),
+        unsafe_allow_html=True,
     )
 
+left, right = st.columns([3.2, 1.8], gap="large")
+
+with left:
+    section_heading("Trading Screen", "Live auctions ranked by profit potential.")
+    table_df = filtered_df.copy()
+    table_df["Current Bid"] = table_df["current_bid_value"].map(lambda value: f"${value:,.0f}" if pd.notna(value) else "N/A")
+    table_df["Max Bid"] = table_df["recommended_max_bid_value"].map(lambda value: f"${value:,.0f}" if pd.notna(value) else "N/A")
+    table_df["Profit"] = table_df["profit_value"].map(lambda value: f"${value:,.0f}" if pd.notna(value) else "N/A")
+    table_df["Confidence"] = table_df["confidence_bucket"].fillna("Unknown")
+    table_df["Time Remaining"] = table_df["time_remaining_or_date_sold"].fillna("Unknown")
+    table_df["Margin"] = table_df["profit_margin_value"].map(lambda value: f"{value:.1f}%" if pd.notna(value) else "N/A")
+    table_df["Listing"] = table_df["url"]
+
+    display_cols = [
+        "signals",
+        "vehicle",
+        "Current Bid",
+        "Max Bid",
+        "Profit",
+        "Confidence",
+        "Time Remaining",
+        "Margin",
+        "location",
+        "Listing",
+    ]
+    available_cols = [column for column in display_cols if column in table_df.columns]
+    radar_table = table_df[available_cols].copy()
+    radar_table.insert(0, "Select", False)
+
+    edited = st.data_editor(
+        radar_table,
+        hide_index=True,
+        use_container_width=True,
+        disabled=[column for column in radar_table.columns if column != "Select"],
+        column_config={
+            "Select": st.column_config.CheckboxColumn("Select"),
+            "Listing": st.column_config.LinkColumn("Listing", display_text="Open"),
+        },
+        key="radar_table_editor",
+    )
     selected_rows = edited[edited["Select"]]
-    selected_url = None
     if len(selected_rows) == 1:
-        selected_url = selected_rows.iloc[0]["url"]
-        st.session_state["ops_selected_url"] = selected_url
+        selected_url = selected_rows.iloc[0].get("Listing")
+        selected_match = filtered_df[filtered_df["url"] == selected_url]
+        if not selected_match.empty:
+            st.session_state["ops_selected_url"] = selected_match.iloc[0]["url"]
     elif len(selected_rows) > 1:
-        st.info("Select one row to inspect it in the side panel.")
+        st.info("Select one auction at a time to inspect it on the right.")
 
 with right:
-    section_heading("Inspect + Fix", "Snapshot for the currently selected listing.")
+    section_heading("Inspect Opportunity", "Use this panel to validate the trade before switching pages.")
     selected_url = st.session_state.get("ops_selected_url")
     if not selected_url:
-        st.info("Select a row on the left to populate this panel.")
+        st.info("Select a row on the trading screen to inspect it.")
     else:
         selected_row = filtered_df[filtered_df["url"] == selected_url]
         if selected_row.empty:
-            st.warning("Selected URL is no longer in the filtered results.")
+            st.warning("Selected listing is no longer visible under the current filters.")
         else:
             row = selected_row.iloc[0]
-            title_parts = [str(row.get("year", "")).strip(), str(row.get("make", "")).strip(),
-                           str(row.get("model", "")).strip(), str(row.get("variant", "")).strip()]
-            title = " ".join(part for part in title_parts if part)
-            st.markdown(f"**{title or 'Listing'}**")
-            st.caption(row.get("url", ""))
-
-            st.markdown("**Verdict / Confidence**")
-            st.write({
-                "verdict": row.get("verdict", "N/A"),
-                "confidence": row.get("confidence", "N/A"),
-                "issues": row.get("issue_summary", ""),
-            })
-
-            st.markdown("**Pricing**")
-            st.write({
-                "recommended_max_bid": row.get("recommended_max_bid", ""),
-                "resale_mid": row.get("resale_mid", ""),
-                "profit_margin_percent": row.get("profit_margin_percent", ""),
-                "expected_profit": row.get("expected_profit", ""),
-            })
-
-            st.markdown("**Actions**")
+            st.markdown(f"**{row.get('vehicle', 'Listing')}**")
+            st.caption(_safe_text(row.get("url")))
+            st.metric("Signals", _safe_text(row.get("signals")) or "·")
+            st.metric("Risk Level", _safe_text(row.get("risk_level")) or "Unknown")
+            st.metric("Confidence", _safe_text(row.get("confidence_bucket")) or "Unknown")
+            st.metric("Current Bid", f"${row['current_bid_value']:,.0f}" if pd.notna(row.get("current_bid_value")) else "N/A")
+            st.metric("Max Bid", f"${row['recommended_max_bid_value']:,.0f}" if pd.notna(row.get("recommended_max_bid_value")) else "N/A")
+            st.metric("Profit", f"${row['profit_value']:,.0f}" if pd.notna(row.get("profit_value")) else "N/A")
+            st.markdown("**Issue Summary**")
+            st.write(_safe_text(row.get("issue_summary")) or "No issues surfaced.")
             if row.get("url"):
                 link_button = getattr(st, "link_button", None)
                 if callable(link_button):
                     link_button("Open listing", row.get("url"))
                 else:
                     st.markdown(f"[Open listing]({row.get('url')})")
-            if st.button("Open detail view", key="ops_open_detail"):
-                st.session_state["ops_selected_url"] = row.get("url")
+            if st.button("Open detail view", key="radar_open_detail"):
                 try:
                     st.switch_page("pages/02_DETAIL.py")
                 except Exception:
                     st.info("Open the Detail page from the sidebar to view this listing.")
-            if st.button("Open curves", key="ops_open_curves"):
-                st.session_state["ops_selected_tag"] = row.get("canonical_tag")
+            if st.button("Open AI analysis", key="radar_open_ai"):
+                st.session_state["ai_focus_url"] = row.get("url")
                 try:
-                    st.switch_page("pages/03_CURVES.py")
+                    st.switch_page("pages/6_AI_ANALYSIS.py")
                 except Exception:
-                    st.info("Open the Curves page from the sidebar to view this tag.")
+                    st.info("Open AI Analysis from the sidebar to inspect this listing.")

@@ -24,6 +24,7 @@ from shared.curves import (
     resolve_curve_canonical_tag,
 )
 from shared.data_loader import dataset_path, ensure_datasets_available
+from shared.global_filters import apply_global_sidebar_filters, render_global_sidebar_filters
 from shared.location_utils import extract_state
 from shared.repair_features import build_repair_features
 from shared.repair_pricing import (
@@ -37,6 +38,7 @@ from shared.styling import clean_html, display_banner, inject_global_styles, pag
 
 
 st.set_page_config(page_title="AI Analysis (Curve)", layout="wide")
+render_global_sidebar_filters()
 inject_global_styles()
 display_banner()
 page_intro(
@@ -2485,6 +2487,48 @@ st.markdown(
             flex-wrap: wrap;
             gap: 0.3rem;
         }
+        .confidence-badge-row {
+            margin-top: 0.55rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.45rem;
+        }
+        .confidence-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.32rem 0.58rem;
+            border-radius: 999px;
+            border: 1px solid rgba(39, 182, 255, 0.28);
+            background: rgba(11, 15, 20, 0.72);
+            font-size: 0.62rem;
+        }
+        .confidence-badge-label {
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        .confidence-badge-value {
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            color: rgba(255, 255, 255, 0.92);
+        }
+        .confidence-badge.badge-high {
+            border-color: rgba(44, 255, 154, 0.5);
+            background: rgba(44, 255, 154, 0.1);
+        }
+        .confidence-badge.badge-medium {
+            border-color: rgba(255, 179, 71, 0.55);
+            background: rgba(255, 179, 71, 0.1);
+        }
+        .confidence-badge.badge-low {
+            border-color: rgba(255, 77, 77, 0.55);
+            background: rgba(255, 77, 77, 0.1);
+        }
+        .confidence-badge.badge-neutral {
+            border-color: rgba(39, 182, 255, 0.28);
+            background: rgba(39, 182, 255, 0.08);
+        }
         .chip {
             display: inline-flex;
             align-items: center;
@@ -2857,6 +2901,14 @@ output["verdict_label"] = output["computed_verdict"].apply(lambda value: _map_ve
 output["verdict_class"] = output["computed_verdict"].apply(lambda value: _map_verdict_label(str(value))[1])
 
 filtered_output = output.copy()
+filtered_output = apply_global_sidebar_filters(
+    filtered_output,
+    state_columns=("location_state", "rego_state", "location"),
+    vehicle_type_columns=("body_type", "body"),
+    margin_columns=("profit_margin_value", "profit_margin_percent"),
+    canonical_tag_column="canonical_tag",
+    curve_tags=allowed_tags,
+)
 if group_filter != "All":
     filtered_output = filtered_output[filtered_output["canonical_tag"] == group_filter]
 
@@ -2950,6 +3002,64 @@ def _profit_tier_class(value: Optional[float]) -> str:
     if numeric >= 10:
         return "profit-tier-mid"
     return "profit-tier-low"
+
+
+def _data_completeness_label(row: pd.Series) -> str:
+    checks = [
+        bool(_safe_text(row.get("canonical_tag"), fallback="").strip()),
+        bool(_safe_text(row.get("normalized_condition_text"), fallback="").strip()),
+        parse_numeric(row.get("odometer_reading")) is not None,
+        parse_currency(row.get("price")) is not None,
+        bool(_curve_key_for_row(row)),
+    ]
+    score = sum(1 for check in checks if check)
+    if score >= 5:
+        return "High"
+    if score >= 3:
+        return "Medium"
+    return "Low"
+
+
+def _risk_level_label(row: pd.Series, combined_flags: list[str], defect_profile: dict[str, object]) -> str:
+    if int(defect_profile.get("mechanical", 0) or 0) >= 1 or int(defect_profile.get("structural", 0) or 0) >= 1:
+        return "High"
+    if len(combined_flags) >= 4:
+        return "High"
+    if len(combined_flags) >= 2 or int(defect_profile.get("replacement", 0) or 0) >= 1:
+        return "Medium"
+    return "Low"
+
+
+def _badge_tone(value: str) -> str:
+    normalized = _safe_text(value, fallback="").strip().lower()
+    if normalized == "high":
+        return "badge-high"
+    if normalized == "medium":
+        return "badge-medium"
+    if normalized == "low":
+        return "badge-low"
+    return "badge-neutral"
+
+
+def _confidence_badges_html(curve_confidence: str, data_completeness: str, risk_level: str) -> str:
+    badge_values = [
+        ("Curve Confidence", curve_confidence),
+        ("Data Completeness", data_completeness),
+        ("Risk Level", risk_level),
+    ]
+    badges = []
+    for label, value in badge_values:
+        badges.append(
+            "".join(
+                [
+                    f'<div class="confidence-badge {_badge_tone(value)}">',
+                    f'<span class="confidence-badge-label">{html.escape(label)}</span>',
+                    f'<span class="confidence-badge-value">{html.escape(value.upper())}</span>',
+                    "</div>",
+                ]
+            )
+        )
+    return f'<div class="confidence-badge-row">{"".join(badges)}</div>'
 
 
 def render_listing_card(row: pd.Series) -> None:
@@ -3049,6 +3159,14 @@ def render_listing_card(row: pd.Series) -> None:
         odometer_value = row.get("odometer_reading")
     km_label, km_chip_class = _km_pill(odometer_value, row.get("year"))
     location_badge = f"({location_state})" if location_state else ""
+    curve_confidence_label = _curve_confidence_label(row.get("confidence"))
+    data_completeness_label = _data_completeness_label(row)
+    risk_level_label = _risk_level_label(row, combined_flags, defect_profile)
+    confidence_badges_html = _confidence_badges_html(
+        curve_confidence_label,
+        data_completeness_label,
+        risk_level_label,
+    )
 
     card_html = "".join(
         [
@@ -3080,6 +3198,7 @@ def render_listing_card(row: pd.Series) -> None:
             _build_metric_box("Profit %", profit_pct_display),
             _build_metric_box("Score /100", score_100_display),
             "</div>",
+            confidence_badges_html,
             '<div class="chip-row">',
             f'<span class="{km_chip_class}">{html.escape(km_label)}</span>',
             f'<span class="{rego_chip_class}">Rego: {html.escape(rego_text)}</span>',
