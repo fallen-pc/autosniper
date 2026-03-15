@@ -56,6 +56,37 @@ def test_validate_curve_table_rejects_upward_drift():
     assert any("Curve drift detected" in error for error in errors)
 
 
+def test_build_curve_monotonicity_report_tracks_year_reversals_as_warnings():
+    curves_df = pd.DataFrame(
+        [
+            {
+                "canonical_tag": "demo_tag",
+                "anchor_year": 2020,
+                "km_bucket": 50000,
+                "price_low": 18000,
+                "price_mid": 20000,
+                "price_high": 22000,
+            },
+            {
+                "canonical_tag": "demo_tag",
+                "anchor_year": 2021,
+                "km_bucket": 50000,
+                "price_low": 17500,
+                "price_mid": 19500,
+                "price_high": 21500,
+            },
+        ]
+    )
+
+    report_df = gov.build_curve_monotonicity_report(curves_df)
+    errors = gov.validate_curve_table(curves_df)
+
+    assert len(errors) == 0
+    assert not report_df.empty
+    assert set(report_df["severity"]) == {"warning"}
+    assert set(report_df["issue_type"]) == {"year_reversal"}
+
+
 def test_build_curve_coverage_report_marks_missing_tags():
     static_df = pd.DataFrame(
         [

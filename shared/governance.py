@@ -184,18 +184,10 @@ def validate_curve_table(curves_df: pd.DataFrame) -> list[str]:
         ].head(5)
         errors.append(f"curves.csv contains invalid price bands: {sample.to_dict(orient='records')}")
 
-    for (canonical_tag, anchor_year), subset in working.groupby(["canonical_tag", "anchor_year"], sort=True):
-        ordered = subset.sort_values("km_bucket")
-        if not ordered["km_bucket"].is_unique:
-            continue
-        for column in ("price_low", "price_mid", "price_high"):
-            deltas = ordered[column].diff().fillna(0)
-            if (deltas > 0).any():
-                errors.append(
-                    f"Curve drift detected for {canonical_tag}/{int(anchor_year)}: "
-                    f"{column} increases with km_bucket."
-                )
-                break
+    monotonicity_df = build_curve_monotonicity_report(working)
+    if not monotonicity_df.empty:
+        hard_failures = monotonicity_df[monotonicity_df["severity"] == "error"]
+        errors.extend(hard_failures["message"].dropna().astype(str).tolist())
     return errors
 
 
@@ -372,6 +364,182 @@ def render_curve_coverage_markdown(coverage_df: pd.DataFrame) -> str:
             f"{int(row['group_map_rows'])} | {row['sources']} |"
         )
     return "\n".join(lines) + "\n"
+
+
+def build_curve_monotonicity_report(curves_df: pd.DataFrame | None) -> pd.DataFrame:
+    columns = [
+        "canonical_tag",
+        "anchor_year",
+        "km_bucket",
+        "column_name",
+        "issue_type",
+        "severity",
+        "message",
+    ]
+    if curves_df is None or curves_df.empty:
+        return pd.DataFrame(columns=columns)
+
+    working = curves_df.copy()
+    for column in ("canonical_tag",):
+        if column not in working.columns:
+            return pd.DataFrame(columns=columns)
+    numeric_columns = ["anchor_year", "km_bucket", "price_low", "price_mid", "price_high"]
+    for column in numeric_columns:
+        if column not in working.columns:
+            return pd.DataFrame(columns=columns)
+        working[column] = pd.to_numeric(working[column], errors="coerce")
+    working["canonical_tag"] = working["canonical_tag"].astype(str).str.strip()
+    working = working.dropna(subset=["anchor_year", "km_bucket", "price_low", "price_mid", "price_high"])
+    if working.empty:
+        return pd.DataFrame(columns=columns)
+
+    issues: list[dict[str, object]] = []
+    price_columns = ("price_low", "price_mid", "price_high")
+
+    for (canonical_tag, anchor_year), subset in working.groupby(["canonical_tag", "anchor_year"], sort=True):
+        ordered = subset.sort_values("km_bucket")
+        if not ordered["km_bucket"].is_unique:
+            continue
+        for column_name in price_columns:
+            deltas = ordered[column_name].diff()
+            problem_rows = ordered.loc[deltas > 0, ["km_bucket", column_name]]
+            for idx in problem_rows.index.tolist():
+                current_row = ordered.loc[idx]
+                previous_idx = ordered.index.get_loc(idx) - 1
+                previous_row = ordered.iloc[previous_idx]
+                issues.append(
+                    {
+                        "canonical_tag": canonical_tag,
+                        "anchor_year": int(anchor_year),
+                        "km_bucket": int(current_row["km_bucket"]),
+                        "column_name": column_name,
+                        "issue_type": "km_increase",
+                        "severity": "error",
+                        "message": (
+                            f"Curve drift detected for {canonical_tag}/{int(anchor_year)}: "
+                            f"{column_name} increases from km {int(previous_row['km_bucket'])} "
+                            f"({int(previous_row[column_name])}) to km {int(current_row['km_bucket'])} "
+                            f"({int(current_row[column_name])})."
+                        ),
+                    }
+                )
+
+    for (canonical_tag, km_bucket), subset in working.groupby(["canonical_tag", "km_bucket"], sort=True):
+        ordered = subset.sort_values("anchor_year")
+        if not ordered["anchor_year"].is_unique:
+            continue
+        for column_name in price_columns:
+            deltas = ordered[column_name].diff()
+            problem_rows = ordered.loc[deltas < 0, ["anchor_year", column_name]]
+            for idx in problem_rows.index.tolist():
+                current_row = ordered.loc[idx]
+                previous_idx = ordered.index.get_loc(idx) - 1
+                previous_row = ordered.iloc[previous_idx]
+                issues.append(
+                    {
+                        "canonical_tag": canonical_tag,
+                        "anchor_year": int(current_row["anchor_year"]),
+                        "km_bucket": int(km_bucket),
+                        "column_name": column_name,
+                        "issue_type": "year_reversal",
+                        "severity": "warning",
+                        "message": (
+                            f"Anchor-year reversal for {canonical_tag}/km {int(km_bucket)}: "
+                            f"{column_name} drops from year {int(previous_row['anchor_year'])} "
+                            f"({int(previous_row[column_name])}) to year {int(current_row['anchor_year'])} "
+                            f"({int(current_row[column_name])})."
+                        ),
+                    }
+                )
+
+    report_df = pd.DataFrame(issues, columns=columns)
+    if report_df.empty:
+        return report_df
+    return report_df.sort_values(
+        by=["severity", "canonical_tag", "anchor_year", "km_bucket", "column_name"],
+        ascending=[True, True, True, True, True],
+    ).reset_index(drop=True)
+
+
+def summarize_curve_monotonicity(report_df: pd.DataFrame) -> dict[str, int]:
+    if report_df is None or report_df.empty:
+        return {"issues": 0, "errors": 0, "warnings": 0}
+    severity = report_df["severity"].astype(str).str.lower()
+    return {
+        "issues": int(len(report_df)),
+        "errors": int((severity == "error").sum()),
+        "warnings": int((severity == "warning").sum()),
+    }
+
+
+def render_curve_monotonicity_markdown(report_df: pd.DataFrame) -> str:
+    summary = summarize_curve_monotonicity(report_df)
+    lines = [
+        "# Curve Monotonicity Report",
+        "",
+        f"- Total issues: {summary['issues']}",
+        f"- Errors: {summary['errors']}",
+        f"- Warnings: {summary['warnings']}",
+        "",
+    ]
+    if report_df is None or report_df.empty:
+        lines.append("No monotonicity issues detected.")
+        return "\n".join(lines) + "\n"
+
+    lines.extend(
+        [
+            "| severity | issue_type | canonical_tag | anchor_year | km_bucket | column_name |",
+            "| --- | --- | --- | ---: | ---: | --- |",
+        ]
+    )
+    for _, row in report_df.head(100).iterrows():
+        lines.append(
+            f"| {row['severity']} | {row['issue_type']} | {row['canonical_tag']} | "
+            f"{int(row['anchor_year'])} | {int(row['km_bucket'])} | {row['column_name']} |"
+        )
+    return "\n".join(lines) + "\n"
+
+
+def _load_report_csv(path: Path) -> pd.DataFrame:
+    if not path.exists():
+        return pd.DataFrame()
+    try:
+        return pd.read_csv(path)
+    except (ValueError, pd.errors.EmptyDataError):
+        return pd.DataFrame()
+
+
+def write_governance_report_bundle(report_dir: Path) -> dict[str, object]:
+    static_df = _load_report_csv(dataset_path("vehicle_static_details.csv"))
+    group_map_df = _load_report_csv(dataset_path("restricted_group_map.csv"))
+    curves_df = _load_report_csv(dataset_path("curves.csv"))
+
+    coverage_df = build_curve_coverage_report(static_df, group_map_df, curves_df)
+    coverage_summary = summarize_curve_coverage(coverage_df)
+    monotonicity_df = build_curve_monotonicity_report(curves_df)
+    monotonicity_summary = summarize_curve_monotonicity(monotonicity_df)
+
+    report_dir.mkdir(parents=True, exist_ok=True)
+    coverage_csv_path = report_dir / "curve_coverage.csv"
+    coverage_md_path = report_dir / "curve_coverage.md"
+    monotonicity_csv_path = report_dir / "curve_monotonicity.csv"
+    monotonicity_md_path = report_dir / "curve_monotonicity.md"
+
+    coverage_df.to_csv(coverage_csv_path, index=False)
+    coverage_md_path.write_text(render_curve_coverage_markdown(coverage_df), encoding="utf-8")
+    monotonicity_df.to_csv(monotonicity_csv_path, index=False)
+    monotonicity_md_path.write_text(render_curve_monotonicity_markdown(monotonicity_df), encoding="utf-8")
+
+    return {
+        "coverage_summary": coverage_summary,
+        "monotonicity_summary": monotonicity_summary,
+        "paths": {
+            "coverage_csv": coverage_csv_path,
+            "coverage_md": coverage_md_path,
+            "monotonicity_csv": monotonicity_csv_path,
+            "monotonicity_md": monotonicity_md_path,
+        },
+    }
 
 
 def classify_dataset_deltas(

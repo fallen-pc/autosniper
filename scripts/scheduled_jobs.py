@@ -6,6 +6,7 @@ import json
 import os
 import sys
 import time
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable
 import subprocess
@@ -20,11 +21,15 @@ if str(ROOT_DIR) not in sys.path:
 from scripts import extract_links, extract_vehicle_details, update_bids, update_master
 from scripts.active_monitor import active_urls_from_frame, diff_changed_listing_urls, load_live_active_df, revalue_active_listings
 from shared.data_loader import dataset_path
+from shared.governance import write_governance_report_bundle
 from shared.sold_cleaning import is_compliance_slug, normalize_listing_fields
+from shared.scraper_health import write_scraper_health_report
+from shared.telegram_alerts import send_telegram_message
 
 CHECK_URL = os.getenv("AUTOSNIPER_HEALTHCHECK_URL", "https://www.grays.com/")
 CHECK_INTERVAL_SECONDS = int(os.getenv("AUTOSNIPER_NET_CHECK_INTERVAL_SEC", "300"))
 MAX_WAIT_HOURS = int(os.getenv("AUTOSNIPER_MAX_WAIT_HOURS", "24"))
+GOVERNANCE_REPORT_DIR = ROOT_DIR / "output" / "governance"
 
 LOCK_PATH = ROOT_DIR / "logs" / "scrape.lock"
 LOCK_TTLS = {
@@ -35,6 +40,22 @@ LOCK_TTLS = {
 }
 
 COMPLETED_STATUSES = {"sold", "referred", "canceled", "cancelled", "closed"}
+
+
+def _send_job_failure_alert(job: str, detail: str) -> None:
+    detail_text = str(detail).strip()
+    if not detail_text:
+        return
+    message = (
+        "Pipeline failure\n"
+        f"Job: {job}\n"
+        f"Time: {datetime.now(timezone.utc).isoformat()}\n"
+        f"Detail: {detail_text}"
+    )
+    try:
+        send_telegram_message(message)
+    except Exception:
+        return
 
 
 def _has_internet() -> bool:
@@ -159,6 +180,15 @@ def run_daily_pipeline() -> None:
     _run_autotrader_scrape()
     update_master.update_master_database()
     revalue_active_listings(stale_minutes=0, force_refresh=True)
+    report_bundle = write_governance_report_bundle(GOVERNANCE_REPORT_DIR)
+    coverage_summary = report_bundle["coverage_summary"]
+    monotonicity_summary = report_bundle["monotonicity_summary"]
+    print(
+        "Governance reports updated: "
+        f"coverage missing={coverage_summary['missing_tags']}, "
+        f"monotonicity errors={monotonicity_summary['errors']}, "
+        f"warnings={monotonicity_summary['warnings']}."
+    )
 
 
 def run_hourly_monitor() -> None:
@@ -225,7 +255,10 @@ def main() -> None:
     args = parser.parse_args()
 
     if not _wait_for_internet(MAX_WAIT_HOURS):
-        print("No internet within max wait window; exiting.")
+        message = "No internet within max wait window; exiting."
+        print(message)
+        write_scraper_health_report(job_name=args.job, job_status="failure", error_message=message)
+        _send_job_failure_alert(args.job, message)
         return
 
     if not _acquire_lock(args.job):
@@ -240,6 +273,12 @@ def main() -> None:
             run_vic_refresh_12h()
         elif args.job == "vic-hourly":
             run_vic_refresh_hourly()
+        write_scraper_health_report(job_name=args.job, job_status="success")
+    except Exception as exc:
+        error_message = f"{type(exc).__name__}: {exc}"
+        write_scraper_health_report(job_name=args.job, job_status="failure", error_message=error_message)
+        _send_job_failure_alert(args.job, error_message)
+        raise
     finally:
         _release_lock()
 

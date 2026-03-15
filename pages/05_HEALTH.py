@@ -6,6 +6,7 @@ import streamlit as st
 
 from shared.data_loader import dataset_path
 from shared.ops_utils import load_active_df, load_static_df, load_valuations_df
+from shared.scraper_health import load_scraper_health_report
 from shared.styling import display_banner, inject_global_styles, page_intro, section_heading
 
 
@@ -37,6 +38,8 @@ sold_path = dataset_path("sold_cars.csv")
 referred_path = dataset_path("referred_cars.csv")
 failures_path = dataset_path("excluded_listings.csv")
 legacy_failures_path = dataset_path("scrape_failures.csv")
+curve_coverage_report_path = Path("output/governance/curve_coverage.csv")
+curve_monotonicity_report_path = Path("output/governance/curve_monotonicity.csv")
 
 links_df = _load_csv(links_path)
 static_df = load_static_df()
@@ -44,6 +47,49 @@ active_df = load_active_df()
 valuations_df = load_valuations_df()
 sold_df = _load_csv(sold_path)
 referred_df = _load_csv(referred_path)
+health_report = load_scraper_health_report()
+
+if health_report:
+    section_heading("Automated Snapshot", "Latest scheduler-written health signals.")
+    generated_at = str(health_report.get("generated_at") or "")
+    job_name = str(health_report.get("job_name") or "")
+    job_status = str(health_report.get("job_status") or "")
+    error_message = str(health_report.get("error_message") or "")
+    if generated_at:
+        st.caption(f"Generated: {generated_at}")
+    if job_name or job_status:
+        st.write({"last_job": job_name or "unknown", "job_status": job_status or "unknown"})
+    if error_message:
+        st.error(error_message)
+
+    stage_metrics = health_report.get("stage_metrics") or {}
+    if stage_metrics:
+        stage_df = pd.DataFrame(stage_metrics.values())
+        if not stage_df.empty:
+            st.dataframe(stage_df, use_container_width=True, hide_index=True)
+
+    stale_datasets = health_report.get("stale_datasets") or []
+    if stale_datasets:
+        st.warning("Stale or degraded datasets: " + ", ".join(sorted(set(str(value) for value in stale_datasets))))
+
+    failure_reasons = pd.DataFrame(health_report.get("top_failure_reasons") or [])
+    if not failure_reasons.empty:
+        section_heading("Top Failure Reasons", "Latest aggregated pipeline failure reasons.")
+        st.dataframe(failure_reasons, use_container_width=True, hide_index=True)
+
+if curve_coverage_report_path.exists() or curve_monotonicity_report_path.exists():
+    section_heading("Governance Reports", "Automated curve coverage and monotonicity outputs.")
+    governance_cols = st.columns(4)
+    if curve_coverage_report_path.exists():
+        coverage_df = pd.read_csv(curve_coverage_report_path)
+        missing_curves = int((~coverage_df["has_curve"]).sum()) if "has_curve" in coverage_df.columns else 0
+        governance_cols[0].metric("Observed Tags", f"{len(coverage_df):,}")
+        governance_cols[1].metric("Missing Curves", f"{missing_curves:,}")
+    if curve_monotonicity_report_path.exists():
+        monotonicity_df = pd.read_csv(curve_monotonicity_report_path)
+        severity = monotonicity_df["severity"].astype(str).str.lower() if "severity" in monotonicity_df.columns else pd.Series(dtype=str)
+        governance_cols[2].metric("Curve Errors", f"{int((severity == 'error').sum()):,}")
+        governance_cols[3].metric("Curve Warnings", f"{int((severity == 'warning').sum()):,}")
 
 section_heading("Pipeline Counts", "Are the numbers flowing correctly?")
 metrics = st.columns(6)

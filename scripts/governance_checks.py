@@ -13,23 +13,19 @@ if __package__ in (None, ""):
     from shared.curve_versioning import snapshot_curve_version
     from shared.data_loader import dataset_path
     from shared.governance import (
-        build_curve_coverage_report,
         classify_dataset_deltas,
-        render_curve_coverage_markdown,
-        summarize_curve_coverage,
         validate_curves_dataset,
         validate_dataset_contracts,
+        write_governance_report_bundle,
     )
 else:  # pragma: no cover
     from shared.curve_versioning import snapshot_curve_version
     from shared.data_loader import dataset_path
     from shared.governance import (
-        build_curve_coverage_report,
         classify_dataset_deltas,
-        render_curve_coverage_markdown,
-        summarize_curve_coverage,
         validate_curves_dataset,
         validate_dataset_contracts,
+        write_governance_report_bundle,
     )
 
 
@@ -37,15 +33,6 @@ DEFAULT_REPORT_DIR = Path("output/governance")
 CURVES_PRIMARY_FILE = "CSV_data/restricted/curves.csv"
 CURVES_MANIFEST_FILE = "CSV_data/restricted/versions/curves_manifest.csv"
 CHANGELOG_FILE = "CHANGELOG.md"
-
-
-def _load_csv(path: Path) -> pd.DataFrame:
-    if not path.exists():
-        return pd.DataFrame()
-    try:
-        return pd.read_csv(path)
-    except (ValueError, pd.errors.EmptyDataError):
-        return pd.DataFrame()
 
 
 def _write_text(path: Path, content: str) -> None:
@@ -92,20 +79,6 @@ def _effective_allowed_dataset_changes(
     return allowlist
 
 
-def _build_coverage_outputs(report_dir: Path) -> tuple[pd.DataFrame, dict[str, int], Path, Path]:
-    static_df = _load_csv(dataset_path("vehicle_static_details.csv"))
-    group_map_df = _load_csv(dataset_path("restricted_group_map.csv"))
-    curves_df = _load_csv(dataset_path("curves.csv"))
-    coverage_df = build_curve_coverage_report(static_df, group_map_df, curves_df)
-    summary = summarize_curve_coverage(coverage_df)
-    csv_path = report_dir / "curve_coverage.csv"
-    md_path = report_dir / "curve_coverage.md"
-    report_dir.mkdir(parents=True, exist_ok=True)
-    coverage_df.to_csv(csv_path, index=False)
-    _write_text(md_path, render_curve_coverage_markdown(coverage_df))
-    return coverage_df, summary, csv_path, md_path
-
-
 def _append_job_summary(path: Path) -> None:
     summary_file = os.getenv("GITHUB_STEP_SUMMARY", "").strip()
     if not summary_file:
@@ -125,18 +98,28 @@ def command_check(args: argparse.Namespace) -> int:
         errors.extend(validate_curves_dataset())
 
     coverage_summary: dict[str, int] | None = None
-    report_paths: tuple[Path, Path] | None = None
+    monotonicity_summary: dict[str, int] | None = None
+    report_paths: dict[str, Path] | None = None
     if not args.skip_coverage:
-        _, coverage_summary, csv_path, md_path = _build_coverage_outputs(args.report_dir)
-        report_paths = (csv_path, md_path)
+        report_bundle = write_governance_report_bundle(args.report_dir)
+        coverage_summary = report_bundle["coverage_summary"]
+        monotonicity_summary = report_bundle["monotonicity_summary"]
+        report_paths = report_bundle["paths"]
         print(
             "[governance] curve coverage "
             f"observed_tags={coverage_summary['observed_tags']} "
             f"covered_tags={coverage_summary['covered_tags']} "
             f"missing_tags={coverage_summary['missing_tags']}"
         )
+        print(
+            "[governance] curve monotonicity "
+            f"issues={monotonicity_summary['issues']} "
+            f"errors={monotonicity_summary['errors']} "
+            f"warnings={monotonicity_summary['warnings']}"
+        )
         if args.publish_summary:
-            _append_job_summary(md_path)
+            _append_job_summary(report_paths["coverage_md"])
+            _append_job_summary(report_paths["monotonicity_md"])
 
     if not args.skip_dataset_delta:
         changed_paths = _git_changed_paths(args.base_ref, args.head_ref)
@@ -157,8 +140,10 @@ def command_check(args: argparse.Namespace) -> int:
             )
 
     if report_paths:
-        print(f"[governance] coverage report -> {report_paths[0]}")
-        print(f"[governance] coverage summary -> {report_paths[1]}")
+        print(f"[governance] coverage report -> {report_paths['coverage_csv']}")
+        print(f"[governance] coverage summary -> {report_paths['coverage_md']}")
+        print(f"[governance] monotonicity report -> {report_paths['monotonicity_csv']}")
+        print(f"[governance] monotonicity summary -> {report_paths['monotonicity_md']}")
 
     if errors:
         for error in errors:
@@ -170,17 +155,29 @@ def command_check(args: argparse.Namespace) -> int:
 
 
 def command_coverage_report(args: argparse.Namespace) -> int:
-    _, summary, csv_path, md_path = _build_coverage_outputs(args.report_dir)
-    print(f"[governance] coverage report -> {csv_path}")
-    print(f"[governance] markdown report -> {md_path}")
+    report_bundle = write_governance_report_bundle(args.report_dir)
+    summary = report_bundle["coverage_summary"]
+    monotonicity_summary = report_bundle["monotonicity_summary"]
+    paths = report_bundle["paths"]
+    print(f"[governance] coverage report -> {paths['coverage_csv']}")
+    print(f"[governance] markdown report -> {paths['coverage_md']}")
+    print(f"[governance] monotonicity report -> {paths['monotonicity_csv']}")
+    print(f"[governance] monotonicity markdown -> {paths['monotonicity_md']}")
     print(
-        "[governance] summary "
+        "[governance] coverage summary "
         f"observed_tags={summary['observed_tags']} "
         f"covered_tags={summary['covered_tags']} "
         f"missing_tags={summary['missing_tags']}"
     )
+    print(
+        "[governance] monotonicity summary "
+        f"issues={monotonicity_summary['issues']} "
+        f"errors={monotonicity_summary['errors']} "
+        f"warnings={monotonicity_summary['warnings']}"
+    )
     if args.publish_summary:
-        _append_job_summary(md_path)
+        _append_job_summary(paths["coverage_md"])
+        _append_job_summary(paths["monotonicity_md"])
     return 0
 
 

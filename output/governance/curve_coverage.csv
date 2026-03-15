@@ -1,0 +1,21 @@
+canonical_tag,observed_rows,static_rows,group_map_rows,sources,curve_rows,anchor_year_count,anchor_years,has_curve,status
+hyundai_i30_active_petrol_auto_hatch_gd,36,0,36,sold,15,3,"2013, 2015, 2016",True,covered
+hyundai_i30_active_petrol_auto_hatch_pd,19,1,18,"active, sold, static",5,1,2017,True,covered
+toyota_yaris_yr_petrol_auto_hatch_ncp90r,19,1,18,"active, sold, static",15,3,"2008, 2010, 2011",True,covered
+mazda_3_neo_petrol_auto_hatch_bl,17,0,17,"active, sold",15,3,"2009, 2011, 2013",True,covered
+toyota_corolla_ascent_petrol_auto_sedan_zre152r,17,0,17,sold,15,3,"2009, 2011, 2013",True,covered
+mazda_3_maxx_sport_petrol_auto_hatch_bl,8,0,8,"active, sold",15,3,"2009, 2011, 2013",True,covered
+toyota_corolla_ascent_petrol_auto_hatch_zre18x,8,1,7,"active, sold, static",20,4,"2013, 2015, 2017, 2018",True,covered
+toyota_corolla_ascent-sport_petrol_auto_hatch_zre18x,5,0,5,sold,15,3,"2014, 2016, 2018",True,covered
+toyota_camry_ascent_hybrid_auto_sedan_axvh71r,4,1,3,"active, sold, static",20,4,"2018, 2020, 2022, 2024",True,covered
+toyota_corolla_ascent_petrol_auto_sedan_zre172r,3,0,3,sold,15,3,"2015, 2017, 2019",True,covered
+mazda_3_maxx_petrol_auto_hatch_bl,2,0,2,sold,15,3,"2009, 2011, 2013",True,covered
+mazda_3_maxx-sport_petrol_auto_hatch_bl10f1,1,1,0,static,15,3,"2009, 2011, 2013",True,covered
+mazda_3_neo_petrol_auto_hatch_bl10f1,1,1,0,static,15,3,"2009, 2011, 2013",True,covered
+toyota_camry_ascent_petrol_auto_sedan_asv70r,1,0,1,sold,15,3,"2018, 2020, 2022",True,covered
+toyota_corolla_ascent-sport_hybrid_auto_hatch_zwe211r,1,0,1,sold,15,3,"2020, 2021, 2022",True,covered
+mazda_3_2.0_petrol_auto_hatch_bl,0,0,0,,15,3,"2009, 2011, 2013",True,covered
+mazda_3_neo_sport_petrol_auto_hatch_bl,0,0,0,,15,3,"2009, 2011, 2013",True,covered
+mazda_3_touring_petrol_auto_hatch_bl,0,0,0,,15,3,"2009, 2011, 2013",True,covered
+toyota_corolla_ascent-sport_hybrid_auto_hatch_zwe219r,0,0,0,,10,2,"2024, 2025",True,covered
+toyota_corolla_ascent-sport_petrol_auto_hatch_mzea12r,0,0,0,,15,3,"2019, 2021, 2024",True,covered
