@@ -413,7 +413,16 @@ curve_tags = list_curve_tags(load_curves())
 active_scope_df = active_live_df.copy()
 if not valuations_df.empty and not active_scope_df.empty:
     valuation_scope_cols = ["url"]
-    for column in ("profit_margin_percent", "profit_margin_value", "expected_profit", "expected_profit_value"):
+    for column in (
+        "profit_margin_percent",
+        "profit_margin_value",
+        "expected_profit",
+        "expected_profit_value",
+        "confidence",
+        "score_out_of_10",
+        "score_value",
+        "analysis_timestamp",
+    ):
         if column in valuations_df.columns and column not in valuation_scope_cols:
             valuation_scope_cols.append(column)
     active_scope_df = active_scope_df.merge(
@@ -705,6 +714,30 @@ if not valuations_df.empty and "analysis_timestamp" in valuations_df.columns:
             ai_latest_ts = ai_latest_ts.replace(tzinfo=timezone.utc)
 ai_last_text = format_last_run(ai_latest_ts)
 ai_avg_score = valuations_df["score_value"].dropna().mean() if "score_value" in valuations_df else None
+transparency_confidence_avg = None
+transparency_confidence_share = None
+transparency_profit_df = pd.DataFrame()
+if not active_scope_df.empty:
+    confidence_series = pd.to_numeric(active_scope_df.get("confidence"), errors="coerce").dropna()
+    if not confidence_series.empty:
+        transparency_confidence_avg = float(confidence_series.mean())
+        transparency_confidence_share = float((confidence_series >= 0.75).mean())
+
+    profit_series = pd.to_numeric(active_scope_df.get("expected_profit_value"), errors="coerce")
+    if profit_series.notna().any():
+        profit_bands = pd.cut(
+            profit_series,
+            bins=[-10_000_000, 0, 2_000, 5_000, 10_000, 100_000_000],
+            labels=["<= $0", "$1-$2k", "$2k-$5k", "$5k-$10k", "$10k+"],
+            include_lowest=True,
+        )
+        transparency_profit_df = (
+            pd.DataFrame({"Profit Band": profit_bands})
+            .dropna()
+            .value_counts()
+            .rename("Listings")
+            .reset_index()
+        )
 
 
 def _format_number(value: float | int | None) -> str:
@@ -743,6 +776,50 @@ if not scored_df.empty and "hit" in scored_df.columns:
     if settled_count:
         accuracy = valid_hits.astype(float).mean()
         accuracy_display = f"{accuracy * 100:,.1f}%"
+
+section_heading("Investor Transparency", "Expose coverage, confidence, and profit-shape health for the current filtered universe.")
+transparency_cols = st.columns(3)
+transparency_cols[0].metric(
+    "Curve Coverage %",
+    f"{curve_coverage_pct * 100:,.1f}%" if curve_coverage_pct is not None else "N/A",
+    f"{active_curve_count:,} with curves / {active_no_curve_count:,} without",
+)
+transparency_cols[1].metric(
+    "Model Confidence",
+    f"{transparency_confidence_avg * 100:,.1f}%" if transparency_confidence_avg is not None else "N/A",
+    (
+        f"{transparency_confidence_share * 100:,.0f}% high-confidence listings"
+        if transparency_confidence_share is not None
+        else "No active confidence data"
+    ),
+)
+transparency_cols[2].metric(
+    "Observed Accuracy",
+    accuracy_display,
+    f"{settled_count:,} settled scored listings",
+)
+
+transparency_left, transparency_right = st.columns([1.3, 1], gap="large")
+with transparency_left:
+    st.markdown("**Profit Distribution**")
+    st.caption("Expected profit spread across currently visible active listings.")
+    if transparency_profit_df.empty:
+        st.info("No profit distribution available for the current filter set.")
+    else:
+        profit_chart = transparency_profit_df.set_index("Profit Band")
+        st.bar_chart(profit_chart)
+with transparency_right:
+    st.markdown("**Transparency Notes**")
+    st.markdown(
+        "\n".join(
+            [
+                f"- AI valuations refreshed: {ai_last_text}",
+                f"- Scoring model refreshed: {model_last_text}",
+                f"- Average score /10: {f'{ai_avg_score:.1f}' if ai_avg_score is not None else 'N/A'}",
+                f"- Active listings in scope: {len(active_scope_df):,}",
+            ]
+        )
+    )
 
 section_heading("Sample Listings", "Preview the first 10 records from the master file.")
 st.dataframe(df.head(10), width="stretch", hide_index=True)

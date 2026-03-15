@@ -7,7 +7,7 @@ Date range: March 16, 2026 to April 26, 2026
 - Core Grays pipeline exists end-to-end: `extract_links.py` -> `extract_vehicle_details.py` -> `pipeline_stages.py` (`normalize`/`exclude`/`match`/`audit`) -> `update_bids.py` -> `update_master.py`.
 - Data architecture is CSV-first with strict schemas and validators (`shared/schema.py`, `shared/validators.py`, `shared/data_loader.py`).
 - AI valuation flow is implemented with risk adjustments and top-buy logic (`scripts/ai_listing_valuation.py`).
-- Scheduled jobs and locking are implemented (`scripts/scheduled_jobs.py`, `scripts/run_daily.cmd`, `scripts/run_vic_12h.cmd`, `scripts/run_vic_hourly.cmd`).
+- Scheduled jobs and locking are implemented (`scripts/scheduled_jobs.py`, `scripts/run_daily.cmd`, `scripts/run_hourly_monitor.cmd`, `scripts/run_vic_12h.cmd`, `scripts/run_vic_hourly.cmd`).
 - Test suite currently covers core valuation logic and selected pipeline rules (29 passing tests).
 - Explicit in-repo TODO found: dashboard KPI/trend hooks still need to be finalized across `DASHBOARD.py` and `pages/`.
 

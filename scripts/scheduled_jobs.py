@@ -18,6 +18,7 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 from scripts import extract_links, extract_vehicle_details, update_bids, update_master
+from scripts.active_monitor import active_urls_from_frame, diff_changed_listing_urls, load_live_active_df, revalue_active_listings
 from shared.data_loader import dataset_path
 from shared.sold_cleaning import is_compliance_slug, normalize_listing_fields
 
@@ -28,6 +29,7 @@ MAX_WAIT_HOURS = int(os.getenv("AUTOSNIPER_MAX_WAIT_HOURS", "24"))
 LOCK_PATH = ROOT_DIR / "logs" / "scrape.lock"
 LOCK_TTLS = {
     "daily": 8,
+    "hourly-monitor": 2,
     "vic-12h": 4,
     "vic-hourly": 2,
 }
@@ -156,6 +158,20 @@ def run_daily_pipeline() -> None:
     asyncio.run(update_bids.update_bids(skip_master=True))
     _run_autotrader_scrape()
     update_master.update_master_database()
+    revalue_active_listings(stale_minutes=0, force_refresh=True)
+
+
+def run_hourly_monitor() -> None:
+    before_df = load_live_active_df()
+    urls = active_urls_from_frame(before_df)
+    _run_update_bids(urls, skip_master=True)
+    after_df = load_live_active_df()
+    changed_urls = diff_changed_listing_urls(before_df, after_df)
+    summary = revalue_active_listings(target_urls=changed_urls, stale_minutes=60, force_refresh=True)
+    print(
+        "Hourly monitor complete: "
+        f"{len(changed_urls):,} changed URLs, {int(summary.get('evaluated', 0)):,} listings revalued."
+    )
 
 
 def run_vic_refresh_12h() -> None:
@@ -202,7 +218,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Run scheduled scraping jobs.")
     parser.add_argument(
         "--job",
-        choices=("daily", "vic-12h", "vic-hourly"),
+        choices=("daily", "hourly-monitor", "vic-12h", "vic-hourly"),
         required=True,
         help="Job name to run.",
     )
@@ -218,6 +234,8 @@ def main() -> None:
     try:
         if args.job == "daily":
             run_daily_pipeline()
+        elif args.job == "hourly-monitor":
+            run_hourly_monitor()
         elif args.job == "vic-12h":
             run_vic_refresh_12h()
         elif args.job == "vic-hourly":
