@@ -1,4 +1,3 @@
-import asyncio
 import json
 import sys
 import time
@@ -16,8 +15,8 @@ try:
 except AttributeError:
     pass
 
-from scripts import extract_links, extract_vehicle_details, update_bids, update_master
 from scripts.outcome_tracking import compute_outcome_metrics
+from scripts.scheduled_jobs import run_daily_pipeline
 from shared.data_loader import dataset_path
 
 METRICS_PATH = ROOT_DIR / "status" / "metrics.json"
@@ -61,10 +60,9 @@ def _write_metrics(success: bool, duration_sec: float, active_listings: Optional
 
 
 def _run_pipeline() -> None:
-    extract_links.extract_all_vehicle_links()
-    asyncio.run(extract_vehicle_details.main())
-    update_master.update_master_database()
-    asyncio.run(update_bids.update_bids(skip_master=True))
+    # Delegate to the maintained daily scheduler path so this wrapper
+    # stays compatible with any external cron/task still calling it.
+    run_daily_pipeline()
     compute_outcome_metrics()
 
 

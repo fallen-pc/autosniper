@@ -226,22 +226,18 @@ def run_vic_refresh_hourly() -> None:
 def _run_autotrader_scrape() -> None:
     script_path = ROOT_DIR / "scripts" / "run_autotrader_scrape.ps1"
     if not script_path.exists():
-        print(f"Autotrader scrape script not found: {script_path}")
-        return
-    try:
-        subprocess.run(
-            [
-                "powershell",
-                "-ExecutionPolicy",
-                "Bypass",
-                "-File",
-                str(script_path),
-            ],
-            check=True,
-        )
-        print("Autotrader scrape completed.")
-    except subprocess.CalledProcessError as exc:
-        print(f"Autotrader scrape failed: {exc}")
+        raise FileNotFoundError(f"Autotrader scrape script not found: {script_path}")
+    subprocess.run(
+        [
+            "powershell",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-File",
+            str(script_path),
+        ],
+        check=True,
+    )
+    print("Autotrader scrape completed.")
 
 
 def main() -> None:

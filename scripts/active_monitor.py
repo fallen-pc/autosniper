@@ -6,7 +6,7 @@ from typing import Iterable, Sequence
 
 import pandas as pd
 
-from scripts.ai_listing_valuation import load_cached_results, run_curve_listing_analysis
+from scripts.ai_listing_valuation import load_cached_results, run_curve_listing_analysis, upsert_manual_result_row
 from shared.canonical_tagging import is_canonical_eligible
 from shared.comps_engine import parse_currency, parse_numeric
 from shared.curves import interpolate_base_by_year, list_curve_tags, load_curves, resolve_curve_canonical_tag
@@ -191,6 +191,25 @@ def _prepare_active_scope() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     return active_df, sold_df, curves_df
 
 
+def _prepare_all_active_rows() -> pd.DataFrame:
+    active_df = _load_csv(ACTIVE_RESTRICTED_PATH)
+    live_df = _load_csv(ACTIVE_LIVE_PATH)
+    group_map_df = _load_csv(GROUP_MAP_PATH)
+    if active_df.empty:
+        return active_df
+    active_df["url"] = active_df["url"].astype(str).str.strip()
+    if not live_df.empty and "url" in live_df.columns:
+        live_df["url"] = live_df["url"].astype(str).str.strip()
+    if not group_map_df.empty and "url" in group_map_df.columns:
+        group_map_df["url"] = group_map_df["url"].astype(str).str.strip()
+    active_df = _attach_group_tags(active_df, group_map_df, "active")
+    active_df = _merge_live_fields(active_df, live_df)
+    if "status" in active_df.columns:
+        statuses = active_df["status"].astype(str).str.lower().str.strip()
+        active_df = active_df[~statuses.isin(COMPLETED_STATUSES)].copy()
+    return active_df
+
+
 def _build_sold_stats(sold_df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     if sold_df.empty:
         empty = pd.DataFrame(columns=["comps_count", "comps_median", "comps_mean", "comps_min", "comps_max"])
@@ -242,24 +261,98 @@ def _stale_or_missing_urls(active_df: pd.DataFrame, stale_minutes: int) -> set[s
     return stale_urls
 
 
+def _upsert_not_covered_result(row: pd.Series, reason: str) -> None:
+    current_bid = row.get("price")
+    payload = {
+        "url": row.get("url"),
+        "analysis_timestamp": datetime.now(timezone.utc).isoformat(),
+        "analysis_context": "active",
+        "resale_low": None,
+        "resale_mid": None,
+        "resale_high": None,
+        "net_profit_mid": None,
+        "net_profit_worst": None,
+        "fees_estimate": None,
+        "transport_estimate": None,
+        "rego_estimate": None,
+        "prep_estimate": None,
+        "confidence": 0.0,
+        "risk_flags": "NO_CURVE",
+        "computed_verdict": "Not Covered",
+        "no_edge": True,
+        "edge_note": reason,
+        "edge_buffer": None,
+        "carsales_price_estimate": None,
+        "carsales_price_range": None,
+        "recommended_max_bid": None,
+        "expected_profit": None,
+        "profit_margin_percent": None,
+        "score_out_of_10": None,
+        "confidence_notes": reason,
+        "is_top_buy": False,
+        "top_buy_badge": None,
+        "top_buy_failed_reasons": "[]",
+        "top_buy_passed_reasons": "[]",
+        "current_bid": current_bid,
+        "current_bid_numeric": parse_currency(current_bid) if current_bid is not None else None,
+        "bids_observed": row.get("bids"),
+        "time_remaining_observed": row.get("time_remaining_or_date_sold"),
+    }
+    upsert_manual_result_row(payload)
+
+
+def _mark_dropped_coverage_urls(
+    all_active_df: pd.DataFrame,
+    covered_active_df: pd.DataFrame,
+    target_urls: set[str],
+) -> int:
+    if all_active_df.empty or not target_urls:
+        return 0
+    all_urls = set(all_active_df["url"].dropna().astype(str).tolist())
+    covered_urls = set(covered_active_df["url"].dropna().astype(str).tolist()) if not covered_active_df.empty else set()
+    dropped_urls = (target_urls & all_urls) - covered_urls
+    if not dropped_urls:
+        return 0
+
+    rows = all_active_df[all_active_df["url"].isin(dropped_urls)].copy()
+    if rows.empty:
+        return 0
+
+    count = 0
+    for _, row in rows.iterrows():
+        canonical_tag = str(row.get("canonical_tag") or "").strip()
+        canonical_reason = str(row.get("canonical_reason") or "").strip()
+        if canonical_tag and not is_canonical_eligible(canonical_tag, canonical_reason):
+            reason = f"Listing is no longer curve-covered: {canonical_reason or 'canonical tag is not eligible.'}"
+        else:
+            reason = "Listing is no longer curve-covered due to missing curve or year/km range."
+        _upsert_not_covered_result(row, reason)
+        count += 1
+    return count
+
+
 def revalue_active_listings(
     *,
     target_urls: Iterable[str] | None = None,
     stale_minutes: int = 60,
     force_refresh: bool = False,
 ) -> dict[str, object]:
+    all_active_df = _prepare_all_active_rows()
     active_df, sold_df, curves_df = _prepare_active_scope()
-    if active_df.empty:
+    if all_active_df.empty and active_df.empty:
         return {"evaluated": 0, "urls": []}
 
     sold_stats_group, sold_stats_year = _build_sold_stats(sold_df)
     if target_urls is None:
-        urls_to_process = _stale_or_missing_urls(active_df, stale_minutes)
+        urls_to_process = _stale_or_missing_urls(active_df, stale_minutes) if not active_df.empty else set()
     else:
         urls_to_process = {str(url).strip() for url in target_urls if str(url).strip()}
-        urls_to_process |= _stale_or_missing_urls(active_df, stale_minutes)
+        if not active_df.empty:
+            urls_to_process |= _stale_or_missing_urls(active_df, stale_minutes)
     if not urls_to_process:
         return {"evaluated": 0, "urls": []}
+
+    dropped_count = _mark_dropped_coverage_urls(all_active_df, active_df, urls_to_process)
 
     scoped_df = active_df[active_df["url"].isin(urls_to_process)].copy()
     evaluated_urls: list[str] = []
@@ -288,7 +381,11 @@ def revalue_active_listings(
             force_refresh=force_refresh,
         )
         evaluated_urls.append(str(row.get("url")))
-    return {"evaluated": len(evaluated_urls), "urls": evaluated_urls}
+    return {
+        "evaluated": len(evaluated_urls) + dropped_count,
+        "urls": evaluated_urls,
+        "dropped_coverage": dropped_count,
+    }
 
 
 def diff_changed_listing_urls(before_df: pd.DataFrame, after_df: pd.DataFrame) -> set[str]:

@@ -1,5 +1,8 @@
 # Changelog
 
+## 2026-03-16
+- Renamed the live Mazda 3 BL shared curve base from `mazda_3_2.0_petrol_auto_hatch_bl` to `mazda_3_neo_petrol_auto_hatch_bl`, while keeping the old `2.0` tag as a backward-compatible alias.
+
 ## 2026-03-15
 - Added first-class curve aliases so multiple canonical trim tags can resolve to a single valuation curve without duplicating curve rows.
 - Consolidated Mazda 3 BL 2.0 petrol auto hatch valuation into one shared base curve, with Neo, Neo Sport, Maxx, Maxx Sport, and Touring tags resolving through aliases.

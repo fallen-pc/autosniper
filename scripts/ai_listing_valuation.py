@@ -180,6 +180,12 @@ def _save_result_row(row: Dict[str, Any]) -> None:
     _maybe_send_listing_alerts(row, existing_row)
 
 
+def upsert_manual_result_row(row: Dict[str, Any]) -> None:
+    """Persist a synthesized valuation row through the normal alert/state path."""
+    payload = {column: row.get(column) for column in REQUIRED_COLUMNS}
+    _save_result_row(payload)
+
+
 def _is_good_verdict(verdict: Any) -> bool:
     verdict_text = str(verdict or "").strip().lower()
     return "strong" in verdict_text or verdict_text == "good"
