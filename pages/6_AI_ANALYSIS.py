@@ -1503,26 +1503,45 @@ def _render_bid_logic_tab(
     risk_items: list[str],
 ) -> None:
     repair_deduction = _repair_deduction_value(row)
+    auction_cost = _compute_auction_cost_value(row)
+    confidence_value = row.get("confidence")
+    confidence_percent = None
+    if confidence_value is not None and not (isinstance(confidence_value, float) and pd.isna(confidence_value)):
+        try:
+            confidence_percent = float(confidence_value) * 100
+        except (TypeError, ValueError):
+            confidence_percent = None
+    confidence_display = _format_percent(confidence_percent)
+    if confidence_display == "N/A":
+        confidence_display = _curve_confidence_label(row.get("confidence"))
+
     metric_rows = [
         ("Resale estimate", _format_currency_value(_compute_resale_value(row))),
-        ("Auction price", _format_price_text(row.get("price"))),
+        ("Expected auction", _format_price_text(row.get("expected_auction_price"))),
+        ("Current bid", _format_price_text(row.get("price"))),
+        ("Auction cost", _format_currency_value(auction_cost)),
         ("Fees", _format_price_text(row.get("fees_estimate"))),
         ("Transport", _format_price_text(row.get("transport_estimate"))),
-        ("Repairs", _format_currency_value(repair_deduction)),
+        ("Repair cost", _format_currency_value(repair_deduction)),
+        ("Confidence", confidence_display),
         ("Net profit", _format_price_text(row.get("net_profit_worst") or row.get("net_profit_mid"))),
         ("Max bid", _format_currency_value(row.get("max_bid_value"))),
     ]
 
-    first_row = st.columns(4)
-    second_row = st.columns(3)
-    for column, (label, value) in zip(first_row, metric_rows[:4]):
+    first_row = st.columns(5)
+    second_row = st.columns(4)
+    for column, (label, value) in zip(first_row, metric_rows[:5]):
         column.metric(label, value)
-    for column, (label, value) in zip(second_row, metric_rows[4:]):
+    for column, (label, value) in zip(second_row, metric_rows[5:]):
         column.metric(label, value)
 
     _render_bullets(
         "Profit notes",
         [
+            f"Discount used: {float(row.get('discount_used') or 0):.0%}" if pd.notna(row.get("discount_used")) else "Discount used: N/A",
+            f"Expected auction price: {_format_price_text(row.get('expected_auction_price'))}",
+            f"Auction cost total: {_format_currency_value(auction_cost)}",
+            f"Repair cost: {_format_currency_value(repair_deduction)}",
             f"Net profit (mid): {_format_price_text(row.get('net_profit_mid'))}",
             f"Net profit (worst): {_format_price_text(row.get('net_profit_worst'))}",
             f"Profit margin: {_format_percent(row.get('profit_margin_value'))}",
@@ -2828,6 +2847,18 @@ def _compute_resale_value(row: pd.Series) -> Optional[float]:
 
 def _compute_max_bid_value(row: pd.Series) -> Optional[float]:
     return parse_currency(row.get("recommended_max_bid")) or parse_currency(row.get("price"))
+
+
+def _compute_auction_cost_value(row: pd.Series) -> Optional[float]:
+    values = [
+        parse_currency(row.get("fees_estimate")),
+        parse_currency(row.get("transport_estimate")),
+        parse_currency(row.get("rego_estimate")),
+        parse_currency(row.get("prep_estimate")),
+    ]
+    if all(value is None for value in values):
+        return None
+    return float(sum(value or 0.0 for value in values))
 
 
 def _compute_score_100_value(row: pd.Series) -> Optional[float]:

@@ -32,6 +32,8 @@ REQUIRED_COLUMNS = [
     "transport_estimate",
     "rego_estimate",
     "prep_estimate",
+    "expected_auction_price",
+    "discount_used",
     # Risk decisioning
     "confidence",
     "risk_flags",
@@ -63,6 +65,7 @@ DEFAULT_PREP = 300.0
 DETAILING_HATCH_SEDAN = 99.0
 DETAILING_SMALL_SUV_WAGON = 115.0
 DETAILING_LARGE_SUV_4WD = 129.0
+DEFAULT_DISCOUNT = 0.75
 COST_BUFFER = 1_500.0
 UNREGISTERED_REGO_COST = 1_200.0
 REGISTERED_REGO_COST = 0.0
@@ -535,6 +538,23 @@ def _estimate_costs(purchase_price: float, listing: Mapping[str, Any]) -> dict[s
     }
 
 
+def _expected_auction_price(resale_value: Optional[float]) -> Optional[float]:
+    if resale_value is None or resale_value <= 0:
+        return None
+    return _round_to_10(resale_value * DEFAULT_DISCOUNT)
+
+
+def _discounted_bid_cap(
+    expected_auction_price: Optional[float],
+    *,
+    repair_cost: float = 0.0,
+    margin: float,
+) -> Optional[float]:
+    if expected_auction_price is None:
+        return None
+    return max(0.0, expected_auction_price - max(0.0, float(repair_cost)) - max(0.0, float(margin)))
+
+
 def _detect_risk_flags(listing: Mapping[str, Any]) -> list[str]:
     flags: list[str] = []
     odometer_value = _parse_odometer(
@@ -937,6 +957,7 @@ def run_ai_listing_analysis(listing_row: pd.Series, force_refresh: bool = False)
     current_price_val = _parse_currency(listing_row.get("current_price"))
     if current_price_val is None:
         current_price_val = _parse_currency(listing_row.get("price"))
+    repair_assessment = assess_repairs(listing_row.get("general_condition", ""))
 
     historical_min_val = _parse_currency(listing_row.get("historical_price_min"))
     historical_close_median_val = _parse_currency(listing_row.get("historical_close_price_median"))
@@ -1013,6 +1034,24 @@ def run_ai_listing_analysis(listing_row: pd.Series, force_refresh: bool = False)
     resale_mid_val = _round_to_10(resale_mid_val)
     resale_low_val = _round_to_10(resale_low_val)
     resale_high_val = _round_to_10(resale_high_val)
+    expected_auction_price_val = _expected_auction_price(resale_mid_val)
+
+    discounted_bid_cap = _discounted_bid_cap(
+        expected_auction_price_val,
+        repair_cost=float(repair_assessment.total_cost or 0.0),
+        margin=COST_BUFFER,
+    )
+    if discounted_bid_cap is not None and recommended_max_bid_val is not None:
+        recommended_max_bid_val = min(recommended_max_bid_val, discounted_bid_cap)
+    elif discounted_bid_cap is not None:
+        recommended_max_bid_val = discounted_bid_cap
+
+    if (
+        expected_auction_price_val is not None
+        and current_price_val is not None
+        and expected_auction_price_val < current_price_val
+    ):
+        print(f"[WARN] Auction already above expected price: {url}")
 
     net_profit_mid_val = None
     net_profit_worst_val = None
@@ -1163,6 +1202,8 @@ def run_ai_listing_analysis(listing_row: pd.Series, force_refresh: bool = False)
         "transport_estimate": _format_currency(costs_map["transport_estimate"]),
         "rego_estimate": _format_currency(costs_map["rego_estimate"]),
         "prep_estimate": _format_currency(costs_map["prep_estimate"]),
+        "expected_auction_price": _format_currency(expected_auction_price_val),
+        "discount_used": DEFAULT_DISCOUNT,
         "resale_low": _format_currency(resale_low_val),
         "resale_mid": _format_currency(resale_mid_val),
         "resale_high": _format_currency(resale_high_val),
@@ -1210,24 +1251,27 @@ def run_curve_listing_analysis(
         and url in set(cached_df["url"].dropna().tolist())
     ):
         existing = cached_df[cached_df["url"] == url].iloc[0].to_dict()
-        if analysis_context and not existing.get("analysis_context"):
-            existing["analysis_context"] = analysis_context
-        repair_assessment = assess_repairs(listing_row.get("general_condition", ""))
-        if repair_assessment.hard_avoid:
-            existing["recommended_max_bid"] = _format_currency(0)
-            existing["computed_verdict"] = "Avoid"
-            existing["verdict"] = "Avoid"
-            existing["net_profit_mid"] = None
-            existing["net_profit_worst"] = None
-            existing["expected_profit"] = None
-            existing["profit_margin_percent"] = None
-            risk_flags = str(existing.get("risk_flags") or "")
-            if "MECHANICAL" not in risk_flags:
-                existing["risk_flags"] = "|".join(
-                    sorted({flag for flag in (risk_flags.split("|") if risk_flags else []) if flag} | {"MECHANICAL"})
-                )
-        existing["cached"] = True
-        return existing
+        if existing.get("expected_auction_price") is None or existing.get("discount_used") is None:
+            force_refresh = True
+        else:
+            if analysis_context and not existing.get("analysis_context"):
+                existing["analysis_context"] = analysis_context
+            repair_assessment = assess_repairs(listing_row.get("general_condition", ""))
+            if repair_assessment.hard_avoid:
+                existing["recommended_max_bid"] = _format_currency(0)
+                existing["computed_verdict"] = "Avoid"
+                existing["verdict"] = "Avoid"
+                existing["net_profit_mid"] = None
+                existing["net_profit_worst"] = None
+                existing["expected_profit"] = None
+                existing["profit_margin_percent"] = None
+                risk_flags = str(existing.get("risk_flags") or "")
+                if "MECHANICAL" not in risk_flags:
+                    existing["risk_flags"] = "|".join(
+                        sorted({flag for flag in (risk_flags.split("|") if risk_flags else []) if flag} | {"MECHANICAL"})
+                    )
+            existing["cached"] = True
+            return existing
 
     if resale_mid is None or resale_mid <= 0:
         result_row = {
@@ -1245,6 +1289,8 @@ def run_curve_listing_analysis(
             "transport_estimate": None,
             "rego_estimate": None,
             "prep_estimate": None,
+            "expected_auction_price": None,
+            "discount_used": DEFAULT_DISCOUNT,
             "resale_low": None,
             "resale_mid": None,
             "resale_high": None,
@@ -1299,11 +1345,27 @@ def run_curve_listing_analysis(
     resale_mid_val = _round_to_10(resale_mid)
     resale_low_val = _round_to_10(resale_low_val)
     resale_high_val = _round_to_10(resale_high_val)
+    expected_auction_price_val = _expected_auction_price(resale_mid_val)
 
     min_net_profit = max(MIN_NET_PROFIT_ABSOLUTE, MIN_NET_PROFIT_RATIO * (resale_low_val or resale_mid))
     recommended_max_bid_val = _solve_max_bid(resale_low_val, min_net_profit, listing_data)
+    discounted_bid_cap = _discounted_bid_cap(
+        expected_auction_price_val,
+        repair_cost=0.0,
+        margin=min_net_profit,
+    )
+    if discounted_bid_cap is not None and recommended_max_bid_val is not None:
+        recommended_max_bid_val = min(recommended_max_bid_val, discounted_bid_cap)
+    elif discounted_bid_cap is not None:
+        recommended_max_bid_val = discounted_bid_cap
 
     current_price_val = _parse_currency(listing_row.get("price"))
+    if (
+        expected_auction_price_val is not None
+        and current_price_val is not None
+        and expected_auction_price_val < current_price_val
+    ):
+        print(f"[WARN] Auction already above expected price: {url}")
     if (
         current_price_val is not None
         and recommended_max_bid_val is not None
@@ -1470,6 +1532,8 @@ def run_curve_listing_analysis(
         "transport_estimate": _format_currency(costs_map["transport_estimate"]),
         "rego_estimate": _format_currency(costs_map["rego_estimate"]),
         "prep_estimate": _format_currency(costs_map["prep_estimate"]),
+        "expected_auction_price": _format_currency(expected_auction_price_val),
+        "discount_used": DEFAULT_DISCOUNT,
         "resale_low": _format_currency(resale_low_val),
         "resale_mid": _format_currency(resale_mid_val),
         "resale_high": _format_currency(resale_high_val),
