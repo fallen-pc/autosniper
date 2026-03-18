@@ -91,9 +91,12 @@ MIN_NET_PROFIT_RATIO = 0.15
 BASE_DOWNSIDE_PCT = 0.12
 BASE_UPSIDE_PCT = 0.08
 HIGH_KM_THRESHOLD = 180_000
-CONFIDENCE_BASE = 0.8
-CONFIDENCE_MIN = 0.1
-CONFIDENCE_MAX = 0.9
+CONFIDENCE_MIN = 0.0
+CONFIDENCE_MAX = 1.0
+CURVE_COVERAGE_WEIGHT = 0.40
+REPAIR_CERTAINTY_WEIGHT = 0.30
+DATA_COMPLETENESS_WEIGHT = 0.30
+CONFIDENCE_RISK_PENALTY_SCALE = 0.35
 RISK_CONFIDENCE_PENALTIES = {
     "WARNING_LIGHT": 0.12,
     "ENGINE_UNKNOWN": 0.1,
@@ -327,6 +330,18 @@ def _parse_odometer(value: Any) -> Optional[float]:
         return None
 
 
+def _has_value(value: Any) -> bool:
+    if value is None:
+        return False
+    if isinstance(value, float) and pd.isna(value):
+        return False
+    if isinstance(value, str):
+        return bool(value.strip())
+    if isinstance(value, (list, tuple, set, dict)):
+        return bool(value)
+    return True
+
+
 def _parse_seat_count(value: Any) -> Optional[int]:
     if value is None or (isinstance(value, float) and pd.isna(value)):
         return None
@@ -547,18 +562,93 @@ def _detect_risk_flags(listing: Mapping[str, Any]) -> list[str]:
     return flags
 
 
-def _calculate_confidence(listing: Mapping[str, Any], risk_flags: list[str]) -> float:
-    confidence = CONFIDENCE_BASE
-    comps = _parse_int(listing.get("historical_match_count"))
-    if comps is None or comps == 0:
-        confidence -= 0.2
-    elif comps < 3:
-        confidence -= 0.1
-    if not listing.get("historical_matches_rows"):
-        confidence -= 0.05
-    risk_penalty = sum(RISK_CONFIDENCE_PENALTIES.get(flag, 0.04) for flag in risk_flags)
-    confidence -= risk_penalty
-    return max(CONFIDENCE_MIN, min(CONFIDENCE_MAX, confidence))
+def _calculate_curve_coverage_score(
+    resale_mid: float | None,
+    *,
+    km_percentile: float | None = None,
+) -> float:
+    if resale_mid is None or resale_mid <= 0:
+        return 0.0
+    score = 0.85
+    if km_percentile is not None:
+        score += 0.15
+    return max(0.0, min(1.0, score))
+
+
+def _calculate_repair_certainty_score(
+    listing: Mapping[str, Any],
+    repair_assessment: Any,
+) -> float:
+    general_condition = str(listing.get("general_condition") or "").strip()
+    if not general_condition:
+        return 0.35
+
+    score = 0.70
+    if getattr(repair_assessment, "reasons", None):
+        score += 0.12
+    if getattr(repair_assessment, "severity_level", ""):
+        score += 0.08
+    if getattr(repair_assessment, "pills", None):
+        score += 0.05
+    if "UNKNOWN" in set(getattr(repair_assessment, "pills", []) or []):
+        score -= 0.25
+    if getattr(repair_assessment, "risk_buffer", 0) > 0:
+        score -= 0.10
+    return max(0.0, min(1.0, score))
+
+
+def _calculate_data_completeness_score(listing: Mapping[str, Any]) -> float:
+    checks = [
+        _has_value(listing.get("year")),
+        _has_value(listing.get("make")),
+        _has_value(listing.get("model")),
+        _has_value(listing.get("variant")),
+        _has_value(listing.get("location")),
+        _parse_currency(listing.get("price")) is not None,
+        _parse_odometer(listing.get("odometer_numeric") or listing.get("odometer_reading")) is not None,
+        _has_value(listing.get("transmission")),
+        _has_value(listing.get("general_condition")),
+        _has_value(listing.get("service_history")),
+        _has_value(listing.get("owners_manual")),
+        _has_value(listing.get("key")),
+        _has_value(listing.get("spare_key")),
+        (_parse_int(listing.get("historical_match_count")) or 0) > 0,
+    ]
+    total_checks = len(checks)
+    if total_checks == 0:
+        return 0.0
+    return sum(1 for passed in checks if passed) / total_checks
+
+
+def _calculate_confidence(
+    listing: Mapping[str, Any],
+    risk_flags: list[str],
+    *,
+    resale_mid: float | None,
+    repair_assessment: Any,
+    km_percentile: float | None = None,
+) -> tuple[float, list[str]]:
+    curve_score = _calculate_curve_coverage_score(resale_mid, km_percentile=km_percentile)
+    repair_score = _calculate_repair_certainty_score(listing, repair_assessment)
+    data_score = _calculate_data_completeness_score(listing)
+
+    weighted_confidence = (
+        (curve_score * CURVE_COVERAGE_WEIGHT)
+        + (repair_score * REPAIR_CERTAINTY_WEIGHT)
+        + (data_score * DATA_COMPLETENESS_WEIGHT)
+    )
+    risk_penalty = sum(RISK_CONFIDENCE_PENALTIES.get(flag, 0.04) for flag in risk_flags) * CONFIDENCE_RISK_PENALTY_SCALE
+    confidence = max(CONFIDENCE_MIN, min(CONFIDENCE_MAX, weighted_confidence - risk_penalty))
+    notes = [
+        (
+            "Confidence factors: "
+            f"curve_coverage={curve_score:.2f}, "
+            f"repair_certainty={repair_score:.2f}, "
+            f"data_completeness={data_score:.2f}, "
+            f"risk_penalty={risk_penalty:.2f}"
+        )
+    ]
+    return confidence, notes
 
 
 def _calculate_downside_percent(risk_flags: list[str]) -> float:
@@ -1132,7 +1222,7 @@ def run_curve_listing_analysis(
             "expected_profit": None,
             "profit_margin_percent": None,
             "score_out_of_10": None,
-            "confidence_notes": None,
+            "confidence_notes": "Confidence factors: curve_coverage=0.00, repair_certainty=0.00, data_completeness=0.00, risk_penalty=0.00",
             "fees_estimate": None,
             "transport_estimate": None,
             "rego_estimate": None,
@@ -1142,7 +1232,7 @@ def run_curve_listing_analysis(
             "resale_high": None,
             "net_profit_mid": None,
             "net_profit_worst": None,
-            "confidence": None,
+            "confidence": 0.0,
             "risk_flags": "NO_CURVE",
             "computed_verdict": "Not Covered",
             "verdict": "Not Covered",
@@ -1168,11 +1258,18 @@ def run_curve_listing_analysis(
         listing_data["historical_match_count"] = comps_count
         listing_data["historical_matches_rows"] = comps_count
 
+    repair_assessment = assess_repairs(listing_row.get("general_condition", ""))
     risk_flags = _detect_risk_flags(listing_data)
     downside_pct = _calculate_downside_percent(risk_flags)
     upside_pct = _calculate_upside_percent(risk_flags)
-    confidence_val = _calculate_confidence(listing_data, risk_flags)
-    notes: list[str] = []
+    confidence_val, confidence_notes = _calculate_confidence(
+        listing_data,
+        risk_flags,
+        resale_mid=resale_mid,
+        repair_assessment=repair_assessment,
+        km_percentile=km_percentile,
+    )
+    notes: list[str] = list(confidence_notes)
     downside_pct, confidence_val, risk_flags, notes = apply_platform_risk_adjustments(
         listing_data, downside_pct, confidence_val, risk_flags, notes
     )
@@ -1196,7 +1293,6 @@ def run_curve_listing_analysis(
     ):
         pass
 
-    repair_assessment = assess_repairs(listing_row.get("general_condition", ""))
     repair_verdict = None
     if repair_assessment.hard_avoid and "MECHANICAL" not in risk_flags:
         risk_flags.append("MECHANICAL")
