@@ -624,10 +624,25 @@ def _calculate_confidence(
     listing: Mapping[str, Any],
     risk_flags: list[str],
     *,
-    resale_mid: float | None,
-    repair_assessment: Any,
+    resale_mid: float | None = None,
+    repair_assessment: Any = None,
     km_percentile: float | None = None,
-) -> tuple[float, list[str]]:
+) -> float | tuple[float, list[str]]:
+    # Backward-compatible mode for existing UI callers that still expect the old
+    # float-only confidence result.
+    if resale_mid is None and repair_assessment is None:
+        confidence = 0.8
+        comps = _parse_int(listing.get("historical_match_count"))
+        if comps is None or comps == 0:
+            confidence -= 0.2
+        elif comps < 3:
+            confidence -= 0.1
+        if not listing.get("historical_matches_rows"):
+            confidence -= 0.05
+        risk_penalty = sum(RISK_CONFIDENCE_PENALTIES.get(flag, 0.04) for flag in risk_flags)
+        confidence -= risk_penalty
+        return max(CONFIDENCE_MIN, min(CONFIDENCE_MAX, confidence))
+
     curve_score = _calculate_curve_coverage_score(resale_mid, km_percentile=km_percentile)
     repair_score = _calculate_repair_certainty_score(listing, repair_assessment)
     data_score = _calculate_data_completeness_score(listing)
