@@ -8,7 +8,7 @@ import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Iterable
+from typing import Any, Dict, Iterable, Optional
 import subprocess
 
 import pandas as pd
@@ -20,6 +20,7 @@ if str(ROOT_DIR) not in sys.path:
 
 from scripts import extract_links, extract_vehicle_details, update_bids, update_master
 from scripts.active_monitor import active_urls_from_frame, diff_changed_listing_urls, load_live_active_df, revalue_active_listings
+from scripts.outcome_tracking import compute_outcome_metrics
 from shared.data_loader import dataset_path
 from shared.governance import write_governance_report_bundle
 from shared.sold_cleaning import is_compliance_slug, normalize_listing_fields
@@ -30,6 +31,7 @@ CHECK_URL = os.getenv("AUTOSNIPER_HEALTHCHECK_URL", "https://www.grays.com/")
 CHECK_INTERVAL_SECONDS = int(os.getenv("AUTOSNIPER_NET_CHECK_INTERVAL_SEC", "300"))
 MAX_WAIT_HOURS = int(os.getenv("AUTOSNIPER_MAX_WAIT_HOURS", "24"))
 GOVERNANCE_REPORT_DIR = ROOT_DIR / "output" / "governance"
+METRICS_PATH = ROOT_DIR / "status" / "metrics.json"
 
 LOCK_PATH = ROOT_DIR / "logs" / "scrape.lock"
 LOCK_TTLS = {
@@ -40,6 +42,42 @@ LOCK_TTLS = {
 }
 
 COMPLETED_STATUSES = {"sold", "referred", "canceled", "cancelled", "closed"}
+
+
+def _load_existing_metrics() -> Dict[str, Any]:
+    if not METRICS_PATH.exists():
+        return {}
+    try:
+        return json.loads(METRICS_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+def _count_active_listings() -> Optional[int]:
+    path = dataset_path("active_vehicle_details.csv")
+    if not path.exists():
+        return None
+    try:
+        df = pd.read_csv(path, low_memory=False)
+        return int(len(df))
+    except Exception:
+        return None
+
+
+def _write_daily_metrics(success: bool, duration_sec: float) -> None:
+    metrics = _load_existing_metrics()
+    active_listings = _count_active_listings()
+    runs_total = int(metrics.get("runs_total", 0)) + 1
+    runs_failed = int(metrics.get("runs_failed", 0)) + (0 if success else 1)
+    payload = {
+        "last_run_utc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "active_listings": int(active_listings) if active_listings is not None else int(metrics.get("active_listings", 0)),
+        "runs_total": runs_total,
+        "runs_failed": runs_failed,
+        "duration_sec": float(duration_sec),
+    }
+    METRICS_PATH.parent.mkdir(parents=True, exist_ok=True)
+    METRICS_PATH.write_text(json.dumps(payload, indent=2), encoding="utf-8")
 
 
 def _send_job_failure_alert(job: str, detail: str) -> None:
@@ -181,6 +219,7 @@ def run_daily_pipeline() -> None:
     update_master.update_master_database()
     revalue_active_listings(stale_minutes=0, force_refresh=True)
     report_bundle = write_governance_report_bundle(GOVERNANCE_REPORT_DIR)
+    compute_outcome_metrics()
     coverage_summary = report_bundle["coverage_summary"]
     monotonicity_summary = report_bundle["monotonicity_summary"]
     print(
@@ -241,7 +280,7 @@ def _run_autotrader_scrape() -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Run scheduled scraping jobs.")
+    parser = argparse.ArgumentParser(description="Run scheduled scraping jobs. This is the primary production runner.")
     parser.add_argument(
         "--job",
         choices=("daily", "hourly-monitor", "vic-12h", "vic-hourly"),
@@ -260,6 +299,7 @@ def main() -> None:
     if not _acquire_lock(args.job):
         return
 
+    started = time.time()
     try:
         if args.job == "daily":
             run_daily_pipeline()
@@ -270,10 +310,14 @@ def main() -> None:
         elif args.job == "vic-hourly":
             run_vic_refresh_hourly()
         write_scraper_health_report(job_name=args.job, job_status="success")
+        if args.job == "daily":
+            _write_daily_metrics(success=True, duration_sec=time.time() - started)
     except Exception as exc:
         error_message = f"{type(exc).__name__}: {exc}"
         write_scraper_health_report(job_name=args.job, job_status="failure", error_message=error_message)
         _send_job_failure_alert(args.job, error_message)
+        if args.job == "daily":
+            _write_daily_metrics(success=False, duration_sec=time.time() - started)
         raise
     finally:
         _release_lock()

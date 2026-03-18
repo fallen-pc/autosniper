@@ -225,7 +225,7 @@ def _loop_forever(max_iterations: int | None) -> Iterable[int]:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Continuously run the Grays scraper pipeline and print stage outputs plus dataset deltas."
+        description="Development-only Grays pipeline loop runner. Use scheduled_jobs.py for production execution."
     )
     parser.add_argument(
         "--pause-seconds",
@@ -287,7 +287,8 @@ def main() -> None:
         include_master=args.include_master,
     )
 
-    print("Grays pipeline loop runner")
+    print("Development-only Grays pipeline loop runner")
+    print("Production runs should use scripts/scheduled_jobs.py.\n")
     print(f"Stages: {', '.join(stage.name for stage in stages)}")
     print(f"Pause seconds: {args.pause_seconds}")
     print(
