@@ -88,6 +88,7 @@ def _round_to_10(value: Optional[float]) -> Optional[float]:
 # Minimum net profit target and band controls
 MIN_NET_PROFIT_ABSOLUTE = 1_500.0
 MIN_NET_PROFIT_RATIO = 0.15
+MIN_EXPECTED_PROFIT_VIABILITY = 2_000.0
 BASE_DOWNSIDE_PCT = 0.12
 BASE_UPSIDE_PCT = 0.08
 HIGH_KM_THRESHOLD = 180_000
@@ -1114,6 +1115,8 @@ def run_ai_listing_analysis(listing_row: pd.Series, force_refresh: bool = False)
             return "Trap"
         if net_profit_worst_val <= 0:
             return "Avoid"
+        if expected_profit_val is not None and expected_profit_val < MIN_EXPECTED_PROFIT_VIABILITY:
+            return "Not Viable"
         if no_edge_at_current_bid:
             return "Trap"
         if conf_value >= 0.70 and net_profit_worst_val >= 3000:
@@ -1419,6 +1422,8 @@ def run_curve_listing_analysis(
             return "Not Covered"
         if net_profit_worst_val is None or net_profit_worst_val <= 0:
             return "Avoid"
+        if expected_profit_val is not None and expected_profit_val < MIN_EXPECTED_PROFIT_VIABILITY:
+            return "Not Viable"
         if no_edge_at_current_bid:
             return "Trap"
         if confidence_val >= 0.70 and net_profit_worst_val >= 3000:
@@ -1434,7 +1439,7 @@ def run_curve_listing_analysis(
         computed_verdict = "Avoid"
     elif repair_verdict == "Not Viable":
         computed_verdict = "Avoid"
-    elif repair_verdict == "Marginal" and computed_verdict not in ("Avoid", "Trap"):
+    elif repair_verdict == "Marginal" and computed_verdict not in ("Avoid", "Trap", "Not Viable"):
         computed_verdict = "Marginal (repairs)"
     edge_note = ""
     if no_edge_at_current_bid:
