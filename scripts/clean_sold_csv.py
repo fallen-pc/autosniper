@@ -10,10 +10,12 @@ import pandas as pd
 
 if __package__ in (None, ""):
     sys.path.append(str(Path(__file__).resolve().parent.parent))
+    from scripts.atomic_csv import write_dataframe_csv_atomic
     from shared.data_loader import dataset_path
     from shared.sold_cleaning import normalize_listing_fields
     from shared.validators import validate_sold_cars_df
 else:  # pragma: no cover
+    from scripts.atomic_csv import write_dataframe_csv_atomic
     from shared.data_loader import dataset_path
     from shared.sold_cleaning import normalize_listing_fields
     from shared.validators import validate_sold_cars_df
@@ -91,7 +93,7 @@ def main() -> None:
     removed = before_count - deduped_count
     validator_removed = stats["rows_dropped"]
 
-    deduped.to_csv(CSV_PATH, index=False)
+    write_dataframe_csv_atomic(deduped, CSV_PATH, index=False)
 
     print(f"Rows before: {before_count}")
     print(f"Rows after:  {after_count}")

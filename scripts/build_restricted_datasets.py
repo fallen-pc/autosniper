@@ -12,12 +12,14 @@ if __package__ in (None, ""):
     import sys
 
     sys.path.append(str(Path(__file__).resolve().parent.parent))
+    from scripts.atomic_csv import append_dataframe_csv_atomic, write_dataframe_csv_atomic
     from shared.audit import append_audit_snapshot
     from shared.data_loader import dataset_path
     from shared.canonical_tagging import AMBIG_DRIVETRAIN, UNCLASSIFIED, tag_dataframe
     from shared.schema import ACTIVE_LISTING_SCHEMA, SOLD_LISTING_SCHEMA
     from shared.sold_cleaning import normalize_listing_fields
 else:  # pragma: no cover
+    from scripts.atomic_csv import append_dataframe_csv_atomic, write_dataframe_csv_atomic
     from shared.audit import append_audit_snapshot
     from shared.data_loader import dataset_path
     from shared.canonical_tagging import AMBIG_DRIVETRAIN, UNCLASSIFIED, tag_dataframe
@@ -92,7 +94,7 @@ def _filter_sold(df: pd.DataFrame) -> pd.DataFrame:
 def _write_restricted(df: pd.DataFrame, schema: Iterable[str], path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     restricted = df.reindex(columns=list(schema))
-    restricted.to_csv(path, index=False)
+    write_dataframe_csv_atomic(restricted, path, index=False)
 
 
 def _append_enrichment_backlog(df: pd.DataFrame, source: str) -> None:
@@ -193,7 +195,7 @@ def _append_enrichment_backlog(df: pd.DataFrame, source: str) -> None:
             ]
     if not rows:
         return
-    pd.DataFrame(rows).to_csv(ENRICHMENT_BACKLOG_PATH, mode="a", header=not file_exists, index=False)
+    append_dataframe_csv_atomic(pd.DataFrame(rows), ENRICHMENT_BACKLOG_PATH, index=False)
 
 
 def build_restricted_datasets() -> None:
@@ -221,7 +223,7 @@ def build_restricted_datasets() -> None:
     _write_restricted(sold_restricted, SOLD_LISTING_SCHEMA, SOLD_RESTRICTED)
 
     group_map = pd.concat([active_map, sold_map], ignore_index=True)
-    group_map.to_csv(GROUP_MAP_PATH, index=False)
+    write_dataframe_csv_atomic(group_map, GROUP_MAP_PATH, index=False)
 
     append_audit_snapshot(active_restricted, ACTIVE_RESTRICTED)
     append_audit_snapshot(sold_restricted, SOLD_RESTRICTED)

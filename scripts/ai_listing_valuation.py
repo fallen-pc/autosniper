@@ -9,6 +9,7 @@ import pandas as pd
 from dotenv import load_dotenv, find_dotenv
 from openai import OpenAI
 
+from scripts.atomic_csv import write_dataframe_csv_atomic
 from shared.data_loader import dataset_path
 from shared.repair_pricing import assess_repairs, apply_repairs_to_max_bid
 from shared.telegram_alerts import send_on_state_change
@@ -176,7 +177,7 @@ def _save_result_row(row: Dict[str, Any]) -> None:
     new_row = pd.DataFrame([row])
     combined = pd.concat([df, new_row], ignore_index=True)
     combined = combined.drop_duplicates(subset=["url"], keep="last")
-    combined.to_csv(AI_RESULTS_PATH, index=False)
+    write_dataframe_csv_atomic(combined, AI_RESULTS_PATH, index=False)
     _maybe_send_listing_alerts(row, existing_row)
 
 

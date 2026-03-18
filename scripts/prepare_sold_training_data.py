@@ -14,6 +14,7 @@ ROOT_DIR = Path(__file__).resolve().parent.parent
 if str(ROOT_DIR) not in sys.path:
     sys.path.append(str(ROOT_DIR))
 
+from scripts.atomic_csv import write_dataframe_csv_atomic
 from shared.comps_engine import CompsEngine, parse_currency, parse_numeric
 from shared.repair_features import REPAIR_CATEGORIES
 from shared.data_loader import dataset_path
@@ -172,7 +173,7 @@ def main() -> None:
     if "sale_price_value" in merged.columns and "comps_p50" in merged.columns:
         merged["comps_error"] = merged["sale_price_value"] - merged["comps_p50"]
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    merged.to_csv(args.output, index=False)
+    write_dataframe_csv_atomic(merged, args.output, index=False)
     print(f"Training dataset written to {args.output} ({len(merged):,} rows)")
 
 

@@ -7,11 +7,13 @@ import pandas as pd
 
 try:
     from shared.data_loader import dataset_path
+    from scripts.atomic_csv import write_dataframe_csv_atomic
 except ModuleNotFoundError:  # pragma: no cover
     import sys
 
     sys.path.append(str(Path(__file__).resolve().parent.parent))
     from shared.data_loader import dataset_path
+    from scripts.atomic_csv import write_dataframe_csv_atomic
 
 
 def _parse_currency(value: object) -> float | None:
@@ -107,8 +109,8 @@ def main() -> None:
     bidders = summarize_bidders(df)
     listings = summarize_listings(df)
 
-    bidders.to_csv(args.output, index=False)
-    listings.to_csv(args.listing_output, index=False)
+    write_dataframe_csv_atomic(bidders, args.output, index=False)
+    write_dataframe_csv_atomic(listings, args.listing_output, index=False)
 
     print(f"Wrote bidder summary to {args.output}")
     print(f"Wrote listing summary to {args.listing_output}")

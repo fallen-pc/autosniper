@@ -7,8 +7,6 @@ import logging
 import os
 import random
 import re
-import shutil
-import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -20,9 +18,11 @@ if __package__ in (None, ""):
     import sys
 
     sys.path.append(str(Path(__file__).resolve().parent.parent))
+    from scripts.atomic_csv import append_dict_rows_csv_atomic, write_dataframe_csv_atomic
     from shared.data_loader import dataset_path
     from shared.state_machine import ListingObservation, ensure_state_schema, upsert_state_row
 else:  # pragma: no cover
+    from scripts.atomic_csv import append_dict_rows_csv_atomic, write_dataframe_csv_atomic
     from shared.data_loader import dataset_path
     from shared.state_machine import ListingObservation, ensure_state_schema, upsert_state_row
 
@@ -134,13 +134,7 @@ def derive_auction_site(url: str | None) -> str:
 
 
 def append_snapshot_row(record: dict[str, object]) -> None:
-    SNAPSHOT_FILE.parent.mkdir(parents=True, exist_ok=True)
-    file_exists = SNAPSHOT_FILE.exists()
-    with SNAPSHOT_FILE.open("a", newline="", encoding="utf-8") as handle:
-        writer = csv.DictWriter(handle, fieldnames=SNAPSHOT_COLUMNS)
-        if not file_exists:
-            writer.writeheader()
-        writer.writerow(record)
+    append_dict_rows_csv_atomic(SNAPSHOT_FILE, SNAPSHOT_COLUMNS, [record])
 
 
 def record_snapshot(
@@ -225,9 +219,7 @@ def persist_dataframe(df: pd.DataFrame, note: str) -> None:
     if "drivetrain_source" in snapshot.columns:
         snapshot = snapshot.drop(columns=["drivetrain_source"])
     snapshot["url"] = snapshot["url"].apply(clean_url)
-    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".csv").name
-    snapshot.to_csv(temp_file, index=False)
-    shutil.move(temp_file, CSV_FILE)
+    write_dataframe_csv_atomic(snapshot, CSV_FILE, index=False)
     print(f"{note}: wrote {len(snapshot)} rows to {CSV_FILE}")
 
 
@@ -244,15 +236,7 @@ def _load_state_dataframe() -> pd.DataFrame:
 def persist_state_dataframe(df: pd.DataFrame, note: str) -> None:
     snapshot = ensure_state_schema(df)
     snapshot["url"] = snapshot["url"].astype(str).str.strip()
-    fd, temp_path = tempfile.mkstemp(suffix=".csv")
-    os.close(fd)
-    try:
-        snapshot.to_csv(temp_path, index=False)
-        STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
-        shutil.move(temp_path, STATE_FILE)
-    finally:
-        if os.path.exists(temp_path):
-            os.unlink(temp_path)
+    write_dataframe_csv_atomic(snapshot, STATE_FILE, index=False)
     print(f"{note}: wrote {len(snapshot)} rows to {STATE_FILE}")
 
 

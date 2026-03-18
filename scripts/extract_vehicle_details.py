@@ -5,9 +5,7 @@ import ast
 import json
 import os
 import re
-import shutil
 import time
-import tempfile
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -19,6 +17,7 @@ if __package__ in (None, ""):
     import sys
 
     sys.path.append(str(Path(__file__).resolve().parent.parent))
+    from scripts.atomic_csv import append_dataframe_csv_atomic, write_dataframe_csv_atomic
     from shared.data_loader import dataset_path
     from shared.schema import SOLD_RAW_SCRAPE_COLUMNS, STATIC_VEHICLE_SCHEMA
     from shared.sold_cleaning import (
@@ -33,6 +32,7 @@ if __package__ in (None, ""):
     from shared.validators import validate_vehicle_static_df
     from shared.exclusions import append_pipeline_exclusions
 else:
+    from scripts.atomic_csv import append_dataframe_csv_atomic, write_dataframe_csv_atomic
     from shared.data_loader import dataset_path
     from shared.schema import SOLD_RAW_SCRAPE_COLUMNS, STATIC_VEHICLE_SCHEMA
     from shared.sold_cleaning import (
@@ -305,8 +305,7 @@ def append_failure_log(records: list[dict[str, Any]], *, stage: str = "static_va
     for key in zip(to_append["url"], to_append["reason_code"]):
         seen_keys.add(key)
 
-    file_exists = FAILURES_FILE.exists()
-    if file_exists:
+    if FAILURES_FILE.exists():
         try:
             existing_columns = list(pd.read_csv(FAILURES_FILE, nrows=0).columns)
         except (ValueError, pd.errors.EmptyDataError):
@@ -317,7 +316,7 @@ def append_failure_log(records: list[dict[str, Any]], *, stage: str = "static_va
         if column not in to_append.columns:
             to_append[column] = ""
     to_append = to_append.reindex(columns=existing_columns)
-    to_append.to_csv(FAILURES_FILE, mode="a", header=not file_exists, index=False)
+    append_dataframe_csv_atomic(to_append, FAILURES_FILE, index=False)
     append_pipeline_exclusions(records, stage=stage)
 
 
@@ -984,15 +983,7 @@ def prune_to_active_queue(df: pd.DataFrame) -> tuple[pd.DataFrame, int]:
 
 
 def atomic_write(df: pd.DataFrame, path: Path) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    fd, temp_path = tempfile.mkstemp(suffix=".csv")
-    os.close(fd)
-    try:
-        df.to_csv(temp_path, index=False)
-        shutil.move(temp_path, path)
-    finally:
-        if os.path.exists(temp_path):
-            os.unlink(temp_path)
+    write_dataframe_csv_atomic(df, path, index=False)
 
 
 def _normalize_text_columns(df: pd.DataFrame) -> pd.DataFrame:

@@ -5,9 +5,7 @@ from __future__ import annotations
 import json
 import os
 import re
-import shutil
 import sys
-import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Callable, Sequence
@@ -17,6 +15,7 @@ from dateutil import parser as date_parser
 
 if __package__ in (None, ""):
     sys.path.append(str(Path(__file__).resolve().parent.parent))
+    from scripts.atomic_csv import append_dataframe_csv_atomic, write_dataframe_csv_atomic
     from shared.data_loader import dataset_path
     from shared.sold_cleaning import normalize_listing_fields
     from shared.canonical_tagging import tag_dataframe
@@ -25,6 +24,7 @@ if __package__ in (None, ""):
     from shared.exclusions import append_pipeline_exclusions
     from scripts.build_restricted_datasets import build_restricted_datasets
 else:
+    from scripts.atomic_csv import append_dataframe_csv_atomic, write_dataframe_csv_atomic
     from shared.data_loader import dataset_path
     from shared.sold_cleaning import normalize_listing_fields
     from shared.canonical_tagging import tag_dataframe
@@ -150,9 +150,8 @@ def _append_sold_discard_log(records: list[dict[str, object]]) -> None:
     if not records:
         return
     SOLD_DISCARD_LOG.parent.mkdir(parents=True, exist_ok=True)
-    file_exists = SOLD_DISCARD_LOG.exists()
     df = pd.DataFrame(records)
-    df.to_csv(SOLD_DISCARD_LOG, mode="a", header=not file_exists, index=False)
+    append_dataframe_csv_atomic(df, SOLD_DISCARD_LOG, index=False)
     append_pipeline_exclusions(records, stage="sold_clean")
 
 
@@ -267,15 +266,7 @@ def _load_dataframe(path: Path) -> pd.DataFrame:
 
 
 def _atomic_write(df: pd.DataFrame, path: Path) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    fd, temp_path = tempfile.mkstemp(suffix=path.suffix or ".csv")
-    os.close(fd)
-    try:
-        df.to_csv(temp_path, index=False)
-        shutil.move(temp_path, path)
-    finally:
-        if os.path.exists(temp_path):
-            os.unlink(temp_path)
+    write_dataframe_csv_atomic(df, path, index=False)
 
 
 def _build_key(frame: pd.DataFrame, columns: Sequence[str]) -> pd.Series:

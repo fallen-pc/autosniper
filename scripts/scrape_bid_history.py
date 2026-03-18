@@ -17,8 +17,10 @@ if __package__ in (None, ""):
     import sys
 
     sys.path.append(str(Path(__file__).resolve().parent.parent))
+    from scripts.atomic_csv import append_dict_rows_csv_atomic
     from shared.data_loader import dataset_path
 else:  # pragma: no cover
+    from scripts.atomic_csv import append_dict_rows_csv_atomic
     from shared.data_loader import dataset_path
 
 
@@ -171,14 +173,7 @@ def _write_rows(path: Path, rows: Iterable[dict[str, object]]) -> None:
         "win_qty",
         "reserve_met",
     ]
-    path.parent.mkdir(parents=True, exist_ok=True)
-    file_exists = path.exists()
-    with path.open("a", newline="", encoding="utf-8") as handle:
-        writer = csv.DictWriter(handle, fieldnames=fieldnames)
-        if not file_exists:
-            writer.writeheader()
-        for row in rows:
-            writer.writerow(row)
+    append_dict_rows_csv_atomic(path, fieldnames, rows)
 
 
 async def run_scrape(

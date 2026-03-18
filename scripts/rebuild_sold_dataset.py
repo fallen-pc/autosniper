@@ -14,6 +14,7 @@ if __package__ in (None, ""):
     import sys
 
     sys.path.append(str(Path(__file__).resolve().parent.parent))
+    from scripts.atomic_csv import write_dataframe_csv_atomic
     from shared.data_loader import dataset_path
     from shared.schema import SOLD_LISTING_SCHEMA, SOLD_RAW_SCRAPE_COLUMNS
     from shared.sold_cleaning import (
@@ -24,6 +25,7 @@ if __package__ in (None, ""):
     )
     from scripts.extract_vehicle_details import process_links
 else:  # pragma: no cover
+    from scripts.atomic_csv import write_dataframe_csv_atomic
     from shared.data_loader import dataset_path
     from shared.schema import SOLD_LISTING_SCHEMA, SOLD_RAW_SCRAPE_COLUMNS
     from shared.sold_cleaning import (
@@ -282,7 +284,7 @@ def process_and_append_rows(
         )
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    combined.to_csv(output_path, index=False)
+    write_dataframe_csv_atomic(combined, output_path, index=False)
     return len(scraped_df)
 
 

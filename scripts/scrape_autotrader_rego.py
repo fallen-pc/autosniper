@@ -10,6 +10,7 @@ from typing import Optional
 import pandas as pd
 from playwright.sync_api import sync_playwright
 
+from scripts.atomic_csv import write_dataframe_csv_atomic
 
 OUTPUT_DIR = Path("autotrader_isolated/output")
 LISTING_STATE = OUTPUT_DIR / "listing_state.csv"
@@ -130,8 +131,8 @@ def main() -> None:
     updated.drop(columns=["url_norm"], inplace=True)
 
     enriched_path = OUTPUT_DIR / "listing_state_rego_enriched.csv"
-    updated.to_csv(enriched_path, index=False)
-    updated.to_csv(LISTING_STATE, index=False)
+    write_dataframe_csv_atomic(updated, enriched_path, index=False)
+    write_dataframe_csv_atomic(updated, LISTING_STATE, index=False)
     print(f"Updated rego for {updates} row(s).")
     print(f"Wrote {enriched_path}")
 

@@ -12,9 +12,11 @@ from bs4 import BeautifulSoup
 
 if __package__ in (None, ""):
     sys.path.append(str(Path(__file__).resolve().parent.parent))
+    from scripts.atomic_csv import write_dataframe_csv_atomic
     from shared.data_loader import dataset_path
     from shared.sold_cleaning import is_compliance_slug
 else:
+    from scripts.atomic_csv import write_dataframe_csv_atomic
     from shared.data_loader import dataset_path
     from shared.sold_cleaning import is_compliance_slug
 
@@ -244,7 +246,7 @@ def extract_all_vehicle_links() -> None:
         pipeline_df = pipeline_df.drop_duplicates(subset=["_url_norm"], keep="first")
         pipeline_df = pipeline_df.drop(columns=["_url_norm"])
     pipeline_df = pipeline_df.reset_index(drop=True)
-    pipeline_df.to_csv(OUTPUT_FILE, index=False)
+    write_dataframe_csv_atomic(pipeline_df, OUTPUT_FILE, index=False)
     print(f"Saved {len(pipeline_df)} vehicle links to {OUTPUT_FILE} ({len(new_links)} new).")
 
     active_urls: set[str] = set()
@@ -259,7 +261,7 @@ def extract_all_vehicle_links() -> None:
         active_urls.add(norm)
     active_df = pd.DataFrame(sorted(active_urls), columns=["url"])
     ACTIVE_OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
-    active_df.to_csv(ACTIVE_OUTPUT_FILE, index=False)
+    write_dataframe_csv_atomic(active_df, ACTIVE_OUTPUT_FILE, index=False)
 
     pipeline_before = len(pipeline_df) - len(new_links)
     summary = {

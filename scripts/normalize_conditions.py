@@ -6,6 +6,7 @@ from typing import Dict, Iterable, List
 
 import pandas as pd
 
+from scripts.atomic_csv import write_dict_rows_csv_atomic
 from shared.condition_normalizer import (
     estimate_component_count,
     load_rules,
@@ -33,29 +34,25 @@ def _extract_lines(text: str) -> List[str]:
 
 
 def _emit_rows(rows: Iterable[Dict[str, object]]) -> None:
-    OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    with OUTPUT_PATH.open("w", newline="", encoding="utf-8") as handle:
-        writer = csv.DictWriter(
-            handle,
-            fieldnames=[
-                "source",
-                "url",
-                "original_text",
-                "normalized_text",
-                "tokens",
-                "split_index",
-                "component_original",
-                "component_normalized",
-                "category_tags",
-                "severity_flag",
-                "component_count",
-                "confidence_score",
-                "rule_trace",
-            ],
-        )
-        writer.writeheader()
-        for row in rows:
-            writer.writerow(row)
+    write_dict_rows_csv_atomic(
+        OUTPUT_PATH,
+        fieldnames=[
+            "source",
+            "url",
+            "original_text",
+            "normalized_text",
+            "tokens",
+            "split_index",
+            "component_original",
+            "component_normalized",
+            "category_tags",
+            "severity_flag",
+            "component_count",
+            "confidence_score",
+            "rule_trace",
+        ],
+        rows=rows,
+    )
 
 
 def main() -> None:

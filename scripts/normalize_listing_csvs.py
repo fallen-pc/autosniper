@@ -9,11 +9,13 @@ import pandas as pd
 
 if __package__ in (None, ""):
     sys.path.append(str(Path(__file__).resolve().parent.parent))
+    from scripts.atomic_csv import write_dataframe_csv_atomic
     from shared.data_loader import dataset_path
     from shared.schema import ACTIVE_DETAIL_SCHEMA, STATIC_CANONICAL_SCHEMA
     from shared.sold_cleaning import normalize_listing_fields
     from shared.validators import validate_sold_cars_df, validate_vehicle_static_df
 else:  # pragma: no cover
+    from scripts.atomic_csv import write_dataframe_csv_atomic
     from shared.data_loader import dataset_path
     from shared.schema import ACTIVE_DETAIL_SCHEMA, STATIC_CANONICAL_SCHEMA
     from shared.sold_cleaning import normalize_listing_fields
@@ -83,7 +85,7 @@ def _normalize_file(path: Path) -> None:
         normalized, stats = validate_sold_cars_df(normalized)
         if stats["rows_dropped"]:
             print(f"Validator dropped {stats['rows_dropped']} invalid sold rows before write.")
-    normalized.to_csv(path, index=False)
+    write_dataframe_csv_atomic(normalized, path, index=False)
     print(f"Normalized {path} ({len(normalized)} rows).")
 
 

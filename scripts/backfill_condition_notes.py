@@ -12,10 +12,12 @@ if __package__ in (None, ""):
     import sys
 
     sys.path.append(str(Path(__file__).resolve().parent.parent))
+    from scripts.atomic_csv import write_dataframe_csv_atomic
     from shared.data_loader import dataset_path
     from shared.validators import validate_sold_cars_df, validate_vehicle_static_df
     from scripts.extract_vehicle_details import process_links
 else:  # pragma: no cover
+    from scripts.atomic_csv import write_dataframe_csv_atomic
     from shared.data_loader import dataset_path
     from shared.validators import validate_sold_cars_df, validate_vehicle_static_df
     from scripts.extract_vehicle_details import process_links
@@ -59,10 +61,7 @@ MISSING_VALUES = {"", "n/a", "na", "nan", "none", "null"}
 
 
 def atomic_write(df: pd.DataFrame, path: Path) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_suffix(path.suffix + ".tmp")
-    df.to_csv(tmp, index=False)
-    tmp.replace(path)
+    write_dataframe_csv_atomic(df, path, index=False)
 
 
 def normalize_legacy_frame(df: pd.DataFrame, reference_columns: list[str]) -> pd.DataFrame:

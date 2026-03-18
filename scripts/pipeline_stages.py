@@ -45,7 +45,7 @@ STATIC_OUTPUT_COLUMNS = list(STATIC_CANONICAL_SCHEMA)
 
 def _empty_csv(path: Path, columns: list[str]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    pd.DataFrame(columns=columns).to_csv(path, index=False)
+    atomic_write(pd.DataFrame(columns=columns), path)
 
 
 def _read_csv_safe(path: Path) -> pd.DataFrame:

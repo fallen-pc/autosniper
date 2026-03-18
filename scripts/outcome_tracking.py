@@ -6,6 +6,7 @@ from typing import Iterable, Tuple
 
 import pandas as pd
 
+from scripts.atomic_csv import write_dataframe_csv_atomic
 from scripts.ai_listing_valuation import load_cached_results
 from scripts.ai_price_analysis import load_historical_sales
 from shared.data_loader import dataset_path
@@ -267,7 +268,7 @@ def update_scored_listings() -> pd.DataFrame:
     if indexes.empty:
         combined = pd.DataFrame(columns=IDENTITY_COLUMNS + PREDICTED_COLUMNS + ACTUAL_COLUMNS)
         _ensure_directory(SCORING_PATH)
-        combined.to_csv(SCORING_PATH, index=False)
+        write_dataframe_csv_atomic(combined, SCORING_PATH, index=False)
         return combined
 
     combined = pd.DataFrame(index=indexes)
@@ -302,7 +303,7 @@ def update_scored_listings() -> pd.DataFrame:
     combined = combined.sort_values(by=["analysis_timestamp", "purchase_date"], ascending=False)
 
     _ensure_directory(SCORING_PATH)
-    combined.to_csv(SCORING_PATH, index=False)
+    write_dataframe_csv_atomic(combined, SCORING_PATH, index=False)
     return combined
 
 
@@ -357,8 +358,8 @@ def compute_outcome_metrics() -> OutcomeData:
     df["settled_date"] = _infer_settled_dates(df)
 
     _ensure_directory(SCORING_PATH)
-    df.to_csv(SCORING_PATH, index=False)
-    df.to_csv(ENRICHED_PATH, index=False)
+    write_dataframe_csv_atomic(df, SCORING_PATH, index=False)
+    write_dataframe_csv_atomic(df, ENRICHED_PATH, index=False)
 
     metrics_df = df[df["hit"].notna()].copy()
     metrics_df["settled_date"] = pd.to_datetime(metrics_df["settled_date"], errors="coerce")
@@ -414,8 +415,8 @@ def compute_outcome_metrics() -> OutcomeData:
         ]
     )
 
-    weekly_metrics.to_csv(WEEKLY_METRICS_PATH, index=False)
-    tier_metrics.to_csv(TIER_METRICS_PATH, index=False)
+    write_dataframe_csv_atomic(weekly_metrics, WEEKLY_METRICS_PATH, index=False)
+    write_dataframe_csv_atomic(tier_metrics, TIER_METRICS_PATH, index=False)
 
     return OutcomeData(
         scored=df,

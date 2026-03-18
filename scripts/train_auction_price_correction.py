@@ -12,6 +12,8 @@ import numpy as np
 import pandas as pd
 from catboost import CatBoostRegressor, Pool
 
+from scripts.atomic_csv import write_dataframe_csv_atomic
+
 DATE_CANDIDATES = [
     "sold_date",
     "sale_date",
@@ -231,7 +233,8 @@ def main() -> None:
             "abs_error_q50": np.abs(pred_price_q50 - actual_price),
             "error_q50": pred_price_q50 - actual_price,
         }
-    ).to_csv(predictions_out, index=False)
+    )
+    write_dataframe_csv_atomic(predictions_df, predictions_out, index=False)
 
     metrics_out = args.metrics_out or os.path.join(args.out_dir, "correction_model_metrics.json")
     with open(metrics_out, "w", encoding="utf-8") as handle:

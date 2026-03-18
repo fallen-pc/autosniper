@@ -15,10 +15,12 @@ if __package__ in (None, ""):
     import sys
 
     sys.path.append(str(Path(__file__).resolve().parent.parent))
+    from scripts.atomic_csv import write_dataframe_csv_atomic
     from shared.data_loader import dataset_path
     from shared.validators import validate_sold_cars_df
     from scripts.extract_vehicle_details import process_links
 else:  # pragma: no cover
+    from scripts.atomic_csv import write_dataframe_csv_atomic
     from shared.data_loader import dataset_path
     from shared.validators import validate_sold_cars_df
     from scripts.extract_vehicle_details import process_links
@@ -267,11 +269,10 @@ def main() -> None:
     updated_df, stats = validate_sold_cars_df(updated_df)
     if stats["rows_dropped"]:
         print(f"Validator dropped {stats['rows_dropped']} invalid sold rows before write.")
-    updated_df.to_csv(SOLD_PATH, index=False)
+    write_dataframe_csv_atomic(updated_df, SOLD_PATH, index=False)
     print(f"Sold records updated ({updated} patched, {appended} appended).")
     print(f"Backup created at {backup_path}")
 
 
 if __name__ == "__main__":
     main()
-

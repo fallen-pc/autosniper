@@ -12,6 +12,7 @@ ROOT_DIR = Path(__file__).resolve().parent.parent
 if str(ROOT_DIR) not in sys.path:
     sys.path.append(str(ROOT_DIR))
 
+from scripts.atomic_csv import write_dataframe_csv_atomic
 from shared.repair_features import (
     build_repair_features,
     repair_feature_columns,
@@ -61,7 +62,7 @@ def main() -> None:
     df = pd.read_csv(args.input, low_memory=False)
     enriched = enrich_dataframe(df)
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    enriched.to_csv(args.output, index=False)
+    write_dataframe_csv_atomic(enriched, args.output, index=False)
     print(f"Wrote {len(enriched):,} rows to {args.output}")
 
 
