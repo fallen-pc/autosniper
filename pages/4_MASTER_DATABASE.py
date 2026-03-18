@@ -37,8 +37,28 @@ SOLD_FILE = dataset_path("sold_cars.csv")
 REFERRED_FILE = dataset_path("referred_cars.csv")
 
 
+def _clean_text_series(series: pd.Series) -> pd.Series:
+    cleaned = (
+        series.fillna("")
+        .astype(str)
+        .str.strip()
+        .str.replace(r"\s+", " ", regex=True)
+    )
+    return cleaned.mask(cleaned.str.lower().isin({"nan", "none"}), "")
+
+
+def _normalize_master_view(df: pd.DataFrame) -> pd.DataFrame:
+    working = df.copy()
+    for column in ("make", "model", "variant", "body_type", "fuel_type", "transmission"):
+        if column in working.columns:
+            working[column] = _clean_text_series(working[column])
+    if "make" in working.columns:
+        working["make"] = working["make"].str.upper()
+    return working
+
+
 def render_dataset(title: str, file_path: str, columns: Iterable[str] | None = None) -> None:
-    df = load_csv(file_path)
+    df = _normalize_master_view(load_csv(file_path))
     if df.empty:
         st.info(f"No records found for {title.lower()}.")
         return
@@ -83,7 +103,7 @@ def load_csv(file_path: Path | str) -> pd.DataFrame:
 
 
 def render_sold_inventory() -> None:
-    df = load_csv(SOLD_FILE)
+    df = _normalize_master_view(load_csv(SOLD_FILE))
     if df.empty:
         st.info("No records found for sold vehicles.")
         return
@@ -117,17 +137,22 @@ def render_sold_inventory() -> None:
     )
     st.markdown(summary_html, unsafe_allow_html=True)
 
+    working_df["_make_group"] = _clean_text_series(working_df.get("make", pd.Series(index=working_df.index))).str.casefold()
+    working_df["_model_group"] = _clean_text_series(working_df.get("model", pd.Series(index=working_df.index))).str.casefold()
     working_df.sort_values(
-        by=["make", "model", "year_numeric"],
+        by=["_make_group", "_model_group", "year_numeric"],
         ascending=[True, True, False],
         inplace=True,
         kind="mergesort",
     )
 
-    for make_value, make_df in working_df.groupby("make", dropna=False):
-        make_label = str(make_value).strip() if pd.notna(make_value) and str(make_value).strip() else "Unknown Make"
+    for make_value, make_df in working_df.groupby("_make_group", dropna=False):
+        if make_value:
+            make_label = str(make_value).upper()
+        else:
+            make_label = "UNKNOWN MAKE"
         with st.expander(f"{make_label} ({len(make_df)} vehicles)", expanded=False):
-            display_df = make_df.drop(columns=["year_numeric"]).sort_values(
+            display_df = make_df.drop(columns=["year_numeric", "_make_group", "_model_group"]).sort_values(
                 by=["model", "year"],
                 ascending=[True, False],
                 kind="mergesort",

@@ -3,7 +3,14 @@ import pandas as pd
 import streamlit as st
 
 from shared.data_loader import dataset_path
-from shared.curves import load_curves, resolve_curve_canonical_tag, save_curves
+from shared.curves import (
+    list_curve_tags,
+    load_curve_aliases,
+    load_curves,
+    resolve_curve_canonical_tag,
+    save_curves,
+)
+from shared.styling import display_banner, inject_global_styles, page_intro, section_heading
 
 
 CURVES_PATH = dataset_path("curves.csv")
@@ -11,21 +18,27 @@ REQUIRED_KM = [30000, 60000, 100000, 150000, 200000]
 
 
 st.set_page_config(page_title="Curve Builder", layout="wide")
-st.title("CURVE BUILDER")
-st.caption(
-    "Canonical curves only. Edit rows for canonical_tag + anchor_year + km_bucket. "
-    "Writes to restricted/curves.csv with strict schema."
+inject_global_styles()
+display_banner()
+page_intro(
+    "CURVE BUILDER",
+    "Canonical curves only. Edit rows for canonical_tag + anchor_year + km_bucket and write governed updates to restricted/curves.csv.",
+    show_logo=False,
 )
 
 curves = load_curves()
+curve_aliases = load_curve_aliases()
 
-tag_candidates: list[str] = []
-if not curves.empty and "canonical_tag" in curves.columns:
-    tag_candidates = curves["canonical_tag"].dropna().astype(str).str.strip().tolist()
-canonical_tags = sorted({tag for tag in tag_candidates if tag and tag != "UNCLASSIFIED"})
+canonical_tags = sorted(
+    {
+        tag
+        for tag in list_curve_tags(curves, include_aliases=True)
+        if tag and tag != "UNCLASSIFIED"
+    }
+)
 
 preferred_tag = st.session_state.get("curve_builder_tag")
-preferred_tag = resolve_curve_canonical_tag(preferred_tag)
+preferred_tag = str(preferred_tag or "").strip()
 default_index = canonical_tags.index(preferred_tag) if preferred_tag in canonical_tags else 0
 
 left, right = st.columns([2, 2])
@@ -39,19 +52,25 @@ with right:
     new_tag = st.text_input("Or enter a new tag", value="")
 
 if new_tag.strip():
-    selected_tag = resolve_curve_canonical_tag(new_tag.strip())
+    selected_tag = new_tag.strip()
 
 if not selected_tag:
     st.info("Add a canonical_tag to start building curves.")
     st.stop()
 
-tag_rows = curves[curves["canonical_tag"] == selected_tag].copy()
+resolved_tag = resolve_curve_canonical_tag(selected_tag, curve_aliases)
+is_alias = bool(selected_tag and resolved_tag and selected_tag != resolved_tag)
+
+if is_alias:
+    st.info(f"`{selected_tag}` resolves to base curve `{resolved_tag}`. Saving edits will update the shared base curve.")
+
+tag_rows = curves[curves["canonical_tag"] == resolved_tag].copy()
 if tag_rows.empty:
     tag_rows = pd.DataFrame(
         columns=["canonical_tag", "anchor_year", "km_bucket", "price_low", "price_mid", "price_high"]
     )
 
-st.markdown("### Edit curve rows")
+section_heading("Edit Curve Rows", "Work on one canonical tag at a time.")
 editor_df = tag_rows[
     ["canonical_tag", "anchor_year", "km_bucket", "price_low", "price_mid", "price_high"]
 ].copy()
@@ -59,7 +78,7 @@ if editor_df.empty:
     editor_df = pd.DataFrame(
         [
             {
-                "canonical_tag": selected_tag,
+                "canonical_tag": resolved_tag or selected_tag,
                 "anchor_year": 2020,
                 "km_bucket": 30000,
                 "price_low": None,
@@ -86,6 +105,11 @@ edited = st.data_editor(
 if st.button("Save curves.csv", type="primary"):
     key_cols = ["canonical_tag", "anchor_year", "km_bucket"]
     incoming = edited.copy()
+    incoming["canonical_tag"] = incoming["canonical_tag"].fillna("").astype(str).str.strip()
+    incoming["canonical_tag"] = incoming["canonical_tag"].replace("", resolved_tag or selected_tag)
+    incoming["canonical_tag"] = incoming["canonical_tag"].apply(
+        lambda value: resolve_curve_canonical_tag(value, curve_aliases)
+    )
     incoming["_key"] = incoming[key_cols].astype(str).agg("|".join, axis=1)
     base = curves.copy()
     if not base.empty:
@@ -97,9 +121,10 @@ if st.button("Save curves.csv", type="primary"):
     save_curves(merged)
     st.success(f"Saved {len(incoming)} rows to {CURVES_PATH}")
     curves = load_curves()
-    tag_rows = curves[curves["canonical_tag"] == selected_tag].copy()
+    curve_aliases = load_curve_aliases()
+    tag_rows = curves[curves["canonical_tag"] == resolved_tag].copy()
 
-st.markdown("### Completeness")
+section_heading("Completeness", "Check required km anchors for each year.")
 summary_rows = []
 if not tag_rows.empty:
     for year in sorted(tag_rows["anchor_year"].dropna().unique().tolist()):
@@ -121,7 +146,7 @@ if summary_rows:
 else:
     st.info("No rows yet for this tag.")
 
-st.markdown("### Plot")
+section_heading("Plot", "Visualize the current mid-price curve by anchor year.")
 if not tag_rows.empty:
     fig = plt.figure()
     ax = plt.gca()
@@ -131,7 +156,7 @@ if not tag_rows.empty:
         sub = tag_rows[tag_rows["anchor_year"] == year].sort_values("km_bucket")
         ax.plot(sub["km_bucket"], sub["price_mid"], marker="o", linewidth=2, label=str(year))
         ax.scatter(sub["km_bucket"], sub["price_mid"], s=25)
-    ax.set_title(selected_tag)
+    ax.set_title(selected_tag if not is_alias else f"{selected_tag} -> {resolved_tag}")
     ax.set_xlabel("KM")
     ax.set_ylabel("Price ($)")
     ax.legend()
