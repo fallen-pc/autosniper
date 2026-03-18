@@ -491,20 +491,31 @@ def _grays_buyer_premium(final_bid: float) -> float:
     return final_bid * 0.05
 
 
-def _estimate_costs(purchase_price: float, listing: Mapping[str, Any]) -> dict[str, float]:
+def _estimate_bid_cost_components(purchase_price: float, listing: Mapping[str, Any]) -> dict[str, float]:
     if _is_grays_listing(listing):
-        fees = _grays_buyer_premium(purchase_price)
+        auction_fee = _grays_buyer_premium(purchase_price)
     else:
-        fees = max(MIN_FEES, purchase_price * FEES_RATE)
-    transport = _estimate_transport_cost(listing.get("location"))
-    rego = UNREGISTERED_REGO_COST if _is_unregistered(listing) else REGISTERED_REGO_COST
-    detailing = _estimate_detailing_cost(listing)
-    prep = DEFAULT_PREP + detailing
+        auction_fee = max(MIN_FEES, purchase_price * FEES_RATE)
+    transport_cost = _estimate_transport_cost(listing.get("location"))
+    rego_cost = UNREGISTERED_REGO_COST if _is_unregistered(listing) else REGISTERED_REGO_COST
+    detail_cost = _estimate_detailing_cost(listing)
+    prep_cost = DEFAULT_PREP + detail_cost
     return {
-        "fees_estimate": fees,
-        "transport_estimate": transport,
-        "rego_estimate": rego,
-        "prep_estimate": prep,
+        "auction_fee": auction_fee,
+        "transport_cost": transport_cost,
+        "detail_cost": detail_cost,
+        "rego_cost": rego_cost,
+        "prep_cost": prep_cost,
+    }
+
+
+def _estimate_costs(purchase_price: float, listing: Mapping[str, Any]) -> dict[str, float]:
+    components = _estimate_bid_cost_components(purchase_price, listing)
+    return {
+        "fees_estimate": components["auction_fee"],
+        "transport_estimate": components["transport_cost"],
+        "rego_estimate": components["rego_cost"],
+        "prep_estimate": components["prep_cost"],
     }
 
 
@@ -815,7 +826,7 @@ def run_ai_listing_analysis(listing_row: pd.Series, force_refresh: bool = False)
 
     break_even_bid = None
     if adjusted_avg_price is not None:
-        break_even_bid = max(0.0, adjusted_avg_price - COST_BUFFER)
+        break_even_bid = _solve_max_bid(adjusted_avg_price, COST_BUFFER, listing_row)
 
     current_price_val = _parse_currency(listing_row.get("current_price"))
     if current_price_val is None:
@@ -900,13 +911,13 @@ def run_ai_listing_analysis(listing_row: pd.Series, force_refresh: bool = False)
     net_profit_mid_val = None
     net_profit_worst_val = None
     if assumed_purchase_val is not None and resale_mid_val is not None:
-        net_profit_mid_val = resale_mid_val - COST_BUFFER - assumed_purchase_val
+        net_profit_mid_val = _net_profit_value(resale_mid_val, assumed_purchase_val, listing_row) - COST_BUFFER
     if assumed_purchase_val is not None and resale_low_val is not None:
-        net_profit_worst_val = resale_low_val - COST_BUFFER - assumed_purchase_val
+        net_profit_worst_val = _net_profit_value(resale_low_val, assumed_purchase_val, listing_row) - COST_BUFFER
 
     expected_profit_val = None
     if resale_mid_val is not None and recommended_max_bid_val is not None:
-        expected_profit_val = resale_mid_val - COST_BUFFER - recommended_max_bid_val
+        expected_profit_val = _net_profit_value(resale_mid_val, recommended_max_bid_val, listing_row) - COST_BUFFER
 
     expected_profit_val = max(0.0, expected_profit_val or 0.0) if expected_profit_val is not None else None
     expected_profit = _format_currency(expected_profit_val) if expected_profit_val is not None else data.get("expected_profit")
