@@ -112,6 +112,55 @@ SEVERITY_WEIGHTS: dict[str, int] = {
     "unknown_untested": 15,
 }
 
+SEVERITY_LEVEL_KEYWORDS: dict[str, Sequence[str]] = {
+    "minor": (
+        "scratch",
+        "scuff",
+        "scrape",
+        "chip",
+        "stain",
+        "wear",
+        "tear",
+    ),
+    "moderate": (
+        "dent",
+        "hail",
+        "rust",
+        "crack",
+        "broken",
+        "brake",
+        "suspension",
+        "alignment",
+    ),
+    "major": (
+        "structural",
+        "chassis",
+        "frame",
+        "rail",
+        "engine",
+        "gearbox",
+        "transmission",
+        "drivetrain",
+        "does not start",
+        "doesn't start",
+        "won't start",
+        "not running",
+        "non operational",
+    ),
+}
+
+TAG_SEVERITY_LEVELS: dict[str, str] = {
+    "engine_mechanical": "major",
+    "electrical": "moderate",
+    "non_operational": "major",
+    "suspension_brakes": "moderate",
+    "interior": "minor",
+    "body_exterior": "minor",
+    "tyres_wheels": "minor",
+    "general_wear": "minor",
+    "unknown_untested": "moderate",
+}
+
 FLUFF_PHRASES: tuple[str, ...] = (
     "consistent with age",
     "consistent with kilometres",
@@ -142,6 +191,7 @@ class RepairFeatureSet:
     defects_only: str
     tags: list[str]
     severity: int
+    severity_level: str
     decision_label: str
 
 
@@ -184,6 +234,26 @@ def compute_severity(tags: Iterable[str]) -> int:
     """Sum the configured severity weights for the detected tags."""
     unique_tags: Set[str] = set(tag for tag in tags if tag in SEVERITY_WEIGHTS)
     return sum(SEVERITY_WEIGHTS[tag] for tag in unique_tags)
+
+
+def compute_severity_level(text: str, tags: Iterable[str]) -> str:
+    """Return a deterministic severity level derived from keywords, then tag fallback."""
+    lowered = text.lower()
+    if any(keyword in lowered for keyword in SEVERITY_LEVEL_KEYWORDS["major"]):
+        return "major"
+    if any(keyword in lowered for keyword in SEVERITY_LEVEL_KEYWORDS["moderate"]):
+        return "moderate"
+    if any(keyword in lowered for keyword in SEVERITY_LEVEL_KEYWORDS["minor"]):
+        return "minor"
+
+    tag_set = {tag for tag in tags if tag in TAG_SEVERITY_LEVELS}
+    if any(TAG_SEVERITY_LEVELS[tag] == "major" for tag in tag_set):
+        return "major"
+    if any(TAG_SEVERITY_LEVELS[tag] == "moderate" for tag in tag_set):
+        return "moderate"
+    if any(TAG_SEVERITY_LEVELS[tag] == "minor" for tag in tag_set):
+        return "minor"
+    return ""
 
 
 def defects_only_summary(text: str) -> str:
@@ -230,6 +300,7 @@ def build_repair_features(condition_text: str | float | None) -> RepairFeatureSe
     defects = defects_only_summary(cleaned)
     tags = tag_condition(cleaned)
     severity = compute_severity(tags)
+    severity_level = compute_severity_level(cleaned, tags)
     decision = decision_from_severity(severity)
     return RepairFeatureSet(
         normalized_text=normalized,
@@ -237,6 +308,7 @@ def build_repair_features(condition_text: str | float | None) -> RepairFeatureSe
         defects_only=defects,
         tags=tags,
         severity=severity,
+        severity_level=severity_level,
         decision_label=decision,
     )
 
