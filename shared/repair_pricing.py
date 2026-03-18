@@ -8,6 +8,8 @@ import re
 
 import pandas as pd
 
+from shared.repair_features import build_repair_features
+
 
 PANEL_RATE = 300
 PANEL_CAP = 3
@@ -34,6 +36,12 @@ RISK_BUFFERS = {
     "no_closeups": 300,
     "interstate_yard": 200,
     "paint_black_or_white": 100,
+}
+
+SEVERITY_MULTIPLIERS = {
+    "minor": 1.0,
+    "moderate": 1.5,
+    "major": 2.5,
 }
 
 MECH_AVOID_PATTERNS = [
@@ -103,6 +111,9 @@ class RepairAssessment:
     glass_cost: int
     replacement_cost: int
     risk_buffer: int
+    base_cost: int
+    severity_level: str
+    severity_multiplier: float
     total_cost: int
     reasons: List[str]
 
@@ -136,6 +147,9 @@ def assess_repairs(
     adas_windscreen: bool = False,
     extra_risk_flags: Optional[List[str]] = None,
 ) -> RepairAssessment:
+    feature_set = build_repair_features(general_condition)
+    severity_level = feature_set.severity_level or "minor"
+    severity_multiplier = float(SEVERITY_MULTIPLIERS.get(severity_level, 1.0))
     lines = split_condition_lines(general_condition)
 
     if any_mechanical(lines):
@@ -146,6 +160,9 @@ def assess_repairs(
             glass_cost=0,
             replacement_cost=0,
             risk_buffer=0,
+            base_cost=10000,
+            severity_level=severity_level,
+            severity_multiplier=severity_multiplier,
             total_cost=10000,
             reasons=["MECHANICAL_REGEX_HIT"],
         )
@@ -175,6 +192,9 @@ def assess_repairs(
                 glass_cost=0,
                 replacement_cost=0,
                 risk_buffer=0,
+                base_cost=10000,
+                severity_level=severity_level,
+                severity_multiplier=severity_multiplier,
                 total_cost=10000,
                 reasons=[f"DICT_AVOID: {line}"],
             )
@@ -218,18 +238,20 @@ def assess_repairs(
 
     cosmetic_panels = min(cosmetic_panels, PANEL_CAP)
     cosmetic_cost = cosmetic_panels * PANEL_RATE
-    total = cosmetic_cost + glass_cost + replacement_cost + risk_buffer
+    base_total = cosmetic_cost + glass_cost + replacement_cost + risk_buffer
 
     if has_replacement:
-        total = min(total, HARD_CAPS["with_replacement"])
+        base_total = min(base_total, HARD_CAPS["with_replacement"])
     elif has_glass:
-        total = min(total, HARD_CAPS["cosmetic_plus_glass"])
+        base_total = min(base_total, HARD_CAPS["cosmetic_plus_glass"])
     else:
-        total = min(total, HARD_CAPS["cosmetic_only"])
+        base_total = min(base_total, HARD_CAPS["cosmetic_only"])
 
     if extra_risk_flags:
         for flag in extra_risk_flags:
-            total += RISK_BUFFERS.get(flag, 0)
+            base_total += RISK_BUFFERS.get(flag, 0)
+
+    total = int(round(base_total * severity_multiplier))
 
     return RepairAssessment(
         hard_avoid=False,
@@ -238,6 +260,9 @@ def assess_repairs(
         glass_cost=glass_cost,
         replacement_cost=replacement_cost,
         risk_buffer=risk_buffer,
+        base_cost=int(base_total),
+        severity_level=severity_level,
+        severity_multiplier=severity_multiplier,
         total_cost=total,
         reasons=reasons,
     )
