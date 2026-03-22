@@ -96,3 +96,25 @@ def snapshot_curve_version(
     manifest_out = pd.concat([manifest_df, manifest_row], ignore_index=True)
     manifest_out.to_csv(manifest_path, index=False)
     return snapshot_path
+
+
+def latest_prior_curve_snapshot(curves_path: Path) -> Path | None:
+    """Return the most recent snapshot with different content from the current curves file."""
+    if not curves_path.exists():
+        return None
+
+    manifest_path = curves_path.parent / VERSION_DIRNAME / MANIFEST_FILENAME
+    manifest_df = _load_manifest(manifest_path)
+    if manifest_df.empty:
+        return None
+
+    current_hash = _file_sha256(curves_path)
+    candidates = manifest_df[manifest_df["sha256"].astype(str) != current_hash].copy()
+    if candidates.empty:
+        return None
+
+    for snapshot_value in reversed(candidates["snapshot_path"].astype(str).tolist()):
+        snapshot_path = Path(snapshot_value)
+        if snapshot_path.exists():
+            return snapshot_path
+    return None

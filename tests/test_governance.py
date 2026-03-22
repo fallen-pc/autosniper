@@ -87,6 +87,60 @@ def test_build_curve_monotonicity_report_tracks_year_reversals_as_warnings():
     assert set(report_df["issue_type"]) == {"year_reversal"}
 
 
+def test_validate_curve_monotonicity_baseline_flags_new_warnings(monkeypatch, tmp_path):
+    current_path = tmp_path / "curves.csv"
+    baseline_path = tmp_path / "curves_baseline.csv"
+
+    pd.DataFrame(
+        [
+            {
+                "canonical_tag": "demo_tag",
+                "anchor_year": 2020,
+                "km_bucket": 50000,
+                "price_low": 18000,
+                "price_mid": 20000,
+                "price_high": 22000,
+            },
+            {
+                "canonical_tag": "demo_tag",
+                "anchor_year": 2021,
+                "km_bucket": 50000,
+                "price_low": 19000,
+                "price_mid": 21000,
+                "price_high": 23000,
+            },
+        ]
+    ).to_csv(baseline_path, index=False)
+
+    pd.DataFrame(
+        [
+            {
+                "canonical_tag": "demo_tag",
+                "anchor_year": 2020,
+                "km_bucket": 50000,
+                "price_low": 18000,
+                "price_mid": 20000,
+                "price_high": 22000,
+            },
+            {
+                "canonical_tag": "demo_tag",
+                "anchor_year": 2021,
+                "km_bucket": 50000,
+                "price_low": 17500,
+                "price_mid": 19500,
+                "price_high": 21500,
+            },
+        ]
+    ).to_csv(current_path, index=False)
+
+    monkeypatch.setattr(gov, "latest_prior_curve_snapshot", lambda _path: baseline_path)
+
+    errors = gov.validate_curve_monotonicity_baseline(current_path)
+
+    assert len(errors) == 1
+    assert "regressed" in errors[0]
+
+
 def test_build_curve_coverage_report_marks_missing_tags():
     static_df = pd.DataFrame(
         [

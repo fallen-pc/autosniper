@@ -11,14 +11,17 @@
 python scripts/governance_checks.py check
 python scripts/governance_checks.py coverage-report
 python scripts/governance_checks.py snapshot-curves --note "Describe the curve update"
+python scripts/readiness_smoke.py
 ```
 
 ## Curve Versioning
 - `shared.curves.save_curves()` now snapshots `CSV_data/restricted/curves.csv` into `CSV_data/restricted/versions/`.
+- `scripts/generate_curve_candidates.py` and `scripts/process_curve_candidates.py` are the supported operator path for new/refresh curves.
 - Every committed `curves.csv` change must include:
   - `CSV_data/restricted/versions/curves_<version>.csv`
   - `CSV_data/restricted/versions/curves_manifest.csv`
   - `CHANGELOG.md`
+- Governance also compares the current monotonicity report to the latest prior versioned snapshot and fails on any new monotonicity issue, even if it is only a warning.
 
 ## Naming Rules
 - New source files under `scripts/`, `shared/`, and `docs/` should use lowercase snake_case names.

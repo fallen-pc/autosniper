@@ -17,6 +17,7 @@ from shared.curves import (
     resolve_curve_canonical_tag,
     validate_curve_columns,
 )
+from shared.curve_versioning import latest_prior_curve_snapshot
 from shared.data_loader import dataset_path
 from shared.schema import (
     ACTIVE_DETAIL_SCHEMA,
@@ -196,7 +197,9 @@ def validate_curves_dataset() -> list[str]:
     if not curves_path.exists():
         return [f"Missing governed dataset: curves.csv ({curves_path})"]
     curves_df = pd.read_csv(curves_path)
-    return validate_curve_table(curves_df)
+    errors = validate_curve_table(curves_df)
+    errors.extend(validate_curve_monotonicity_baseline(curves_path, curves_df))
+    return errors
 
 
 def build_curve_coverage_report(
@@ -470,6 +473,62 @@ def summarize_curve_monotonicity(report_df: pd.DataFrame) -> dict[str, int]:
         "errors": int((severity == "error").sum()),
         "warnings": int((severity == "warning").sum()),
     }
+
+
+def _monotonicity_issue_keys(report_df: pd.DataFrame) -> set[tuple[object, ...]]:
+    if report_df is None or report_df.empty:
+        return set()
+    key_columns = ["canonical_tag", "anchor_year", "km_bucket", "column_name", "issue_type", "severity"]
+    return {
+        tuple(row[column] for column in key_columns)
+        for _, row in report_df.loc[:, key_columns].iterrows()
+    }
+
+
+def summarize_monotonicity_regression(
+    current_report_df: pd.DataFrame,
+    baseline_report_df: pd.DataFrame,
+) -> dict[str, int]:
+    current_keys = _monotonicity_issue_keys(current_report_df)
+    baseline_keys = _monotonicity_issue_keys(baseline_report_df)
+    return {
+        "current_issues": len(current_keys),
+        "baseline_issues": len(baseline_keys),
+        "new_issues": len(current_keys - baseline_keys),
+        "resolved_issues": len(baseline_keys - current_keys),
+    }
+
+
+def validate_curve_monotonicity_baseline(
+    curves_path: Path | None = None,
+    curves_df: pd.DataFrame | None = None,
+) -> list[str]:
+    path = curves_path or dataset_path("curves.csv")
+    baseline_path = latest_prior_curve_snapshot(path)
+    if baseline_path is None:
+        return []
+
+    current_df = curves_df if curves_df is not None else pd.read_csv(path)
+    baseline_df = pd.read_csv(baseline_path)
+    current_report_df = build_curve_monotonicity_report(current_df)
+    baseline_report_df = build_curve_monotonicity_report(baseline_df)
+    current_keys = _monotonicity_issue_keys(current_report_df)
+    baseline_keys = _monotonicity_issue_keys(baseline_report_df)
+    new_issue_keys = sorted(current_keys - baseline_keys)
+    if not new_issue_keys:
+        return []
+
+    sample = ", ".join(
+        f"{canonical_tag}/{int(anchor_year)}/{int(km_bucket)}/{column_name}/{issue_type}"
+        for canonical_tag, anchor_year, km_bucket, column_name, issue_type, _severity in new_issue_keys[:5]
+    )
+    return [
+        (
+            "Curve monotonicity regressed versus the previous versioned snapshot "
+            f"({baseline_path.as_posix()}): {len(new_issue_keys)} new issues detected. "
+            f"Sample: {sample}"
+        )
+    ]
 
 
 def render_curve_monotonicity_markdown(report_df: pd.DataFrame) -> str:
