@@ -35,4 +35,5 @@ status/
 tmp_ai_analysis.txt
 autotrader/output/
 autotrader_isolated/output/
+output/
 .pytest_cache/
