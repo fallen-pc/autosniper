@@ -6,6 +6,7 @@ import pandas as pd
 import streamlit as st
 
 from shared.canonical_tagging import is_canonical_eligible
+from shared.csv_utils import read_csv_stable
 from shared.curves import list_curve_tags, load_curves
 from shared.data_loader import dataset_path
 from shared.styling import clean_html, display_banner, inject_global_styles, page_intro
@@ -26,7 +27,7 @@ def _load_source(path: Path, source_label: str) -> pd.DataFrame:
         st.warning(f"Missing source file: {path}")
         return pd.DataFrame()
     try:
-        df = pd.read_csv(path)
+        df = read_csv_stable(path)
     except Exception as exc:  # noqa: BLE001
         st.warning(f"Could not read {path}: {exc}")
         return pd.DataFrame()

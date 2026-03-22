@@ -1,6 +1,7 @@
 import pandas as pd
 import streamlit as st
 
+from shared.csv_utils import read_csv_or_empty
 from shared.data_loader import dataset_path
 from shared.styling import inject_global_styles, page_intro
 
@@ -16,12 +17,7 @@ page_intro(
 
 def _load_csv(path: str) -> pd.DataFrame:
     file_path = dataset_path(path)
-    if not file_path.exists():
-        return pd.DataFrame()
-    try:
-        return pd.read_csv(file_path)
-    except Exception:
-        return pd.DataFrame()
+    return read_csv_or_empty(file_path)
 
 
 bidders_df = _load_csv("bid_history_bidders.csv")

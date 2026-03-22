@@ -71,6 +71,7 @@ Use the governance runner to enforce dataset contracts, curve integrity, and cov
 python scripts/governance_checks.py check
 python scripts/governance_checks.py coverage-report
 python scripts/governance_checks.py snapshot-curves --note "Describe the curve update"
+python scripts/readiness_smoke.py
 ```
 
 Curve changes are now versioned under `CSV_data/restricted/versions/` and must be paired with
@@ -78,6 +79,23 @@ Curve changes are now versioned under `CSV_data/restricted/versions/` and must b
 checks in CI and publishes the latest curve coverage report as an artifact/job summary.
 
 More detail: `docs/governance.md`
+
+---
+
+## Curve Operations
+
+The curve-candidate scripts are part of the production operator workflow rather than scratch tools:
+
+```powershell
+python scripts/generate_curve_candidates.py
+python scripts/process_curve_candidates.py --help
+```
+
+- `generate_curve_candidates.py` ranks sold-data tags into `CSV_data/quality/curve_candidates.csv`.
+- `process_curve_candidates.py` validates AI curve proposals, updates `CSV_data/restricted/curves.csv`,
+  and seeds downstream Autotrader scrape URLs/queue files under `CSV_data/quality/`.
+- Any committed `curves.csv` change should be followed by `python scripts/governance_checks.py check`
+  and a fresh `snapshot-curves` entry.
 
 ---
 

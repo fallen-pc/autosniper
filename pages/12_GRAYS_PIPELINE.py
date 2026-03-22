@@ -7,6 +7,7 @@ from typing import Iterable
 import pandas as pd
 import streamlit as st
 
+from shared.csv_utils import read_csv_or_empty
 from shared.data_loader import dataset_path
 from shared.schema import STATIC_VEHICLE_SCHEMA
 from shared.curves import list_curve_tags, load_curves
@@ -155,10 +156,7 @@ def _format_ts(ts: float) -> str:
 
 
 def _safe_read_csv(path: Path) -> pd.DataFrame:
-    try:
-        return pd.read_csv(path)
-    except Exception:
-        return pd.DataFrame()
+    return read_csv_or_empty(path)
 
 
 def _schema_table(columns: Iterable[str]) -> pd.DataFrame:

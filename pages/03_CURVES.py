@@ -1,6 +1,7 @@
 import pandas as pd
 import streamlit as st
 
+from shared.csv_utils import read_csv_or_empty
 from shared.curves import list_curve_tags, resolve_curve_canonical_tag
 from shared.governance import build_curve_coverage_report, summarize_curve_coverage
 from shared.ops_utils import build_curve_meta, load_active_df, load_curves_df, load_static_df
@@ -18,7 +19,7 @@ static_df = load_static_df()
 curves_df = load_curves_df()
 curve_meta = build_curve_meta(curves_df)
 group_map_path = dataset_path("restricted_group_map.csv")
-group_map_df = pd.read_csv(group_map_path) if group_map_path.exists() else pd.DataFrame()
+group_map_df = read_csv_or_empty(group_map_path)
 coverage_df = build_curve_coverage_report(static_df, group_map_df, curves_df)
 coverage_summary = summarize_curve_coverage(coverage_df)
 

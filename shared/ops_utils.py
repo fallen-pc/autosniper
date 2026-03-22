@@ -11,6 +11,7 @@ from typing import Iterable
 import pandas as pd
 
 from shared.canonical_tagging import UNCLASSIFIED
+from shared.csv_utils import read_csv_or_empty
 from shared.curves import load_curve_aliases, load_curves
 from shared.data_loader import dataset_path, ensure_datasets_available
 
@@ -158,10 +159,7 @@ def confidence_bucket(value: object) -> str:
 
 
 def load_csv(path: Path | str) -> pd.DataFrame:
-    path = Path(path)
-    if not path.exists():
-        return pd.DataFrame()
-    return pd.read_csv(path)
+    return read_csv_or_empty(path)
 
 
 def load_static_df() -> pd.DataFrame:

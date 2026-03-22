@@ -7,6 +7,7 @@ from typing import Iterable, Sequence
 import pandas as pd
 import streamlit as st
 
+from shared.csv_utils import read_csv_or_empty
 from shared.curves import list_curve_tags, load_curves
 from shared.data_loader import dataset_path
 from shared.ops_utils import load_active_df, load_valuations_df, parse_percent
@@ -83,7 +84,7 @@ def _load_sidebar_filter_source() -> pd.DataFrame:
     if not frames:
         fallback = dataset_path("active_vehicle_details.csv")
         if Path(fallback).exists():
-            frames.append(pd.read_csv(fallback))
+            frames.append(read_csv_or_empty(fallback))
 
     if not frames:
         return pd.DataFrame()

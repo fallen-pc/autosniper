@@ -2,6 +2,7 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
+from shared.csv_utils import read_csv_or_empty
 from shared.ops_utils import load_static_df
 from shared.styling import display_banner, inject_global_styles, page_intro, section_heading
 
@@ -18,9 +19,7 @@ static_df = load_static_df()
 
 
 def _load_csv(path: Path) -> pd.DataFrame:
-    if not path.exists():
-        return pd.DataFrame()
-    return pd.read_csv(path)
+    return read_csv_or_empty(path)
 
 
 def _save_csv(df: pd.DataFrame, path: Path) -> None:

@@ -9,6 +9,7 @@ import re
 import pandas as pd
 import streamlit as st
 
+from shared.csv_utils import read_csv_stable
 from shared.curves import list_curve_tags, load_curves
 from shared.data_loader import dataset_path, ensure_datasets_available
 from shared.global_filters import apply_global_sidebar_filters, render_global_sidebar_filters
@@ -42,7 +43,7 @@ REFERRED_FILE = dataset_path("referred_cars.csv")
 SCORED_FILE = dataset_path("scored_listings.csv")
 AUTOTRADER_FILE = Path("autotrader_isolated/output/first_page_results.csv")
 
-df = pd.read_csv(CSV_FILE)
+df = read_csv_stable(CSV_FILE)
 
 if df.empty:
     st.warning("The vehicle dataset is empty. Trigger a scrape to see dashboard metrics.")
@@ -245,7 +246,7 @@ def safe_read_csv(path: "os.PathLike[str] | str", parse_dates: list[str] | None 
     if not Path(file_path).exists():
         return pd.DataFrame()
     try:
-        return pd.read_csv(file_path, parse_dates=parse_dates)
+        return read_csv_stable(file_path, parse_dates=parse_dates)
     except Exception as exc:  # noqa: BLE001
         st.warning(f"Could not read {file_path}: {exc}")
         return pd.DataFrame()

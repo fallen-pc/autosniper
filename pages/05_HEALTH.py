@@ -4,6 +4,7 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
+from shared.csv_utils import read_csv_or_empty
 from shared.data_loader import dataset_path
 from shared.ops_utils import load_active_df, load_static_df, load_valuations_df
 from shared.scraper_health import load_scraper_health_report
@@ -17,9 +18,7 @@ page_intro("PIPELINE HEALTH", "Counts, freshness, and error signals.", show_logo
 
 
 def _load_csv(path: Path) -> pd.DataFrame:
-    if not path.exists():
-        return pd.DataFrame()
-    return pd.read_csv(path)
+    return read_csv_or_empty(path)
 
 
 def _last_run(path: Path) -> str:
@@ -81,12 +80,12 @@ if curve_coverage_report_path.exists() or curve_monotonicity_report_path.exists(
     section_heading("Governance Reports", "Automated curve coverage and monotonicity outputs.")
     governance_cols = st.columns(4)
     if curve_coverage_report_path.exists():
-        coverage_df = pd.read_csv(curve_coverage_report_path)
+        coverage_df = read_csv_or_empty(curve_coverage_report_path)
         missing_curves = int((~coverage_df["has_curve"]).sum()) if "has_curve" in coverage_df.columns else 0
         governance_cols[0].metric("Observed Tags", f"{len(coverage_df):,}")
         governance_cols[1].metric("Missing Curves", f"{missing_curves:,}")
     if curve_monotonicity_report_path.exists():
-        monotonicity_df = pd.read_csv(curve_monotonicity_report_path)
+        monotonicity_df = read_csv_or_empty(curve_monotonicity_report_path)
         severity = monotonicity_df["severity"].astype(str).str.lower() if "severity" in monotonicity_df.columns else pd.Series(dtype=str)
         governance_cols[2].metric("Curve Errors", f"{int((severity == 'error').sum()):,}")
         governance_cols[3].metric("Curve Warnings", f"{int((severity == 'warning').sum()):,}")
@@ -131,7 +130,7 @@ log_path = failures_path if failures_path.exists() else legacy_failures_path
 if log_path.exists():
     if log_path == legacy_failures_path and not failures_path.exists():
         st.caption("Using legacy scrape_failures.csv (excluded_listings.csv not found yet).")
-    failures_df = pd.read_csv(log_path, usecols=["timestamp", "reason_code"], nrows=50000)
+    failures_df = read_csv_or_empty(log_path, usecols=["timestamp", "reason_code"], nrows=50000)
     if failures_df.empty:
         st.info("No scrape failures recorded.")
     else:
