@@ -12,6 +12,7 @@ from typing import Iterable, Mapping, Sequence, Tuple
 
 import pandas as pd
 
+from shared.curve_groups_v2 import load_curve_anchor_overrides_v2, load_curve_groups_v2
 from shared.curves import resolve_curve_canonical_tag
 from shared.data_loader import dataset_path
 from shared.validators import R
@@ -388,10 +389,19 @@ def _extract_series_code(text: str) -> str:
     if not text:
         return ""
     # series codes are like ZRE152R, ZRE18X, MZEA12R, ZWE211R, BL10F1, etc.
-    match = re.search(r"\b([A-Z]{2,4}\d{2,3}[A-Z]?\d?)\b", text, re.IGNORECASE)
-    if not match:
-        return ""
-    return match.group(1).lower()
+    matches = re.finditer(r"\b([A-Z]{2,4}\d{2,3}[A-Z]?\d?)\b", text, re.IGNORECASE)
+    for match in matches:
+        candidate = match.group(1).lower()
+        # Ignore model-year tokens like MY14 / MY16 / MY17.
+        if candidate.startswith("my"):
+            continue
+        return candidate
+
+    # Mazda 3 often appears with short platform codes like BL or BM in variant text.
+    short_match = re.search(r"\b(BL|BM)\b", text, re.IGNORECASE)
+    if short_match:
+        return short_match.group(1).lower()
+    return ""
 
 
 def _normalize_series_code(series_code: str) -> str:
@@ -403,6 +413,10 @@ def _normalize_series_code(series_code: str) -> str:
         return "zre18x"
     if code in {"xp90", "ncp90"}:
         return "ncp90r"
+    if code == "bl":
+        return "bl10f1"
+    if code == "bm":
+        return "bm"
     if code in {"bl10f"}:
         return "bl10f1"
     return code
@@ -427,22 +441,72 @@ def _has_excluded_keyword(text: str, keywords: Iterable[str]) -> bool:
 @lru_cache(maxsize=1)
 def _load_curve_year_band() -> pd.DataFrame | None:
     curve_path = dataset_path("curves.csv")
-    if not curve_path.exists():
-        return None
+    frames: list[pd.DataFrame] = []
+    if curve_path.exists():
+        try:
+            curves_df = pd.read_csv(curve_path)
+        except Exception:
+            curves_df = pd.DataFrame()
+        if "canonical_tag" in curves_df.columns and "anchor_year" in curves_df.columns:
+            curve_band = (
+                curves_df.dropna(subset=["canonical_tag", "anchor_year"])
+                .assign(anchor_year=lambda d: d["anchor_year"].apply(_to_int))
+                .dropna(subset=["anchor_year"])
+                .groupby("canonical_tag")["anchor_year"]
+                .agg(["min", "max"])
+                .rename(columns={"min": "min_year", "max": "max_year"})
+                .reset_index()
+                .rename(columns={"canonical_tag": "tag"})
+            )
+            frames.append(curve_band[["tag", "min_year", "max_year"]].copy())
+
     try:
-        curves_df = pd.read_csv(curve_path)
+        overrides_df = load_curve_anchor_overrides_v2()
+        groups_df = load_curve_groups_v2()
     except Exception:
+        overrides_df = pd.DataFrame()
+        groups_df = pd.DataFrame()
+
+    if not overrides_df.empty:
+        override_rows: list[dict[str, object]] = []
+        for row in overrides_df.itertuples(index=False):
+            base_curve_tag = str(getattr(row, "base_curve_tag", "") or "").strip()
+            raw_anchor_years = str(getattr(row, "anchor_years", "") or "").strip()
+            if not base_curve_tag or not raw_anchor_years:
+                continue
+            years = [_to_int(part) for part in re.split(r"[|,;/\s]+", raw_anchor_years) if str(part).strip()]
+            years = [year for year in years if year > 0]
+            if not years:
+                continue
+            min_year = min(years)
+            max_year = max(years)
+            override_rows.append({"tag": base_curve_tag, "min_year": min_year, "max_year": max_year})
+            if not groups_df.empty and {"match_tag", "base_curve_tag"}.issubset(groups_df.columns):
+                match_tags = groups_df.loc[
+                    groups_df["base_curve_tag"].fillna("").astype(str).str.strip() == base_curve_tag,
+                    "match_tag",
+                ].dropna().astype(str).str.strip().tolist()
+                for match_tag in match_tags:
+                    if match_tag:
+                        override_rows.append({"tag": match_tag, "min_year": min_year, "max_year": max_year})
+        if override_rows:
+            frames.append(pd.DataFrame(override_rows))
+
+    if not frames:
         return None
-    if "canonical_tag" not in curves_df.columns or "anchor_year" not in curves_df.columns:
+
+    combined = pd.concat(frames, ignore_index=True)
+    if combined.empty:
         return None
-    return (
-        curves_df.dropna(subset=["canonical_tag", "anchor_year"])
-        .assign(anchor_year=lambda d: d["anchor_year"].apply(_to_int))
-        .dropna(subset=["anchor_year"])
-        .groupby("canonical_tag")["anchor_year"]
-        .agg(["min", "max"])
-        .rename(columns={"min": "min_year", "max": "max_year"})
-    )
+    combined["tag"] = combined["tag"].fillna("").astype(str).str.strip()
+    combined["min_year"] = pd.to_numeric(combined["min_year"], errors="coerce")
+    combined["max_year"] = pd.to_numeric(combined["max_year"], errors="coerce")
+    combined = combined.dropna(subset=["tag", "min_year", "max_year"])
+    combined = combined[combined["tag"].ne("")].copy()
+    if combined.empty:
+        return None
+    combined = combined.drop_duplicates(subset=["tag"], keep="last")
+    return combined.set_index("tag")[["min_year", "max_year"]]
 
 
 def _disambiguate_by_year(candidates: Sequence[AllowedVariant], year: int | None) -> AllowedVariant | None:

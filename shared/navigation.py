@@ -34,6 +34,7 @@ def build_navigation() -> "OrderedDict[str, list[st.Page]]":
                 [
                     st.Page("pages/03_CURVES.py", title="Curves"),
                     st.Page("pages/13_CURVE_BUILDER.py", title="Curve Builder"),
+                    st.Page("pages/15_CURVE_BUILDER_V2.py", title="Curve Builder V2"),
                     st.Page("pages/14_CURVE_PIPELINE.py", title="Curve Pipeline"),
                     st.Page("pages/04_MAPPINGS.py", title="Mappings"),
                     st.Page("pages/4_MASTER_DATABASE.py", title="Master Database"),

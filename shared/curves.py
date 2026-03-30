@@ -10,6 +10,7 @@ from typing import Iterable, List, Mapping, Optional, Sequence, Tuple
 import pandas as pd
 
 from shared.audit import append_audit_snapshot
+from shared.curve_groups_v2 import load_curve_groups_v2, resolve_base_curve_tag
 from shared.curve_versioning import snapshot_curve_version
 from shared.data_loader import dataset_path
 
@@ -103,11 +104,29 @@ def load_curve_aliases(path: Path | None = None) -> dict[str, str]:
     return aliases
 
 
+@lru_cache(maxsize=1)
+def load_saved_curve_tags(path: Path | None = None) -> set[str]:
+    curve_path = path or dataset_path("curves.csv")
+    if not curve_path.exists():
+        return set()
+    try:
+        df = pd.read_csv(curve_path, usecols=["canonical_tag"])
+    except Exception:
+        return set()
+    return {
+        str(value).strip()
+        for value in df.get("canonical_tag", pd.Series(dtype="object")).dropna().astype(str).tolist()
+        if str(value).strip()
+    }
+
+
 def resolve_curve_canonical_tag(
     canonical_tag: object,
     aliases: Mapping[str, str] | None = None,
+    curves_df: pd.DataFrame | None = None,
 ) -> str:
-    resolved = str(canonical_tag or "").strip()
+    original = str(canonical_tag or "").strip()
+    resolved = original
     if not resolved:
         return ""
 
@@ -119,6 +138,32 @@ def resolve_curve_canonical_tag(
         if not next_tag:
             break
         resolved = next_tag
+
+    groups_df = load_curve_groups_v2()
+    if groups_df.empty:
+        return resolved
+
+    candidate_base_tags = []
+    for tag_value in (original, resolved):
+        candidate = resolve_base_curve_tag(tag_value, groups_df)
+        if candidate and candidate not in candidate_base_tags:
+            candidate_base_tags.append(candidate)
+
+    if not candidate_base_tags:
+        return resolved
+
+    if curves_df is not None and not curves_df.empty and "canonical_tag" in curves_df.columns:
+        available_tags = {
+            str(value).strip()
+            for value in curves_df["canonical_tag"].dropna().astype(str).tolist()
+            if str(value).strip()
+        }
+    else:
+        available_tags = load_saved_curve_tags()
+
+    for candidate in candidate_base_tags:
+        if candidate in available_tags:
+            return candidate
     return resolved
 
 
@@ -136,8 +181,15 @@ def list_curve_tags(curves_df: pd.DataFrame | None, *, include_aliases: bool = T
 
     aliases = load_curve_aliases()
     for alias_tag, base_curve in aliases.items():
-        if resolve_curve_canonical_tag(base_curve, aliases) in tags:
+        if resolve_curve_canonical_tag(base_curve, aliases, curves_df) in tags:
             tags.add(alias_tag)
+    groups_df = load_curve_groups_v2()
+    if not groups_df.empty:
+        for _, row in groups_df.iterrows():
+            match_tag = str(row.get("match_tag", "")).strip()
+            base_curve = str(row.get("base_curve_tag", "")).strip()
+            if match_tag and base_curve and resolve_curve_canonical_tag(base_curve, aliases, curves_df) in tags:
+                tags.add(match_tag)
     return tags
 
 
@@ -166,6 +218,7 @@ def save_curves(df: pd.DataFrame, path: Path | None = None) -> None:
     working = df[list(CURVE_COLUMNS)].copy()
     working = working.apply(_fill_mid_price, axis=1)
     working.to_csv(curve_path, index=False)
+    load_saved_curve_tags.cache_clear()
     append_audit_snapshot(working, curve_path)
     snapshot_curve_version(curve_path, source="save_curves")
 
@@ -175,7 +228,7 @@ def get_curve_points(
 ) -> List[Tuple[int, int]]:
     if curves_df.empty:
         return []
-    curve_tag = resolve_curve_canonical_tag(canonical_tag)
+    curve_tag = resolve_curve_canonical_tag(canonical_tag, curves_df=curves_df)
     if not curve_tag:
         return []
     subset = curves_df[
@@ -224,7 +277,7 @@ def interpolate_base_by_year(
     year: int | None,
     km: float | int | None,
 ) -> Optional[float]:
-    curve_tag = resolve_curve_canonical_tag(canonical_tag)
+    curve_tag = resolve_curve_canonical_tag(canonical_tag, curves_df=curves_df)
     if curves_df.empty or not curve_tag or year is None or km is None:
         return None
     subset = curves_df[curves_df["canonical_tag"] == curve_tag].copy()

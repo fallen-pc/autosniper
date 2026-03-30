@@ -3,6 +3,7 @@ import unittest
 import pandas as pd
 
 import shared.curves as curves
+import shared.curve_groups_v2 as curve_groups_v2
 from shared.curves import interpolate_base_by_year, interpolate_price_by_km
 
 
@@ -48,3 +49,49 @@ def test_interpolate_base_by_year_resolves_curve_alias(monkeypatch, tmp_path):
 
     assert estimate == 22000.0
     curves.load_curve_aliases.cache_clear()
+
+
+def test_interpolate_base_by_year_prefers_v2_base_curve_when_saved(monkeypatch, tmp_path):
+    groups_path = tmp_path / "curve_groups_v2.csv"
+    groups_path.write_text(
+        "match_tag,base_curve_tag,group_status,reason\n"
+        "mazda_3_neo_petrol_auto_hatch_bl,mazda_3_bl_hatch_auto_petrol,active,merge\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(curve_groups_v2, "CURVE_GROUPS_V2_PATH", groups_path)
+    curve_groups_v2.load_curve_groups_v2.cache_clear()
+
+    df = pd.DataFrame(
+        [
+            {"canonical_tag": "mazda_3_bl_hatch_auto_petrol", "anchor_year": 2010, "km_bucket": 100000, "price_mid": 10000},
+            {"canonical_tag": "mazda_3_bl_hatch_auto_petrol", "anchor_year": 2012, "km_bucket": 100000, "price_mid": 12000},
+        ]
+    )
+
+    estimate = curves.interpolate_base_by_year(df, "mazda_3_neo_petrol_auto_hatch_bl", 2011, 100000)
+
+    assert estimate == 11000.0
+    curve_groups_v2.load_curve_groups_v2.cache_clear()
+
+
+def test_interpolate_base_by_year_falls_back_to_legacy_curve_when_v2_base_not_saved(monkeypatch, tmp_path):
+    groups_path = tmp_path / "curve_groups_v2.csv"
+    groups_path.write_text(
+        "match_tag,base_curve_tag,group_status,reason\n"
+        "hyundai_i30_active_petrol_auto_hatch_gd,hyundai_i30_gd_hatch_auto_petrol,active,merge\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(curve_groups_v2, "CURVE_GROUPS_V2_PATH", groups_path)
+    curve_groups_v2.load_curve_groups_v2.cache_clear()
+
+    df = pd.DataFrame(
+        [
+            {"canonical_tag": "hyundai_i30_active_petrol_auto_hatch_gd", "anchor_year": 2013, "km_bucket": 100000, "price_mid": 9000},
+            {"canonical_tag": "hyundai_i30_active_petrol_auto_hatch_gd", "anchor_year": 2015, "km_bucket": 100000, "price_mid": 11000},
+        ]
+    )
+
+    estimate = curves.interpolate_base_by_year(df, "hyundai_i30_active_petrol_auto_hatch_gd", 2014, 100000)
+
+    assert estimate == 10000.0
+    curve_groups_v2.load_curve_groups_v2.cache_clear()

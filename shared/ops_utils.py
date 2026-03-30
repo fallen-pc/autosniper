@@ -11,6 +11,7 @@ from typing import Iterable
 import pandas as pd
 
 from shared.canonical_tagging import UNCLASSIFIED
+from shared.curve_groups_v2 import load_curve_groups_v2
 from shared.csv_utils import read_csv_or_empty
 from shared.curves import load_curve_aliases, load_curves
 from shared.data_loader import dataset_path, ensure_datasets_available
@@ -274,6 +275,20 @@ def build_curve_meta(curves_df: pd.DataFrame) -> dict[str, CurveMeta]:
             anchor_years=list(base_meta.anchor_years),
             curve_source_tag=base_curve,
         )
+    groups_df = load_curve_groups_v2()
+    if not groups_df.empty:
+        for _, row in groups_df.iterrows():
+            match_tag = str(row.get("match_tag", "")).strip()
+            base_curve = str(row.get("base_curve_tag", "")).strip()
+            if not match_tag or match_tag in meta or base_curve not in meta:
+                continue
+            base_meta = meta[base_curve]
+            meta[match_tag] = CurveMeta(
+                canonical_tag=match_tag,
+                last_updated=base_meta.last_updated,
+                anchor_years=list(base_meta.anchor_years),
+                curve_source_tag=base_curve,
+            )
     return meta
 
 
