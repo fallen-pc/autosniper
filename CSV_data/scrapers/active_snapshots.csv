@@ -33279,3 +33279,10 @@ snapshot_ts,url,price_text,price_numeric,bids_numeric,time_remaining_text,time_r
 2026-03-14T18:34:31.370210+00:00,https://www.grays.com/lot/0001-21064123/motor-vehicles-motor-cycles/2022-mg-hs-vibe-automatic-wagon,11509,11509.0,0,2d 14h 25m32s,62.426,Active,vic,VIC,lot
 2026-03-14T18:34:41.872931+00:00,https://www.grays.com/lot/0001-21064165/motor-vehicles-motor-cycles/2009-ford-territory-tx-sy-ii-automatic-7-seats-wagon,9,9.0,0,2d 14h 25m22s,62.423,Active,vic,VIC,lot
 2026-03-14T18:34:56.730404+00:00,https://www.grays.com/lot/0001-60050348/motor-vehicles-motor-cycles/2013-kia-grand-carnival-s-vq-automatic-8-seats-people-mover,9,9.0,0,2d 14h 25m8s,62.419,Active,sa,SA,lot
+2026-03-23T02:44:57.434771+00:00,https://www.grays.com/lot/0001-10352982/motor-vehicles-motor-cycles/2009-subaru-tribeca-3-6r-b9-automatic-7-seats-wagon,1009,1009.0,18,,,Sold,nsw,NSW,lot
+2026-03-23T02:45:07.932277+00:00,https://www.grays.com/lot/0001-21063914/motor-vehicles-motor-cycles/2014-volkswagen-jetta-118tsi-1b-automatic-sedan,2210,2210.0,26,,,Sold,vic,VIC,lot
+2026-03-23T02:45:23.383610+00:00,https://www.grays.com/lot/0001-21064045/motor-vehicles-motor-cycles/2009-bmw-123d-e88-turbo-diesel-automatic-convertible,1109,1109.0,12,,,Sold,vic,VIC,lot
+2026-03-23T02:45:33.304524+00:00,https://www.grays.com/lot/0001-21064121/motor-vehicles-motor-cycles/2003-mitsubishi-outlander-xls-ze-automatic-wagon,209,209.0,3,,,Sold,vic,VIC,lot
+2026-03-23T02:45:42.948284+00:00,https://www.grays.com/lot/0001-21064123/motor-vehicles-motor-cycles/2022-mg-hs-vibe-automatic-wagon,11509,11509.0,2,,,Sold,vic,VIC,lot
+2026-03-23T02:46:01.090328+00:00,https://www.grays.com/lot/0001-21064165/motor-vehicles-motor-cycles/2009-ford-territory-tx-sy-ii-automatic-7-seats-wagon,809,809.0,9,,,Sold,vic,VIC,lot
+2026-03-23T02:46:10.448684+00:00,https://www.grays.com/lot/0001-60050348/motor-vehicles-motor-cycles/2013-kia-grand-carnival-s-vq-automatic-8-seats-people-mover,N/A,,2,,,Referred,sa,SA,lot
