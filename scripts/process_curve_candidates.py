@@ -7,6 +7,7 @@ import json
 import os
 import subprocess
 import sys
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -20,12 +21,14 @@ if __package__ in (None, ""):
     from scripts.atomic_csv import write_dataframe_csv_atomic
     from scripts.curve_validator import build_curve_warnings
     from scripts.generate_curve_candidates import load_tagged_sold_data
+    from shared.canonical_tagging import tag_dataframe
     from shared.curves import CURVE_COLUMNS, load_curves, resolve_curve_canonical_tag, save_curves
     from shared.data_loader import dataset_path
 else:  # pragma: no cover
     from scripts.atomic_csv import write_dataframe_csv_atomic
     from scripts.curve_validator import build_curve_warnings
     from scripts.generate_curve_candidates import load_tagged_sold_data
+    from shared.canonical_tagging import tag_dataframe
     from shared.curves import CURVE_COLUMNS, load_curves, resolve_curve_canonical_tag, save_curves
     from shared.data_loader import dataset_path
 
@@ -33,11 +36,15 @@ else:  # pragma: no cover
 DEFAULT_QUEUE_PATH = dataset_path("quality/curve_candidates.csv")
 DEFAULT_BUILD_LOG_PATH = dataset_path("quality/curve_build_log.csv")
 DEFAULT_AUTOTRADER_QUEUE_PATH = dataset_path("quality/autotrader_scrape_queue.csv")
-DEFAULT_AUTOTRADER_SOURCE = Path("autotrader_isolated/output/first_page_results_tagged.csv")
+DEFAULT_AUTOTRADER_SOURCE = Path("autotrader_isolated/output/autotrader_recent_market_tagged.csv")
+LEGACY_AUTOTRADER_SOURCE = Path("autotrader_isolated/output/first_page_results_tagged.csv")
+DEFAULT_AUTOTRADER_STATE = Path("autotrader_isolated/output/listing_state.csv")
 DEFAULT_AUTOTRADER_URLS_PATH = Path("autotrader_isolated/output/curve_seed_urls.txt")
 DEFAULT_AUTOTRADER_OUTPUT = Path("autotrader_isolated/output/first_page_results_tagged.csv")
 DEFAULT_SOLD_PATH = dataset_path("sold_cars.csv")
 REQUIRED_KM_BUCKETS = [30000, 60000, 100000, 150000, 200000]
+INACTIVE_AUTOTRADER_STATUSES = {"sold", "expired", "removed"}
+RECENT_MARKET_WINDOW_DAYS = 90
 AUTOTRADER_QUEUE_COLUMNS = [
     "timestamp",
     "curve_tag",
@@ -140,6 +147,25 @@ def _slug_component(value: object) -> str:
     return "-".join(part for part in text.split("-") if part)
 
 
+def _autotrader_body_slug(value: object) -> str:
+    slug = _slug_component(value)
+    body_map = {
+        "hatch": "hatchback",
+        "dualcab-ute": "ute",
+        "cab-chassis": "cab-chassis",
+    }
+    return body_map.get(slug, slug)
+
+
+def _autotrader_transmission_slug(value: object) -> str:
+    slug = _slug_component(value)
+    trans_map = {
+        "auto": "automatic",
+        "manual": "manual",
+    }
+    return trans_map.get(slug, slug)
+
+
 def parse_curve_tag(curve_tag: str) -> dict[str, str]:
     parts = str(curve_tag or "").strip().split("_")
     if len(parts) != 7:
@@ -163,10 +189,12 @@ def parse_curve_tag(curve_tag: str) -> dict[str, str]:
     }
 
 
-def build_autotrader_seed_url(curve_tag: str, *, state: str = "vic", city: str = "melbourne") -> str:
+def build_autotrader_seed_url(curve_tag: str, *, state: str = "", city: str = "") -> str:
     parts = parse_curve_tag(curve_tag)
     make = _slug_component(parts.get("make"))
     model = _slug_component(parts.get("model"))
+    body = _autotrader_body_slug(parts.get("body_type"))
+    transmission = _autotrader_transmission_slug(parts.get("transmission"))
     state_slug = _slug_component(state)
     city_slug = _slug_component(city)
     path_parts = ["for-sale", "used"]
@@ -174,7 +202,14 @@ def build_autotrader_seed_url(curve_tag: str, *, state: str = "vic", city: str =
         path_parts.append(make)
     if model:
         path_parts.append(model)
-    path_parts.extend([state_slug, city_slug])
+    if body:
+        path_parts.append(body)
+    if transmission:
+        path_parts.append(transmission)
+    if state_slug:
+        path_parts.append(state_slug)
+    if city_slug:
+        path_parts.append(city_slug)
     return "https://www.autotrader.com.au/" + "/".join(path_parts)
 
 
@@ -204,13 +239,106 @@ def derive_anchor_years(
     return sorted({int(value) for value in values})
 
 
-def load_autotrader_market(path: Path) -> pd.DataFrame:
-    if not path.exists():
+def _coalesce_autotrader_event_timestamp(df: pd.DataFrame) -> pd.Series:
+    parsed_parts: list[pd.Series] = []
+    for column in ["scrape_date", "last_seen", "last_price_date", "first_seen", "sold_date"]:
+        if column not in df.columns:
+            continue
+        parsed_parts.append(pd.to_datetime(df[column], errors="coerce", utc=True))
+    if not parsed_parts:
+        return pd.Series(pd.NaT, index=df.index, dtype="datetime64[ns, UTC]")
+    return pd.concat(parsed_parts, axis=1).max(axis=1)
+
+
+def _dedupe_autotrader_active_snapshot(df: pd.DataFrame) -> pd.DataFrame:
+    if df.empty:
         return pd.DataFrame()
-    df = pd.read_csv(path, low_memory=False)
+
+    working = df.copy()
+    if "url" not in working.columns:
+        return working
+
+    if "scrape_date" in working.columns and working["scrape_date"].notna().any():
+        working = working[working["scrape_date"].notna()].copy()
+    elif "status" in working.columns:
+        status_norm = working["status"].fillna("").astype(str).str.strip().str.lower()
+        working = working[~status_norm.isin(INACTIVE_AUTOTRADER_STATUSES)].copy()
+
+    if working.empty:
+        return working
+
+    # Keep the latest live listing row for each URL and drop sold-history repeats.
+    working["_event_ts"] = _coalesce_autotrader_event_timestamp(working)
+    working = working.sort_values(["_event_ts", "url"], ascending=[False, True], na_position="last")
+    working = working.drop_duplicates(subset=["url"], keep="first")
+    return working.drop(columns=["_event_ts"], errors="ignore").reset_index(drop=True)
+
+
+def _build_autotrader_recent_market_from_state(
+    state_path: Path,
+    *,
+    output_path: Path | None = None,
+    recent_days: int = RECENT_MARKET_WINDOW_DAYS,
+) -> pd.DataFrame:
+    if not state_path.exists():
+        return pd.DataFrame()
+    state_df = pd.read_csv(state_path, low_memory=False)
+    if state_df.empty or "url" not in state_df.columns:
+        return pd.DataFrame()
+
+    working_state = state_df.copy()
+    working_state["_event_ts"] = _coalesce_autotrader_event_timestamp(working_state)
+    cutoff_ts = pd.Timestamp(datetime.now(UTC) - timedelta(days=recent_days))
+    recent_df = working_state[working_state["_event_ts"].notna() & (working_state["_event_ts"] >= cutoff_ts)].copy()
+    if recent_df.empty:
+        return pd.DataFrame()
+
+    working = pd.DataFrame(
+        {
+            "year": recent_df.get("year", ""),
+            "make": recent_df.get("make", ""),
+            "model": recent_df.get("model", ""),
+            "variant": recent_df.get("variant", ""),
+            "body_type": recent_df.get("body_type", ""),
+            "odometer": recent_df.get("odometer", ""),
+            "transmission": recent_df.get("transmission", ""),
+            "rego": recent_df.get("rego", ""),
+            "price": recent_df.get("last_price", ""),
+            "fuel_type": recent_df.get("fuel_type", ""),
+            "location": recent_df.get("location", ""),
+            "url": recent_df.get("url", ""),
+            "scrape_date": recent_df["_event_ts"].astype(str),
+        }
+    )
+    working = tag_dataframe(
+        working,
+        source="autotrader_recent_market_state",
+        require_price=True,
+        filter_unclassified=False,
+        append_log=True,
+    )
+    if output_path is not None:
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        working.to_csv(output_path, index=False)
+    return working
+
+
+def load_autotrader_market(path: Path) -> pd.DataFrame:
+    df: pd.DataFrame
+    if path.exists():
+        df = pd.read_csv(path, low_memory=False)
+    else:
+        state_path = path.with_name("listing_state.csv")
+        df = _build_autotrader_recent_market_from_state(state_path, output_path=path)
+        if df.empty and path != LEGACY_AUTOTRADER_SOURCE and LEGACY_AUTOTRADER_SOURCE.exists():
+            df = pd.read_csv(LEGACY_AUTOTRADER_SOURCE, low_memory=False)
+    if df.empty:
+        return pd.DataFrame()
     if "canonical_tag" not in df.columns:
         return pd.DataFrame()
-    working = df.copy()
+    working = _dedupe_autotrader_active_snapshot(df)
+    if working.empty:
+        return working
     working["canonical_tag"] = working["canonical_tag"].fillna("").astype(str).str.strip()
     working["curve_tag"] = working["canonical_tag"].apply(resolve_curve_canonical_tag)
     for target, candidates in {
@@ -302,7 +430,7 @@ def build_curve_prompt(
                 "For each row: price_low <= price_mid <= price_high.",
                 "For each anchor year, prices must decrease or stay flat as km increases.",
                 "Use sold data as the strongest signal for price_mid.",
-                "Use active market data to avoid overpricing and to shape price_high conservatively.",
+                "Use recent retail market data to avoid overpricing and to shape price_high conservatively.",
                 "Prefer conservative pricing when evidence is thin.",
                 "Do not invent a premium not supported by the evidence.",
             ],
@@ -743,7 +871,7 @@ def parse_args() -> argparse.Namespace:
         "--autotrader-source",
         type=Path,
         default=DEFAULT_AUTOTRADER_SOURCE,
-        help="Tagged Autotrader snapshot used as active market evidence",
+        help="Tagged recent Autotrader market snapshot used as curve evidence",
     )
     parser.add_argument("--log-path", type=Path, default=DEFAULT_BUILD_LOG_PATH, help="Curve build log CSV")
     parser.add_argument(
@@ -779,8 +907,8 @@ def parse_args() -> argparse.Namespace:
         default=0.15,
         help="Reject refreshes whose max price_mid drift exceeds this fraction",
     )
-    parser.add_argument("--state", default="vic", help="Autotrader search state slug")
-    parser.add_argument("--city", default="melbourne", help="Autotrader search city slug")
+    parser.add_argument("--state", default="", help="Optional Autotrader search state slug")
+    parser.add_argument("--city", default="", help="Optional Autotrader search city slug")
     parser.add_argument("--dry-run", action="store_true", help="Build and validate without writing curves or queue files")
     parser.add_argument("--run-autotrader", action="store_true", help="Run the Autotrader scraper after queueing URLs")
     parser.add_argument(

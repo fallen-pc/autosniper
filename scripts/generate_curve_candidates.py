@@ -25,6 +25,7 @@ else:  # pragma: no cover
 
 DEFAULT_INPUT = dataset_path("sold_cars.csv")
 DEFAULT_OUTPUT = dataset_path("quality/curve_candidates.csv")
+DEFAULT_ACTIVE_SOURCE = Path("autotrader_isolated/output/autotrader_recent_market_tagged.csv")
 OUTPUT_COLUMNS = [
     "generated_at",
     "curve_tag",
@@ -38,6 +39,12 @@ OUTPUT_COLUMNS = [
     "priority_rank",
     "sold_count_total",
     "sold_count_usable",
+    "active_count_total",
+    "active_count_usable",
+    "active_year_count",
+    "active_year_min",
+    "active_year_max",
+    "active_odometer_std",
     "numeric_coverage_pct",
     "canonical_tag_count",
     "source_canonical_tags",
@@ -60,9 +67,15 @@ OUTPUT_COLUMNS = [
     "price_max",
     "price_std",
     "price_spread_pct",
+    "readiness_source",
     "passes_min_listings",
+    "passes_market_support",
     "passes_year_span",
     "passes_odometer_variance",
+    "passes_active_listings",
+    "passes_active_year_coverage",
+    "passes_active_odometer_variance",
+    "passes_total_evidence_floor",
     "autotrader_query",
     "source_dataset",
 ]
@@ -157,11 +170,44 @@ def load_tagged_sold_data(csv_path: Path) -> tuple[pd.DataFrame, dict[str, int]]
     return tagged_df, stats
 
 
+def load_active_market_data(csv_path: Path) -> pd.DataFrame:
+    if not csv_path.exists():
+        return pd.DataFrame()
+    active_df = pd.read_csv(csv_path, low_memory=False)
+    canonical_series = (
+        active_df["canonical_tag"]
+        if "canonical_tag" in active_df.columns
+        else pd.Series("", index=active_df.index, dtype="object")
+    )
+    active_df["canonical_tag"] = canonical_series.fillna("").astype(str).str.strip()
+    active_df["curve_tag"] = active_df["canonical_tag"].apply(resolve_curve_canonical_tag)
+    active_df["year_numeric"] = _coalesce_numeric(active_df, ["year_numeric", "year_int", "year"])
+    active_df["price_numeric"] = _coalesce_numeric(active_df, ["price_numeric", "price_value", "price", "last_price"])
+    active_df["odometer_numeric"] = _coalesce_numeric(active_df, ["odometer_numeric", "odometer_value", "odometer"])
+    active_df["is_usable"] = (
+        active_df["year_numeric"].notna()
+        & active_df["price_numeric"].notna()
+        & active_df["odometer_numeric"].notna()
+    )
+    active_df = active_df[
+        (active_df["canonical_tag"] != "")
+        & (active_df["canonical_tag"] != UNCLASSIFIED)
+        & (active_df["curve_tag"] != "")
+    ].copy()
+    return active_df
+
+
 def build_curve_candidates(
     tagged_df: pd.DataFrame,
     *,
+    active_market_df: pd.DataFrame | None = None,
     curve_tags: set[str] | None = None,
     min_listings: int = 20,
+    min_market_sold_listings: int = 5,
+    min_active_listings: int = 40,
+    min_active_years: int = 3,
+    min_total_sold_floor: int = 3,
+    min_total_active_floor: int = 25,
     max_year_span: int = 6,
     min_odometer_std: float = 10000.0,
     generated_at: str | None = None,
@@ -202,6 +248,31 @@ def build_curve_candidates(
     if valid.empty:
         return pd.DataFrame(columns=OUTPUT_COLUMNS)
 
+    active_working = active_market_df.copy() if active_market_df is not None else pd.DataFrame()
+    if not active_working.empty:
+        canonical_series = (
+            active_working["canonical_tag"]
+            if "canonical_tag" in active_working.columns
+            else pd.Series("", index=active_working.index, dtype="object")
+        )
+        active_working["canonical_tag"] = canonical_series.fillna("").astype(str).str.strip()
+        if "curve_tag" not in active_working.columns:
+            active_working["curve_tag"] = active_working["canonical_tag"].apply(resolve_curve_canonical_tag)
+        active_working["curve_tag"] = active_working["curve_tag"].fillna("").astype(str).str.strip()
+        active_working["year_numeric"] = _coalesce_numeric(active_working, ["year_numeric", "year_int", "year"])
+        active_working["price_numeric"] = _coalesce_numeric(active_working, ["price_numeric", "price_value", "price", "last_price"])
+        active_working["odometer_numeric"] = _coalesce_numeric(active_working, ["odometer_numeric", "odometer_value", "odometer"])
+        active_working["is_usable"] = (
+            active_working["year_numeric"].notna()
+            & active_working["price_numeric"].notna()
+            & active_working["odometer_numeric"].notna()
+        )
+        active_working = active_working[
+            (active_working["canonical_tag"] != "")
+            & (active_working["canonical_tag"] != UNCLASSIFIED)
+            & (active_working["curve_tag"] != "")
+        ].copy()
+
     live_curve_tags = {str(tag).strip() for tag in (curve_tags or set()) if str(tag).strip()}
     rows: list[dict[str, object]] = []
     timestamp = generated_at or pd.Timestamp.utcnow().isoformat()
@@ -216,10 +287,38 @@ def build_curve_candidates(
         sold_count_total = int(len(group))
         sold_count_usable = int(len(usable))
         numeric_coverage_pct = sold_count_usable / sold_count_total if sold_count_total else 0.0
+        active_group = (
+            active_working[active_working["curve_tag"] == curve_tag].copy()
+            if not active_working.empty
+            else pd.DataFrame()
+        )
+        active_usable = active_group[active_group["is_usable"]].copy() if not active_group.empty else pd.DataFrame()
+        active_count_total = int(len(active_group))
+        active_count_usable = int(len(active_usable))
+        active_year_count = int(active_usable["year_numeric"].nunique()) if not active_usable.empty else 0
+        active_year_min = int(active_usable["year_numeric"].min()) if not active_usable.empty else None
+        active_year_max = int(active_usable["year_numeric"].max()) if not active_usable.empty else None
+        active_odometer_std = (
+            float(active_usable["odometer_numeric"].std(ddof=0) or 0.0)
+            if not active_usable.empty
+            else None
+        )
+        passes_active_listings = active_count_usable >= int(min_active_listings)
+        passes_active_year_coverage = active_year_count >= int(min_active_years)
+        passes_active_odometer_variance = (active_odometer_std or 0.0) >= float(min_odometer_std)
+        passes_total_evidence_floor = (
+            sold_count_usable >= int(min_total_sold_floor)
+            or active_count_usable >= int(min_total_active_floor)
+        )
+        passes_strong_sold = sold_count_usable >= int(min_listings)
+        passes_market_support = (
+            sold_count_usable >= int(min_market_sold_listings)
+            and passes_active_listings
+            and passes_active_year_coverage
+            and passes_active_odometer_variance
+        )
 
         review_reasons: list[str] = []
-        if sold_count_usable < min_listings:
-            review_reasons.append("low_sample_size")
 
         if usable.empty:
             review_reasons.extend(["missing_numeric_fields", "low_odometer_variance"])
@@ -263,8 +362,25 @@ def build_curve_candidates(
             passes_year_span = year_span <= max_year_span
             passes_odometer_variance = odometer_std >= float(min_odometer_std)
 
-        ready_for_curve = not review_reasons
+        if not passes_total_evidence_floor:
+            review_reasons.append("very_low_total_evidence")
+        if not passes_year_span:
+            review_reasons.append("wide_year_span")
+        if not passes_strong_sold and not passes_market_support:
+            review_reasons.append("low_sample_size")
+            if not passes_active_listings:
+                review_reasons.append("low_active_listing_count")
+            if not passes_active_year_coverage:
+                review_reasons.append("low_active_year_coverage")
+            if active_count_usable > 0 and not passes_active_odometer_variance:
+                review_reasons.append("low_active_odometer_variance")
+        if sold_count_usable >= int(min_market_sold_listings) and not passes_strong_sold and not passes_market_support and not passes_odometer_variance:
+            review_reasons.append("low_odometer_variance")
+
+        review_reasons = list(dict.fromkeys(review_reasons))
+        ready_for_curve = passes_year_span and passes_total_evidence_floor and (passes_strong_sold or passes_market_support)
         curve_exists = curve_tag in live_curve_tags
+        readiness_source = "sold" if passes_strong_sold and ready_for_curve else "market_evidence" if passes_market_support and ready_for_curve else ""
 
         if ready_for_curve:
             recommended_action = "refresh_curve" if curve_exists else "build_curve"
@@ -287,6 +403,12 @@ def build_curve_candidates(
                 "review_reason": "|".join(review_reasons),
                 "sold_count_total": sold_count_total,
                 "sold_count_usable": sold_count_usable,
+                "active_count_total": active_count_total,
+                "active_count_usable": active_count_usable,
+                "active_year_count": active_year_count,
+                "active_year_min": active_year_min,
+                "active_year_max": active_year_max,
+                "active_odometer_std": active_odometer_std,
                 "numeric_coverage_pct": numeric_coverage_pct,
                 "canonical_tag_count": len(source_tags.split("|")) if source_tags else 0,
                 "source_canonical_tags": source_tags,
@@ -309,9 +431,15 @@ def build_curve_candidates(
                 "price_max": price_max,
                 "price_std": price_std,
                 "price_spread_pct": price_spread_pct,
+                "readiness_source": readiness_source,
                 "passes_min_listings": sold_count_usable >= min_listings,
+                "passes_market_support": passes_market_support,
                 "passes_year_span": passes_year_span,
                 "passes_odometer_variance": passes_odometer_variance,
+                "passes_active_listings": passes_active_listings,
+                "passes_active_year_coverage": passes_active_year_coverage,
+                "passes_active_odometer_variance": passes_active_odometer_variance,
+                "passes_total_evidence_floor": passes_total_evidence_floor,
                 "autotrader_query": _build_autotrader_query(tag_parts),
                 "source_dataset": "sold_cars.csv",
             }
@@ -321,18 +449,19 @@ def build_curve_candidates(
     if candidates.empty:
         return pd.DataFrame(columns=OUTPUT_COLUMNS)
 
-    for column in ("sold_count_usable", "price_spread_pct", "year_max"):
+    for column in ("sold_count_usable", "active_count_usable", "price_spread_pct", "year_max"):
         candidates[column] = pd.to_numeric(candidates[column], errors="coerce")
 
     count_rank = candidates["sold_count_usable"].rank(method="average", pct=True).fillna(0.0)
+    active_rank = candidates["active_count_usable"].rank(method="average", pct=True).fillna(0.0)
     spread_rank = candidates["price_spread_pct"].rank(method="average", pct=True).fillna(0.0)
     recency_rank = candidates["year_max"].rank(method="average", pct=True).fillna(0.0)
-    candidates["score"] = ((count_rank * 0.5) + (spread_rank * 0.3) + (recency_rank * 0.2)) * 100.0
+    candidates["score"] = ((count_rank * 0.4) + (active_rank * 0.25) + (spread_rank * 0.2) + (recency_rank * 0.15)) * 100.0
     candidates["score"] = candidates["score"].round(2)
 
     candidates = candidates.sort_values(
-        by=["ready_for_curve", "score", "sold_count_usable", "curve_tag"],
-        ascending=[False, False, False, True],
+        by=["ready_for_curve", "score", "active_count_usable", "sold_count_usable", "curve_tag"],
+        ascending=[False, False, False, False, True],
     ).reset_index(drop=True)
     candidates["priority_rank"] = range(1, len(candidates) + 1)
 
@@ -342,6 +471,7 @@ def build_curve_candidates(
         "odometer_median",
         "odometer_max",
         "odometer_std",
+        "active_odometer_std",
         "price_min",
         "price_median",
         "price_max",
@@ -365,6 +495,12 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--input", type=Path, default=DEFAULT_INPUT, help="Path to sold_cars.csv")
     parser.add_argument(
+        "--active-market",
+        type=Path,
+        default=DEFAULT_ACTIVE_SOURCE,
+        help="Tagged recent-market CSV used to unlock thin sold groups conservatively",
+    )
+    parser.add_argument(
         "--output",
         type=Path,
         default=DEFAULT_OUTPUT,
@@ -374,7 +510,37 @@ def parse_args() -> argparse.Namespace:
         "--min-listings",
         type=int,
         default=20,
-        help="Minimum usable sold rows required before a group is curve-ready",
+        help="Minimum usable sold rows required for the pure sold-evidence path",
+    )
+    parser.add_argument(
+        "--min-market-sold-listings",
+        type=int,
+        default=5,
+        help="Minimum usable sold rows required before recent-market evidence can unlock a curve",
+    )
+    parser.add_argument(
+        "--min-active-listings",
+        type=int,
+        default=40,
+        help="Minimum usable recent-market rows required for the combined-evidence path",
+    )
+    parser.add_argument(
+        "--min-active-years",
+        type=int,
+        default=3,
+        help="Minimum distinct recent-market years required for the combined-evidence path",
+    )
+    parser.add_argument(
+        "--min-total-sold-floor",
+        type=int,
+        default=3,
+        help="Hard floor: below this sold count the group needs strong recent-market support to stay in consideration",
+    )
+    parser.add_argument(
+        "--min-total-active-floor",
+        type=int,
+        default=25,
+        help="Hard floor: below this active count the group is treated as extremely thin evidence",
     )
     parser.add_argument(
         "--max-year-span",
@@ -407,12 +573,19 @@ def main() -> None:
         raise SystemExit(f"Missing input file: {args.input}")
 
     tagged_df, stats = load_tagged_sold_data(args.input)
+    active_market_df = load_active_market_data(args.active_market)
     curves_df = load_curves()
     curve_tags = list_curve_tags(curves_df, include_aliases=False)
     candidate_df = build_curve_candidates(
         tagged_df,
+        active_market_df=active_market_df,
         curve_tags=curve_tags,
         min_listings=args.min_listings,
+        min_market_sold_listings=args.min_market_sold_listings,
+        min_active_listings=args.min_active_listings,
+        min_active_years=args.min_active_years,
+        min_total_sold_floor=args.min_total_sold_floor,
+        min_total_active_floor=args.min_total_active_floor,
         max_year_span=args.max_year_span,
         min_odometer_std=args.min_odometer_std,
     )

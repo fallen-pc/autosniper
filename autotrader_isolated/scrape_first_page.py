@@ -8,7 +8,7 @@ import json
 import os
 import re
 import sys
-from datetime import datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 from typing import Any, Dict, Iterable, List, Optional
@@ -25,6 +25,8 @@ DEFAULT_OUTPUT = OUTPUT_DIR / "first_page_results.csv"
 HISTORY_OUTPUT = OUTPUT_DIR / "listing_history.csv"
 STATE_OUTPUT = OUTPUT_DIR / "listing_state.csv"
 SNAPSHOT_OUTPUT = OUTPUT_DIR / "latest_snapshot.csv"
+RECENT_MARKET_TAGGED_OUTPUT = OUTPUT_DIR / "autotrader_recent_market_tagged.csv"
+RECENT_MARKET_WINDOW_DAYS = 90
 
 OUTPUT_COLUMNS = [
     "year",
@@ -1172,6 +1174,53 @@ def _write_state_rows(state_rows: dict[str, dict[str, Any]], state_path: Path) -
     state_df.to_csv(state_path, index=False)
 
 
+def _write_recent_market_tagged_rows(state_rows: dict[str, dict[str, Any]], output_path: Path) -> int:
+    recent_rows: list[dict[str, Any]] = []
+    cutoff_ts = datetime.now(UTC) - timedelta(days=RECENT_MARKET_WINDOW_DAYS)
+    for url, row in state_rows.items():
+        event_candidates: list[datetime] = []
+        for field in ["sold_date", "last_seen", "last_price_date", "first_seen"]:
+            raw_value = row.get(field)
+            if _is_blank(raw_value):
+                continue
+            try:
+                parsed = pd.to_datetime(raw_value, errors="coerce", utc=True)
+            except Exception:
+                parsed = pd.NaT
+            if pd.isna(parsed):
+                continue
+            event_candidates.append(parsed.to_pydatetime())
+        if not event_candidates:
+            continue
+        latest_event = max(event_candidates)
+        if latest_event < cutoff_ts:
+            continue
+        recent_rows.append(
+            {
+                "year": row.get("year", ""),
+                "make": row.get("make", ""),
+                "model": row.get("model", ""),
+                "variant": row.get("variant", ""),
+                "body_type": row.get("body_type", ""),
+                "odometer": row.get("odometer", ""),
+                "transmission": row.get("transmission", ""),
+                "rego": row.get("rego", ""),
+                "price": row.get("last_price", ""),
+                "fuel_type": row.get("fuel_type", ""),
+                "location": row.get("location", ""),
+                "url": url,
+                "scrape_date": latest_event.isoformat(),
+                "canonical_tag": "",
+                "canonical_reason": "",
+            }
+        )
+    recent_df = _format_output(pd.DataFrame(recent_rows, columns=OUTPUT_COLUMNS))
+    recent_df = _apply_canonical_tagging(recent_df)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    recent_df.to_csv(output_path, index=False)
+    return len(recent_df)
+
+
 def _update_listing_history(
     snapshot_df: pd.DataFrame,
     state_path: Path,
@@ -1256,6 +1305,8 @@ def _update_listing_history(
 
     _write_history_events(events, history_path)
     _write_state_rows(state_rows, state_path)
+    recent_count = _write_recent_market_tagged_rows(state_rows, RECENT_MARKET_TAGGED_OUTPUT)
+    counts["recent_market"] = recent_count
     return counts
 
 

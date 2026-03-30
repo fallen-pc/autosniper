@@ -503,7 +503,7 @@ with action_cols[2]:
 section_heading("Build Controls", "Set queue thresholds and local-model runtime options.")
 control_left, control_right = st.columns(2)
 with control_left:
-    min_listings = st.number_input("Min listings", min_value=1, max_value=200, value=20, step=1)
+    min_listings = st.number_input("Min sold listings", min_value=1, max_value=200, value=20, step=1)
     max_year_span = st.number_input("Max year span", min_value=1, max_value=20, value=6, step=1)
     min_odometer_std = st.number_input("Min odometer std", min_value=0, max_value=200000, value=10000, step=1000)
     build_limit = st.number_input("Build limit", min_value=1, max_value=50, value=2, step=1)
@@ -516,6 +516,11 @@ with control_right:
     city = st.text_input("Autotrader city", value="melbourne")
     run_scrape_after_build = st.checkbox("Run scrape after build", value=False)
     headful = st.checkbox("Headful scraper", value=True)
+
+st.caption(
+    "Conservative readiness rule: a tag is buildable with either strong sold history "
+    "or the combined-evidence path (sold >= 5, active listings >= 40, at least 3 active years, and broad odometer spread)."
+)
 
 unlock_df = _build_unlock_frame(manual_df, current_min_listings=int(min_listings))
 
