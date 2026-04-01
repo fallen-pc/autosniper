@@ -4,7 +4,7 @@
 Establish durable, repo-local working memory and explicit guardrails so AI-assisted work on AutoSniper does not forget decisions, reopen locked scope, or drift into irrelevant or dangerous changes.
 
 ## Current Phase
-Phase 3
+Phase 5
 
 ## Phases
 
@@ -36,10 +36,17 @@ Phase 3
 - **Status:** complete
 
 ### Phase 5: Delivery discipline
-- [ ] Use planning files as source of truth for future AutoSniper work
-- [ ] Refuse to widen changes beyond recorded scope without explicit decision
-- [ ] Summarize state clearly when handing off or pausing
-- **Status:** pending
+- [x] Use planning files as source of truth for future AutoSniper work
+- [x] Refuse to widen changes beyond recorded scope without explicit decision
+- [x] Summarize state clearly when handing off or pausing
+- **Status:** active / in use
+
+### Phase 6: Structural-refactor lane audit
+- [x] Identify that the remaining sandbox divergence is a separate lane, not random leftovers
+- [x] Capture the existence of structural docs and package directories as evidence-backed context
+- [ ] Audit the pre-existing structural-refactor files for alignment, risk, and commit boundaries
+- [ ] Decide whether that lane should be normalized into repo memory/docs further before new code edits there
+- **Status:** in progress
 
 ## Key Questions
 1. What files/areas are explicitly deferred or locked for the current refactor wave?
@@ -74,14 +81,23 @@ Phase 3
 - Do not widen scope from a targeted script cleanup into architectural churn without explicit approval
 
 ## Current Candidate Status
+### Committed sold-data / memory lane
 - `scripts/train_auction_price_correction.py` → small safe cleanup complete
 - `scripts/prepare_sold_training_data.py` → small safe cleanup complete
 - `scripts/clean_sold_csv.py` → small safe cleanup complete
 - `scripts/enrich_sold_repairs.py` → small safe cleanup complete
 - `scripts/build_restricted_datasets.py` → small safe cleanup complete
+
+### Deferred current-wave boundaries
 - `scripts/process_curve_candidates.py` → explicitly skipped/deferred
 - scraper / extractor chain files → explicitly deferred via named file list in deferred scope
 - `scripts/atomic_csv.py` → explicitly deferred
+
+### Separate structural-refactor lane present in sandbox
+- architecture docs: `docs/refactor-plan.md`, `docs/repo-structure.md`, `docs/storage-policy.md`
+- new package directories: `governance/`, `jobs/`, `ops/`
+- compatibility-wrapper style scripts observed: `scripts/normalize_conditions.py`, `scripts/readiness_smoke.py`, `scripts/check_commit_hygiene.py`, `scripts/governance_checks.py`
+- this lane should be audited and handled as its own change stream rather than merged mentally into the sold-data cleanup wave
 
 ## Known Processed vs Unknown Historical State
 Known from current evidence in this wave:
