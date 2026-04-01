@@ -89,9 +89,16 @@ def _load_and_detect_cols(path: str) -> Tuple[pd.DataFrame, Cols]:
 
 def _time_split(df: pd.DataFrame, date_col: str, validation_days: int) -> Tuple[pd.DataFrame, pd.DataFrame]:
     df = df.dropna(subset=[date_col]).copy()
+    if df.empty:
+        raise ValueError("No rows remain after dropping missing date values.")
     cutoff = df[date_col].max() - pd.Timedelta(days=int(validation_days))
     train = df[df[date_col] < cutoff].copy()
     valid = df[df[date_col] >= cutoff].copy()
+    if train.empty or valid.empty:
+        raise ValueError(
+            f"Time split produced empty partition(s): train={len(train)}, valid={len(valid)}, "
+            f"validation_days={validation_days}."
+        )
     return train, valid
 
 
@@ -151,6 +158,28 @@ def _price_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> dict:
     return {"mae": mae, "rmse": rmse, "wape": wape}
 
 
+def _prepare_model_datasets(
+    df: pd.DataFrame,
+    cols: Cols,
+    validation_days: int,
+    clip_low: float,
+    clip_high: float,
+    drop_cols: List[str],
+) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, np.ndarray, np.ndarray]:
+    prepared_df = df.dropna(subset=[cols.price_col, cols.baseline_col]).copy()
+    prepared_df = prepared_df[(prepared_df[cols.price_col] > 0) & (prepared_df[cols.baseline_col] > 0)].copy()
+    prepared_df["auction_ratio"] = (prepared_df[cols.price_col] / prepared_df[cols.baseline_col]).clip(
+        clip_low, clip_high
+    )
+
+    train_df, valid_df = _time_split(prepared_df, cols.date_col, validation_days)
+    X_train = _build_feature_frame(train_df, cols, drop_cols)
+    X_valid = _build_feature_frame(valid_df, cols, drop_cols)
+    y_train = train_df["auction_ratio"].to_numpy(dtype=float)
+    y_valid = valid_df["auction_ratio"].to_numpy(dtype=float)
+    return prepared_df, train_df, valid_df, X_train, X_valid, y_train, y_valid
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Train quantile ratio models for auction price correction.")
     parser.add_argument("--train-data", required=True, help="CSV containing sold rows + baseline comps price.")
@@ -169,17 +198,16 @@ def main() -> None:
 
     os.makedirs(args.out_dir, exist_ok=True)
     df, cols = _load_and_detect_cols(args.train_data)
-    df = df.dropna(subset=[cols.price_col, cols.baseline_col]).copy()
-    df = df[(df[cols.price_col] > 0) & (df[cols.baseline_col] > 0)].copy()
-    df["auction_ratio"] = (df[cols.price_col] / df[cols.baseline_col]).clip(args.clip_low, args.clip_high)
-
-    train_df, valid_df = _time_split(df, cols.date_col, args.validation_days)
     drop_cols = [c.strip() for c in args.drop_cols.split(",") if c.strip()]
 
-    X_train = _build_feature_frame(train_df, cols, drop_cols)
-    X_valid = _build_feature_frame(valid_df, cols, drop_cols)
-    y_train = train_df["auction_ratio"].to_numpy(dtype=float)
-    y_valid = valid_df["auction_ratio"].to_numpy(dtype=float)
+    _, train_df, valid_df, X_train, X_valid, y_train, y_valid = _prepare_model_datasets(
+        df=df,
+        cols=cols,
+        validation_days=args.validation_days,
+        clip_low=args.clip_low,
+        clip_high=args.clip_high,
+        drop_cols=drop_cols,
+    )
 
     model_q50 = _train_quantile(
         X_train, y_train, X_valid, y_valid, alpha=0.5, seed=args.seed, iterations=args.iterations
@@ -220,7 +248,7 @@ def main() -> None:
     id_values = (
         valid_df[cols.id_col].values if cols.id_col else np.arange(len(valid_df))
     )
-    pd.DataFrame(
+    predictions_df = pd.DataFrame(
         {
             "row_id": id_values,
             "baseline_price": baseline_valid,

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+import shutil
 from pathlib import Path
 import sys
 
@@ -79,12 +80,9 @@ def main() -> None:
 
     df = normalize_listing_fields(df)
 
-    # Backup original file once.
+    # Backup original file once, without moving the source out of place before rewrite succeeds.
     if not DEDUP_BACKUP_PATH.exists():
-        CSV_PATH.replace(DEDUP_BACKUP_PATH)
-        # Reload dataframe from backup to avoid reading from moved file.
-        df = pd.read_csv(DEDUP_BACKUP_PATH)
-        df = normalize_listing_fields(df)
+        shutil.copy2(CSV_PATH, DEDUP_BACKUP_PATH)
 
     deduped = deduplicate_sold(df)
     deduped_count = len(deduped)

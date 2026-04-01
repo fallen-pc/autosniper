@@ -1,0 +1,60 @@
+# Processed Files Ledger
+
+Purpose: maintain a single evidence-backed index of files/areas that have been assessed, changed, deferred, or identified as high-risk during AI-assisted work on AutoSniper.
+
+## Status meanings
+- **changed_this_wave**: directly edited in the current refactor wave
+- **reviewed_then_deferred**: explicitly considered, then left untouched by decision
+- **deferred_area**: known no-touch scope for the current wave
+- **historically_active**: recent repo evidence shows notable churn/activity, but not necessarily edited in the current wave
+- **shared_infra_high_risk**: broad dependency surface; treat as high-blast-radius
+- **unknown**: mentioned but not yet evidenced enough for a stronger claim
+
+## Ledger
+| File / Area | Status | Last Known Decision | Risk / Blast Radius | Evidence Source | Notes |
+|---|---|---|---|---|---|
+| `scripts/train_auction_price_correction.py` | changed_this_wave | Small safe cleanup complete; stop here for now | medium | current working tree + repo planning files | Fixed broken predictions write path and added split guardrails |
+| `scripts/process_curve_candidates.py` | reviewed_then_deferred | Explicitly do not touch in current wave | high | current conversation + repo planning files + docs/tests references | Important curve pipeline path; supported operator path in docs |
+| `scripts/extract_links.py` | deferred_area | Explicitly do not touch in current wave as part of scraper/extractor chain | high | repo planning/rules + scraper-related file scan | Core link extraction entry point |
+| `scripts/extract_vehicle_details.py` | deferred_area | Explicitly do not touch in current wave as part of scraper/extractor chain | high | repo planning/rules + scraper-related file scan | Core detail extraction path |
+| `scripts/scrape_autotrader_rego.py` | deferred_area | Explicitly do not touch in current wave as part of scraper/extractor chain | high | repo planning/rules + scraper-related file scan | Autotrader scrape path |
+| `scripts/scrape_bid_history.py` | deferred_area | Explicitly do not touch in current wave as part of scraper/extractor chain | high | repo planning/rules + scraper-related file scan | Bid-history scrape path |
+| `scripts/run_autotrader_scrape.ps1` | deferred_area | Explicitly do not touch in current wave as part of scraper/extractor chain | medium-high | repo planning/rules + scraper-related file scan | Runner/wrapper script for scraper flow |
+| `shared/scraper_health.py` | deferred_area | Explicitly do not touch in current wave as part of scraper/extractor chain | medium-high | repo planning/rules + scraper-related file scan | Shared health/reporting surface for scrapers |
+| `autotrader_isolated/scrape_first_page.py` | deferred_area | Explicitly do not touch in current wave as part of scraper/extractor chain | medium-high | repo planning/rules + scraper-related file scan | Isolated scraper helper |
+| `pages/1_LINK_EXTRACTOR.py` | deferred_area | Treat as deferred with scraper/extractor chain unless explicitly reopened | medium-high | repo planning/rules + scraper-related file scan | UI surface for link extraction |
+| `pages/2_VEHICLE_DETAIL_EXTRACTOR.py` | deferred_area | Treat as deferred with scraper/extractor chain unless explicitly reopened | medium-high | repo planning/rules + scraper-related file scan | UI surface for detail extraction |
+| `pages/3_ACTIVE_LISTINGS.py` | deferred_area | Treat as deferred with scraper/extractor chain unless explicitly reopened | high | repo planning/rules + scraper-related file scan | Operator surface closely coupled to scraper outputs |
+| `pages/7_AUTOTRADER_SCRAPER.py` | deferred_area | Treat as deferred with scraper/extractor chain unless explicitly reopened | medium-high | repo planning/rules + scraper-related file scan | UI surface for Autotrader scraping |
+| `pages/12_GRAYS_PIPELINE.py` | deferred_area | Treat as deferred with scraper/extractor chain unless explicitly reopened | medium-high | repo planning/rules + scraper-related file scan | Adjacent pipeline/operator surface |
+| `pages/05_HEALTH.py` | deferred_area | Treat as deferred with scraper/extractor chain unless explicitly reopened | medium | repo planning/rules + scraper-related file scan | Health/reporting UI surface tied to scraper health |
+| `scripts/atomic_csv.py` | deferred_area; shared_infra_high_risk | Explicitly do not touch in current wave | very high | current conversation + widespread import usage across scripts | Shared write primitive; broad blast radius |
+| `scripts/generate_curve_candidates.py` | historically_active | No current-wave decision recorded here | high | recent git churn + docs/tests references | Part of curve candidate pipeline |
+| `pages/14_CURVE_PIPELINE.py` | historically_active | No current-wave decision recorded here | medium-high | recent git churn + direct imports/usages | UI/operator entry point for curve pipeline |
+| `pages/15_CURVE_BUILDER_V2.py` | historically_active | No current-wave decision recorded here | medium-high | recent git churn + imports from process_curve_candidates | Curve builder UI tied to pipeline internals |
+| `shared/curves.py` | historically_active | No current-wave decision recorded here | high | recent git churn | Core curve domain/support code |
+| `shared/curve_builder_v2.py` | historically_active | No current-wave decision recorded here | medium-high | recent git churn | Supports Curve Builder V2 |
+| `shared/curve_groups_v2.py` | historically_active | No current-wave decision recorded here | medium-high | recent git churn | Supports grouped curve mapping |
+| `shared/governance.py` | historically_active | No current-wave decision recorded here | high | recent git churn + governance-related commit history | Governance checks/reporting area |
+| `scripts/governance_checks.py` | historically_active | No current-wave decision recorded here | medium-high | recent git churn | Governance validation/reporting |
+| `scripts/curve_validator.py` | historically_active | No current-wave decision recorded here | medium-high | recent git churn | Validation logic for curve outputs |
+| `scripts/curve_coverage_report.py` | historically_active | No current-wave decision recorded here | medium | recent git churn | Reporting/output side of governance |
+| `tests/test_process_curve_candidates.py` | historically_active | No current-wave decision recorded here | low-medium | recent git churn | Important regression coverage around deferred core script |
+| `tests/test_generate_curve_candidates.py` | historically_active | No current-wave decision recorded here | low-medium | recent git churn | Candidate generation regression coverage |
+| `tests/test_governance.py` | historically_active | No current-wave decision recorded here | low-medium | recent git churn | Governance regression coverage |
+| `scripts/prepare_sold_training_data.py` | changed_this_wave | Small safe cleanup complete; stop here for now | medium | current working tree + repo planning files + recent git churn | Made transform helpers consistently return copied frames and made odometer parsing degrade cleanly when source column is missing |
+| `scripts/rebuild_sold_dataset.py` | historically_active | Better next move was *not* to jump here earlier | medium-high | current conversation + recent git churn | Mentioned as not the immediate next candidate earlier |
+| `scripts/enrich_sold_repairs.py` | changed_this_wave | Small safe cleanup complete; stop here for now | medium | current working tree + repo planning files + recent git churn | Made enrichment output schema explicit by reindexing generated columns with `repair_feature_columns()` before concat |
+| `scripts/build_restricted_datasets.py` | changed_this_wave | Small safe cleanup complete; stop here for now | medium-high | current working tree + repo planning files + recent git churn | Made enrichment backlog fallbacks Series-safe for missing columns and derived timestamp/date from one shared UTC instant |
+| `scripts/clean_sold_csv.py` | changed_this_wave | Small safe cleanup complete; stop here for now | medium | current working tree + repo planning files + recent git churn | Switched one-time backup from move (`replace`) to copy (`copy2`) so the source file stays in place until final atomic write succeeds |
+
+## Rules for Updating This Ledger
+- Only record **changed_this_wave** when there is direct evidence of an edit in the current wave
+- Use **historically_active** when evidence comes from git/docs/tests rather than direct current-wave edits
+- If a file is explicitly ruled out, record that decision immediately
+- If uncertainty remains, say so; do not upgrade a file’s status based on vague recollection
+- Keep this file concise and scannable
+
+## Recovery Notes
+This ledger is intentionally conservative. It is designed to prevent false continuity from entering project memory.
+If a more exact historical ledger is needed later, backfill from commits, branch history, notes, or prior session artifacts.

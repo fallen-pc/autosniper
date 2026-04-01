@@ -97,15 +97,22 @@ def _write_restricted(df: pd.DataFrame, schema: Iterable[str], path: Path) -> No
     write_dataframe_csv_atomic(restricted, path, index=False)
 
 
+def _column_or_blank(df: pd.DataFrame, column: str) -> pd.Series:
+    if column in df.columns:
+        return df[column]
+    return pd.Series("", index=df.index, dtype="object")
+
+
 def _append_enrichment_backlog(df: pd.DataFrame, source: str) -> None:
     if df.empty:
         return
-    timestamp = _utc_now().isoformat(timespec="seconds")
-    dataset_date = _utc_now().date().isoformat()
+    now = _utc_now()
+    timestamp = now.isoformat(timespec="seconds")
+    dataset_date = now.date().isoformat()
     working = df.copy()
-    working["make_norm"] = working.get("make", "").astype(str).str.lower().str.strip()
-    working["model_norm"] = working.get("model", "").astype(str).str.lower().str.strip()
-    working["canonical_reason"] = working.get("canonical_reason", "").astype(str).str.strip()
+    working["make_norm"] = _column_or_blank(working, "make").astype(str).str.lower().str.strip()
+    working["model_norm"] = _column_or_blank(working, "model").astype(str).str.lower().str.strip()
+    working["canonical_reason"] = _column_or_blank(working, "canonical_reason").astype(str).str.strip()
 
     rows: list[dict[str, object]] = []
 
@@ -148,7 +155,7 @@ def _append_enrichment_backlog(df: pd.DataFrame, source: str) -> None:
                     "count": int(hi_rider_mask.sum()),
                 }
             )
-        cab_mask = hilux.get("body_type", "").astype(str).str.lower().str.contains("cab chassis", na=False)
+        cab_mask = _column_or_blank(hilux, "body_type").astype(str).str.lower().str.contains("cab chassis", na=False)
         if cab_mask.any():
             rows.append(
                 {
