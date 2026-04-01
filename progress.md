@@ -2,6 +2,24 @@
 
 ## Session: 2026-04-01
 
+### Phase 5: Delivery discipline / checkpoint normalization
+- **Status:** in progress
+- Actions taken:
+  - Re-audited the sandbox after the sold-data/memory checkpoint commit
+  - Confirmed the committed sold-data/memory files are now baseline, not "unfinished dirty" work
+  - Distinguished the remaining sandbox divergence as a separate structural-refactor lane rather than random leftovers
+  - Re-read the existing structural docs and sampled wrapper scripts to verify that this lane is coherent enough to track explicitly
+  - Confirmed via package listings that `governance/`, `jobs/`, and `ops/` are populated with real modules rather than empty scaffolding
+  - Confirmed via diff shape that the lane is dominated by move/wrapper migration patterns rather than obvious new feature churn
+  - Corrected stale non-sandbox resource paths in `findings.md`
+  - Updated repo memory files to record the structural-refactor lane as a separate tracked context
+  - Expanded the processed-files ledger so the structural docs, package dirs, and wrapper scripts are no longer invisible context
+- Files created/modified:
+  - `findings.md` (updated)
+  - `task_plan.md` (updated)
+  - `progress.md` (updated)
+  - `docs/processed_files_ledger.md` (updated)
+
 ### Phase 1: Memory bootstrap & guardrails
 - **Status:** complete
 - **Started:** 2026-04-01 05:00 Australia/Sydney

@@ -14,6 +14,7 @@
 - Git history shows recent heavy project churn around the curve pipeline/governance area, plus sold-data preparation/modeling scripts
 - Git/docs evidence can recover a useful map of historically active areas, but not a perfect ledger of what an AI previously changed unless that history was explicitly written down
 - The earlier fuzzy bucket "scraper-chain files" has now been replaced with an explicit named file list in repo rules/ledger to reduce boundary ambiguity
+- The sandbox also contains a separate structural-refactor lane (docs + package directories + compatibility wrappers) that predates the sold-data cleanup checkpoint and should be tracked as its own context rather than dismissed as random leftovers
 
 ## Technical Decisions
 | Decision | Rationale |
@@ -34,8 +35,8 @@
 
 ## Resources
 - AutoSniper sandbox repo root: `/mnt/c/Users/ewanf/Desktop/autosniper-main-sandbox`
-- Durable repo rules: `/mnt/c/Users/ewanf/Desktop/autosniper-main/docs/ai_working_agreement.md`
-- Processed files ledger: `/mnt/c/Users/ewanf/Desktop/autosniper-main/docs/processed_files_ledger.md`
+- Durable repo rules: `/mnt/c/Users/ewanf/Desktop/autosniper-main-sandbox/docs/ai_working_agreement.md`
+- Processed files ledger: `/mnt/c/Users/ewanf/Desktop/autosniper-main-sandbox/docs/processed_files_ledger.md`
 - Planning skill: `/home/ewanf/.openclaw/workspace/skills/planning-with-files/SKILL.md`
 - Refactor skill: `/home/ewanf/.openclaw/workspace/skills/refactor-safely/SKILL.md`
 - Global memory: `/home/ewanf/.openclaw/workspace/MEMORY.md`
@@ -75,6 +76,24 @@
   - `scripts/build_restricted_datasets.py`
   - `scripts/clean_sold_csv.py`
 - `scripts/atomic_csv.py` appears as shared infrastructure used broadly across many scripts, so even when deferred it should be treated as high-blast-radius
+
+### Structural-refactor lane observed in sandbox
+- The sandbox contains untracked architecture/planning docs: `docs/refactor-plan.md`, `docs/repo-structure.md`, `docs/storage-policy.md`
+- The sandbox also contains untracked package directories: `governance/`, `jobs/`, and `ops/`
+- Several modified `scripts/` files are now evidenced as compatibility wrappers into those newer package paths rather than unrelated one-off edits
+- Direct reads of the docs show a coherent migration story: role-based package split, wrapper compatibility phase, and storage classification work
+- Direct package listings show `governance/`, `jobs/`, and `ops/` contain real modules rather than empty scaffolding
+- Diff shape strongly suggests migration work more than fresh behavior edits: large deletions from old `scripts/` files and small wrapper replacements
+- This lane is directionally aligned with the repo-memory guardrails (clearer boundaries, less mixed responsibility), but it is broader and riskier than the small sold-data cleanup wave and should be tracked separately
+
+### Current structural-lane assessment
+- Best current interpretation: this is a coherent pre-existing structural migration lane, not random sandbox leftovers
+- It appears to include three kinds of changes:
+  1. planning/rules docs (`docs/refactor-plan.md`, `docs/repo-structure.md`, `docs/storage-policy.md`)
+  2. moved/new package implementations under `governance/`, `jobs/`, and `ops/`
+  3. compatibility wrappers left in `scripts/` to preserve old entrypoints/import expectations
+- This lane still needs its own checkpoint decision; coherence has been established, but not yet whether it should be committed as-is, split further, or trimmed
+- Special-case review is still needed for `.gitignore`, `CSV_data/ai/ai_listing_valuations.csv`, and any wrapper files that border explicitly deferred scope
 
 ### Limits of recovery
 - Recent commit/file churn is not the same as a verified AI-processed ledger
