@@ -25,6 +25,8 @@
   - Applied a tiny helper extraction cleanup in `governance/curve_coverage_report.py`
   - Re-checked syntax with `python3 -m py_compile` across the validator/coverage-report pair plus `scripts/check_commit_hygiene.py`
   - Reviewed `governance/run_checks.py` as a possible next target, but deliberately held it out of the mini-wave to keep the checkpoint small and low-risk
+  - Applied one additional governance-side cleanup in `governance/check_commit_hygiene.py` by extracting repeated git-output line normalization into a tiny helper
+  - Re-checked syntax with `python3 -m py_compile governance/check_commit_hygiene.py`
 - Files created/modified:
   - `findings.md` (updated)
   - `task_plan.md` (updated)

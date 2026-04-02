@@ -93,20 +93,20 @@ def _repo_root() -> Path:
     return Path(root)
 
 
+def _normalized_nonempty_lines(output: str) -> list[str]:
+    return [line.replace("\\", "/").strip() for line in output.splitlines() if line.strip()]
+
+
 def _staged_paths() -> list[str]:
     output = _run_git(["diff", "--cached", "--name-only", "--diff-filter=ACMR"])
-    return [line.replace("\\", "/").strip() for line in output.splitlines() if line.strip()]
+    return _normalized_nonempty_lines(output)
 
 
 def _added_paths() -> list[str]:
     output = _run_git(["diff", "--cached", "--name-status", "--diff-filter=A"])
     paths: list[str] = []
-    for line in output.splitlines():
-        line = line.strip()
-        if not line:
-            continue
+    for line in _normalized_nonempty_lines(output):
         _, _, rel_path = line.partition("\t")
-        rel_path = rel_path.replace("\\", "/").strip()
         if rel_path:
             paths.append(rel_path)
     return paths
