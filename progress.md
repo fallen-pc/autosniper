@@ -27,6 +27,11 @@
   - Reviewed `governance/run_checks.py` as a possible next target, but deliberately held it out of the mini-wave to keep the checkpoint small and low-risk
   - Applied one additional governance-side cleanup in `governance/check_commit_hygiene.py` by extracting repeated git-output line normalization into a tiny helper
   - Re-checked syntax with `python3 -m py_compile governance/check_commit_hygiene.py`
+  - Shifted to the safest next lane after the governance-side follow-up: test-first regression coverage rather than widening production-code cleanup
+  - Added a narrow regression test in `tests/test_generate_curve_candidates.py` to pin stable, duplicate-free `review_reason` output for a weak-group manual-review case
+  - Added a narrow regression test in `tests/test_governance.py` to pin allowlist matching after dataset-path normalization
+  - Attempted live test execution with `python3 -m pytest tests/test_generate_curve_candidates.py tests/test_governance.py -q`, but `pytest` was not installed in the shell environment
+  - Verified both updated test files with `python3 -m py_compile tests/test_generate_curve_candidates.py tests/test_governance.py`
 - Files created/modified:
   - `findings.md` (updated)
   - `task_plan.md` (updated)

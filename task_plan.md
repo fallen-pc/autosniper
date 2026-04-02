@@ -106,8 +106,10 @@ Phase 5
 - `governance/curve_coverage_report.py` → tiny helper extraction cleanup checkpointed
 - `scripts/curve_coverage_report.py` → tiny wrapper-identity cleanup checkpointed
 - `scripts/check_commit_hygiene.py` → tiny wrapper-identity cleanup checkpointed
-- `governance/check_commit_hygiene.py` → tiny helper extraction cleanup complete in working tree
+- `governance/check_commit_hygiene.py` → tiny helper extraction cleanup checkpointed
 - `governance/run_checks.py` → reviewed as a possible next target, but held out to keep follow-up work small and low-risk
+- `tests/test_generate_curve_candidates.py` → tiny regression-test follow-up complete in working tree
+- `tests/test_governance.py` → tiny regression-test follow-up complete in working tree
 
 ## Known Processed vs Unknown Historical State
 Known from current evidence in this wave:

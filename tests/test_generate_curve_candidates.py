@@ -123,6 +123,31 @@ def test_build_curve_candidates_sends_weak_groups_to_manual_review():
     assert "low_odometer_variance" in row["review_reason"]
 
 
+def test_build_curve_candidates_deduplicates_review_reasons_in_stable_order():
+    tag = "toyota_camry_ascent_petrol_auto_sedan_asv70r"
+    tagged_df = pd.DataFrame(
+        _make_rows(
+            tag,
+            years=[2018, 2025, 2025],
+            prices=[24000, 23800, 23700],
+            odometers=[100000, 100500, 101000],
+        )
+    )
+
+    candidates = build_curve_candidates(
+        tagged_df,
+        curve_tags=set(),
+        min_listings=5,
+        max_year_span=4,
+        min_odometer_std=5000,
+    )
+
+    row = candidates.iloc[0]
+    reasons = row["review_reason"].split("|")
+    assert reasons == ["low_sample_size", "wide_year_span", "low_odometer_variance"]
+    assert len(reasons) == len(set(reasons))
+
+
 def test_build_curve_candidates_falls_back_when_numeric_shadow_columns_are_blank():
     tag = "toyota_corolla_ascent_petrol_auto_sedan_zre152r"
     tagged_df = pd.DataFrame(

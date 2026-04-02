@@ -198,6 +198,23 @@ def test_classify_dataset_deltas_respects_allowlist():
     assert report["unexpected"] == ["CSV_data/scrapers/sold_cars.csv"]
 
 
+def test_classify_dataset_deltas_matches_allowlist_after_path_normalization():
+    report = gov.classify_dataset_deltas(
+        [
+            r"CSV_data\restricted\curves.csv",
+            r"CSV_data\scrapers\sold_cars.csv",
+        ],
+        allowed_patterns=[r"CSV_data\restricted\*"],
+    )
+
+    assert report["tracked"] == [
+        "CSV_data/restricted/curves.csv",
+        "CSV_data/scrapers/sold_cars.csv",
+    ]
+    assert report["allowed"] == ["CSV_data/restricted/curves.csv"]
+    assert report["unexpected"] == ["CSV_data/scrapers/sold_cars.csv"]
+
+
 def test_build_curve_coverage_report_marks_alias_tags_as_covered(monkeypatch, tmp_path):
     alias_path = tmp_path / "curve_aliases.csv"
     alias_path.write_text(

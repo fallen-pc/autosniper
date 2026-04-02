@@ -149,11 +149,18 @@
   - `governance/curve_coverage_report.py`: extracted canonical-tag report-frame creation into a small helper without widening behavior
   - `scripts/curve_coverage_report.py`: added a compatibility-wrapper docstring to make the wrapper role explicit
   - `scripts/check_commit_hygiene.py`: added a compatibility-wrapper docstring to make the wrapper role explicit
-- Follow-up governance utility pass now completed in the working tree:
   - `governance/check_commit_hygiene.py`: extracted repeated git-output line normalization into a tiny helper without widening behavior
-- `python3 -m py_compile` passed for the updated `governance/check_commit_hygiene.py`
+- `python3 -m py_compile` passed for the updated curve-governance files, including `governance/check_commit_hygiene.py`
 - `governance/run_checks.py` remains intentionally held out because it is broader and more coupled than the utility/wrapper cleanups done so far
-- Best interpretation: the curve mini-wave is checkpointed, and the current follow-up change is another small governance-side cleanup rather than a reopening of deferred curve-core work
+- Best interpretation: the curve mini-wave is checkpointed, and the subsequent governance utility follow-up was also safely checkpointed without reopening deferred curve-core work
+
+### Test follow-up status
+- The next safest move after the governance-side micro-cleanups was test-first regression coverage rather than more production-code tidying
+- `tests/test_generate_curve_candidates.py` now includes a narrow regression test that checks `review_reason` de-duplication stays stable and duplicate-free for a weak-group manual-review case
+- `tests/test_governance.py` now includes a narrow regression test that checks dataset-delta allowlist matching still works after path normalization (`\\` to `/`)
+- `pytest` was not available in the current shell environment, so live test execution could not be completed here
+- `python3 -m py_compile` passed for both updated test files, giving syntax-level confidence without widening scope
+- Best interpretation: this is a clean, low-blast-radius test-only follow-up that strengthens expected behavior around curve-candidate triage and governance path handling
 
 ### Limits of recovery
 - Recent commit/file churn is not the same as a verified AI-processed ledger
