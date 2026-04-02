@@ -126,9 +126,10 @@ def build_curve_warnings(curves_df: pd.DataFrame) -> pd.DataFrame:
                 previous_value = current_value
                 previous_km = current_km
 
-    warning_df = pd.DataFrame(warnings)
+    warning_columns = ["warning_type", "canonical_tag", "anchor_year", "km_bucket", "column_name", "message"]
+    warning_df = pd.DataFrame(warnings, columns=warning_columns)
     if warning_df.empty:
-        return pd.DataFrame(columns=["warning_type", "canonical_tag", "anchor_year", "km_bucket", "column_name", "message"])
+        return warning_df
     return warning_df.sort_values(
         by=["warning_type", "canonical_tag", "anchor_year", "km_bucket", "column_name", "message"],
         ascending=[True, True, True, True, True, True],

@@ -140,6 +140,19 @@
   - parts of the lane remain curve-adjacent or autotrader-adjacent, so it should still be treated with care even though the package split itself looks coherent
 - Best interpretation: ops is a real, usable package lane with preserved wrapper compatibility, but it is not yet fully isolated from shared infrastructure or all nearby high-sensitivity surfaces
 
+### Curve mini-wave status
+- A small curve-adjacent cleanup wave is now in progress in the sandbox after the broader lane audits were checkpointed
+- So far this wave has stayed on the low-risk governance/wrapper side rather than reopening deferred curve-core or scraper scope
+- Completed low-risk changes in the working tree:
+  - `governance/curve_validator.py`: made warning-frame column shape explicit even when empty, reducing return-shape drift risk
+  - `scripts/curve_validator.py`: added a compatibility-wrapper docstring to make the wrapper role explicit
+  - `governance/curve_coverage_report.py`: extracted canonical-tag report-frame creation into a small helper without widening behavior
+  - `scripts/curve_coverage_report.py`: added a compatibility-wrapper docstring to make the wrapper role explicit
+  - `scripts/check_commit_hygiene.py`: added a compatibility-wrapper docstring to make the wrapper role explicit
+- `python3 -m py_compile` passed across the validator/coverage-report pair plus the updated commit-hygiene wrapper
+- `governance/run_checks.py` was inspected as a possible next target, but it is broader and more coupled than the rest of this mini-wave, so it was intentionally left out of the current checkpoint to keep the change small and behavior-preserving
+- Best interpretation: this mini-wave is a coherent low-risk follow-up checkpoint, not a reopening of deferred curve-core work
+
 ### Limits of recovery
 - Recent commit/file churn is not the same as a verified AI-processed ledger
 - Do not assume every recently active file was touched by the same refactor wave

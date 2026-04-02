@@ -36,13 +36,18 @@ def _load_required_csv(path: Path, required_columns: set[str]) -> pd.DataFrame:
     return df
 
 
+def _canonical_tag_report_frame(canonical_tags: pd.Series) -> pd.DataFrame:
+    return pd.DataFrame({"canonical_tag": canonical_tags}).loc[
+        lambda frame: ~frame["canonical_tag"].isin(IGNORED_TAG_VALUES)
+    ]
+
+
 def build_missing_curve_report(static_df: pd.DataFrame, curves_df: pd.DataFrame) -> pd.DataFrame:
     static_tags = static_df["canonical_tag"].map(_normalize_tag)
     curve_tags = curves_df["canonical_tag"].map(_normalize_tag)
 
     observed = (
-        pd.DataFrame({"canonical_tag": static_tags})
-        .loc[lambda frame: ~frame["canonical_tag"].isin(IGNORED_TAG_VALUES)]
+        _canonical_tag_report_frame(static_tags)
         .assign(observed_rows=1)
         .groupby("canonical_tag", as_index=False)["observed_rows"]
         .sum()

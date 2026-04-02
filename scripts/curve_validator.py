@@ -1,3 +1,5 @@
+"""Compatibility wrapper for the curve validator entrypoint."""
+
 from pathlib import Path
 import sys
 

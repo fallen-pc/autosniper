@@ -1,3 +1,5 @@
+"""Compatibility wrapper for the commit hygiene entrypoint."""
+
 from pathlib import Path
 import sys
 

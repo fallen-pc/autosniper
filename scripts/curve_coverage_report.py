@@ -1,3 +1,5 @@
+"""Compatibility wrapper for the curve coverage report entrypoint."""
+
 from pathlib import Path
 import sys
 

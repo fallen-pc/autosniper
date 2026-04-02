@@ -100,6 +100,14 @@ Phase 5
 - compatibility-wrapper style scripts observed: `scripts/normalize_conditions.py`, `scripts/readiness_smoke.py`, `scripts/check_commit_hygiene.py`, `scripts/governance_checks.py`
 - this lane should be audited and handled as its own change stream rather than merged mentally into the sold-data cleanup wave
 
+### Current curve mini-wave
+- `governance/curve_validator.py` → tiny schema-safety cleanup complete in working tree
+- `scripts/curve_validator.py` → tiny wrapper-identity cleanup complete in working tree
+- `governance/curve_coverage_report.py` → tiny helper extraction cleanup complete in working tree
+- `scripts/curve_coverage_report.py` → tiny wrapper-identity cleanup complete in working tree
+- `scripts/check_commit_hygiene.py` → tiny wrapper-identity cleanup complete in working tree
+- `governance/run_checks.py` → reviewed as a possible next target, but held out of this mini-wave to keep the checkpoint small and low-risk
+
 ## Known Processed vs Unknown Historical State
 Known from current evidence in this wave:
 - `scripts/train_auction_price_correction.py` was processed and received a small safe cleanup

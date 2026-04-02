@@ -19,6 +19,12 @@
   - Ran a governance-lane assessment-only audit: wrappers and package entrypoints look coherent, but governance still depends partly on shared/runtime surfaces and readiness checks intentionally probe some deferred legacy entrypoints
   - Ran a jobs-lane assessment-only audit: wrappers and sampled package modules look coherent, but jobs still depends partly on shared/deferred infrastructure via `scripts.atomic_csv`, and `jobs/extract_links.py` remains scraper-boundary sensitive
   - Ran an ops-lane assessment-only audit: wrappers and sampled package modules look coherent, with no obvious direct reach-back into `scripts/process_curve_candidates.py` or locked scraper entrypoints, but some ops modules still depend on `scripts.atomic_csv` and remain curve/autotrader-adjacent
+  - Started a narrow curve-adjacent mini-wave after the lane audits, staying on the low-risk governance/wrapper side rather than reopening deferred curve-core scope
+  - Applied a tiny schema-safety cleanup in `governance/curve_validator.py`
+  - Added compatibility-wrapper identity docstrings in `scripts/curve_validator.py`, `scripts/curve_coverage_report.py`, and `scripts/check_commit_hygiene.py`
+  - Applied a tiny helper extraction cleanup in `governance/curve_coverage_report.py`
+  - Re-checked syntax with `python3 -m py_compile` across the validator/coverage-report pair plus `scripts/check_commit_hygiene.py`
+  - Reviewed `governance/run_checks.py` as a possible next target, but deliberately held it out of the mini-wave to keep the checkpoint small and low-risk
 - Files created/modified:
   - `findings.md` (updated)
   - `task_plan.md` (updated)
