@@ -60,7 +60,10 @@ def prepare_numeric_columns(df: pd.DataFrame) -> pd.DataFrame:
         working["sale_price_value"] = pd.NA
     if working["sale_price_value"].isna().all() and "price" in working.columns:
         working["sale_price_value"] = working["price"].apply(parse_currency)
-    working["odometer_numeric"] = working["odometer_reading"].apply(parse_numeric)
+    if "odometer_reading" in working.columns:
+        working["odometer_numeric"] = working["odometer_reading"].apply(parse_numeric)
+    else:
+        working["odometer_numeric"] = pd.NA
     if "bids" in working.columns:
         working["bids_final"] = working["bids"].apply(parse_numeric)
     else:
@@ -86,8 +89,9 @@ def prepare_numeric_columns(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def add_repair_tag_features(df: pd.DataFrame) -> pd.DataFrame:
-    if "repair_tags" not in df.columns:
-        return df
+    working = df.copy()
+    if "repair_tags" not in working.columns:
+        return working
 
     def _parse_tags(value: object) -> list[str]:
         if isinstance(value, list):
@@ -108,30 +112,31 @@ def add_repair_tag_features(df: pd.DataFrame) -> pd.DataFrame:
         return []
 
     tag_columns = {tag: [] for tag in REPAIR_CATEGORIES.keys()}
-    parsed_series = df["repair_tags"].apply(_parse_tags)
+    parsed_series = working["repair_tags"].apply(_parse_tags)
     for tag in tag_columns:
         tag_columns[tag] = parsed_series.apply(lambda tags: 1 if tag in tags else 0)
-        df[f"tag_{tag}"] = tag_columns[tag]
-    df["total_repair_tags"] = parsed_series.apply(len)
-    return df
+        working[f"tag_{tag}"] = tag_columns[tag]
+    working["total_repair_tags"] = parsed_series.apply(len)
+    return working
 
 
 def add_temporal_features(df: pd.DataFrame) -> pd.DataFrame:
-    if "date_sold" not in df.columns:
-        return df
-    dates = pd.to_datetime(df["date_sold"], errors="coerce")
-    df["date_sold_parsed"] = dates
-    if "year" in df.columns:
-        df["vehicle_year_numeric"] = pd.to_numeric(df["year"], errors="coerce")
-        df["vehicle_age_years"] = dates.dt.year - df["vehicle_year_numeric"]
+    working = df.copy()
+    if "date_sold" not in working.columns:
+        return working
+    dates = pd.to_datetime(working["date_sold"], errors="coerce")
+    working["date_sold_parsed"] = dates
+    if "year" in working.columns:
+        working["vehicle_year_numeric"] = pd.to_numeric(working["year"], errors="coerce")
+        working["vehicle_age_years"] = dates.dt.year - working["vehicle_year_numeric"]
     else:
-        df["vehicle_age_years"] = None
-    df["vehicle_age_years"] = df["vehicle_age_years"].fillna(df["vehicle_age_years"].median())
-    df["vehicle_age_years"] = df["vehicle_age_years"].replace(0, pd.NA)
-    if "odometer_numeric" in df.columns:
-        denom = df["vehicle_age_years"].replace({0: pd.NA})
-        df["odometer_per_year"] = df["odometer_numeric"] / denom
-    return df
+        working["vehicle_age_years"] = None
+    working["vehicle_age_years"] = working["vehicle_age_years"].fillna(working["vehicle_age_years"].median())
+    working["vehicle_age_years"] = working["vehicle_age_years"].replace(0, pd.NA)
+    if "odometer_numeric" in working.columns:
+        denom = working["vehicle_age_years"].replace({0: pd.NA})
+        working["odometer_per_year"] = working["odometer_numeric"] / denom
+    return working
 
 
 def merge_snapshot_features(df: pd.DataFrame, snapshot_path: Path) -> pd.DataFrame:

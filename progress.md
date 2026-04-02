@@ -37,6 +37,9 @@
   - Re-ran targeted pytest successfully: `tests/test_generate_curve_candidates.py` + `tests/test_governance.py` now pass together (`15 passed`)
   - Added one more narrow regression test in `tests/test_governance.py` covering deduplication of equivalent dataset-path spellings after normalization
   - Re-ran targeted pytest successfully in the clean env: `tests/test_generate_curve_candidates.py` + `tests/test_governance.py` now pass together (`16 passed`)
+  - Compared `scripts/prepare_sold_training_data.py` with `ops/prepare_sold_training_data.py` and confirmed the package version had missed earlier safety fixes applied to the script version
+  - Synced the missing-odometer guard plus copy-before-transform behavior into `ops/prepare_sold_training_data.py` to reduce structural-split inconsistency
+  - Re-checked syntax with `python3 -m py_compile ops/prepare_sold_training_data.py scripts/prepare_sold_training_data.py`
 - Files created/modified:
   - `findings.md` (updated)
   - `task_plan.md` (updated)
