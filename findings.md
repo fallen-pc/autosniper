@@ -129,6 +129,17 @@
   - `jobs/extract_links.py` is a real module under the new package layout, but it remains functionally inside the deferred scraper/extractor boundary and should still be treated as sensitive
 - Best interpretation: jobs is a real, usable package lane with preserved wrapper compatibility, but it is not yet fully isolated from shared/deferred infrastructure and scraper-boundary sensitivity
 
+### Ops-lane audit result
+- The ops slice of the structural split also looks coherent overall
+- Wrappers for `scripts/active_monitor.py`, `scripts/analyze_bid_history.py`, `scripts/generate_curve_candidates.py`, `scripts/outcome_tracking.py`, and `scripts/render_curve_images.py` are consistent compatibility wrappers into `ops.*`
+- Sampled package modules (`ops/active_monitor.py`, `ops/analyze_bid_history.py`, `ops/generate_curve_candidates.py`, `ops/outcome_tracking.py`, `ops/render_curve_images.py`) are real implementations rather than stubs
+- `python3 -m py_compile` passed across sampled wrappers and ops modules, so syntax-level integrity looks good
+- The sampled ops modules did not show obvious direct reach-back into deferred `scripts/process_curve_candidates.py` or the locked scraper entrypoints during the import-text scan
+- Important caveats from this lane audit:
+  - some ops modules still depend on `scripts.atomic_csv`, so the lane is not fully decoupled from shared high-blast-radius infrastructure
+  - parts of the lane remain curve-adjacent or autotrader-adjacent, so it should still be treated with care even though the package split itself looks coherent
+- Best interpretation: ops is a real, usable package lane with preserved wrapper compatibility, but it is not yet fully isolated from shared infrastructure or all nearby high-sensitivity surfaces
+
 ### Limits of recovery
 - Recent commit/file churn is not the same as a verified AI-processed ledger
 - Do not assume every recently active file was touched by the same refactor wave

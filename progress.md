@@ -18,6 +18,7 @@
   - Ran a post-checkpoint structural audit: confirmed wrapper-to-package mapping, confirmed syntax sanity with `python3 -m py_compile`, and documented that some moved modules still depend on deferred/shared infrastructure such as `scripts.atomic_csv`
   - Ran a governance-lane assessment-only audit: wrappers and package entrypoints look coherent, but governance still depends partly on shared/runtime surfaces and readiness checks intentionally probe some deferred legacy entrypoints
   - Ran a jobs-lane assessment-only audit: wrappers and sampled package modules look coherent, but jobs still depends partly on shared/deferred infrastructure via `scripts.atomic_csv`, and `jobs/extract_links.py` remains scraper-boundary sensitive
+  - Ran an ops-lane assessment-only audit: wrappers and sampled package modules look coherent, with no obvious direct reach-back into `scripts/process_curve_candidates.py` or locked scraper entrypoints, but some ops modules still depend on `scripts.atomic_csv` and remain curve/autotrader-adjacent
 - Files created/modified:
   - `findings.md` (updated)
   - `task_plan.md` (updated)

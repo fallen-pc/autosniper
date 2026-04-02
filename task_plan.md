@@ -46,7 +46,7 @@ Phase 5
 - [x] Capture the existence of structural docs and package directories as evidence-backed context
 - [x] Audit the pre-existing structural-refactor files for alignment, risk, and commit boundaries
 - [x] Decide whether that lane should be normalized into repo memory/docs further before new code edits there
-- [x] Record structural-split, governance-lane, and jobs-lane audit results in repo memory
+- [x] Record structural-split, governance-lane, jobs-lane, and ops-lane audit results in repo memory
 - **Status:** complete
 
 ## Key Questions
