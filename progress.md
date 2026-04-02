@@ -16,6 +16,7 @@
   - Expanded the processed-files ledger so the structural docs, package dirs, and wrapper scripts are no longer invisible context
   - Completed follow-up hygiene so the sandbox returned to a clean working tree after checkpointing
   - Ran a post-checkpoint structural audit: confirmed wrapper-to-package mapping, confirmed syntax sanity with `python3 -m py_compile`, and documented that some moved modules still depend on deferred/shared infrastructure such as `scripts.atomic_csv`
+  - Ran a governance-lane assessment-only audit: wrappers and package entrypoints look coherent, but governance still depends partly on shared/runtime surfaces and readiness checks intentionally probe some deferred legacy entrypoints
 - Files created/modified:
   - `findings.md` (updated)
   - `task_plan.md` (updated)

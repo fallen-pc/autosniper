@@ -107,6 +107,17 @@
   - confirmed examples: `jobs/extract_links.py` and `jobs/normalize_listing_csvs.py` still reference `scripts.atomic_csv`
 - So the correct interpretation is: the structural split is real and usable as a baseline, but not yet proof that all architectural risk around deferred/shared infrastructure has been eliminated
 
+### Governance-lane audit result
+- The governance slice of the structural split also looks coherent overall
+- Wrappers for `scripts/governance_checks.py`, `scripts/check_commit_hygiene.py`, `scripts/curve_coverage_report.py`, `scripts/curve_validator.py`, and `scripts/readiness_smoke.py` are consistent compatibility wrappers into `governance.*`
+- `python3 -m py_compile` passed across those wrappers and the paired `governance/` modules, so syntax-level integrity looks good
+- `governance/run_checks.py` appears structurally sensible and does not obviously reach back into deferred curve-core or scraper-core modules
+- Important caveats from this lane audit:
+  - `governance/curve_coverage_report.py` still depends on `scripts.atomic_csv`
+  - `governance/readiness_smoke.py` intentionally probes legacy/deferred entrypoints such as `scripts.extract_links` and `scripts.extract_vehicle_details` as part of readiness validation
+  - live `--help` execution for governance entrypoints was environment-sensitive here because project dependencies like `pandas` were not installed in the current shell
+- Best interpretation: governance is a real, usable package lane with preserved wrapper compatibility, but it is not fully isolated from shared/runtime or deferred-boundary surfaces
+
 ### Limits of recovery
 - Recent commit/file churn is not the same as a verified AI-processed ledger
 - Do not assume every recently active file was touched by the same refactor wave
