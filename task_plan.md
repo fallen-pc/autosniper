@@ -109,7 +109,7 @@ Phase 5
 - `governance/check_commit_hygiene.py` → tiny helper extraction cleanup checkpointed
 - `governance/run_checks.py` → reviewed as a possible next target, but held out to keep follow-up work small and low-risk
 - `tests/test_generate_curve_candidates.py` → tiny regression-test follow-up complete; targeted pytest now passes after aligning over-assuming expectations to current public behavior
-- `tests/test_governance.py` → tiny regression-test follow-up complete; targeted pytest passes
+- `tests/test_governance.py` → tiny regression-test follow-up complete; targeted pytest passes, including normalized-path deduplication coverage in dataset-delta classification
 
 ## Known Processed vs Unknown Historical State
 Known from current evidence in this wave:

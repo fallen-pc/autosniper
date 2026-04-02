@@ -157,7 +157,7 @@
 ### Test follow-up status
 - The next safest move after the governance-side micro-cleanups was test-first regression coverage rather than more production-code tidying
 - `tests/test_generate_curve_candidates.py` now includes narrow regression coverage around alias/base-tag grouping, existing-curve refresh detection, and duplicate-free `review_reason` output without overfitting to stale historical tag strings or overly brittle full-order expectations
-- `tests/test_governance.py` now includes a narrow regression test that checks dataset-delta allowlist matching still works after path normalization (`\\` to `/`)
+- `tests/test_governance.py` now includes narrow regression coverage that checks dataset-delta allowlist matching still works after path normalization (`\\` to `/`) and that equivalent path spellings deduplicate cleanly after normalization
 - A WSL venv on `/mnt/c` proved unreliable for compiled packages, so targeted validation was moved to a clean Linux-side venv at `/home/ewanf/.cache/autosniper-test-venv`
 - In that clean env, targeted pytest ran successfully: `tests/test_generate_curve_candidates.py` and `tests/test_governance.py` passed together (`15 passed`)
 - Best interpretation: this is now a clean, low-blast-radius, test-validated follow-up that strengthens expected behavior around curve-candidate triage and governance path handling without reopening deferred production-code scope
