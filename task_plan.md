@@ -44,9 +44,9 @@ Phase 5
 ### Phase 6: Structural-refactor lane audit
 - [x] Identify that the remaining sandbox divergence is a separate lane, not random leftovers
 - [x] Capture the existence of structural docs and package directories as evidence-backed context
-- [ ] Audit the pre-existing structural-refactor files for alignment, risk, and commit boundaries
-- [ ] Decide whether that lane should be normalized into repo memory/docs further before new code edits there
-- **Status:** in progress
+- [x] Audit the pre-existing structural-refactor files for alignment, risk, and commit boundaries
+- [x] Decide whether that lane should be normalized into repo memory/docs further before new code edits there
+- **Status:** complete
 
 ## Key Questions
 1. What files/areas are explicitly deferred or locked for the current refactor wave?

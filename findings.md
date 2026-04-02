@@ -92,8 +92,20 @@
   1. planning/rules docs (`docs/refactor-plan.md`, `docs/repo-structure.md`, `docs/storage-policy.md`)
   2. moved/new package implementations under `governance/`, `jobs/`, and `ops/`
   3. compatibility wrappers left in `scripts/` to preserve old entrypoints/import expectations
-- This lane still needs its own checkpoint decision; coherence has been established, but not yet whether it should be committed as-is, split further, or trimmed
-- Special-case review is still needed for `.gitignore`, `CSV_data/ai/ai_listing_valuations.csv`, and any wrapper files that border explicitly deferred scope
+- That coherence was later strong enough to checkpoint as a separate structural migration commit in the sandbox history
+- Special-case leftovers from that lane were then resolved separately (`.gitignore` and `task_plan.md` committed in their own tiny follow-up, generated CSV residue reverted, scraper-boundary wrapper reverted)
+
+### Structural split audit result
+- Post-checkpoint audit found the structural split to be coherent rather than half-broken
+- Wrapper scripts sampled in `scripts/` do behave as compatibility wrappers into the newer package layout (`governance.*`, `jobs.*`, `ops.*`)
+- `python3 -m py_compile` passed across the sampled wrappers and corresponding package modules, giving syntax-level confidence that the split is intact
+- The package roles look directionally sensible:
+  - `governance/` for checks/reporting entrypoints
+  - `jobs/` for job-style preparation/normalization tasks
+  - `ops/` for operational and curve-adjacent tooling
+- Important remaining caveat: the split did not fully remove dependence on older high-blast-radius/shared surfaces
+  - confirmed examples: `jobs/extract_links.py` and `jobs/normalize_listing_csvs.py` still reference `scripts.atomic_csv`
+- So the correct interpretation is: the structural split is real and usable as a baseline, but not yet proof that all architectural risk around deferred/shared infrastructure has been eliminated
 
 ### Limits of recovery
 - Recent commit/file churn is not the same as a verified AI-processed ledger
