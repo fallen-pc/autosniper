@@ -118,6 +118,17 @@
   - live `--help` execution for governance entrypoints was environment-sensitive here because project dependencies like `pandas` were not installed in the current shell
 - Best interpretation: governance is a real, usable package lane with preserved wrapper compatibility, but it is not fully isolated from shared/runtime or deferred-boundary surfaces
 
+### Jobs-lane audit result
+- The jobs slice of the structural split also looks coherent overall
+- Wrappers for `scripts/normalize_conditions.py` and `scripts/normalize_listing_csvs.py` are clean compatibility wrappers into `jobs.*`
+- Sampled package modules (`jobs/build_restricted_datasets.py`, `jobs/normalize_conditions.py`, `jobs/normalize_listing_csvs.py`, `jobs/extract_links.py`) are real implementations rather than stubs
+- `python3 -m py_compile` passed across sampled wrappers and jobs modules, so syntax-level integrity looks good
+- `jobs/build_restricted_datasets.py`, `jobs/normalize_conditions.py`, and `jobs/normalize_listing_csvs.py` did not show obvious direct reach-back into deferred curve-core or scraper-core entrypoints during the import-text scan
+- Important caveats from this lane audit:
+  - sampled jobs modules still depend on `scripts.atomic_csv`, so the lane is not fully decoupled from shared high-blast-radius write infrastructure
+  - `jobs/extract_links.py` is a real module under the new package layout, but it remains functionally inside the deferred scraper/extractor boundary and should still be treated as sensitive
+- Best interpretation: jobs is a real, usable package lane with preserved wrapper compatibility, but it is not yet fully isolated from shared/deferred infrastructure and scraper-boundary sensitivity
+
 ### Limits of recovery
 - Recent commit/file churn is not the same as a verified AI-processed ledger
 - Do not assume every recently active file was touched by the same refactor wave
