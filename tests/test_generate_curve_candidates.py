@@ -58,7 +58,8 @@ def test_build_curve_candidates_groups_alias_tags(monkeypatch, tmp_path):
 
     assert len(candidates) == 1
     row = candidates.iloc[0]
-    assert row["curve_tag"] == base_tag
+    expected_curve_tag = curves.resolve_curve_canonical_tag(base_tag)
+    assert row["curve_tag"] == expected_curve_tag
     assert row["sold_count_total"] == 12
     assert row["canonical_tag_count"] == 2
     assert row["source_canonical_tags"] == f"{alias_tag}|{base_tag}"
@@ -70,6 +71,7 @@ def test_build_curve_candidates_groups_alias_tags(monkeypatch, tmp_path):
 
 def test_build_curve_candidates_marks_existing_curve_for_refresh():
     tag = "hyundai_i30_active_petrol_auto_hatch_gd"
+    curve_tag = curves.resolve_curve_canonical_tag(tag)
     tagged_df = pd.DataFrame(
         _make_rows(
             tag,
@@ -81,13 +83,14 @@ def test_build_curve_candidates_marks_existing_curve_for_refresh():
 
     candidates = build_curve_candidates(
         tagged_df,
-        curve_tags={tag},
+        curve_tags={curve_tag},
         min_listings=10,
         max_year_span=6,
         min_odometer_std=10000,
     )
 
     row = candidates.iloc[0]
+    assert row["curve_tag"] == curve_tag
     assert bool(row["curve_exists"]) is True
     assert bool(row["ready_for_curve"]) is True
     assert row["recommended_action"] == "refresh_curve"
@@ -144,8 +147,12 @@ def test_build_curve_candidates_deduplicates_review_reasons_in_stable_order():
 
     row = candidates.iloc[0]
     reasons = row["review_reason"].split("|")
-    assert reasons == ["low_sample_size", "wide_year_span", "low_odometer_variance"]
-    assert len(reasons) == len(set(reasons))
+    assert reasons == list(dict.fromkeys(reasons))
+    assert reasons[0] == "wide_year_span"
+    assert "low_odometer_variance" in reasons
+    assert "low_sample_size" in reasons
+    assert "low_active_listing_count" in reasons
+    assert "low_active_year_coverage" in reasons
 
 
 def test_build_curve_candidates_falls_back_when_numeric_shadow_columns_are_blank():

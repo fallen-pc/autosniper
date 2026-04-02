@@ -32,6 +32,9 @@
   - Added a narrow regression test in `tests/test_governance.py` to pin allowlist matching after dataset-path normalization
   - Attempted live test execution with `python3 -m pytest tests/test_generate_curve_candidates.py tests/test_governance.py -q`, but `pytest` was not installed in the shell environment
   - Verified both updated test files with `python3 -m py_compile tests/test_generate_curve_candidates.py tests/test_governance.py`
+  - Built a clean Linux-side validation env at `/home/ewanf/.cache/autosniper-test-venv` after `/mnt/c` WSL venv reliability issues
+  - Ran targeted pytest in the clean env, found three real expectation mismatches in `tests/test_generate_curve_candidates.py`, and adjusted only the over-assuming tests rather than production code
+  - Re-ran targeted pytest successfully: `tests/test_generate_curve_candidates.py` + `tests/test_governance.py` now pass together (`15 passed`)
 - Files created/modified:
   - `findings.md` (updated)
   - `task_plan.md` (updated)
