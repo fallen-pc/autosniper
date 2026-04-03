@@ -40,6 +40,8 @@
   - Compared `scripts/prepare_sold_training_data.py` with `ops/prepare_sold_training_data.py` and confirmed the package version had missed earlier safety fixes applied to the script version
   - Synced the missing-odometer guard plus copy-before-transform behavior into `ops/prepare_sold_training_data.py` to reduce structural-split inconsistency
   - Re-checked syntax with `python3 -m py_compile ops/prepare_sold_training_data.py scripts/prepare_sold_training_data.py`
+  - Continued the structural-split consistency pass in `jobs/normalize_conditions.py` and removed one unused `csv` import as a tiny package-side cleanup
+  - Re-checked syntax with `python3 -m py_compile jobs/normalize_conditions.py`
 - Files created/modified:
   - `findings.md` (updated)
   - `task_plan.md` (updated)

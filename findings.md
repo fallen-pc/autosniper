@@ -163,6 +163,7 @@
 - Best interpretation: this is now a clean, low-blast-radius, test-validated follow-up that strengthens expected behavior around curve-candidate triage and governance path handling without reopening deferred production-code scope
 - A real structural-split inconsistency remained in `ops/prepare_sold_training_data.py`: it had not inherited the safer missing-odometer guard or the copy-before-transform behavior previously applied to `scripts/prepare_sold_training_data.py`
 - That follow-up was worth doing because it reduces split-brain risk between the wrapper-facing script path and the package implementation that the structural split is trying to make authoritative
+- After that sync, the next genuinely safe package-side cleanup found was in `jobs/normalize_conditions.py`: an unused `csv` import remained and could be removed cleanly without touching behavior, boundaries, or output shape
 
 ### Limits of recovery
 - Recent commit/file churn is not the same as a verified AI-processed ledger
