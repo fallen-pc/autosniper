@@ -164,6 +164,8 @@
 - A real structural-split inconsistency remained in `ops/prepare_sold_training_data.py`: it had not inherited the safer missing-odometer guard or the copy-before-transform behavior previously applied to `scripts/prepare_sold_training_data.py`
 - That follow-up was worth doing because it reduces split-brain risk between the wrapper-facing script path and the package implementation that the structural split is trying to make authoritative
 - After that sync, the next genuinely safe package-side cleanup found was in `jobs/normalize_conditions.py`: an unused `csv` import remained and could be removed cleanly without touching behavior, boundaries, or output shape
+- Another real structural-split consistency gap remained in `jobs/build_restricted_datasets.py`: it had not inherited the safer missing-column fallback handling and single-instant backlog timestamp/date derivation already proven in `scripts/build_restricted_datasets.py`
+- That follow-up is worth doing because it keeps the package implementation aligned with the safer script-side backlog behavior without reopening deferred scope or changing output contracts
 
 ### Limits of recovery
 - Recent commit/file churn is not the same as a verified AI-processed ledger

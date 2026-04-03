@@ -42,6 +42,8 @@
   - Re-checked syntax with `python3 -m py_compile ops/prepare_sold_training_data.py scripts/prepare_sold_training_data.py`
   - Continued the structural-split consistency pass in `jobs/normalize_conditions.py` and removed one unused `csv` import as a tiny package-side cleanup
   - Re-checked syntax with `python3 -m py_compile jobs/normalize_conditions.py`
+  - Continued the structural-split consistency pass in `jobs/build_restricted_datasets.py` and synced the safer backlog handling already proven in the script version
+  - Re-checked syntax with `python3 -m py_compile jobs/build_restricted_datasets.py`
 - Files created/modified:
   - `findings.md` (updated)
   - `task_plan.md` (updated)
