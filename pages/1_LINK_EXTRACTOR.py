@@ -1,5 +1,6 @@
 import json
 import os
+import sys
 from pathlib import Path
 
 import pandas as pd
@@ -31,7 +32,7 @@ SUMMARY_PATH = Path("logs") / "link_scrape_summary.json"
 
 if run_clicked:
     with st.spinner("Scraping vehicle links from Grays..."):
-        exit_code = os.system("python scripts/extract_links.py")
+        exit_code = os.system(f'"{sys.executable}" scripts/extract_links.py')
         if exit_code == 0:
             st.success("Link scraping completed.")
         else:

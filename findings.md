@@ -166,6 +166,15 @@
 - After that sync, the next genuinely safe package-side cleanup found was in `jobs/normalize_conditions.py`: an unused `csv` import remained and could be removed cleanly without touching behavior, boundaries, or output shape
 - Another real structural-split consistency gap remained in `jobs/build_restricted_datasets.py`: it had not inherited the safer missing-column fallback handling and single-instant backlog timestamp/date derivation already proven in `scripts/build_restricted_datasets.py`
 - That follow-up is worth doing because it keeps the package implementation aligned with the safer script-side backlog behavior without reopening deferred scope or changing output contracts
+- The sandbox app is now broadly launchable in the WSL/Linux-side validation setup after mechanical runtime fixes and dependency bring-up, so the repo is no longer just theoretically coherent — it has been exercised through live Streamlit startup and page-import/runtime paths
+- The working bring-up path is WSL + sandbox repo + Linux-side venv at `/home/ewanf/.cache/autosniper-test-venv`, not Windows PowerShell + main repo + unrelated venvs
+- The most valuable runtime fixes were mechanical, not business-logic changes:
+  - replacing bare `python` shell-outs in page entrypoints with `sys.executable`
+  - fixing the `pages/04_MAPPINGS.py` empty-state `st.data_editor(... disabled=None ...)` crash by using an empty list instead of `None`
+  - satisfying missing runtime deps in the Linux-side venv incrementally (`streamlit`, `beautifulsoup4`, `playwright`, `python-dotenv`, `openai` as needed during bring-up)
+- Live warnings seen during bring-up do not currently block app startup but are worth bounded cleanup:
+  - `pages/04_MAPPINGS.py` badge matching used regex-enabled `str.contains`, which emitted warnings for raw badge text containing regex groups; using `regex=False` is the safer/default intent here
+  - some Streamlit `use_container_width` warnings are mechanical deprecations; a bounded pass should only touch warning sites actually seen during bring-up, not the whole app at once
 
 ### Limits of recovery
 - Recent commit/file churn is not the same as a verified AI-processed ledger

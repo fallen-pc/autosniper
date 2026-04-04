@@ -1,4 +1,5 @@
 import os
+import sys
 from pathlib import Path
 from typing import Iterable
 
@@ -88,7 +89,7 @@ def render_dataset(title: str, file_path: str, columns: Iterable[str] | None = N
 
 if st.button("Update Master Database"):
     with st.spinner("Updating master database…"):
-        exit_code = os.system("python scripts/update_master.py")
+        exit_code = os.system(f'"{sys.executable}" scripts/update_master.py')
         if exit_code == 0:
             st.success("Master database updated.")
             st.cache_data.clear()

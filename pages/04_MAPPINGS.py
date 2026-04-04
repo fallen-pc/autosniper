@@ -47,7 +47,7 @@ def _affected_count(row: pd.Series) -> int:
     if field == "fuel" and "fuel_type" in static_df.columns:
         return int((static_df["fuel_type"].astype(str).str.lower() == raw).sum())
     if field == "badge" and "variant" in static_df.columns:
-        return int(static_df["variant"].astype(str).str.lower().str.contains(raw, na=False).sum())
+        return int(static_df["variant"].astype(str).str.lower().str.contains(raw, na=False, regex=False).sum())
     return 0
 
 
@@ -63,10 +63,10 @@ if not normalisation_df.empty:
 
 edited_norm = st.data_editor(
     normalisation_df,
-    use_container_width=True,
+    width="stretch",
     hide_index=True,
     num_rows="dynamic",
-    disabled=["affected_count"] if not normalisation_df.empty else None,
+    disabled=["affected_count"] if not normalisation_df.empty else [],
 )
 
 if st.button("Save normalization rules", key="save_norm_rules"):
@@ -90,7 +90,7 @@ else:
 
 edited_allowed = st.data_editor(
     allowed_df,
-    use_container_width=True,
+    width="stretch",
     hide_index=True,
     num_rows="dynamic",
     disabled=["listings_matching"] if "listings_matching" in allowed_df.columns else None,

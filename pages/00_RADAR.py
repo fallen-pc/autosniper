@@ -282,7 +282,7 @@ with left:
     edited = st.data_editor(
         radar_table,
         hide_index=True,
-        use_container_width=True,
+        width="stretch",
         disabled=[column for column in radar_table.columns if column != "Select"],
         column_config={
             "Select": st.column_config.CheckboxColumn("Select"),

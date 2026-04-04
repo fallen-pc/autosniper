@@ -44,6 +44,12 @@
   - Re-checked syntax with `python3 -m py_compile jobs/normalize_conditions.py`
   - Continued the structural-split consistency pass in `jobs/build_restricted_datasets.py` and synced the safer backlog handling already proven in the script version
   - Re-checked syntax with `python3 -m py_compile jobs/build_restricted_datasets.py`
+  - Shifted from structural cleanup into practical sandbox bring-up and confirmed the app is broadly launchable under WSL using the Linux-side validation env
+  - Fixed a defensive empty-state crash in `pages/04_MAPPINGS.py` by changing the disabled-column argument from `None` to `[]`
+  - Replaced bare `python` shell-outs with interpreter-safe `sys.executable` calls in the page entrypoints needed to launch the app from the Linux-side venv (`pages/4_MASTER_DATABASE.py`, `pages/1_LINK_EXTRACTOR.py`, `pages/2_VEHICLE_DETAIL_EXTRACTOR.py`, `pages/7_AUTOTRADER_SCRAPER.py`)
+  - Worked through the runtime dependency chain in the Linux-side venv as live app startup exposed missing imports/browser support (`beautifulsoup4`, `playwright`, `python-dotenv`, `openai`, plus Playwright browser install/runtime deps)
+  - Confirmed the app is now broadly working in the sandbox, with remaining issues shifted from startup blockers to bounded warnings/deprecation cleanup and deeper workflow/data/runtime validation
+  - Performed one bounded warning-cleanup pass on the live warning sites already encountered during bring-up: `pages/04_MAPPINGS.py` now uses literal substring matching for badge rules (`regex=False`) and both `pages/04_MAPPINGS.py` plus `pages/00_RADAR.py` now use `width="stretch"` at the specific `st.data_editor` call sites that emitted deprecation warnings
 - Files created/modified:
   - `findings.md` (updated)
   - `task_plan.md` (updated)

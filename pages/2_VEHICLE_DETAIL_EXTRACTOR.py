@@ -1,4 +1,5 @@
 import os
+import sys
 
 import pandas as pd
 import streamlit as st
@@ -40,7 +41,7 @@ if run_details_clicked:
         st.error("The links CSV is missing. Collect links before running the detail scraper.")
     else:
         with st.spinner("Extracting vehicle details from Grays listings..."):
-            command = "python scripts/extract_vehicle_details.py"
+            command = f'"{sys.executable}" scripts/extract_vehicle_details.py'
             if detail_batch_size > 0:
                 command += f" --batch-size {int(detail_batch_size)}"
             exit_code = os.system(command)

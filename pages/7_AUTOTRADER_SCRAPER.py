@@ -1,4 +1,5 @@
 import os
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -121,7 +122,7 @@ with helper_right:
 
 
 def _build_scrape_command() -> str:
-    command = "python autotrader_isolated/scrape_first_page.py"
+    command = f'"{sys.executable}" autotrader_isolated/scrape_first_page.py'
     if url:
         command += f' --url "{url}"'
     if output_path:
@@ -158,7 +159,7 @@ def _build_scrape_command() -> str:
 
 
 def _build_storage_state_command() -> str:
-    command = "python autotrader_isolated/create_storage_state.py"
+    command = f'"{sys.executable}" autotrader_isolated/create_storage_state.py'
     if state_url:
         command += f' --url "{state_url}"'
     if storage_state:

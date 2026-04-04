@@ -39,6 +39,9 @@ Phase 5
 - [x] Use planning files as source of truth for future AutoSniper work
 - [x] Refuse to widen changes beyond recorded scope without explicit decision
 - [x] Summarize state clearly when handing off or pausing
+- [x] Reopen sandbox-only runtime compatibility fixes where needed to make the app launchable end-to-end
+- [x] Capture the working WSL/Linux-side run recipe and checkpoint the mechanical runtime fixes that got the sandbox app broadly launchable
+- [x] Do one bounded warning-cleanup pass on live warning sites encountered during bring-up without widening into broad UI churn
 - **Status:** active / in use
 
 ### Phase 6: Structural-refactor lane audit
