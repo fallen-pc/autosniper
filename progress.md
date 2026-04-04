@@ -55,6 +55,8 @@
     - `pages/99_STYLE_GUIDE.py`: fixed invalid `st.code()` usage by supplying a harmless placeholder body
   - Re-checked syntax with `python3 -m py_compile pages/15_CURVE_BUILDER_V2.py pages/99_STYLE_GUIDE.py`
   - Confirmed the remaining working-tree noise is mostly generated CSV/data churn from live app runs, not source changes to sweep into a code checkpoint
+  - Added `docs/wsl_runbook.md` to capture the known-good sandbox launch path in WSL using the Linux-side validation env
+  - Added `docs/workflow_validation_checklist.md` to keep future sandbox validation structured and to separate true code bugs from dependency/data/browser/service blockers
 - Files created/modified:
   - `findings.md` (updated)
   - `task_plan.md` (updated)

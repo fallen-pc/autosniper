@@ -179,6 +179,9 @@
   - `pages/15_CURVE_BUILDER_V2.py` unconditionally unpacked three columns from a `st.columns(...)` call that sometimes only returned two; the safe fix is to branch column creation by mode and set the middle slot to `None` when absent
   - `pages/99_STYLE_GUIDE.py` called `st.code()` with no body at all; the safe fix is to provide a harmless placeholder string so the page can render instead of crashing
 - These are good examples of the current repo state: no longer broken at the platform/startup level, but still likely to contain small page-local runtime defects that only appear under real click-through validation
+- The project now benefits from two short operational docs to prevent regression into environment confusion and ad hoc validation:
+  - `docs/wsl_runbook.md` captures the known-good WSL + sandbox + Linux-side venv launch path and the dependency/browser install pattern that actually worked
+  - `docs/workflow_validation_checklist.md` captures how to classify and record sandbox workflow issues so future validation distinguishes code bugs from dependency/data/browser/service blockers
 
 ### Limits of recovery
 - Recent commit/file churn is not the same as a verified AI-processed ledger
