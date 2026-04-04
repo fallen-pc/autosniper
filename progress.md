@@ -50,6 +50,11 @@
   - Worked through the runtime dependency chain in the Linux-side venv as live app startup exposed missing imports/browser support (`beautifulsoup4`, `playwright`, `python-dotenv`, `openai`, plus Playwright browser install/runtime deps)
   - Confirmed the app is now broadly working in the sandbox, with remaining issues shifted from startup blockers to bounded warnings/deprecation cleanup and deeper workflow/data/runtime validation
   - Performed one bounded warning-cleanup pass on the live warning sites already encountered during bring-up: `pages/04_MAPPINGS.py` now uses literal substring matching for badge rules (`regex=False`) and both `pages/04_MAPPINGS.py` plus `pages/00_RADAR.py` now use `width="stretch"` at the specific `st.data_editor` call sites that emitted deprecation warnings
+  - Continued real click-through validation after the app became broadly launchable and fixed two additional page-local render issues without widening scope:
+    - `pages/15_CURVE_BUILDER_V2.py`: corrected conditional `st.columns(...)` unpacking so the page no longer expects three columns when only two are created
+    - `pages/99_STYLE_GUIDE.py`: fixed invalid `st.code()` usage by supplying a harmless placeholder body
+  - Re-checked syntax with `python3 -m py_compile pages/15_CURVE_BUILDER_V2.py pages/99_STYLE_GUIDE.py`
+  - Confirmed the remaining working-tree noise is mostly generated CSV/data churn from live app runs, not source changes to sweep into a code checkpoint
 - Files created/modified:
   - `findings.md` (updated)
   - `task_plan.md` (updated)

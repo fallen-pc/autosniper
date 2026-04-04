@@ -42,6 +42,7 @@ Phase 5
 - [x] Reopen sandbox-only runtime compatibility fixes where needed to make the app launchable end-to-end
 - [x] Capture the working WSL/Linux-side run recipe and checkpoint the mechanical runtime fixes that got the sandbox app broadly launchable
 - [x] Do one bounded warning-cleanup pass on live warning sites encountered during bring-up without widening into broad UI churn
+- [x] Checkpoint the follow-up page-render fixes found during real click-through validation (`pages/15_CURVE_BUILDER_V2.py`, `pages/99_STYLE_GUIDE.py`) without sweeping in generated runtime data
 - **Status:** active / in use
 
 ### Phase 6: Structural-refactor lane audit

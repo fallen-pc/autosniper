@@ -868,7 +868,11 @@ if configured_anchor_years and current_editor_years != seed_anchor_years:
 
 section_heading("Edit Base Curve Rows", "You are editing V2 base-curve rows, not the original detailed match tags.")
 show_deterministic_proposer = filtered_manual_carsales_subset.empty
-action_left, action_mid, action_right = st.columns([1, 1, 3] if show_deterministic_proposer else [1, 4])
+if show_deterministic_proposer:
+    action_left, action_mid, action_right = st.columns([1, 1, 3])
+else:
+    action_left, action_right = st.columns([1, 4])
+    action_mid = None
 with action_left:
     if st.button("Reset editor", key=f"curve_builder_v2_reset::{selected_base_curve}"):
         st.session_state[editor_state_key] = editor_seed.copy()

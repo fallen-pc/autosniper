@@ -184,5 +184,6 @@ st.markdown(
     unsafe_allow_html=True,
 )
 st.code(
+    "# Example code block placeholder",
     language="python",
 )
