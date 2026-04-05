@@ -3,7 +3,7 @@
 ## Session: 2026-04-01
 
 ### Phase 5: Delivery discipline / checkpoint normalization
-- **Status:** in progress
+- **Status:** complete
 - Actions taken:
   - Re-audited the sandbox after the sold-data/memory checkpoint commit
   - Confirmed the committed sold-data/memory files are now baseline, not "unfinished dirty" work
@@ -116,6 +116,9 @@
 | `clean_sold_csv.py` syntax validity | `python3 -m py_compile scripts/clean_sold_csv.py` | No syntax errors | Passed after small safe cleanup | ✓ |
 | `enrich_sold_repairs.py` syntax validity | `python3 -m py_compile scripts/enrich_sold_repairs.py` | No syntax errors | Passed after small safe cleanup | ✓ |
 | `build_restricted_datasets.py` syntax validity | `python3 -m py_compile scripts/build_restricted_datasets.py` | No syntax errors | Passed after small safe cleanup | ✓ |
+| Targeted regression validation | Clean Linux-side env: `tests/test_generate_curve_candidates.py` + `tests/test_governance.py` | Narrow regression suites pass | 16 passed | ✓ |
+| Sandbox runtime bring-up | WSL + sandbox repo + Linux-side venv | App broadly launchable | Achieved after runtime compatibility fixes and incremental dependency bring-up | ✓ |
+| Click-through page validation | Selected pages after bring-up | Pages load without page-local crashes | Fixed follow-up render bugs in `pages/15_CURVE_BUILDER_V2.py` and `pages/99_STYLE_GUIDE.py` | ✓ |
 
 ## Error Log
 | Timestamp | Error | Attempt | Resolution |
@@ -126,11 +129,11 @@
 ## 5-Question Reboot Check
 | Question | Answer |
 |----------|--------|
-| Where am I? | Phase 5: Delivery discipline |
-| Where am I going? | Ongoing future AutoSniper work using the repo memory system |
-| What's the goal? | Durable repo-local working memory and guardrails for AI-assisted AutoSniper work |
-| What have I learned? | Global memory alone is insufficient; repo-local memory plus a ledger works better |
-| What have I done? | Bootstrapped planning files, added repo rules, recovered context, and created a processed-files ledger |
+| Where am I? | Phase 7: source-of-truth reconciliation and product-work handoff |
+| Where am I going? | From cleanup/stabilisation into product discovery on profit accuracy first, then Curve Builder V2 curve expansion blockers |
+| What's the goal? | Keep the sandbox truthful, runnable, and documented enough to support real product work rather than more cleanup churn |
+| What have I learned? | Global memory alone is insufficient; repo-local memory plus a ledger works better, but those docs must be kept aligned with actual checkpointed sandbox history |
+| What have I done? | Bootstrapped planning files, checkpointed multiple safe cleanup/runtime/validation slices, and turned the sandbox into the active working base |
 
 ---
 *Update after completing each phase or encountering errors*

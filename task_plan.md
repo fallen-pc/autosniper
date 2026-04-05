@@ -4,7 +4,7 @@
 Establish durable, repo-local working memory and explicit guardrails so AI-assisted work on AutoSniper does not forget decisions, reopen locked scope, or drift into irrelevant or dangerous changes.
 
 ## Current Phase
-Phase 5
+Phase 7
 
 ## Phases
 
@@ -55,6 +55,15 @@ Phase 5
 - [x] Record structural-split, governance-lane, jobs-lane, and ops-lane audit results in repo memory
 - **Status:** complete
 
+### Phase 7: Source-of-truth reconciliation and product-work handoff
+- [ ] Reconcile repo-memory docs so deferred/opened scope matches what was actually changed and checkpointed in the sandbox
+- [ ] Replace stale cleanup-era “current candidate” language with current product priorities
+- [ ] Make the repo docs reflect the real stable baseline: sandbox broadly runnable, runtime fixes checkpointed, validation docs present
+- [ ] Hand off from cleanup mode into product discovery mode:
+  1. verify profit determination accuracy
+  2. identify how to safely add more curves in Curve Builder V2
+- **Status:** active
+
 ## Key Questions
 1. What files/areas are explicitly deferred or locked for the current refactor wave?
 2. What is the smallest safe next step before touching any new AutoSniper file?
@@ -69,9 +78,9 @@ Phase 5
 | Prefer file-backed project memory over relying on model recall | Scales better for long, complex, multi-session work |
 
 ## Locked / Deferred Scope
-- Do not touch `scripts/process_curve_candidates.py` in the current wave
-- Do not touch `scripts/atomic_csv.py` in the current wave
-- Do not touch scraper / extractor chain files in the current wave:
+- Keep `scripts/process_curve_candidates.py` as a high-sensitivity file; do not reopen casually
+- Keep `scripts/atomic_csv.py` as a high-blast-radius shared infrastructure file; do not reopen casually
+- Treat the scraper / extractor chain and adjacent operator pages as high-sensitivity surfaces:
   - `scripts/extract_links.py`
   - `scripts/extract_vehicle_details.py`
   - `scripts/scrape_autotrader_rego.py`
@@ -85,40 +94,39 @@ Phase 5
   - `pages/7_AUTOTRADER_SCRAPER.py`
   - `pages/12_GRAYS_PIPELINE.py`
   - `pages/05_HEALTH.py`
-- Do not widen scope from a targeted script cleanup into architectural churn without explicit approval
+- Important clarification: some page-level runtime fixes in `pages/1_LINK_EXTRACTOR.py`, `pages/2_VEHICLE_DETAIL_EXTRACTOR.py`, `pages/4_MASTER_DATABASE.py`, and `pages/7_AUTOTRADER_SCRAPER.py` were already explicitly allowed and checkpointed for sandbox bring-up; this does **not** mean those areas are now open for general cleanup/refactor work
+- Keep `governance/run_checks.py` intentionally held out unless there is a specific reason to reopen it
+- Do not widen scope from a targeted fix into architectural churn without explicit approval
 
 ## Current Candidate Status
-### Committed sold-data / memory lane
-- `scripts/train_auction_price_correction.py` → small safe cleanup complete
-- `scripts/prepare_sold_training_data.py` → small safe cleanup complete
-- `scripts/clean_sold_csv.py` → small safe cleanup complete
-- `scripts/enrich_sold_repairs.py` → small safe cleanup complete
-- `scripts/build_restricted_datasets.py` → small safe cleanup complete
+### Stable checkpointed baseline in sandbox
+- sold-data/script hardening lane checkpointed
+- structural split checkpointed and audit-reviewed
+- governance / jobs / ops audits checkpointed
+- curve/governance micro-cleanups checkpointed
+- targeted regression validation checkpointed (`tests/test_generate_curve_candidates.py`, `tests/test_governance.py` green in the Linux-side env)
+- sandbox runtime bring-up checkpointed
+- click-through page-fix checkpointed
+- WSL runbook + workflow validation checklist checkpointed
 
-### Deferred current-wave boundaries
-- `scripts/process_curve_candidates.py` → explicitly skipped/deferred
-- scraper / extractor chain files → explicitly deferred via named file list in deferred scope
-- `scripts/atomic_csv.py` → explicitly deferred
+### High-sensitivity areas still not suitable for casual cleanup
+- `scripts/process_curve_candidates.py`
+- `scripts/atomic_csv.py`
+- scraper / extractor chain core files and adjacent operator pages
+- `governance/run_checks.py`
 
-### Separate structural-refactor lane present in sandbox
-- architecture docs: `docs/refactor-plan.md`, `docs/repo-structure.md`, `docs/storage-policy.md`
-- new package directories: `governance/`, `jobs/`, `ops/`
-- compatibility-wrapper style scripts observed: `scripts/normalize_conditions.py`, `scripts/readiness_smoke.py`, `scripts/check_commit_hygiene.py`, `scripts/governance_checks.py`
-- this lane should be audited and handled as its own change stream rather than merged mentally into the sold-data cleanup wave
+### Current product-work priorities
+1. Profit determination accuracy
+   - identify the canonical profit logic and every place profit is computed, displayed, ranked, or calibrated
+   - resolve semantic drift between `expected_profit`, `net_profit_mid`, `net_profit_worst`, `predicted_profit`, `actual_profit`, and margin/ranking surfaces
+2. Add more curves in Curve Builder V2
+   - map where curve eligibility is gated
+   - identify whether blockers are tag resolution, supported-universe constraints, evidence thresholds, governance rules, or UI/editor flow
 
-### Current curve mini-wave
-- `governance/curve_validator.py` → tiny schema-safety cleanup checkpointed
-- `scripts/curve_validator.py` → tiny wrapper-identity cleanup checkpointed
-- `governance/curve_coverage_report.py` → tiny helper extraction cleanup checkpointed
-- `scripts/curve_coverage_report.py` → tiny wrapper-identity cleanup checkpointed
-- `scripts/check_commit_hygiene.py` → tiny wrapper-identity cleanup checkpointed
-- `governance/check_commit_hygiene.py` → tiny helper extraction cleanup checkpointed
-- `governance/run_checks.py` → reviewed as a possible next target, but held out to keep follow-up work small and low-risk
-- `tests/test_generate_curve_candidates.py` → tiny regression-test follow-up complete; targeted pytest now passes after aligning over-assuming expectations to current public behavior
-- `tests/test_governance.py` → tiny regression-test follow-up complete; targeted pytest passes, including normalized-path deduplication coverage in dataset-delta classification
-- `ops/prepare_sold_training_data.py` → structural-split consistency follow-up complete; synced previously proven safety guards from the script version into the package version without widening behavior
-- `jobs/normalize_conditions.py` → tiny package-side cleanup complete; removed an unused import without changing behavior
-- `jobs/build_restricted_datasets.py` → structural-split consistency follow-up in progress; syncing the safer backlog handling already proven in the script version without widening behavior
+### Current operating mode
+- cleanup/stabilisation is no longer the main job
+- sandbox is broadly runnable and documented enough for real product discovery work
+- only take additional cleanup fixes if they are clearly needed to unblock runtime or validation work in the sandbox
 
 ## Known Processed vs Unknown Historical State
 Known from current evidence in this wave:

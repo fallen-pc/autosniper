@@ -24,6 +24,9 @@
 | Keep planning files concise and high-signal | They need to be cheap to re-read before action |
 | Separate active task state from long-term global memory | Global memory should hold durable summaries, not all live project details |
 | Add `docs/ai_working_agreement.md` as durable repo law | Long-lived rules should be separate from active task tracking |
+| Treat the sandbox as the active working base, not the main repo | Sandbox now contains the meaningful checkpointed stabilisation, runtime, validation, and structural work |
+| Treat runtime-generated CSV churn as validation noise by default | Generated outputs should not drive source-of-truth project state unless intentionally captured |
+| Shift from cleanup mode into product discovery mode | The sandbox is now stable enough that the highest-value next work is profit/curve product understanding, not more opportunistic cleanup |
 
 ## Issues Encountered
 | Issue | Resolution |
@@ -182,6 +185,13 @@
 - The project now benefits from two short operational docs to prevent regression into environment confusion and ad hoc validation:
   - `docs/wsl_runbook.md` captures the known-good WSL + sandbox + Linux-side venv launch path and the dependency/browser install pattern that actually worked
   - `docs/workflow_validation_checklist.md` captures how to classify and record sandbox workflow issues so future validation distinguishes code bugs from dependency/data/browser/service blockers
+- The repo-memory docs had drifted behind actual sandbox history in a few places:
+  - scraper/operator pages such as `pages/1_LINK_EXTRACTOR.py`, `pages/2_VEHICLE_DETAIL_EXTRACTOR.py`, and `pages/7_AUTOTRADER_SCRAPER.py` were still described as untouched/deferred even after sandbox-only runtime bring-up fixes had already been checkpointed there
+  - `jobs/build_restricted_datasets.py` still appeared as “in progress” in some task text after its consistency sync had already been checkpointed
+- That drift is itself a useful lesson: once a branch leaves cleanup mode and becomes the active working base, repo-memory files must be updated to describe the real baseline, not just preserve older guardrails verbatim
+- Current highest-value product questions are now different from the earlier cleanup wave:
+  1. whether profit determination is semantically consistent across producer, ranking, display, and retrospective calibration surfaces
+  2. what actually blocks more curves from appearing in Curve Builder V2 (candidate gating, tag resolution, supported-universe limits, evidence thresholds, governance, or editor workflow)
 
 ### Limits of recovery
 - Recent commit/file churn is not the same as a verified AI-processed ledger
