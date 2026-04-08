@@ -126,19 +126,26 @@ def _should_refresh(cache_minutes: int) -> bool:
 
 
 def _extract_zip(content: bytes) -> None:
+    data_dir_resolved = DATA_DIR.resolve()
     with zipfile.ZipFile(io.BytesIO(content)) as archive:
         for member in archive.infolist():
             if member.is_dir():
                 continue
             member_path = Path(member.filename)
-            if member_path.name == "":
-                continue
+            if member_path.name == "" or member_path.is_absolute():
+                raise ValueError(f"Unsafe archive member path: {member.filename}")
 
             parts = list(member_path.parts)
             if parts and parts[0].lower() == "csv_data":
                 parts = parts[1:]
+            if not parts or any(part in {"", ".", ".."} for part in parts):
+                raise ValueError(f"Unsafe archive member path: {member.filename}")
             relative = Path(*parts)
-            target_path = DATA_DIR / _dataset_relpath(relative.as_posix())
+            target_path = (DATA_DIR / _dataset_relpath(relative.as_posix())).resolve()
+            try:
+                target_path.relative_to(data_dir_resolved)
+            except ValueError as exc:
+                raise ValueError(f"Archive member escapes data directory: {member.filename}") from exc
             target_path.parent.mkdir(parents=True, exist_ok=True)
             with archive.open(member) as src, target_path.open("wb") as dst:
                 dst.write(src.read())
