@@ -1,183 +1,24 @@
-# Task Plan: AutoSniper AI-safe project memory and change discipline
+# Task Plan
 
-## Goal
-Establish durable, repo-local working memory and explicit guardrails so AI-assisted work on AutoSniper does not forget decisions, reopen locked scope, or drift into irrelevant or dangerous changes.
+This file is now a compatibility summary for humans and older workflows.
 
-## Current Phase
-Phase 7
+## Primary Source Of Truth
 
-## Phases
+Use `project_memory/memory_manifest.yaml` and the files it loads.
 
-### Phase 1: Memory bootstrap & guardrails
-- [x] Confirm available memory/skill mechanisms in workspace
-- [x] Verify whether AutoSniper already has planning files
-- [x] Record current locked scope, deferred files, and recent decisions
-- [x] Create repo-local planning files for persistent working memory
-- **Status:** complete
+## Current Priorities
 
-### Phase 2: Working agreement for AI changes
-- [x] Define no-touch zones and change constraints for current refactor wave
-- [x] Define how to start any future task safely
-- [x] Define where durable project decisions must be written
-- **Status:** complete
+1. Verify profit determination accuracy across the codebase and UI.
+2. Identify what blocks adding more curves safely in Curve Builder V2.
 
-### Phase 3: Active task tracking
-- [x] Track current shortlist of candidate files
-- [x] Record decisions as each candidate is assessed
-- [x] Mark completed safe cleanups and deferred areas
-- [x] Recover evidence-backed prior processed-file context where possible
-- **Status:** complete
+## Current Boundary Reminder
 
-### Phase 4: Verification & upkeep
-- [x] Re-read planning files before major decisions or edits
-- [x] Update progress after each meaningful work slice
-- [x] Keep findings current after discovery/research
-- [x] Create a single processed-files ledger for future session recovery
-- **Status:** complete
+For high-sensitivity files and deferred areas, use:
 
-### Phase 5: Delivery discipline
-- [x] Use planning files as source of truth for future AutoSniper work
-- [x] Refuse to widen changes beyond recorded scope without explicit decision
-- [x] Summarize state clearly when handing off or pausing
-- [x] Reopen sandbox-only runtime compatibility fixes where needed to make the app launchable end-to-end
-- [x] Capture the working WSL/Linux-side run recipe and checkpoint the mechanical runtime fixes that got the sandbox app broadly launchable
-- [x] Do one bounded warning-cleanup pass on live warning sites encountered during bring-up without widening into broad UI churn
-- [x] Checkpoint the follow-up page-render fixes found during real click-through validation (`pages/15_CURVE_BUILDER_V2.py`, `pages/99_STYLE_GUIDE.py`) without sweeping in generated runtime data
-- [x] Add a short WSL runbook capturing the known-good sandbox launch path
-- [x] Add a lightweight workflow-validation checklist so runtime testing stays structured instead of ad hoc
-- **Status:** active / in use
+- `project_memory/02_state/active_boundaries.md`
+- `project_memory/02_state/open_issues.md`
+- `project_memory/03_decisions/`
 
-### Phase 6: Structural-refactor lane audit
-- [x] Identify that the remaining sandbox divergence is a separate lane, not random leftovers
-- [x] Capture the existence of structural docs and package directories as evidence-backed context
-- [x] Audit the pre-existing structural-refactor files for alignment, risk, and commit boundaries
-- [x] Decide whether that lane should be normalized into repo memory/docs further before new code edits there
-- [x] Record structural-split, governance-lane, jobs-lane, and ops-lane audit results in repo memory
-- **Status:** complete
+## Working Rule
 
-### Phase 7: Source-of-truth reconciliation and product-work handoff
-- [ ] Reconcile repo-memory docs so deferred/opened scope matches what was actually changed and checkpointed in the sandbox
-- [ ] Replace stale cleanup-era “current candidate” language with current product priorities
-- [ ] Make the repo docs reflect the real stable baseline: sandbox broadly runnable, runtime fixes checkpointed, validation docs present
-- [ ] Hand off from cleanup mode into product discovery mode:
-  1. verify profit determination accuracy
-  2. identify how to safely add more curves in Curve Builder V2
-- **Status:** active
-
-## Key Questions
-1. What files/areas are explicitly deferred or locked for the current refactor wave?
-2. What is the smallest safe next step before touching any new AutoSniper file?
-3. Where should durable repo-specific decisions live so they survive context loss?
-
-## Decisions Made
-| Decision | Rationale |
-|----------|-----------|
-| Use repo-local planning files (`task_plan.md`, `findings.md`, `progress.md`) as primary working memory for AutoSniper | Conversation-only context is not reliable enough for a large project |
-| Treat explicit deferred files as no-touch until re-approved | Prevents AI from reopening locked scope or undoing prior decisions |
-| Stop after small safe cleanup of `scripts/train_auction_price_correction.py` | The meaningful bug was fixed; further work there would likely be low-value tidying |
-| Prefer file-backed project memory over relying on model recall | Scales better for long, complex, multi-session work |
-
-## Locked / Deferred Scope
-- Keep `scripts/process_curve_candidates.py` as a high-sensitivity file; do not reopen casually
-- Keep `scripts/atomic_csv.py` as a high-blast-radius shared infrastructure file; do not reopen casually
-- Treat the scraper / extractor chain and adjacent operator pages as high-sensitivity surfaces:
-  - `scripts/extract_links.py`
-  - `scripts/extract_vehicle_details.py`
-  - `scripts/scrape_autotrader_rego.py`
-  - `scripts/scrape_bid_history.py`
-  - `scripts/run_autotrader_scrape.ps1`
-  - `shared/scraper_health.py`
-  - `autotrader_isolated/scrape_first_page.py`
-  - `pages/1_LINK_EXTRACTOR.py`
-  - `pages/2_VEHICLE_DETAIL_EXTRACTOR.py`
-  - `pages/3_ACTIVE_LISTINGS.py`
-  - `pages/7_AUTOTRADER_SCRAPER.py`
-  - `pages/12_GRAYS_PIPELINE.py`
-  - `pages/05_HEALTH.py`
-- Important clarification: some page-level runtime fixes in `pages/1_LINK_EXTRACTOR.py`, `pages/2_VEHICLE_DETAIL_EXTRACTOR.py`, `pages/4_MASTER_DATABASE.py`, and `pages/7_AUTOTRADER_SCRAPER.py` were already explicitly allowed and checkpointed for sandbox bring-up; this does **not** mean those areas are now open for general cleanup/refactor work
-- Keep `governance/run_checks.py` intentionally held out unless there is a specific reason to reopen it
-- Do not widen scope from a targeted fix into architectural churn without explicit approval
-
-## Current Candidate Status
-### Stable checkpointed baseline in sandbox
-- sold-data/script hardening lane checkpointed
-- structural split checkpointed and audit-reviewed
-- governance / jobs / ops audits checkpointed
-- curve/governance micro-cleanups checkpointed
-- targeted regression validation checkpointed (`tests/test_generate_curve_candidates.py`, `tests/test_governance.py` green in the Linux-side env)
-- sandbox runtime bring-up checkpointed
-- click-through page-fix checkpointed
-- WSL runbook + workflow validation checklist checkpointed
-
-### High-sensitivity areas still not suitable for casual cleanup
-- `scripts/process_curve_candidates.py`
-- `scripts/atomic_csv.py`
-- scraper / extractor chain core files and adjacent operator pages
-- `governance/run_checks.py`
-
-### Current product-work priorities
-1. Profit determination accuracy
-   - identify the canonical profit logic and every place profit is computed, displayed, ranked, or calibrated
-   - resolve semantic drift between `expected_profit`, `net_profit_mid`, `net_profit_worst`, `predicted_profit`, `actual_profit`, and margin/ranking surfaces
-2. Add more curves in Curve Builder V2
-   - map where curve eligibility is gated
-   - identify whether blockers are tag resolution, supported-universe constraints, evidence thresholds, governance rules, or UI/editor flow
-
-### Current operating mode
-- cleanup/stabilisation is no longer the main job
-- sandbox is broadly runnable and documented enough for real product discovery work
-- only take additional cleanup fixes if they are clearly needed to unblock runtime or validation work in the sandbox
-
-## Known Processed vs Unknown Historical State
-Known from current evidence in this wave:
-- `scripts/train_auction_price_correction.py` was processed and received a small safe cleanup
-- `scripts/process_curve_candidates.py` was explicitly reviewed for prioritization and then deferred, not changed in this wave
-- scraper-chain files were explicitly deferred, not changed in this wave
-- `scripts/atomic_csv.py` was explicitly deferred, not changed in this wave
-
-Recovered from repo evidence (recent activity / prior project churn, not necessarily current-wave edits):
-- curve pipeline and governance work has been active around:
-  - `scripts/process_curve_candidates.py`
-  - `scripts/generate_curve_candidates.py`
-  - `pages/14_CURVE_PIPELINE.py`
-  - `pages/15_CURVE_BUILDER_V2.py`
-  - `shared/curves.py`
-  - `shared/curve_builder_v2.py`
-  - `shared/curve_groups_v2.py`
-  - `shared/governance.py`
-  - `scripts/governance_checks.py`
-  - `scripts/curve_validator.py`
-  - `scripts/curve_coverage_report.py`
-  - `tests/test_process_curve_candidates.py`
-  - `tests/test_generate_curve_candidates.py`
-  - `tests/test_governance.py`
-- auction/sold-data model and preparation work has touched:
-  - `scripts/train_auction_price_correction.py`
-  - `scripts/prepare_sold_training_data.py`
-  - `scripts/rebuild_sold_dataset.py`
-  - `scripts/enrich_sold_repairs.py`
-  - `scripts/build_restricted_datasets.py`
-  - `scripts/clean_sold_csv.py`
-- atomic CSV write infrastructure is broadly depended on by many scripts and should be treated as high-blast-radius even when deferred:
-  - `scripts/atomic_csv.py`
-
-Unknown / not yet proven:
-- an exact complete ledger of every file previously processed across older AI sessions
-- which of the recently active files were AI-edited versus manually edited
-
-Rule:
-- do not invent or backfill historical processed-file lists without written/project evidence
-- treat recovered git/doc evidence as directional context, not proof of current-wave edits
-- if older work is recovered from commits, notes, or prior documents, update this section
-
-## Errors Encountered
-| Error | Attempt | Resolution |
-|-------|---------|------------|
-| AutoSniper planning files absent, so planning-with-files had nothing to anchor to | 1 | Initialize planning files in repo root and treat them as canonical working memory |
-| Global memory search returned no useful AutoSniper task-state recall | 1 | Store active project state in repo files instead of relying on global memory alone |
-
-## Notes
-- Before any substantial AutoSniper work: read `docs/ai_working_agreement.md`, `task_plan.md`, `findings.md`, and `progress.md`
-- Record locked decisions immediately when they are made
-- If scope changes, update these files before editing code
-- Do not treat remembered chat context as authoritative when repo-local memory disagrees
+Normal AI work should update `project_memory/02_state/` instead of adding new unique truth here.

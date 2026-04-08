@@ -1,0 +1,27 @@
+generated_from:
+- scripts/pipeline_stages.py
+- shared.schema.ALLOWED_LISTING_STATES
+- shared.schema.TERMINAL_STATES
+pipeline_cli:
+  script: scripts/pipeline_stages.py
+  stage_choices:
+  - normalize
+  - exclude
+  - match
+  - clear
+  - audit
+listing_state_machine:
+  allowed_states:
+  - active
+  - dead_url
+  - discovered
+  - fetch_failed
+  - referred
+  - sold
+  - static_parsed
+  - withdrawn
+  terminal_states:
+  - dead_url
+  - referred
+  - sold
+  - withdrawn

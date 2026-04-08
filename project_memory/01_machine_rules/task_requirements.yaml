@@ -1,0 +1,33 @@
+generated_from_manifest: project_memory/memory_manifest.yaml
+tasks:
+  write:
+    required_files:
+    - project_memory/02_state/recent_changes.md
+    - project_memory/02_state/active_boundaries.md
+  valuation:
+    required_files:
+    - project_memory/01_machine_rules/curve_contracts.yaml
+    - project_memory/03_decisions/DEC-002-curves-govern-resale.md
+    - project_memory/03_decisions/DEC-003-sold-cars-inform-hammer-bid.md
+    - project_memory/03_decisions/DEC-004-url-is-unique-id.md
+  curves:
+    required_files:
+    - project_memory/01_machine_rules/curve_contracts.yaml
+    - project_memory/01_machine_rules/pipeline_stages.yaml
+    - project_memory/03_decisions/DEC-002-curves-govern-resale.md
+    - project_memory/03_decisions/DEC-004-url-is-unique-id.md
+  ui:
+    required_files:
+    - project_memory/01_machine_rules/tracked_datasets.yaml
+    - project_memory/02_state/current_status.md
+    - project_memory/02_state/open_issues.md
+  scraper:
+    required_files:
+    - project_memory/01_machine_rules/tracked_datasets.yaml
+    - project_memory/02_state/active_boundaries.md
+    - project_memory/03_decisions/DEC-004-url-is-unique-id.md
+  governance:
+    required_files:
+    - project_memory/01_machine_rules/dataset_contracts.yaml
+    - project_memory/01_machine_rules/tracked_datasets.yaml
+    - project_memory/03_decisions/DEC-005-protected-memory-layers.md

@@ -1,0 +1,31 @@
+decisions:
+  - id: DEC-001
+    path: project_memory/03_decisions/DEC-001-repo-memory-over-chat-memory.md
+    title: Repo-local project memory is primary
+    status: accepted
+    date: 2026-04-08
+  - id: DEC-002
+    path: project_memory/03_decisions/DEC-002-curves-govern-resale.md
+    title: Curves govern resale estimates
+    status: accepted
+    date: 2026-04-08
+  - id: DEC-003
+    path: project_memory/03_decisions/DEC-003-sold-cars-inform-hammer-bid.md
+    title: Sold cars inform hammer bid, not resale override
+    status: accepted
+    date: 2026-04-08
+  - id: DEC-004
+    path: project_memory/03_decisions/DEC-004-url-is-unique-id.md
+    title: URL is the unique identifier
+    status: accepted
+    date: 2026-04-08
+  - id: DEC-005
+    path: project_memory/03_decisions/DEC-005-protected-memory-layers.md
+    title: Constitution, machine rules, decisions, and manifest are protected
+    status: accepted
+    date: 2026-04-08
+  - id: DEC-006
+    path: project_memory/03_decisions/DEC-006-agents-update-state-only.md
+    title: Agents update state memory only by default
+    status: accepted
+    date: 2026-04-08

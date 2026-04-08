@@ -2,13 +2,15 @@
 set -eu
 
 if command -v python >/dev/null 2>&1; then
+  python scripts/project_memory.py check --staged
   python scripts/check_commit_hygiene.py --staged
 elif command -v python3 >/dev/null 2>&1; then
+  python3 scripts/project_memory.py check --staged
   python3 scripts/check_commit_hygiene.py --staged
 elif command -v py >/dev/null 2>&1; then
+  py -3 scripts/project_memory.py check --staged
   py -3 scripts/check_commit_hygiene.py --staged
 else
   echo "[commit-hygiene] Python is required to run commit hygiene checks." >&2
   exit 1
 fi
-

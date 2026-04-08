@@ -1,0 +1,20 @@
+generated_from:
+- shared.curves.CURVE_COLUMNS
+- shared.curves.LEGACY_COLUMNS
+- shared.curves.CURVE_ALIAS_COLUMNS
+curves:
+  required_columns:
+  - canonical_tag
+  - anchor_year
+  - km_bucket
+  - price_low
+  - price_mid
+  - price_high
+  rejected_legacy_columns:
+  - group_id
+  - km_anchor
+  - price_median
+  - series
+  curve_alias_columns:
+  - canonical_tag
+  - base_curve

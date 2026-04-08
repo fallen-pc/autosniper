@@ -1,0 +1,25 @@
+identifiers:
+  listing:
+    unique_id: url
+  curve:
+    key_fields:
+      - canonical_tag
+      - anchor_year
+      - km_bucket
+  project_memory:
+    manifest: project_memory/memory_manifest.yaml
+    writable_state_layer: project_memory/02_state/
+subsystems:
+  - dashboard
+  - streamlit_pages
+  - scrapers
+  - shared_domain_logic
+  - curves
+  - governance
+  - project_memory
+governed_datasets:
+  - active_vehicle_details.csv
+  - sold_cars.csv
+  - referred_cars.csv
+  - restricted_group_map.csv
+  - curves.csv

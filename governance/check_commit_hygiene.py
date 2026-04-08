@@ -7,6 +7,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from shared.project_memory_guard import MEMORY_WRITE_APPROVAL_ENV, validate_protected_memory_changes
+
 SOURCE_PREFIXES = (
     ".github/",
     ".streamlit/",
@@ -243,6 +245,13 @@ def main() -> int:
                 "Stage a version snapshot, the manifest, and a changelog update.\n"
                 f"Missing:\n{_format_list(missing_followups)}"
             )
+
+    errors.extend(
+        validate_protected_memory_changes(
+            staged,
+            approval_granted=os.getenv(MEMORY_WRITE_APPROVAL_ENV, "").strip() == "1",
+        )
+    )
 
     if errors:
         print("[commit-hygiene] Commit blocked:\n", file=sys.stderr)

@@ -1,0 +1,60 @@
+generated_from:
+- shared.data_loader.DATASET_PATHS
+- shared.data_loader.REQUIRED_FILES
+- shared.governance.TRACKED_DATASET_PATHS
+required_files:
+- vehicle_static_details.csv
+- active_vehicle_details.csv
+- all_vehicle_links.csv
+- ai_listing_valuations.csv
+- sold_cars.csv
+- referred_cars.csv
+tracked_dataset_paths:
+- CSV_data/scrapers/all_vehicle_links.csv
+- CSV_data/scrapers/active_vehicle_links.csv
+- CSV_data/scrapers/raw_vehicle_data.csv
+- CSV_data/scrapers/normalised_data.csv
+- CSV_data/scrapers/excluded_listings.csv
+- CSV_data/scrapers/pipeline_exclusions.csv
+- CSV_data/scrapers/vehicle_static_details.csv
+- CSV_data/scrapers/matched_canonical_details.csv
+- CSV_data/scrapers/unmatched_canonical_details.csv
+- CSV_data/scrapers/active_vehicle_details.csv
+- CSV_data/scrapers/sold_cars.csv
+- CSV_data/scrapers/referred_cars.csv
+- CSV_data/restricted/restricted_group_map.csv
+- CSV_data/restricted/curves.csv
+named_dataset_paths:
+  all_vehicle_links.csv: scrapers/all_vehicle_links.csv
+  active_vehicle_links.csv: scrapers/active_vehicle_links.csv
+  raw_vehicle_data.csv: scrapers/raw_vehicle_data.csv
+  normalised_data.csv: scrapers/normalised_data.csv
+  vehicle_static_details.csv: scrapers/vehicle_static_details.csv
+  vehicle_state.csv: scrapers/vehicle_state.csv
+  matched_canonical_details.csv: scrapers/matched_canonical_details.csv
+  unmatched_canonical_details.csv: scrapers/unmatched_canonical_details.csv
+  active_vehicle_details.csv: scrapers/active_vehicle_details.csv
+  sold_cars.csv: scrapers/sold_cars.csv
+  referred_cars.csv: scrapers/referred_cars.csv
+  active_snapshots.csv: scrapers/active_snapshots.csv
+  bid_history.csv: scrapers/bid_history.csv
+  bid_history_bidders.csv: scrapers/bid_history_bidders.csv
+  bid_history_listings.csv: scrapers/bid_history_listings.csv
+  bid_history_targets.csv: scrapers/bid_history_targets.csv
+  excluded_listings.csv: scrapers/excluded_listings.csv
+  pipeline_exclusions.csv: scrapers/pipeline_exclusions.csv
+  scrape_failures.csv: scrapers/scrape_failures.csv
+  ai_listing_valuations.csv: ai/ai_listing_valuations.csv
+  ai_verdicts.csv: ai/ai_verdicts.csv
+  active_vehicle_details_restricted.csv: restricted/active_vehicle_details_restricted.csv
+  sold_cars_restricted.csv: restricted/sold_cars_restricted.csv
+  restricted_group_map.csv: restricted/restricted_group_map.csv
+  curves.csv: restricted/curves.csv
+  scored_listings.csv: model_audit/scored_listings.csv
+  scored_listings_enriched.csv: model_audit/scored_listings_enriched.csv
+  model_accuracy_weekly.csv: model_audit/model_accuracy_weekly.csv
+  model_accuracy_by_tier.csv: model_audit/model_accuracy_by_tier.csv
+  sold_cars_historical.csv: archives/sold_cars_historical.csv
+  sold_cars_rescraped.csv: archives/sold_cars_rescraped.csv
+  ai_analysis_ready: archives/ai_analysis_ready
+  repair_estimates.csv: repairs/repair_estimates.csv

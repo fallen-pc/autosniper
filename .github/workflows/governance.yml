@@ -30,7 +30,11 @@ jobs:
 
       - name: Run governance tests
         run: |
-          pytest tests/test_governance.py tests/test_curve_versioning.py tests/test_curves.py tests/test_canonical_tagging_cache.py
+          pytest tests/test_governance.py tests/test_curve_versioning.py tests/test_curves.py tests/test_canonical_tagging_cache.py tests/test_project_memory.py
+
+      - name: Run project memory checks
+        run: |
+          python scripts/project_memory.py check
 
       - name: Run governed checks
         env:
