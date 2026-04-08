@@ -147,25 +147,6 @@ def _slug_component(value: object) -> str:
     return "-".join(part for part in text.split("-") if part)
 
 
-def _autotrader_body_slug(value: object) -> str:
-    slug = _slug_component(value)
-    body_map = {
-        "hatch": "hatchback",
-        "dualcab-ute": "ute",
-        "cab-chassis": "cab-chassis",
-    }
-    return body_map.get(slug, slug)
-
-
-def _autotrader_transmission_slug(value: object) -> str:
-    slug = _slug_component(value)
-    trans_map = {
-        "auto": "automatic",
-        "manual": "manual",
-    }
-    return trans_map.get(slug, slug)
-
-
 def parse_curve_tag(curve_tag: str) -> dict[str, str]:
     parts = str(curve_tag or "").strip().split("_")
     if len(parts) != 7:
@@ -193,8 +174,6 @@ def build_autotrader_seed_url(curve_tag: str, *, state: str = "", city: str = ""
     parts = parse_curve_tag(curve_tag)
     make = _slug_component(parts.get("make"))
     model = _slug_component(parts.get("model"))
-    body = _autotrader_body_slug(parts.get("body_type"))
-    transmission = _autotrader_transmission_slug(parts.get("transmission"))
     state_slug = _slug_component(state)
     city_slug = _slug_component(city)
     path_parts = ["for-sale", "used"]
@@ -202,10 +181,6 @@ def build_autotrader_seed_url(curve_tag: str, *, state: str = "", city: str = ""
         path_parts.append(make)
     if model:
         path_parts.append(model)
-    if body:
-        path_parts.append(body)
-    if transmission:
-        path_parts.append(transmission)
     if state_slug:
         path_parts.append(state_slug)
     if city_slug:
