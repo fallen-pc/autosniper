@@ -321,6 +321,24 @@ def _prepare_sold_rows(frame: pd.DataFrame, *, static_df: pd.DataFrame | None = 
     return cleaned
 
 
+def _sold_rows_missing_sale_price(frame: pd.DataFrame) -> pd.Series:
+    if frame is None or frame.empty:
+        return pd.Series(dtype=bool, index=getattr(frame, "index", None))
+    working = frame.copy()
+    if "price" not in working.columns:
+        working["price"] = ""
+    mask = _blank_mask(working["price"])
+    for column in ("final_price", "final_price_numeric", "sale_price"):
+        if column in working.columns:
+            fill_mask = mask & ~_blank_mask(working[column])
+            if fill_mask.any():
+                working.loc[fill_mask, "price"] = working.loc[fill_mask, column]
+            mask = _blank_mask(working["price"])
+            if not mask.any():
+                break
+    return mask.reindex(frame.index, fill_value=False)
+
+
 def _prepare_referred_rows(frame: pd.DataFrame) -> pd.DataFrame:
     if frame is None:
         return pd.DataFrame()
@@ -694,10 +712,7 @@ def update_master_database() -> None:
 
     if not sold_df.empty:
         prepared_snapshot = _prepare_sold_rows(sold_df)
-        sale_series = prepared_snapshot["price"] if "price" in prepared_snapshot.columns else pd.Series(
-            dtype=object, index=prepared_snapshot.index
-        )
-        blank_sale_mask = _blank_mask(sale_series)
+        blank_sale_mask = _sold_rows_missing_sale_price(sold_df)
         if blank_sale_mask.any():
             moved_rows = sold_df.loc[blank_sale_mask].copy()
             if not moved_rows.empty:
@@ -764,7 +779,15 @@ def update_master_database() -> None:
     if "url" in active_target.columns:
         active_urls = {url.strip() for url in active_target["url"].dropna().tolist() if str(url).strip()}
         if active_urls:
-            _prune_urls_from_dataset(SOLD_FILE, active_urls, "sold (now active)")
+            existing_sold = _load_dataframe(SOLD_FILE)
+            if not existing_sold.empty and "url" in existing_sold.columns:
+                sold_urls = {url.strip() for url in existing_sold["url"].dropna().tolist() if str(url).strip()}
+                overlaps = active_urls & sold_urls
+                if overlaps:
+                    print(
+                        f"Preserved {len(overlaps)} sold-history row(s) whose URLs are currently active; "
+                        "investigate lifecycle drift separately."
+                    )
     # Static identity is durable; lifecycle changes are tracked in vehicle_state.csv.
     try:
         build_restricted_datasets()
