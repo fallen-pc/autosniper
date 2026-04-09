@@ -7,7 +7,12 @@ import subprocess
 import sys
 from pathlib import Path
 
-from shared.project_memory_guard import MEMORY_WRITE_APPROVAL_ENV, validate_protected_memory_changes
+from shared.project_memory_guard import (
+    MEMORY_WRITE_APPROVAL_ENV,
+    STATE_MEMORY_OPTIONAL_ENV,
+    validate_protected_memory_changes,
+    validate_state_memory_updates,
+)
 
 SOURCE_PREFIXES = (
     ".github/",
@@ -250,6 +255,12 @@ def main() -> int:
         validate_protected_memory_changes(
             staged,
             approval_granted=os.getenv(MEMORY_WRITE_APPROVAL_ENV, "").strip() == "1",
+        )
+    )
+    errors.extend(
+        validate_state_memory_updates(
+            staged,
+            override_granted=os.getenv(STATE_MEMORY_OPTIONAL_ENV, "").strip() == "1",
         )
     )
 

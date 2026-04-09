@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 import shared.project_memory as project_memory
-from shared.project_memory_guard import validate_protected_memory_changes
+from shared.project_memory_guard import validate_protected_memory_changes, validate_state_memory_updates
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -99,5 +99,38 @@ def test_state_memory_changes_are_allowed_without_approval():
     errors = validate_protected_memory_changes(
         ["project_memory/02_state/current_status.md"],
         approval_granted=False,
+    )
+    assert errors == []
+
+
+def test_meaningful_code_changes_require_state_memory_update():
+    errors = validate_state_memory_updates(
+        ["pages/15_CURVE_BUILDER_V2.py", "shared/curve_seed_rows.py"],
+        override_granted=False,
+    )
+    assert len(errors) == 1
+    assert "project_memory/02_state/" in errors[0]
+    assert "AUTOSNIPER_STATE_MEMORY_OPTIONAL=1" in errors[0]
+
+
+def test_meaningful_code_changes_pass_when_state_memory_is_staged():
+    errors = validate_state_memory_updates(
+        [
+            "pages/15_CURVE_BUILDER_V2.py",
+            "project_memory/02_state/recent_changes.md",
+        ],
+        override_granted=False,
+    )
+    assert errors == []
+
+
+def test_docs_and_tests_do_not_require_state_memory_update():
+    errors = validate_state_memory_updates(
+        [
+            "docs/ai_working_agreement.md",
+            "tests/test_curve_groups_v2.py",
+            "README.md",
+        ],
+        override_granted=False,
     )
     assert errors == []
