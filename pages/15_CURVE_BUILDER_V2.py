@@ -18,6 +18,7 @@ from shared.curve_groups_v2 import (
     load_supported_curve_universe_v1,
     tags_for_base_curve,
 )
+from shared.curve_seed_rows import build_legacy_curve_seed_rows
 from shared.curves import CURVE_COLUMNS, load_curves, save_curves
 from shared.data_loader import dataset_path
 from shared.manual_curve_evidence import load_manual_curve_evidence, prepare_manual_curve_evidence
@@ -110,41 +111,59 @@ def _prepare_editor_rows(
     member_tags: list[str],
     evidence_df: pd.DataFrame,
     overrides_df: pd.DataFrame | None = None,
-) -> tuple[pd.DataFrame, str]:
+) -> tuple[pd.DataFrame, str, pd.DataFrame]:
     base_rows = curves_df[curves_df["canonical_tag"].astype(str).str.strip() == base_curve_tag].copy()
     if not base_rows.empty:
-        return base_rows[list(CURVE_COLUMNS)].copy(), "Loaded existing V2 base curve rows."
+        return base_rows[list(CURVE_COLUMNS)].copy(), "Loaded existing V2 base curve rows.", pd.DataFrame()
 
     override_years = get_anchor_override_years(base_curve_tag, overrides_df)
     if override_years:
         return (
             _blank_grid(base_curve_tag, override_years),
             f"Using configured V2 anchor override: {', '.join(str(value) for value in override_years)}.",
+            pd.DataFrame(),
         )
 
     legacy_rows = curves_df[curves_df["canonical_tag"].astype(str).str.strip().isin(member_tags)].copy()
     if not legacy_rows.empty:
-        legacy_rows = legacy_rows[list(CURVE_COLUMNS)].copy()
-        legacy_rows["canonical_tag"] = base_curve_tag
-        legacy_rows = legacy_rows.drop_duplicates(subset=["canonical_tag", "anchor_year", "km_bucket"], keep="first")
-        return legacy_rows.sort_values(["anchor_year", "km_bucket"]).reset_index(drop=True), "Loaded legacy curve rows as a starting point."
+        legacy_anchor_years = sorted(pd.to_numeric(legacy_rows["anchor_year"], errors="coerce").dropna().astype(int).unique().tolist())
+        legacy_seed_rows, legacy_conflicts = build_legacy_curve_seed_rows(
+            base_curve_tag=base_curve_tag,
+            curves_df=curves_df,
+            member_tags=member_tags,
+        )
+        if not legacy_conflicts.empty:
+            anchor_years = legacy_anchor_years or _suggest_anchor_years(base_curve_tag, evidence_df, overrides_df)
+            return (
+                _blank_grid(base_curve_tag, anchor_years),
+                "Conflicting legacy curve rows were detected. Starting from a blank grid instead of merging them.",
+                legacy_conflicts,
+            )
+        return legacy_seed_rows, "Loaded legacy curve rows as a starting point.", pd.DataFrame()
 
-    return _blank_grid(base_curve_tag, _suggest_anchor_years(base_curve_tag, evidence_df, overrides_df)), "No saved rows yet. Starting from a blank grid."
+    return (
+        _blank_grid(base_curve_tag, _suggest_anchor_years(base_curve_tag, evidence_df, overrides_df)),
+        "No saved rows yet. Starting from a blank grid.",
+        pd.DataFrame(),
+    )
 
 
-def _load_comparison_curve_rows(base_curve_tag: str, curves_df: pd.DataFrame, member_tags: list[str]) -> tuple[pd.DataFrame, str]:
+def _load_comparison_curve_rows(base_curve_tag: str, curves_df: pd.DataFrame, member_tags: list[str]) -> tuple[pd.DataFrame, str, pd.DataFrame]:
     saved_rows = curves_df[curves_df["canonical_tag"].astype(str).str.strip() == base_curve_tag].copy()
     if not saved_rows.empty:
-        return saved_rows[list(CURVE_COLUMNS)].copy(), "saved_v2"
+        return saved_rows[list(CURVE_COLUMNS)].copy(), "saved_v2", pd.DataFrame()
 
-    legacy_rows = curves_df[curves_df["canonical_tag"].astype(str).str.strip().isin(member_tags)].copy()
-    if not legacy_rows.empty:
-        legacy_rows = legacy_rows[list(CURVE_COLUMNS)].copy()
-        legacy_rows["canonical_tag"] = base_curve_tag
-        legacy_rows = legacy_rows.drop_duplicates(subset=["canonical_tag", "anchor_year", "km_bucket"], keep="first")
-        return legacy_rows.sort_values(["anchor_year", "km_bucket"]).reset_index(drop=True), "legacy_fallback"
+    legacy_seed_rows, legacy_conflicts = build_legacy_curve_seed_rows(
+        base_curve_tag=base_curve_tag,
+        curves_df=curves_df,
+        member_tags=member_tags,
+    )
+    if not legacy_seed_rows.empty:
+        return legacy_seed_rows, "legacy_fallback", pd.DataFrame()
+    if not legacy_conflicts.empty:
+        return pd.DataFrame(columns=list(CURVE_COLUMNS)), "legacy_conflict", legacy_conflicts
 
-    return pd.DataFrame(columns=list(CURVE_COLUMNS)), "none"
+    return pd.DataFrame(columns=list(CURVE_COLUMNS)), "none", pd.DataFrame()
 
 
 def _build_completeness_frame(editor_df: pd.DataFrame) -> pd.DataFrame:
@@ -841,7 +860,7 @@ else:
         st.caption("Sample rows")
         st.dataframe(near_miss_table_df.head(50), use_container_width=True, hide_index=True)
 
-editor_seed, seed_message = _prepare_editor_rows(
+editor_seed, seed_message, editor_seed_conflicts = _prepare_editor_rows(
     selected_base_curve,
     curves_df,
     member_tags,
@@ -928,6 +947,9 @@ with action_right:
         st.caption(str(st.session_state.get(proposal_note_key) or seed_message))
     else:
         st.caption("Manual Carsales evidence is present for this curve, so deterministic proposing is hidden. Edit and save the curve directly against the Carsales rows.")
+if not editor_seed_conflicts.empty:
+    st.error("Conflicting legacy rows were found for this base curve. The editor was seeded with a blank grid so you do not silently inherit a mixed curve.")
+    st.dataframe(editor_seed_conflicts, use_container_width=True, hide_index=True)
 
 edited = st.data_editor(
     st.session_state[editor_state_key],
@@ -969,7 +991,7 @@ diag_cols[3].metric(
     ", ".join(str(value) for value in proposal_meta.get("anchor_years", suggested_anchor_years)) or "none",
 )
 
-comparison_current_df, comparison_curve_source = _load_comparison_curve_rows(selected_base_curve, curves_df, member_tags)
+comparison_current_df, comparison_curve_source, comparison_conflicts = _load_comparison_curve_rows(selected_base_curve, curves_df, member_tags)
 comparison_df, comparison_summary = _build_curve_comparison(
     comparison_current_df,
     edited[list(CURVE_COLUMNS)].copy(),
@@ -989,10 +1011,16 @@ with compare_left:
         st.caption("Current saved base curve")
     elif comparison_curve_source == "legacy_fallback":
         st.caption("Legacy fallback curve")
+    elif comparison_curve_source == "legacy_conflict":
+        st.caption("Legacy fallback blocked by conflicts")
     else:
         st.caption("Current saved base curve")
     if comparison_current_df.empty:
-        st.info("No saved V2 base curve or legacy fallback curve exists yet for this tag.")
+        if comparison_curve_source == "legacy_conflict":
+            st.error("Legacy fallback rows disagree with each other, so no comparison baseline is shown.")
+            st.dataframe(comparison_conflicts, use_container_width=True, hide_index=True)
+        else:
+            st.info("No saved V2 base curve or legacy fallback curve exists yet for this tag.")
     else:
         st.dataframe(
             comparison_current_df.sort_values(["anchor_year", "km_bucket"]),
