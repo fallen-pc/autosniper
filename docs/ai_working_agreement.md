@@ -6,7 +6,7 @@ This file is now a compatibility summary. The authoritative memory system lives 
 
 Before non-trivial work:
 
-1. Run `python scripts/project_memory.py build-context --task-kind <kind> --intent <read|write>`
+1. Prefer `.\scripts\start_ai_task.ps1 -TaskKind <kind> -Intent <read|write> ...` as the front door
 2. Read the returned context bundle instead of relying on chat memory
 3. If doing normal upkeep, only update `project_memory/02_state/`
 4. If changing constitution, machine rules, decisions, or the manifest, do it intentionally and set `AUTOSNIPER_MEMORY_WRITE_APPROVED=1`

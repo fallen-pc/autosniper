@@ -5,4 +5,4 @@
 - A clean decision is still needed on the Toyota hatch family: rebuild from fresh evidence, choose one legacy shape, or explicitly retire one branch.
 - Curve Builder V2 expansion blockers are now better mapped; the known live blocker is conflicting legacy fallback data for at least the Toyota hatch family.
 - Scraper and extractor surfaces remain high sensitivity and should not be reopened casually.
-- The external Codex/OpenClaw launcher must call `python scripts/project_memory.py build-context ...` before starting an AI task, because the repo cannot force that step by itself.
+- Runtime memory enforcement still depends on using `scripts/start_ai_task.ps1` or an equivalent wrapper as the only front door into Codex/OpenClaw work for this repo.
