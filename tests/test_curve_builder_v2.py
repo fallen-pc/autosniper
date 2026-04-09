@@ -62,7 +62,7 @@ def test_propose_curve_from_evidence_is_monotone_by_km_and_year():
 
 
 def test_propose_curve_from_evidence_trims_extreme_active_outlier():
-    base_curve_tag = "toyota_corolla_zre182r_hatch_auto_petrol"
+    base_curve_tag = "toyota_corolla_ascent-sport_zre182r_hatch_auto_petrol"
     active_df = pd.DataFrame(
         {
             "canonical_tag": [base_curve_tag] * 16,

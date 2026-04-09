@@ -1,5 +1,6 @@
 # Recent Changes
 
+- Toyota Corolla `zre182r` hatch support is now split into separate `ascent` and `ascent-sport` base curves instead of one grouped base that hid a real trim premium.
 - Commit hygiene now blocks meaningful code/config/UI/governance changes that do not also stage a `project_memory/02_state/` update, unless `AUTOSNIPER_STATE_MEMORY_OPTIONAL=1` is set intentionally for an exception.
 - Toyota Corolla hatch follow-up is now focused on operator visibility rather than automatic resolution: the V2 page already blocks conflicting legacy fallback rows correctly, so the next safe work is to explain those conflicts more clearly without choosing a winning legacy branch in code.
 - Curve Builder V2 now summarizes conflicting legacy fallback cells before showing the raw rows, including which legacy source tag is lower or higher on `price_mid` and the size of that gap. This keeps Toyota hatch conflict handling manual but much faster to inspect.
