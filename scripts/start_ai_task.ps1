@@ -10,6 +10,12 @@ param(
 
     [string[]]$LauncherCommand,
 
+    [string]$TaskMessage,
+
+    [switch]$CopyPrompt,
+
+    [switch]$LaunchCodex,
+
     [switch]$PrintContext,
 
     [switch]$NoLaunch
@@ -17,6 +23,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 $MaxEnvTextLength = 30000
+$CodexAppId = "OpenAI.Codex_2p2nqsd0c76g0!App"
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
 $pythonPath = Join-Path $repoRoot ".venv\Scripts\python.exe"
 if (-not (Test-Path $pythonPath)) {
@@ -65,9 +72,35 @@ try {
 
     $markdownPath = [System.IO.Path]::ChangeExtension($resolvedOutput, ".md")
     Set-Content -LiteralPath $markdownPath -Value $sessionMarkdown -Encoding UTF8
+    $startupPromptPath = Join-Path (Split-Path -Parent $resolvedOutput) "session_start_prompt.md"
+
+    $taskPrompt = if ([string]::IsNullOrWhiteSpace($TaskMessage)) {
+@"
+Use this project context as the working memory baseline for this task.
+
+Task:
+Continue AutoSniper $TaskKind work.
+Follow the project memory rules.
+Update only project_memory/02_state/ for normal state-memory changes.
+Explain findings simply and do not make hidden business-rule decisions.
+"@
+    }
+    else {
+        $TaskMessage.Trim()
+    }
+
+    $startupPrompt = @(
+        $sessionMarkdown.TrimEnd(),
+        "",
+        "---",
+        "",
+        $taskPrompt
+    ) -join [Environment]::NewLine
+    Set-Content -LiteralPath $startupPromptPath -Value $startupPrompt -Encoding UTF8
 
     $env:AUTOSNIPER_PROJECT_CONTEXT_PATH = $resolvedOutput
     $env:AUTOSNIPER_PROJECT_CONTEXT_MARKDOWN_PATH = $markdownPath
+    $env:AUTOSNIPER_PROJECT_START_PROMPT_PATH = $startupPromptPath
     $env:AUTOSNIPER_PROJECT_TASK_KIND = $TaskKind
     $env:AUTOSNIPER_PROJECT_INTENT = $Intent
     if ($sessionMarkdown.Length -le $MaxEnvTextLength) {
@@ -81,6 +114,7 @@ try {
     Write-Host "[autosniper-ai] bootstrap OK"
     Write-Host "[autosniper-ai] context path: $resolvedOutput"
     Write-Host "[autosniper-ai] markdown path: $markdownPath"
+    Write-Host "[autosniper-ai] startup prompt path: $startupPromptPath"
 
     if ($PrintContext) {
         Write-Host ""
@@ -90,9 +124,19 @@ try {
         Write-Host ""
     }
 
+    if ($CopyPrompt) {
+        Set-Clipboard -Value $startupPrompt
+        Write-Host "[autosniper-ai] startup prompt copied to clipboard"
+    }
+
+    if ($LaunchCodex) {
+        Start-Process "explorer.exe" -ArgumentList "shell:AppsFolder\$CodexAppId" | Out-Null
+        Write-Host "[autosniper-ai] launched Codex app"
+    }
+
     if ($NoLaunch -or -not $LauncherCommand -or $LauncherCommand.Count -eq 0) {
         Write-Host "[autosniper-ai] no launcher command provided. Bootstrap only."
-        Write-Host "[autosniper-ai] downstream launcher should read AUTOSNIPER_PROJECT_CONTEXT_PATH or AUTOSNIPER_PROJECT_CONTEXT_MARKDOWN_PATH."
+        Write-Host "[autosniper-ai] downstream launcher should read AUTOSNIPER_PROJECT_CONTEXT_PATH, AUTOSNIPER_PROJECT_CONTEXT_MARKDOWN_PATH, or AUTOSNIPER_PROJECT_START_PROMPT_PATH."
         exit 0
     }
 

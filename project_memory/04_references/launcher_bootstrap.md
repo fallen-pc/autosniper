@@ -16,6 +16,8 @@ The wrapper script:
 - exports `AUTOSNIPER_PROJECT_CONTEXT_PATH`
 - writes `session_context_markdown` to a sidecar markdown file
 - exports `AUTOSNIPER_PROJECT_CONTEXT_MARKDOWN_PATH`
+- writes a combined startup prompt to `tmp/session_start_prompt.md`
+- exports `AUTOSNIPER_PROJECT_START_PROMPT_PATH`
 - exports `AUTOSNIPER_PROJECT_CONTEXT_MARKDOWN` only when the markdown is small enough to fit safely in an env var
 - exports `AUTOSNIPER_PROJECT_TASK_KIND` and `AUTOSNIPER_PROJECT_INTENT`
 
@@ -36,4 +38,8 @@ Examples:
 
 ```powershell
 .\scripts\start_ai_task.ps1 -TaskKind valuation -Intent write -LauncherCommand python some_launcher.py
+```
+
+```powershell
+.\scripts\start_ai_task.ps1 -TaskKind curves -Intent write -CopyPrompt -LaunchCodex -NoLaunch
 ```

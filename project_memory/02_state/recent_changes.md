@@ -8,3 +8,4 @@
 - When conflicting legacy rows are found, the V2 page now shows the conflict and starts from a blank grid instead of silently mixing old curves.
 - Tests now lock in the Toyota-style conflict case so the silent-merge failure mode does not return unnoticed.
 - The repo now has a PowerShell AI-task launcher wrapper at `scripts/start_ai_task.ps1` that runs memory bootstrap first and aborts if it fails.
+- The launcher can now also prepare a combined startup prompt, copy it to the clipboard, and open the Codex app for manual paste-based starts.
