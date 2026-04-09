@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from shared.curve_seed_rows import build_legacy_curve_seed_rows
+from shared.curve_seed_rows import build_legacy_curve_seed_rows, summarize_legacy_curve_conflicts
 from shared.curve_groups_v2 import (
     get_anchor_override_years,
     get_supported_curve_row,
@@ -143,6 +143,14 @@ def test_build_legacy_curve_seed_rows_blocks_conflicting_legacy_rows():
         "toyota_corolla_ascent-sport_petrol_auto_hatch_zre18x",
         "toyota_corolla_ascent_petrol_auto_hatch_zre18x",
     ]
+
+    summary_df = summarize_legacy_curve_conflicts(conflict_rows)
+    assert len(summary_df) == 1
+    assert summary_df.iloc[0]["anchor_year"] == 2018
+    assert summary_df.iloc[0]["km_bucket"] == 30000
+    assert summary_df.iloc[0]["lowest_mid_source_tag"] == "toyota_corolla_ascent_petrol_auto_hatch_zre18x"
+    assert summary_df.iloc[0]["highest_mid_source_tag"] == "toyota_corolla_ascent-sport_petrol_auto_hatch_zre18x"
+    assert summary_df.iloc[0]["mid_gap"] == 900
 
 
 def test_build_legacy_curve_seed_rows_allows_identical_duplicate_rows():

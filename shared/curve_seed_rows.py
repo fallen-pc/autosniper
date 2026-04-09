@@ -22,6 +22,17 @@ LEGACY_CONFLICT_COLUMNS = (
     "price_mid",
     "price_high",
 )
+LEGACY_CONFLICT_SUMMARY_COLUMNS = (
+    "base_curve_tag",
+    "anchor_year",
+    "km_bucket",
+    "source_tags",
+    "lowest_mid_source_tag",
+    "lowest_mid_price",
+    "highest_mid_source_tag",
+    "highest_mid_price",
+    "mid_gap",
+)
 
 
 def build_legacy_curve_seed_rows(
@@ -70,3 +81,46 @@ def build_legacy_curve_seed_rows(
     deduped = working.drop_duplicates(subset=list(CURVE_COLUMNS), keep="first")
     deduped = deduped[list(CURVE_COLUMNS)].sort_values(["anchor_year", "km_bucket"]).reset_index(drop=True)
     return deduped, pd.DataFrame(columns=list(LEGACY_CONFLICT_COLUMNS))
+
+
+def summarize_legacy_curve_conflicts(conflict_df: pd.DataFrame) -> pd.DataFrame:
+    if conflict_df.empty:
+        return pd.DataFrame(columns=list(LEGACY_CONFLICT_SUMMARY_COLUMNS))
+
+    working = conflict_df.copy()
+    for column in ("anchor_year", "km_bucket", "price_mid"):
+        working[column] = pd.to_numeric(working.get(column), errors="coerce")
+    working["source_tag"] = working.get("source_tag", "").fillna("").astype(str).str.strip()
+    working["base_curve_tag"] = working.get("base_curve_tag", "").fillna("").astype(str).str.strip()
+    working = working.dropna(subset=["anchor_year", "km_bucket", "price_mid"]).copy()
+    if working.empty:
+        return pd.DataFrame(columns=list(LEGACY_CONFLICT_SUMMARY_COLUMNS))
+
+    working["anchor_year"] = working["anchor_year"].astype(int)
+    working["km_bucket"] = working["km_bucket"].astype(int)
+    working["price_mid"] = working["price_mid"].astype(int)
+
+    summary_rows: list[dict[str, object]] = []
+    for (base_curve_tag, anchor_year, km_bucket), subset in working.groupby(
+        ["base_curve_tag", "anchor_year", "km_bucket"],
+        sort=True,
+    ):
+        ordered = subset.sort_values(["price_mid", "source_tag"], ascending=[True, True]).reset_index(drop=True)
+        lowest_row = ordered.iloc[0]
+        highest_row = ordered.iloc[-1]
+        summary_rows.append(
+            {
+                "base_curve_tag": str(base_curve_tag),
+                "anchor_year": int(anchor_year),
+                "km_bucket": int(km_bucket),
+                "source_tags": ", ".join(sorted({value for value in ordered["source_tag"].tolist() if value})),
+                "lowest_mid_source_tag": str(lowest_row["source_tag"]),
+                "lowest_mid_price": int(lowest_row["price_mid"]),
+                "highest_mid_source_tag": str(highest_row["source_tag"]),
+                "highest_mid_price": int(highest_row["price_mid"]),
+                "mid_gap": int(highest_row["price_mid"] - lowest_row["price_mid"]),
+            }
+        )
+
+    summary_df = pd.DataFrame(summary_rows, columns=list(LEGACY_CONFLICT_SUMMARY_COLUMNS))
+    return summary_df.sort_values(["anchor_year", "km_bucket"]).reset_index(drop=True)

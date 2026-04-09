@@ -18,7 +18,7 @@ from shared.curve_groups_v2 import (
     load_supported_curve_universe_v1,
     tags_for_base_curve,
 )
-from shared.curve_seed_rows import build_legacy_curve_seed_rows
+from shared.curve_seed_rows import build_legacy_curve_seed_rows, summarize_legacy_curve_conflicts
 from shared.curves import CURVE_COLUMNS, load_curves, save_curves
 from shared.data_loader import dataset_path
 from shared.manual_curve_evidence import load_manual_curve_evidence, prepare_manual_curve_evidence
@@ -949,6 +949,12 @@ with action_right:
         st.caption("Manual Carsales evidence is present for this curve, so deterministic proposing is hidden. Edit and save the curve directly against the Carsales rows.")
 if not editor_seed_conflicts.empty:
     st.error("Conflicting legacy rows were found for this base curve. The editor was seeded with a blank grid so you do not silently inherit a mixed curve.")
+    editor_conflict_summary = summarize_legacy_curve_conflicts(editor_seed_conflicts)
+    if not editor_conflict_summary.empty:
+        st.caption("Conflict summary")
+        st.dataframe(editor_conflict_summary, use_container_width=True, hide_index=True)
+        st.caption("`mid_gap` is the price-mid difference between the lowest and highest conflicting legacy row for that exact anchor-year and km cell.")
+    st.caption("Raw conflicting legacy rows")
     st.dataframe(editor_seed_conflicts, use_container_width=True, hide_index=True)
 
 edited = st.data_editor(
@@ -1018,6 +1024,12 @@ with compare_left:
     if comparison_current_df.empty:
         if comparison_curve_source == "legacy_conflict":
             st.error("Legacy fallback rows disagree with each other, so no comparison baseline is shown.")
+            comparison_conflict_summary = summarize_legacy_curve_conflicts(comparison_conflicts)
+            if not comparison_conflict_summary.empty:
+                st.caption("Conflict summary")
+                st.dataframe(comparison_conflict_summary, use_container_width=True, hide_index=True)
+                st.caption("`mid_gap` is the price-mid difference between the lowest and highest conflicting legacy row for that exact anchor-year and km cell.")
+            st.caption("Raw conflicting legacy rows")
             st.dataframe(comparison_conflicts, use_container_width=True, hide_index=True)
         else:
             st.info("No saved V2 base curve or legacy fallback curve exists yet for this tag.")
