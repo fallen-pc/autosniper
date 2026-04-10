@@ -16,4 +16,7 @@
 - Windows scheduled tasks now point at the sandbox repo wrappers instead of the old `autosniper-main` paths.
 - The hourly monitor wrapper now launches successfully under Task Scheduler and reaches live Grays update work, so the current blocker has moved from task registration to runtime stability.
 - The health-report path bug is now fixed in code by writing scraper health outputs under the repo `output/health` directory instead of relying on the current working directory.
-- Autotrader automation is not healthy yet: the saved cookie/storage state is stale and a real first-page smoke scrape currently returns `403`.
+- A fresh Autotrader Playwright storage state has now been captured successfully.
+- Autotrader smoke scraping now works again in `playwright-headful` mode with the refreshed storage state and returns live data (`26` rows from the VIC/Melbourne seed page in the latest smoke test).
+- Headless Autotrader scraping is still not reliable with the refreshed session; current successful recovery depends on a visible browser session.
+- Daily and hourly Windows scheduled tasks are intentionally paused right now so the repo stays clean between work sessions.

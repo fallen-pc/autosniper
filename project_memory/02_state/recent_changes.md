@@ -25,4 +25,6 @@
 - Repointed the Windows scheduled-task wrappers to the sandbox repo and hardened the wrapper scripts so they choose either `.venv`, `venv`, or fallback `python`, create `logs/scheduled`, and run from the repo root.
 - Fixed the scraper health-report path so scheduled runs write to the repo `output/health` folder instead of failing on a relative `output` path under Task Scheduler.
 - Confirmed that the hourly monitor now launches and reaches live Grays update work under the sandbox wrapper instead of failing immediately on startup.
-- Confirmed that Autotrader is still blocked by stale authentication state: a real first-page smoke scrape returns `403` with the current cookie/storage files.
+- Refreshed the Autotrader Playwright storage state manually and confirmed that a one-page VIC/Melbourne smoke scrape succeeds in `playwright-headful` mode, producing `26` rows with HTTP `200`.
+- Confirmed that the same refreshed Autotrader session still fails in headless mode with `403`, so current recovery is session-valid but not headless-stable.
+- Stopped the live hourly monitor run and intentionally disabled both Windows scheduled tasks so the repo stays clean and paused between sessions.
