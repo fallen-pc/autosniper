@@ -714,8 +714,17 @@ def assign_canonical_tag(
         series_matches = [v for v in candidates if v.series and v.series == series_code]
         unique_series_tags = {v.canonical_tag for v in series_matches}
         if len(unique_series_tags) == 1:
-            if not _year_in_any_band(series_matches, year):
-                return UNCLASSIFIED, OUT_OF_SCOPE_YEAR, ""
+            required_reason = _validate_required_fields(
+                {
+                    "year": year,
+                    "fuel_type": fuel,
+                    "transmission": transmission,
+                    "badge": series_matches[0].badge,
+                    "body_type": body_value,
+                }
+            )
+            if required_reason != R.OK:
+                return UNCLASSIFIED, required_reason, ""
             return series_matches[0].canonical_tag, R.OK, ""
         if len(series_matches) == 0:
             return UNCLASSIFIED, DISALLOWED_VARIANT, ""

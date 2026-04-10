@@ -11,4 +11,5 @@
 - Curve Builder V2 now blocks silent legacy fallback merges when mapped legacy rows disagree on the same anchor-year and km-bucket cell.
 - `toyota_corolla_ascent_zre182r_hatch_auto_petrol` and `toyota_corolla_ascent-sport_zre182r_hatch_auto_petrol` now both have manual/provisional curves from Carsales-style market evidence.
 - Autotrader evidence for the split Toyota hatch curves already exists in `autotrader_isolated/output/autotrader_recent_market_tagged.csv`, with about `24` recent-market Ascent rows and `33` recent-market Ascent Sport rows resolving cleanly to the new split base tags.
-- The remaining Toyota hatch completeness problem is no longer “missing active Autotrader rows.” It is checking whether the saved manual curve values actually line up with the Autotrader recent-market lane and the smaller sold/Grays lane.
+- Grays sold-tagging for the split Toyota hatch curves has now been repaired as well: the sold lane recovers `6` Ascent rows and `10` Ascent Sport rows after removing a bad year-band gate and a stale legacy tag leak.
+- The remaining Toyota hatch work is no longer basic tag alignment. It is deciding whether to keep the current manual curves as-is or run a separate repricing review against the aligned evidence lanes.

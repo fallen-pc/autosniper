@@ -1,5 +1,8 @@
 # Recent Changes
 
+- Fixed Toyota Corolla `zre182r` sold-tagging so valid Ascent and Ascent Sport Grays auto/CVT hatch rows are no longer rejected just because the saved curve anchors start later than the real model years.
+- Re-tagged `CSV_data/scrapers/sold_cars.csv` and rebuilt the restricted sold outputs, which moved the Toyota hatch sold counts from `1` to `6` for Ascent and from `4` to `10` for Ascent Sport.
+- Removed the stale `toyota_corolla_hatch_petrol_auto_ascent_fwd_2013_2015` leakage from the Toyota hatch sold lane.
 - Added a durable rule that evidence-alignment work is not repricing work, so future tag-audit tasks do not quietly change saved curve values without explicit approval.
 - Confirmed that the split Toyota Corolla hatch base curves already resolve into the tagged Autotrader evidence lane: about `24` recent-market Ascent rows and `33` recent-market Ascent Sport rows now map cleanly to the new `zre182r` split base tags.
 - Confirmed that the main governed active CSVs are still Grays-dominated, so Toyota hatch active alignment should be checked from `autotrader_isolated/output/autotrader_recent_market_tagged.csv` rather than from `CSV_data/scrapers/active_vehicle_details.csv`.
