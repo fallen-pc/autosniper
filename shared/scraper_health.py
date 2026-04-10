@@ -12,7 +12,8 @@ import pandas as pd
 from shared.data_loader import dataset_path
 
 
-DEFAULT_HEALTH_REPORT_DIR = Path("output/health")
+ROOT_DIR = Path(__file__).resolve().parent.parent
+DEFAULT_HEALTH_REPORT_DIR = ROOT_DIR / "output" / "health"
 SCRAPER_HEALTH_JSON_PATH = DEFAULT_HEALTH_REPORT_DIR / "scraper_health.json"
 SCRAPER_FAILURES_CSV_PATH = DEFAULT_HEALTH_REPORT_DIR / "scraper_failure_reasons.csv"
 LEGACY_FAILURES_PATH = dataset_path("scrape_failures.csv")

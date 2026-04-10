@@ -3,6 +3,9 @@ $ErrorActionPreference = "Stop"
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
 $pythonPath = Join-Path $repoRoot ".venv\\Scripts\\python.exe"
 if (-not (Test-Path $pythonPath)) {
+    $pythonPath = Join-Path $repoRoot "venv\\Scripts\\python.exe"
+}
+if (-not (Test-Path $pythonPath)) {
     $pythonPath = "python"
 }
 

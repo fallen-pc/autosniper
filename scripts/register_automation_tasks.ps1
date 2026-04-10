@@ -1,6 +1,6 @@
 param(
     [string]$TaskPrefix = "AutoSniper",
-    [string]$DailyTime = "06:00"
+    [string]$DailyTime = "09:00"
 )
 
 $ErrorActionPreference = "Stop"

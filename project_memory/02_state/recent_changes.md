@@ -22,3 +22,7 @@
 - Tests now lock in the Toyota-style conflict case so the silent-merge failure mode does not return unnoticed.
 - The repo now has a PowerShell AI-task launcher wrapper at `scripts/start_ai_task.ps1` that runs memory bootstrap first and aborts if it fails.
 - The launcher can now also prepare a combined startup prompt, copy it to the clipboard, and open the Codex app for manual paste-based starts.
+- Repointed the Windows scheduled-task wrappers to the sandbox repo and hardened the wrapper scripts so they choose either `.venv`, `venv`, or fallback `python`, create `logs/scheduled`, and run from the repo root.
+- Fixed the scraper health-report path so scheduled runs write to the repo `output/health` folder instead of failing on a relative `output` path under Task Scheduler.
+- Confirmed that the hourly monitor now launches and reaches live Grays update work under the sandbox wrapper instead of failing immediately on startup.
+- Confirmed that Autotrader is still blocked by stale authentication state: a real first-page smoke scrape returns `403` with the current cookie/storage files.

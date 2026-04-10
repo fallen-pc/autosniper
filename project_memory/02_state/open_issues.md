@@ -9,3 +9,7 @@
 - Curve Builder V2 expansion blockers are now better mapped; the current Toyota work is operational rebuilding, not silent legacy merging.
 - Scraper and extractor surfaces remain high sensitivity and should not be reopened casually.
 - Runtime memory enforcement still depends on using `scripts/start_ai_task.ps1` or an equivalent wrapper as the only front door into Codex/OpenClaw work for this repo.
+- Daily and hourly Windows scheduled tasks still show `Last Result: 1`, so the pipeline is not yet proven healthy end-to-end after the sandbox path repair.
+- The hourly monitor now runs far enough to process live Grays URLs, but it is heavy enough that manual smoke tests can run for several minutes.
+- Autotrader first-page smoke testing currently fails with `403`, which means the saved Autotrader login session needs to be refreshed before daily automation can be trusted.
+- The Windows scheduled tasks are still registered as `Interactive only`, so they depend on the user session being logged in.

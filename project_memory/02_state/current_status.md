@@ -13,3 +13,7 @@
 - Autotrader evidence for the split Toyota hatch curves already exists in `autotrader_isolated/output/autotrader_recent_market_tagged.csv`, with about `24` recent-market Ascent rows and `33` recent-market Ascent Sport rows resolving cleanly to the new split base tags.
 - Grays sold-tagging for the split Toyota hatch curves has now been repaired as well: the sold lane recovers `6` Ascent rows and `10` Ascent Sport rows after removing a bad year-band gate and a stale legacy tag leak.
 - The remaining Toyota hatch work is no longer basic tag alignment. It is deciding whether to keep the current manual curves as-is or run a separate repricing review against the aligned evidence lanes.
+- Windows scheduled tasks now point at the sandbox repo wrappers instead of the old `autosniper-main` paths.
+- The hourly monitor wrapper now launches successfully under Task Scheduler and reaches live Grays update work, so the current blocker has moved from task registration to runtime stability.
+- The health-report path bug is now fixed in code by writing scraper health outputs under the repo `output/health` directory instead of relying on the current working directory.
+- Autotrader automation is not healthy yet: the saved cookie/storage state is stale and a real first-page smoke scrape currently returns `403`.
