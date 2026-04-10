@@ -34,3 +34,8 @@ decisions:
     title: Curve completeness requires evidence alignment
     status: accepted
     date: 2026-04-10
+  - id: DEC-008
+    path: project_memory/03_decisions/DEC-008-evidence-alignment-is-not-repricing.md
+    title: Evidence alignment is not repricing
+    status: accepted
+    date: 2026-04-10

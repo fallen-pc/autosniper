@@ -11,3 +11,4 @@ These rules are durable project law unless Ewan explicitly approves a change and
 7. High-sensitivity files are not casual cleanup targets. If a task touches them, it must be intentional and state-backed.
 8. The UI reflects business logic. It must not quietly redefine business rules because a page was easier to edit than the pipeline.
 9. The model is a worker. The memory system must remain usable even if the model or launcher changes.
+10. Evidence-alignment work is not repricing work. Confirming that a tag matches the right vehicle family does not, by itself, authorize changing saved curve values.

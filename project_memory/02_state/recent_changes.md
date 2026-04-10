@@ -1,5 +1,8 @@
 # Recent Changes
 
+- Added a durable rule that evidence-alignment work is not repricing work, so future tag-audit tasks do not quietly change saved curve values without explicit approval.
+- Confirmed that the split Toyota Corolla hatch base curves already resolve into the tagged Autotrader evidence lane: about `24` recent-market Ascent rows and `33` recent-market Ascent Sport rows now map cleanly to the new `zre182r` split base tags.
+- Confirmed that the main governed active CSVs are still Grays-dominated, so Toyota hatch active alignment should be checked from `autotrader_isolated/output/autotrader_recent_market_tagged.csv` rather than from `CSV_data/scrapers/active_vehicle_details.csv`.
 - Saved a manual/provisional `toyota_corolla_ascent-sport_zre182r_hatch_auto_petrol` curve using a `2014/2016/2018` anchor set based on Carsales-style Ascent Sport evidence.
 - Added a durable project-memory decision that a curve is only complete when the anchor grid is filled and the tag lines up with the intended Autotrader and sold/Grays evidence lanes.
 - Started a manual/provisional rebuild of `toyota_corolla_ascent_zre182r_hatch_auto_petrol` using a simpler `2013/2015/2018` anchor set driven by Carsales-style Ascent evidence instead of the old grouped hatch fallback.
