@@ -29,3 +29,8 @@ decisions:
     title: Agents update state memory only by default
     status: accepted
     date: 2026-04-08
+  - id: DEC-007
+    path: project_memory/03_decisions/DEC-007-curve-completeness-requires-evidence-alignment.md
+    title: Curve completeness requires evidence alignment
+    status: accepted
+    date: 2026-04-10

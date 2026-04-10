@@ -1,5 +1,7 @@
 # Recent Changes
 
+- Added a durable project-memory decision that a curve is only complete when the anchor grid is filled and the tag lines up with the intended Autotrader and sold/Grays evidence lanes.
+- Started a manual/provisional rebuild of `toyota_corolla_ascent_zre182r_hatch_auto_petrol` using a simpler `2013/2015/2018` anchor set driven by Carsales-style Ascent evidence instead of the old grouped hatch fallback.
 - Toyota Corolla `zre182r` hatch support is now split into separate `ascent` and `ascent-sport` base curves instead of one grouped base that hid a real trim premium.
 - Commit hygiene now blocks meaningful code/config/UI/governance changes that do not also stage a `project_memory/02_state/` update, unless `AUTOSNIPER_STATE_MEMORY_OPTIONAL=1` is set intentionally for an exception.
 - Toyota Corolla hatch follow-up is now focused on operator visibility rather than automatic resolution: the V2 page already blocks conflicting legacy fallback rows correctly, so the next safe work is to explain those conflicts more clearly without choosing a winning legacy branch in code.
