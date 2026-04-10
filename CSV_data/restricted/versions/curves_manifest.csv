@@ -12,3 +12,4 @@ version_id,created_at,source,curve_path,snapshot_path,row_count,canonical_tag_co
 20260330T074704Z,2026-03-30T07:47:04+00:00,save_curves,CSV_data/restricted/curves.csv,CSV_data/restricted/versions/curves_20260330T074704Z.csv,230,16,b74271dee17ef7771c4425f31add392776df6c11ab875d806120601eeca98ffc,
 20260410T021831Z,2026-04-10T02:18:31+00:00,save_curves,CSV_data/restricted/curves.csv,CSV_data/restricted/versions/curves_20260410T021831Z.csv,250,17,2469ff50a9cd0b731766d3bcc70fe09f41e2513fc9eef6575134806e543dfd39,
 20260410T030202Z,2026-04-10T03:02:02+00:00,save_curves,CSV_data/restricted/curves.csv,CSV_data/restricted/versions/curves_20260410T030202Z.csv,245,17,b2e6aa2cd48bbbcd9c082710469886b51828a89b1598481bd5636274afd38d23,
+20260410T044024Z,2026-04-10T04:40:24+00:00,save_curves,CSV_data/restricted/curves.csv,CSV_data/restricted/versions/curves_20260410T044024Z.csv,260,18,4bfdd02d25aaa32155c41b5240eb2c26245fe7c9b7755ef0480e310a90f03f8c,

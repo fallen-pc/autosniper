@@ -3,6 +3,7 @@
 ## 2026-04-10
 - Split the Toyota Corolla `zre182r` hatch family by trim in the supported curve universe and V2 group mapping so `ascent` and `ascent-sport` no longer share one base curve.
 - Added a governed manual/provisional Ascent hatch curve for `toyota_corolla_ascent_zre182r_hatch_auto_petrol` using a simplified `2013/2015/2018` anchor set while evidence alignment is still being verified.
+- Added a governed manual/provisional Ascent Sport hatch curve for `toyota_corolla_ascent-sport_zre182r_hatch_auto_petrol` using a `2014/2016/2018` anchor set while evidence alignment is still being verified.
 - Added a durable memory decision that a curve is only complete when the anchor grid is resolved and the tag is aligned with the intended Autotrader and sold/Grays evidence lanes.
 
 ## 2026-03-21

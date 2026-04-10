@@ -9,4 +9,4 @@
   - identify what blocks adding more curves safely in Curve Builder V2
 - Toyota Corolla `zre182r` hatch mapping is now split by trim at the base-curve level so `ascent` and `ascent-sport` no longer pretend to be one shared curve family.
 - Curve Builder V2 now blocks silent legacy fallback merges when mapped legacy rows disagree on the same anchor-year and km-bucket cell.
-- `toyota_corolla_ascent_zre182r_hatch_auto_petrol` is being rebuilt as a manual/provisional curve from Carsales-style market evidence, but it is not complete yet because repo evidence alignment is still thin (`0` active Autotrader rows and `1` sold Grays row for the mapped family).
+- `toyota_corolla_ascent_zre182r_hatch_auto_petrol` and `toyota_corolla_ascent-sport_zre182r_hatch_auto_petrol` now both have manual/provisional curves from Carsales-style market evidence, but neither is complete yet because active Autotrader alignment is still missing in the repo.

@@ -1,5 +1,6 @@
 # Recent Changes
 
+- Saved a manual/provisional `toyota_corolla_ascent-sport_zre182r_hatch_auto_petrol` curve using a `2014/2016/2018` anchor set based on Carsales-style Ascent Sport evidence.
 - Added a durable project-memory decision that a curve is only complete when the anchor grid is filled and the tag lines up with the intended Autotrader and sold/Grays evidence lanes.
 - Started a manual/provisional rebuild of `toyota_corolla_ascent_zre182r_hatch_auto_petrol` using a simpler `2013/2015/2018` anchor set driven by Carsales-style Ascent evidence instead of the old grouped hatch fallback.
 - Toyota Corolla `zre182r` hatch support is now split into separate `ascent` and `ascent-sport` base curves instead of one grouped base that hid a real trim premium.
