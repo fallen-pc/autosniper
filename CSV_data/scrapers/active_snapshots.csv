@@ -33768,3 +33768,569 @@ snapshot_ts,url,price_text,price_numeric,bids_numeric,time_remaining_text,time_r
 2026-04-04T14:24:27.617093+00:00,https://www.grays.com/lot/0002-60050493/motor-vehicles-motor-cycles/2009-holden-captiva-sx-4wd-automatic-suv,9,9.0,0,3d 15h 35m34s,87.593,Active,nt,NT,lot
 2026-04-05T03:55:04.347011+00:00,https://www.grays.com/lot/0001-10353166/motor-vehicles-motor-cycles/2015-toyota-hilux-4x4-sr-kun26r-turbo-diesel-automatic-crew-cab-chassis,7100,7100.0,79,1d 6h 4m59s,30.083,Active,nsw,NSW,lot
 2026-04-05T03:55:31.839041+00:00,https://www.grays.com/lot/0001-10353177/motor-vehicles-motor-cycles/2014-jeep-compass-sport-manual-wagon,2550,2550.0,42,6h 4m31s,6.075,Active,nsw,NSW,lot
+2026-04-11T05:00:48.227879+00:00,https://www.grays.com/lot/0001-10353166/motor-vehicles-motor-cycles/2015-toyota-hilux-4x4-sr-kun26r-turbo-diesel-automatic-crew-cab-chassis,12101,12101.0,141,,,Sold,nsw,NSW,lot
+2026-04-11T05:01:15.543663+00:00,https://www.grays.com/lot/0001-10353177/motor-vehicles-motor-cycles/2014-jeep-compass-sport-manual-wagon,2550,2550.0,42,,,Sold,nsw,NSW,lot
+2026-04-11T05:01:54.055055+00:00,https://www.grays.com/lot/0001-10353178/motor-vehicles-motor-cycles/2010-toyota-landcruiser-gxl-vdj200r-turbo-diesel-automatic-wagon,N/A,,149,,,Referred,nsw,NSW,lot
+2026-04-11T05:02:25.460196+00:00,https://www.grays.com/lot/0001-10353187/motor-vehicles-motor-cycles/2009-holden-barina-tk-manual-hatchback,309,309.0,5,,,Sold,nsw,NSW,lot
+2026-04-11T05:02:48.379913+00:00,https://www.grays.com/lot/0001-10353188/motor-vehicles-motor-cycles/2020-toyota-prius-phv-cvt-import-sedan,14999,14999.0,102,,,Sold,nsw,NSW,lot
+2026-04-11T05:03:16.643235+00:00,https://www.grays.com/lot/0001-10353190/motor-vehicles-motor-cycles/2006-toyota-corolla-ascent-zze122r-manual-sedan,1010,1010.0,18,,,Sold,nsw,NSW,lot
+2026-04-11T05:03:42.887839+00:00,https://www.grays.com/lot/0001-10353191/motor-vehicles-motor-cycles/2015-subaru-outback-2-5i-premium-b6a-cvt-wagon,N/A,,11,,,Referred,nsw,NSW,lot
+2026-04-11T05:04:17.203169+00:00,https://www.grays.com/lot/0001-10353192/motor-vehicles-motor-cycles/2018-audi-a3-1-4-tfsi-cod-8v-automatic-hatchback-pinkslip-issued-5-3-26,N/A,,167,,,Referred,nsw,NSW,lot
+2026-04-11T05:04:45.877380+00:00,https://www.grays.com/lot/0001-10353193/motor-vehicles-motor-cycles/2020-ford-ranger-xlt-4x4-px-iii-turbo-diesel-automatic-dual-cab,N/A,,35,,,Referred,nsw,NSW,lot
+2026-04-11T05:05:15.476284+00:00,https://www.grays.com/lot/0001-10353194/motor-vehicles-motor-cycles/2015-renault-captur-expression-automatic-wagon,N/A,,37,,,Referred,nsw,NSW,lot
+2026-04-11T05:05:54.672935+00:00,https://www.grays.com/lot/0001-10353195/motor-vehicles-motor-cycles/2013-renault-megane-gt-line-cvt-hatchback,2220,2220.0,30,,,Sold,nsw,NSW,lot
+2026-04-11T05:06:18.797466+00:00,https://www.grays.com/lot/0001-10353197/motor-vehicles-motor-cycles/2017-land-rover-discovery-2-0-sd4-hse-series-5-t-diesel-auto-7-seats-wagon,N/A,,212,,,Referred,nsw,NSW,lot
+2026-04-11T05:06:53.974992+00:00,https://www.grays.com/lot/0001-10353198/motor-vehicles-motor-cycles/2012-land-rover-range-rover-evoque-td4-pure-turbo-diesel-automatic-wagon,N/A,,20,,,Referred,nsw,NSW,lot
+2026-04-11T05:07:34.631644+00:00,https://www.grays.com/lot/0001-10353199/motor-vehicles-motor-cycles/2014-mitsubishi-triton-4x4-glx-mn-turbo-diesel-automatic-dual-cab,N/A,,10,,,Referred,nsw,NSW,lot
+2026-04-11T05:08:07.312840+00:00,https://www.grays.com/lot/0001-10353200/motor-vehicles-motor-cycles/2005-toyota-hilux-xtra-cab-4x2-sr-ggn15r-automatic-ute,N/A,,49,,,Referred,nsw,NSW,lot
+2026-04-11T05:08:38.022892+00:00,https://www.grays.com/lot/0001-10353201/motor-vehicles-motor-cycles/2010-mazda-3-sp25-bl-automatic-sedan,N/A,,20,,,Referred,nsw,NSW,lot
+2026-04-11T05:09:08.430378+00:00,https://www.grays.com/lot/0001-10353203/motor-vehicles-motor-cycles/2010-bmw-x5-xdrive-30d-e70-lci-turbo-diesel-automatic-8-speed-wagon,N/A,,37,,,Referred,nsw,NSW,lot
+2026-04-11T05:09:38.427809+00:00,https://www.grays.com/lot/0001-10353204/motor-vehicles-motor-cycles/2012-ford-focus-ambiente-lw-automatic-hatchback,N/A,,23,,,Referred,nsw,NSW,lot
+2026-04-11T05:10:07.798987+00:00,https://www.grays.com/lot/0001-10353206/motor-vehicles-motor-cycles/2006-bmw-540i-e60-automatic-sedan,2000,2000.0,25,,,Sold,nsw,NSW,lot
+2026-04-11T05:10:41.428787+00:00,https://www.grays.com/lot/0001-10353207/motor-vehicles-motor-cycles/2016-holden-captiva-7-ls-2wd-cg-ii-turbo-diesel-automatic-7-seats-wagon,N/A,,16,,,Referred,nsw,NSW,lot
+2026-04-11T05:11:09.882495+00:00,https://www.grays.com/lot/0001-10353208/motor-vehicles-motor-cycles/2019-kia-sportage-sx-2wd-ql-automatic-wagon,N/A,,94,,,Referred,nsw,NSW,lot
+2026-04-11T05:11:39.069572+00:00,https://www.grays.com/lot/0001-10353209/motor-vehicles-motor-cycles/2006-mercedes-benz-s-class-s350l-w221-automatic-sedan,N/A,,118,,,Referred,nsw,NSW,lot
+2026-04-11T05:12:07.941304+00:00,https://www.grays.com/lot/0001-10353210/motor-vehicles-motor-cycles/2005-mercedes-benz-slk280-r171-automatic-convertible,8509,8509.0,110,,,Sold,nsw,NSW,lot
+2026-04-11T05:12:35.873765+00:00,https://www.grays.com/lot/0001-10353211/motor-vehicles-motor-cycles/2007-lexus-is-is250-prestige-automatic-sedan,N/A,,16,,,Referred,nsw,NSW,lot
+2026-04-11T05:13:02.535601+00:00,https://www.grays.com/lot/0001-10353212/motor-vehicles-motor-cycles/2014-ford-kuga-ambiente-fwd-tf-ii-automatic-wagon,3409,3409.0,37,,,Sold,nsw,NSW,lot
+2026-04-11T05:13:33.591105+00:00,https://www.grays.com/lot/0001-10353213/motor-vehicles-motor-cycles/2015-volkswagen-touareg-150tdi-7p-turbo-diesel-automatic-8-speed-wagon,N/A,,45,,,Referred,nsw,NSW,lot
+2026-04-11T05:14:03.570150+00:00,https://www.grays.com/lot/0001-10353214/motor-vehicles-motor-cycles/2008-subaru-impreza-wrx-sti-g3-manual-hatchback,16900,16900.0,169,,,Sold,nsw,NSW,lot
+2026-04-11T05:14:31.901166+00:00,https://www.grays.com/lot/0001-10353215/motor-vehicles-motor-cycles/2020-hyundai-santa-fe-active-tm-turbo-diesel-auto-7-seats-wagon,N/A,,139,,,Referred,nsw,NSW,lot
+2026-04-11T05:15:05.351777+00:00,https://www.grays.com/lot/0001-10353216/motor-vehicles-motor-cycles/2017-hyundai-santa-fe-elite-dm-ii-turbo-diesel-automatic-7-seats-wagon,8888,8888.0,6,,,Sold,nsw,NSW,lot
+2026-04-11T05:15:33.748575+00:00,https://www.grays.com/lot/0001-10353217/motor-vehicles-motor-cycles/2014-renault-captur-expression-manual-wagon,N/A,,23,,,Referred,nsw,NSW,lot
+2026-04-11T05:16:09.421513+00:00,https://www.grays.com/lot/0001-10353220/motor-vehicles-motor-cycles/2009-nissan-dualis-ti-j10-cvt-wagon,609,609.0,10,,,Sold,nsw,NSW,lot
+2026-04-11T05:16:41.871085+00:00,https://www.grays.com/lot/0001-10353221/motor-vehicles-motor-cycles/2009-hyundai-getz-sx-tb-automatic-hatchback,309,309.0,4,,,Sold,nsw,NSW,lot
+2026-04-11T05:17:11.569557+00:00,https://www.grays.com/lot/0001-10353222/motor-vehicles-motor-cycles/2011-audi-a1-1-4-tfsi-ambition-8x-automatic-hatchback,N/A,,14,,,Referred,nsw,NSW,lot
+2026-04-11T05:17:42.499101+00:00,https://www.grays.com/lot/0001-10353223/motor-vehicles-motor-cycles/2013-nissan-navara-4x4-rx-d40-turbo-diesel-automatic-dual-cab,N/A,,38,,,Referred,nsw,NSW,lot
+2026-04-11T05:18:14.956985+00:00,https://www.grays.com/lot/0001-10353224/motor-vehicles-motor-cycles/2012-volvo-xc60-d5-r-design-turbo-diesel-automatic-wagon,1409,1409.0,17,,,Sold,nsw,NSW,lot
+2026-04-11T05:18:44.237805+00:00,https://www.grays.com/lot/0001-10353225/motor-vehicles-motor-cycles/2022-mazda-cx-5-maxx-kf-manual-wagon,N/A,,34,,,Referred,nsw,NSW,lot
+2026-04-11T05:19:15.589664+00:00,https://www.grays.com/lot/0001-10353231/motor-vehicles-motor-cycles/2012-subaru-xv-2-0i-l-g4x-cvt-hatchback,N/A,,9,,,Referred,nsw,NSW,lot
+2026-04-11T05:19:45.492851+00:00,https://www.grays.com/lot/0001-10353233/motor-vehicles-motor-cycles/2014-volkswagen-tiguan-132-tsi-5n-automatic-wagon,N/A,,39,,,Referred,nsw,NSW,lot
+2026-04-11T05:20:18.129410+00:00,https://www.grays.com/lot/0001-10353234/motor-vehicles-motor-cycles/2008-subaru-tribeca-3-6r-b9-automatic-7-seats-wagon,3000,3000.0,30,,,Sold,nsw,NSW,lot
+2026-04-11T05:20:50.397888+00:00,https://www.grays.com/lot/0001-10353235/motor-vehicles-motor-cycles/2006-mazda-6-limited-gg-manual-sedan,600,600.0,7,,,Sold,nsw,NSW,lot
+2026-04-11T05:21:24.030041+00:00,https://www.grays.com/lot/0001-10353236/motor-vehicles-motor-cycles/2012-ford-territory-tx-sz-automatic-7-seats-wagon,N/A,,14,,,Referred,nsw,NSW,lot
+2026-04-11T05:21:55.012594+00:00,https://www.grays.com/lot/0001-10353237/motor-vehicles-motor-cycles/2011-porsche-cayenne-diesel-92a-turbo-diesel-automatic-8-speed-wagon,N/A,,186,,,Referred,nsw,NSW,lot
+2026-04-11T05:22:27.735188+00:00,https://www.grays.com/lot/0001-10353239/motor-vehicles-motor-cycles/2011-jeep-compass-sport-cvt-wagon,N/A,,9,,,Referred,nsw,NSW,lot
+2026-04-11T05:23:03.663767+00:00,https://www.grays.com/lot/0001-10353240/motor-vehicles-motor-cycles/2010-toyota-hilux-sr5-4x4-kun26r-turbo-diesel-automatic-dual-cab,N/A,,165,,,Referred,nsw,NSW,lot
+2026-04-11T05:23:34.242833+00:00,https://www.grays.com/lot/0001-10353241/motor-vehicles-motor-cycles/2007-honda-jazz-gli-gd-cvt-hatchback,2950,2950.0,5,,,Sold,nsw,NSW,lot
+2026-04-11T05:23:41.636435+00:00,https://www.grays.com/lot/0001-10353242/motor-vehicles-motor-cycles/2015-ford-transit-custom-330l-lwb-vn-turbo-diesel-manual-van,N/A,,0,,,Referred,nsw,NSW,lot
+2026-04-11T05:24:15.321449+00:00,https://www.grays.com/lot/0001-10353243/motor-vehicles-motor-cycles/2014-volkswagen-golf-90tsi-a7-manual-hatchback,N/A,,30,,,Referred,nsw,NSW,lot
+2026-04-11T05:24:31.003087+00:00,https://www.grays.com/lot/0001-10913021/motor-vehicles-motor-cycles/2014-skoda-octavia-132tsi-elegance-ne-automatic-wagon,N/A,,33,,,Referred,nsw,NSW,lot
+2026-04-11T05:24:46.613821+00:00,https://www.grays.com/lot/0001-10913022/motor-vehicles-motor-cycles/2013-honda-cr-v-4wd-vti-rm-automatic-wagon,N/A,,101,,,Referred,nsw,NSW,lot
+2026-04-11T05:25:00.505428+00:00,https://www.grays.com/lot/0001-10913023/motor-vehicles-motor-cycles/2011-kia-cerato-si-td-manual-hatchback,N/A,,7,,,Referred,nsw,NSW,lot
+2026-04-11T05:25:16.910740+00:00,https://www.grays.com/lot/0001-10913024/motor-vehicles-motor-cycles/2011-volkswagen-multivan-comfortline-103kw-t5-turbo-7sts-people-mover,2450,2450.0,24,,,Sold,nsw,NSW,lot
+2026-04-11T05:25:29.158126+00:00,https://www.grays.com/lot/0001-21064320/motor-vehicles-motor-cycles/2007-honda-cr-v-re-automatic-wagon,N/A,,13,,,Referred,vic,VIC,lot
+2026-04-11T05:25:48.275883+00:00,https://www.grays.com/lot/0001-21064322/motor-vehicles-motor-cycles/2009-nissan-dualis-st-j10-cvt-wagon,N/A,,26,,,Referred,vic,VIC,lot
+2026-04-11T05:26:00.466441+00:00,https://www.grays.com/lot/0001-21064569/motor-vehicles-motor-cycles/2016-nissan-x-trail-st-awd-t32-cvt-wagon-ex-gov,11450,11450.0,174,,,Sold,vic,VIC,lot
+2026-04-11T05:26:22.539064+00:00,https://www.grays.com/lot/0001-21064654/motor-vehicles-motor-cycles/2013-volkswagen-jetta-103tdi-comfortline-1b-turbo-diesel-automatic-sedan,N/A,,19,,,Referred,vic,VIC,lot
+2026-04-11T05:26:35.658688+00:00,https://www.grays.com/lot/0001-21064660/motor-vehicles-motor-cycles/2012-mazda-bt-50-4x2-xt-turbo-diesel-tipper-tray-cab-chassis,N/A,,59,,,Referred,vic,VIC,lot
+2026-04-11T05:26:59.605679+00:00,https://www.grays.com/lot/0001-21064731/motor-vehicles-motor-cycles/2016-nissan-x-trail-st-awd-t32-cvt-wagon-ex-gov,11000,11000.0,134,,,Sold,vic,VIC,lot
+2026-04-11T05:27:22.557060+00:00,https://www.grays.com/lot/0001-21064778/motor-vehicles-motor-cycles/2016-nissan-pathfinder-st-l-r52-cvt-7-seats-wagon,N/A,,58,,,Referred,vic,VIC,lot
+2026-04-11T05:27:49.198004+00:00,https://www.grays.com/lot/0001-21064779/motor-vehicles-motor-cycles/2013-land-rover-range-rover-sport-3-0-tdv6-se-l494-t-d-auto,15000,15000.0,52,,,Sold,vic,VIC,lot
+2026-04-11T05:28:19.365598+00:00,https://www.grays.com/lot/0001-21064810/motor-vehicles-motor-cycles/2008-mercedes-benz-c-class-c280-elegance-w204-automatic-sedan,2900,2900.0,36,,,Sold,vic,VIC,lot
+2026-04-11T05:28:42.972544+00:00,https://www.grays.com/lot/0001-21064834/motor-vehicles-motor-cycles/2017-land-rover-discovery-sport-td4-180-se-lc-turbo-diesel-automatic-wagon,N/A,,206,,,Referred,vic,VIC,lot
+2026-04-11T05:29:08.231638+00:00,https://www.grays.com/lot/0001-21064836/motor-vehicles-motor-cycles/2014-land-rover-discovery-3-0-tdv6-series-4-auto-8-speed-7-seats-wagon,N/A,,140,,,Referred,vic,VIC,lot
+2026-04-11T05:29:32.587761+00:00,https://www.grays.com/lot/0001-21064851/motor-vehicles-motor-cycles/2006-land-rover-discovery-se-series-3-turbo-diesel-automatic-7-seats-wagon,2210,2210.0,32,,,Sold,vic,VIC,lot
+2026-04-11T05:29:46.300875+00:00,https://www.grays.com/lot/0001-21064853/motor-vehicles-motor-cycles/2011-toyota-hiace-kdh223r-turbo-diesel-automatic,N/A,,81,,,Referred,vic,VIC,lot
+2026-04-11T05:30:10.971655+00:00,https://www.grays.com/lot/0001-21064855/motor-vehicles-motor-cycles/2020-mazda-cx-3-neo-sport-dk-automatic-wagon,N/A,,111,,,Referred,vic,VIC,lot
+2026-04-11T05:30:35.273785+00:00,https://www.grays.com/lot/0001-21064857/motor-vehicles-motor-cycles/2008-toyota-tarago-gli-acr50r-automatic-8-seats-people-mover,N/A,,54,,,Referred,vic,VIC,lot
+2026-04-11T05:30:55.938051+00:00,https://www.grays.com/lot/0001-21064858/motor-vehicles-motor-cycles/2005-subaru-impreza-rs-g2-manual-sedan,1511,1511.0,20,,,Sold,vic,VIC,lot
+2026-04-11T05:31:16.565432+00:00,https://www.grays.com/lot/0001-21064859/motor-vehicles-motor-cycles/2008-jaguar-xf-2-7d-luxury-turbo-diesel-automatic-sedan,2609,2609.0,47,,,Sold,vic,VIC,lot
+2026-04-11T05:31:40.787142+00:00,https://www.grays.com/lot/0001-21064860/motor-vehicles-motor-cycles/2011-audi-a4-1-8-tfsi-b8-cvt-sedan,3109,3109.0,45,,,Sold,vic,VIC,lot
+2026-04-11T05:31:59.258328+00:00,https://www.grays.com/lot/0001-21064861/motor-vehicles-motor-cycles/2012-opel-insignia-ga-turbo-diesel-automatic-sedan,1109,1109.0,13,,,Sold,vic,VIC,lot
+2026-04-11T05:32:25.235810+00:00,https://www.grays.com/lot/0001-21064863/motor-vehicles-motor-cycles/2015-subaru-outback-2-5i-b6a-cvt-wagon,2800,2800.0,37,,,Sold,vic,VIC,lot
+2026-04-11T05:33:00.303555+00:00,https://www.grays.com/lot/0001-21064864/motor-vehicles-motor-cycles/2020-toyota-landcruiser-prado-gxl-gdj150r-turbo-diesel-automatic,40600,40600.0,181,,,Sold,vic,VIC,lot
+2026-04-11T05:33:24.021810+00:00,https://www.grays.com/lot/0001-21064865/motor-vehicles-motor-cycles/2012-holden-barina-tm-automatic-hatchback,1110,1110.0,17,,,Sold,vic,VIC,lot
+2026-04-11T05:33:50.662951+00:00,https://www.grays.com/lot/0001-21064889/motor-vehicles-motor-cycles/2017-bmw-x3-xdrive-30i-g01-automatic-8-speed-wagon,12200,12200.0,128,,,Sold,vic,VIC,lot
+2026-04-11T05:34:13.715881+00:00,https://www.grays.com/lot/0001-21064936/motor-vehicles-motor-cycles/2008-iveco-daily-50c18-automatic-7-seats-dual-cab,11600,11600.0,192,,,Sold,vic,VIC,lot
+2026-04-11T05:34:37.121091+00:00,https://www.grays.com/lot/0001-21064944/motor-vehicles-motor-cycles/2016-subaru-levorg-2-0gt-v1-cvt-wagon,10200,10200.0,121,,,Sold,vic,VIC,lot
+2026-04-11T05:35:04.085304+00:00,https://www.grays.com/lot/0001-21064945/motor-vehicles-motor-cycles/2018-land-rover-discovery-sport-td4-hse-132kw-t-d-auto-7-seats-wagon,15600,15600.0,103,,,Sold,vic,VIC,lot
+2026-04-11T05:35:31.257722+00:00,https://www.grays.com/lot/0001-21064950/motor-vehicles-motor-cycles/2016-kia-carnival-s-yp-automatic-8-seats-people-mover,7400,7400.0,108,,,Sold,vic,VIC,lot
+2026-04-11T05:36:02.683114+00:00,https://www.grays.com/lot/0001-21064951/motor-vehicles-motor-cycles/2016-audi-q7-3-0-tdi-quattro-4m-turbo-diesel-auto-8-speed-7-seats-wagon,N/A,,131,,,Referred,vic,VIC,lot
+2026-04-11T05:36:32.728516+00:00,https://www.grays.com/lot/0001-21064952/motor-vehicles-motor-cycles/2015-ford-everest-titanium-ua-turbo-diesel-automatic-7-seats-wagon,N/A,,100,,,Referred,vic,VIC,lot
+2026-04-11T05:36:56.430640+00:00,https://www.grays.com/lot/0001-21064953/motor-vehicles-motor-cycles/1989-honda-prelude-automatic-coupe,1909,1909.0,33,,,Sold,vic,VIC,lot
+2026-04-11T05:37:27.215445+00:00,https://www.grays.com/lot/0001-21064954/motor-vehicles-motor-cycles/2011-ford-falcon-g6-eco-lpg-fg-ii-automatic-sedan,3700,3700.0,45,,,Sold,vic,VIC,lot
+2026-04-11T05:37:53.866846+00:00,https://www.grays.com/lot/0001-21064955/motor-vehicles-motor-cycles/2013-holden-commodore-evoke-vf-automatic-sedan,4809,4809.0,53,,,Sold,vic,VIC,lot
+2026-04-11T05:38:37.209148+00:00,https://www.grays.com/lot/0001-21064962/motor-vehicles-motor-cycles/2018-mitsubishi-outlander-exceed-awd-zl-cvt-7-seats-wagon,N/A,,131,,,Referred,vic,VIC,lot
+2026-04-11T05:39:02.868917+00:00,https://www.grays.com/lot/0001-21064965/motor-vehicles-motor-cycles/2018-peugeot-308-allure-automatic-hatchback,5600,5600.0,51,,,Sold,vic,VIC,lot
+2026-04-11T05:39:30.115784+00:00,https://www.grays.com/lot/0001-21064966/motor-vehicles-motor-cycles/2016-subaru-xv-2-0i-l-g4x-cvt-hatchback,8900,8900.0,89,,,Sold,vic,VIC,lot
+2026-04-11T05:39:53.643428+00:00,https://www.grays.com/lot/0001-21064970/motor-vehicles-motor-cycles/2009-ford-ranger-xl-4x4-pk-turbo-diesel-automatic-cab-chassis,4801,4801.0,58,,,Sold,vic,VIC,lot
+2026-04-11T05:40:18.892397+00:00,https://www.grays.com/lot/0001-21064971/motor-vehicles-motor-cycles/2013-nissan-pathfinder-st-r52-cvt-7-seats-wagon,2309,2309.0,28,,,Sold,vic,VIC,lot
+2026-04-11T05:40:45.723548+00:00,https://www.grays.com/lot/0001-21064972/motor-vehicles-motor-cycles/2015-toyota-hilux-4x4-sr5-gun126r-turbo-diesel-manual-dual-cab,N/A,,140,,,Referred,vic,VIC,lot
+2026-04-11T05:41:10.084092+00:00,https://www.grays.com/lot/0001-21064973/motor-vehicles-motor-cycles/2009-audi-a4-1-8-tfsi-b8-cvt-sedan,2600,2600.0,37,,,Sold,vic,VIC,lot
+2026-04-11T05:41:33.017800+00:00,https://www.grays.com/lot/0001-21064974/motor-vehicles-motor-cycles/2015-mazda-cx-5-akera-ke-turbo-diesel-automatic-wagon,N/A,,100,,,Referred,vic,VIC,lot
+2026-04-11T05:41:56.885850+00:00,https://www.grays.com/lot/0001-21064975/motor-vehicles-motor-cycles/2016-mercedes-benz-sprinter-313-cdi-mwb-l-roof-turbo-diesel-automatic-van,N/A,,103,,,Referred,vic,VIC,lot
+2026-04-11T05:42:17.564365+00:00,https://www.grays.com/lot/0001-21064977/motor-vehicles-motor-cycles/2017-nissan-leaf-import-automatic-sedan,16300,16300.0,213,,,Sold,vic,VIC,lot
+2026-04-11T05:42:37.724925+00:00,https://www.grays.com/lot/0001-21064978/motor-vehicles-motor-cycles/2013-jeep-grand-cherokee-limited-wk-turbo-diesel-automatic-8-speed-wagon,N/A,,51,,,Referred,vic,VIC,lot
+2026-04-11T05:43:00.466289+00:00,https://www.grays.com/lot/0001-21064979/motor-vehicles-motor-cycles/2009-ford-falcon-xr6-fg-automatic-sedan,3609,3609.0,61,,,Sold,vic,VIC,lot
+2026-04-11T05:43:20.617680+00:00,https://www.grays.com/lot/0001-21064983/motor-vehicles-motor-cycles/2010-bmw-x3-xdrive-20d-f25-turbo-diesel-automatic-8-speed-wagon,1909,1909.0,22,,,Sold,vic,VIC,lot
+2026-04-11T05:43:32.071051+00:00,https://www.grays.com/lot/0001-21064987/motor-vehicles-motor-cycles/2013-mercedes-benz-c-class-c180-be-c204-automatic-coupe,5569,5569.0,79,,,Sold,vic,VIC,lot
+2026-04-11T05:43:51.142143+00:00,https://www.grays.com/lot/0001-21064988/motor-vehicles-motor-cycles/2006-bmw-3-series-325i-e92-automatic-coupe,3109,3109.0,57,,,Sold,vic,VIC,lot
+2026-04-11T05:44:18.912374+00:00,https://www.grays.com/lot/0001-21064990/motor-vehicles-motor-cycles/2015-holden-cruze-sri-jh-automatic-sedan,N/A,,42,,,Referred,vic,VIC,lot
+2026-04-11T05:44:47.570282+00:00,https://www.grays.com/lot/0001-21064991/motor-vehicles-motor-cycles/2006-toyota-corolla-ascent-zze122r-automatic-hatchback,N/A,,43,,,Referred,vic,VIC,lot
+2026-04-11T05:45:13.552161+00:00,https://www.grays.com/lot/0001-21064992/motor-vehicles-motor-cycles/2010-peugeot-308-sportium-le-touring-automatic-wagon,1209,1209.0,18,,,Sold,vic,VIC,lot
+2026-04-11T05:45:37.945922+00:00,https://www.grays.com/lot/0001-21064993/motor-vehicles-motor-cycles/2017-ford-ranger-wildtrak-4x4-px-ii-turbo-diesel-automatic-dual-cab,14400,14400.0,221,,,Sold,vic,VIC,lot
+2026-04-11T05:46:01.628496+00:00,https://www.grays.com/lot/0001-21064994/motor-vehicles-motor-cycles/2018-mazda-bt-50-4x2-xt-turbo-diesel-automatic-cab-chassis,N/A,,26,,,Referred,vic,VIC,lot
+2026-04-11T05:46:26.601883+00:00,https://www.grays.com/lot/0001-21064995/motor-vehicles-motor-cycles/2010-land-rover-range-rover-sport-3-0-tdv6-luxury-turbo-diesel-auto-wagon,N/A,,17,,,Referred,vic,VIC,lot
+2026-04-11T05:46:49.417283+00:00,https://www.grays.com/lot/0001-21064996/motor-vehicles-motor-cycles/2008-toyota-prius-nhw20r-cvt-hatchback,4200,4200.0,49,,,Sold,vic,VIC,lot
+2026-04-11T05:47:09.088953+00:00,https://www.grays.com/lot/0001-21064998/motor-vehicles-motor-cycles/2006-toyota-yaris-yr-ncp90r-automatic-hatchback,2609,2609.0,41,,,Sold,vic,VIC,lot
+2026-04-11T05:47:31.412520+00:00,https://www.grays.com/lot/0001-21064999/motor-vehicles-motor-cycles/2019-ford-ranger-xl-4x4-px-iii-turbo-diesel-automatic-cab-chassis,7400,7400.0,59,,,Sold,vic,VIC,lot
+2026-04-11T05:47:51.485823+00:00,https://www.grays.com/lot/0001-21065005/motor-vehicles-motor-cycles/2012-ford-ranger-xl-4x2-hi-rider-px-turbo-diesel-automatic-dual-cab,7000,7000.0,84,,,Sold,vic,VIC,lot
+2026-04-11T05:48:13.614542+00:00,https://www.grays.com/lot/0001-21065006/motor-vehicles-motor-cycles/2014-bmw-x5-xdrive-30d-f15-turbo-diesel-automatic-8-speed-wagon,N/A,,64,,,Referred,vic,VIC,lot
+2026-04-11T05:48:25.860918+00:00,https://www.grays.com/lot/0001-21065007/motor-vehicles-motor-cycles/2010-audi-a5-2-0-tfsi-quattro-8t-automatic-coupe,N/A,,44,,,Referred,vic,VIC,lot
+2026-04-11T05:48:48.580136+00:00,https://www.grays.com/lot/0001-21065009/motor-vehicles-motor-cycles/2014-hyundai-imax-tq-turbo-diesel-automatic-8-seats-people-mover,9700,9700.0,51,,,Sold,vic,VIC,lot
+2026-04-11T05:49:11.448492+00:00,https://www.grays.com/lot/0001-21065010/motor-vehicles-motor-cycles/2020-toyota-hilux-4x4-sr-gun126r-turbo-diesel-automatic-crew-cab-chassis,28250,28250.0,154,,,Sold,vic,VIC,lot
+2026-04-11T05:49:41.581210+00:00,https://www.grays.com/lot/0001-21065012/motor-vehicles-motor-cycles/2014-nissan-pulsar-st-b17-cvt-sedan,N/A,,51,,,Referred,vic,VIC,lot
+2026-04-11T05:50:17.212156+00:00,https://www.grays.com/lot/0001-21065016/motor-vehicles-motor-cycles/2016-ford-ranger-xlt-4x4-px-ii-turbo-diesel-automatic-dual-cab,N/A,,58,,,Referred,vic,VIC,lot
+2026-04-11T05:50:56.241183+00:00,https://www.grays.com/lot/0001-21065017/motor-vehicles-motor-cycles/2009-peugeot-308-cc-automatic-convertible,2709,2709.0,30,,,Sold,vic,VIC,lot
+2026-04-11T05:51:21.396395+00:00,https://www.grays.com/lot/0001-21065018/motor-vehicles-motor-cycles/2010-audi-q5-2-0-tdi-quattro-8r-turbo-diesel-automatic-wagon,3600,3600.0,36,,,Sold,vic,VIC,lot
+2026-04-11T05:51:41.670262+00:00,https://www.grays.com/lot/0001-21065019/motor-vehicles-motor-cycles/2007-mercedes-benz-ml320cdi-w164-turbo-diesel-automatic-wagon,3800,3800.0,60,,,Sold,vic,VIC,lot
+2026-04-11T05:52:06.503555+00:00,https://www.grays.com/lot/0001-21065020/motor-vehicles-motor-cycles/2008-toyota-hilux-sr5-4x4-kun26r-turbo-diesel-automatic-dual-cab,9300,9300.0,100,,,Sold,vic,VIC,lot
+2026-04-11T05:52:33.100250+00:00,https://www.grays.com/lot/0001-21065021/motor-vehicles-motor-cycles/2012-audi-a3-s-line-1-8-tfsi-amb-8p-auto-hatchback,3609,3609.0,51,,,Sold,vic,VIC,lot
+2026-04-11T05:52:58.840203+00:00,https://www.grays.com/lot/0001-21065022/motor-vehicles-motor-cycles/2005-mitsubishi-fuso-rosa-deluxe-turbo-diesel-automatic-25-seats-bus,6500,6500.0,75,,,Sold,vic,VIC,lot
+2026-04-11T05:53:24.077313+00:00,https://www.grays.com/lot/0001-21065023/motor-vehicles-motor-cycles/2011-mitsubishi-outlander-ls-2wd-zh-cvt-wagon,1909,1909.0,35,,,Sold,vic,VIC,lot
+2026-04-11T05:53:47.729482+00:00,https://www.grays.com/lot/0001-21065024/motor-vehicles-motor-cycles/2017-land-rover-discovery-sport-td4-150-hse-turbo-diesel-9-auto-wagon,16211,16211.0,212,,,Sold,vic,VIC,lot
+2026-04-11T05:54:13.196641+00:00,https://www.grays.com/lot/0001-21065025/motor-vehicles-motor-cycles/2006-mitsubishi-triton-4x2-glx-double-cab-ml-automatic-dual-cab,3800,3800.0,36,,,Sold,vic,VIC,lot
+2026-04-11T05:54:34.144923+00:00,https://www.grays.com/lot/0001-21065026/motor-vehicles-motor-cycles/2011-jeep-grand-cherokee-limited-wk-turbo-diesel-automatic-wagon,3209,3209.0,44,,,Sold,vic,VIC,lot
+2026-04-11T05:55:00.883555+00:00,https://www.grays.com/lot/0001-21065027/motor-vehicles-motor-cycles/2005-toyota-yaris-yr-ncp90r-manual-hatchback,1311,1311.0,17,,,Sold,vic,VIC,lot
+2026-04-11T05:55:22.907878+00:00,https://www.grays.com/lot/0001-21065029/motor-vehicles-motor-cycles/2013-renault-koleos-bose-cvt-wagon,2601,2601.0,43,,,Sold,vic,VIC,lot
+2026-04-11T05:55:50.160709+00:00,https://www.grays.com/lot/0001-21065030/motor-vehicles-motor-cycles/2009-kia-rio-lx-jb-manual-hatchback,421,421.0,6,,,Sold,vic,VIC,lot
+2026-04-11T05:56:09.816980+00:00,https://www.grays.com/lot/0001-21065031/motor-vehicles-motor-cycles/2010-nissan-x-trail-st-t31-cvt-wagon,3150,3150.0,48,,,Sold,vic,VIC,lot
+2026-04-11T05:56:29.554522+00:00,https://www.grays.com/lot/0001-21065032/motor-vehicles-motor-cycles/2013-nissan-pulsar-st-c12-cvt-hatchback,3009,3009.0,31,,,Sold,vic,VIC,lot
+2026-04-11T05:56:52.580357+00:00,https://www.grays.com/lot/0001-21065033/motor-vehicles-motor-cycles/2015-nissan-juke-st-f15-ii-cvt-wagon,5400,5400.0,62,,,Sold,vic,VIC,lot
+2026-04-11T05:57:17.922573+00:00,https://www.grays.com/lot/0001-21065034/motor-vehicles-motor-cycles/2015-renault-megane-gt-line-premium-manual-wagon,4225,4225.0,14,,,Sold,vic,VIC,lot
+2026-04-11T05:57:43.155580+00:00,https://www.grays.com/lot/0001-21065036/motor-vehicles-motor-cycles/2015-volkswagen-polo-66tsi-trendline-6r-automatic-hatchback,3800,3800.0,36,,,Sold,vic,VIC,lot
+2026-04-11T05:58:09.789767+00:00,https://www.grays.com/lot/0001-21065037/motor-vehicles-motor-cycles/2018-toyota-rav-4-fwd-gxl-zsa42r-cvt-wagon,13300,13300.0,129,,,Sold,vic,VIC,lot
+2026-04-11T05:58:29.762590+00:00,https://www.grays.com/lot/0001-21065038/motor-vehicles-motor-cycles/2017-toyota-yaris-ascent-ncp130r-automatic-hatchback,9200,9200.0,114,,,Sold,vic,VIC,lot
+2026-04-11T05:58:56.631836+00:00,https://www.grays.com/lot/0001-21065039/motor-vehicles-motor-cycles/2014-mercedes-benz-e-class-e200-s212-automatic-rwc-isseud-17-03-2026,N/A,,135,,,Referred,vic,VIC,lot
+2026-04-11T05:59:19.856399+00:00,https://www.grays.com/lot/0001-21065040/motor-vehicles-motor-cycles/2016-bmw-x6-xdrive-40d-f16-turbo-diesel-automatic-8-speed-coupe,N/A,,110,,,Referred,vic,VIC,lot
+2026-04-11T05:59:44.230773+00:00,https://www.grays.com/lot/0001-21065042/motor-vehicles-motor-cycles/2008-mazda-3-mps-sports-pack-bk-manual-hatchback,4100,4100.0,53,,,Sold,vic,VIC,lot
+2026-04-11T06:00:06.055111+00:00,https://www.grays.com/lot/0001-21065044/motor-vehicles-motor-cycles/2010-nissan-navara-rx-4x2-double-cab-d40-turbo-diesel-manual-dual-cab,1109,1109.0,12,,,Sold,vic,VIC,lot
+2026-04-11T06:00:29.565621+00:00,https://www.grays.com/lot/0001-21065045/motor-vehicles-motor-cycles/2008-mercedes-benz-c-class-c200-k-classic-w204-automatic-sedan,3709,3709.0,49,,,Sold,vic,VIC,lot
+2026-04-11T06:00:48.935248+00:00,https://www.grays.com/lot/0001-21065047/motor-vehicles-motor-cycles/2015-nissan-x-trail-tl-2wd-t32-turbo-diesel-cvt-wagon,4709,4709.0,71,,,Sold,vic,VIC,lot
+2026-04-11T06:01:14.659283+00:00,https://www.grays.com/lot/0001-21065048/motor-vehicles-motor-cycles/2001-toyota-corolla-conquest-ae112r-automatic-hatchback,510,510.0,10,,,Sold,vic,VIC,lot
+2026-04-11T06:01:26.465525+00:00,https://www.grays.com/lot/0001-21065049/motor-vehicles-motor-cycles/2004-bmw-318i-e46-automatic-sedan,609,609.0,7,,,Sold,vic,VIC,lot
+2026-04-11T06:01:51.181954+00:00,https://www.grays.com/lot/0001-21065050/motor-vehicles-motor-cycles/2015-hyundai-tucson-active-x-tl-automatic-wagon,8400,8400.0,98,,,Sold,vic,VIC,lot
+2026-04-11T06:02:15.198126+00:00,https://www.grays.com/lot/0001-21065051/motor-vehicles-motor-cycles/2016-land-rover-range-rover-evoque-td4-150-se-turbo-diesel-9-auto-wagon,17000,17000.0,195,,,Sold,vic,VIC,lot
+2026-04-11T06:02:42.882604+00:00,https://www.grays.com/lot/0001-21065053/motor-vehicles-motor-cycles/2015-kia-sorento-platinum-um-turbo-diesel-automatic-7-seats-wagon,6600,6600.0,90,,,Sold,vic,VIC,lot
+2026-04-11T06:03:03.612337+00:00,https://www.grays.com/lot/0001-21065054/motor-vehicles-motor-cycles/2011-hyundai-iload-tq-turbo-diesel-automatic-van,6600,6600.0,56,,,Sold,vic,VIC,lot
+2026-04-11T06:03:27.130335+00:00,https://www.grays.com/lot/0001-21065060/motor-vehicles-motor-cycles/2016-ford-ranger-xl-4x4-px-ii-turbo-diesel-automatic-dual-cab,N/A,,80,,,Referred,vic,VIC,lot
+2026-04-11T06:03:46.195480+00:00,https://www.grays.com/lot/0001-21065061/motor-vehicles-motor-cycles/2017-hyundai-accent-active-rb-cvt-hatchback,3800,3800.0,41,,,Sold,vic,VIC,lot
+2026-04-11T06:04:11.719288+00:00,https://www.grays.com/lot/0001-21065062/motor-vehicles-motor-cycles/2014-volkswagen-golf-90tsi-comfortline-a7-automatic-hatchback,5919,5919.0,75,,,Sold,vic,VIC,lot
+2026-04-11T06:04:32.510629+00:00,https://www.grays.com/lot/0001-21065065/motor-vehicles-motor-cycles/2013-mitsubishi-mirage-es-la-cvt-hatchback,1209,1209.0,17,,,Sold,vic,VIC,lot
+2026-04-11T06:05:00.033439+00:00,https://www.grays.com/lot/0001-21065066/motor-vehicles-motor-cycles/2004-holden-commodore-executive-vy-automatic-sedan,809,809.0,10,,,Sold,vic,VIC,lot
+2026-04-11T06:05:18.862132+00:00,https://www.grays.com/lot/0001-21065067/motor-vehicles-motor-cycles/2006-volkswagen-passat-3-2-v6-4motion-3c-automatic-wagon,2009,2009.0,25,,,Sold,vic,VIC,lot
+2026-04-11T06:05:44.673012+00:00,https://www.grays.com/lot/0001-21065068/motor-vehicles-motor-cycles/2010-holden-commodore-sportwagon-omega-ve-automatic-wagon,2600,2600.0,28,,,Sold,vic,VIC,lot
+2026-04-11T06:06:06.401942+00:00,https://www.grays.com/lot/0001-21065069/motor-vehicles-motor-cycles/2014-ford-focus-trend-lw-ii-automatic-hatchback,3909,3909.0,46,,,Sold,vic,VIC,lot
+2026-04-11T06:06:28.287561+00:00,https://www.grays.com/lot/0001-21065070/motor-vehicles-motor-cycles/2017-toyota-camry-altise-asv50r-automatic-sedan,9700,9700.0,87,,,Sold,vic,VIC,lot
+2026-04-11T06:06:52.345990+00:00,https://www.grays.com/lot/0001-21065071/motor-vehicles-motor-cycles/2016-ldv-g10-7-seat-automatic-7-seats-people-mover,6800,6800.0,115,,,Sold,vic,VIC,lot
+2026-04-11T06:07:13.171358+00:00,https://www.grays.com/lot/0001-21065072/motor-vehicles-motor-cycles/2009-volkswagen-tiguan-125-tsi-5n-automatic-wagon,1909,1909.0,36,,,Sold,vic,VIC,lot
+2026-04-11T06:07:36.318205+00:00,https://www.grays.com/lot/0001-21065073/motor-vehicles-motor-cycles/2010-toyota-camry-hybrid-luxury-ahv40r-cvt-sedan,6100,6100.0,63,,,Sold,vic,VIC,lot
+2026-04-11T06:08:03.945940+00:00,https://www.grays.com/lot/0001-21065074/motor-vehicles-motor-cycles/2015-mini-cooper-f55-automatic-wagon,3000,3000.0,28,,,Sold,vic,VIC,lot
+2026-04-11T06:08:30.062815+00:00,https://www.grays.com/lot/0001-21065075/motor-vehicles-motor-cycles/2014-bmw-x3-xdrive-20d-f25-turbo-diesel-automatic-8-speed-wagon,N/A,,64,,,Referred,vic,VIC,lot
+2026-04-11T06:08:58.296389+00:00,https://www.grays.com/lot/0001-21065076/motor-vehicles-motor-cycles/2010-hyundai-i30cw-sx-fd-automatic-wagon,2050,2050.0,22,,,Sold,vic,VIC,lot
+2026-04-11T06:09:23.727101+00:00,https://www.grays.com/lot/0001-21065077/motor-vehicles-motor-cycles/2009-ford-ranger-wildtrak-4x4-pk-turbo-diesel-automatic-dual-cab,N/A,,95,,,Referred,vic,VIC,lot
+2026-04-11T06:09:48.886755+00:00,https://www.grays.com/lot/0001-21065078/motor-vehicles-motor-cycles/2012-jaguar-xf-3-0d-luxury-turbo-diesel-automatic-8-speed-sedan,7100,7100.0,96,,,Sold,vic,VIC,lot
+2026-04-11T06:10:14.380563+00:00,https://www.grays.com/lot/0001-21065079/motor-vehicles-motor-cycles/2021-jeep-grand-cherokee-s-limited-wk-turbo-diesel-at-8-speed-wagon,N/A,,177,,,Referred,vic,VIC,lot
+2026-04-11T06:10:35.367044+00:00,https://www.grays.com/lot/0001-21065080/motor-vehicles-motor-cycles/2013-alfa-romeo-giulietta-progression-automatic-hatchback,1109,1109.0,12,,,Sold,vic,VIC,lot
+2026-04-11T06:10:57.049843+00:00,https://www.grays.com/lot/0001-21065081/motor-vehicles-motor-cycles/2005-toyota-hilux-4x4-sr-kun26r-turbo-diesel-automatic-cab-chassis,4500,4500.0,59,,,Sold,vic,VIC,lot
+2026-04-11T06:11:24.901872+00:00,https://www.grays.com/lot/0001-21065082/motor-vehicles-motor-cycles/2012-mazda-6-touring-gh-automatic-hatchback,5200,5200.0,56,,,Sold,vic,VIC,lot
+2026-04-11T06:11:45.835425+00:00,https://www.grays.com/lot/0001-21065083/motor-vehicles-motor-cycles/2012-holden-captiva-5-awd-cg-ii-turbo-diesel-automatic-wagon,1209,1209.0,16,,,Sold,vic,VIC,lot
+2026-04-11T06:12:13.929161+00:00,https://www.grays.com/lot/0001-21065085/motor-vehicles-motor-cycles/2004-mercedes-benz-c-class-c200-k-classic-w203-automatic-sedan,1502,1502.0,23,,,Sold,vic,VIC,lot
+2026-04-11T06:12:39.965948+00:00,https://www.grays.com/lot/0001-21065086/motor-vehicles-motor-cycles/2007-ford-territory-ghia-sy-automatic-7-seats-wagon,1200,1200.0,13,,,Sold,vic,VIC,lot
+2026-04-11T06:13:06.122760+00:00,https://www.grays.com/lot/0001-21065087/motor-vehicles-motor-cycles/2005-ford-territory-tx-sx-automatic-wagon,1121,1121.0,18,,,Sold,vic,VIC,lot
+2026-04-11T06:13:32.174371+00:00,https://www.grays.com/lot/0001-21065088/motor-vehicles-motor-cycles/2014-ford-fiesta-sport-wz-automatic-hatchback,5709,5709.0,68,,,Sold,vic,VIC,lot
+2026-04-11T06:13:57.003239+00:00,https://www.grays.com/lot/0001-21065089/motor-vehicles-motor-cycles/2018-bmw-3-series-330i-f30-lci-automatic-8-speed-sedan,19600,19600.0,193,,,Sold,vic,VIC,lot
+2026-04-11T06:14:13.878117+00:00,https://www.grays.com/lot/0001-21065091/motor-vehicles-motor-cycles/2016-land-rover-range-rover-sport-3-0-tdv6-se-t-diesel-auto-8-speed-wagon,10509,10509.0,156,,,Sold,vic,VIC,lot
+2026-04-11T06:14:40.635657+00:00,https://www.grays.com/lot/0001-21065092/motor-vehicles-motor-cycles/2018-nissan-pathfinder-ti-r52-cvt-7-seats-wagon,9009,9009.0,144,,,Sold,vic,VIC,lot
+2026-04-11T06:15:01.881468+00:00,https://www.grays.com/lot/0001-21065093/motor-vehicles-motor-cycles/2013-subaru-forester-2-5i-s-s4-cvt-wagon,N/A,,55,,,Referred,vic,VIC,lot
+2026-04-11T06:15:22.327818+00:00,https://www.grays.com/lot/0001-21065098/motor-vehicles-motor-cycles/2014-toyota-corolla-ascent-zre172r-cvt-sedan,N/A,,83,,,Referred,vic,VIC,lot
+2026-04-11T06:15:43.035901+00:00,https://www.grays.com/lot/0001-21065099/motor-vehicles-motor-cycles/2014-toyota-corolla-ascent-zre172r-cvt-sedan,N/A,,69,,,Referred,vic,VIC,lot
+2026-04-11T06:16:01.563744+00:00,https://www.grays.com/lot/0001-21065100/motor-vehicles-motor-cycles/2015-toyota-corolla-ascent-zre172r-cvt-sedan,N/A,,81,,,Referred,vic,VIC,lot
+2026-04-11T06:16:24.807989+00:00,https://www.grays.com/lot/0001-21065101/motor-vehicles-motor-cycles/2012-mazda-bt-50-4x2-xt-turbo-diesel-manual-cab-chassis,N/A,,16,,,Referred,vic,VIC,lot
+2026-04-11T06:16:45.006102+00:00,https://www.grays.com/lot/0001-21065102/motor-vehicles-motor-cycles/2006-bmw-325i-e93-automatic-convertible,3209,3209.0,37,,,Sold,vic,VIC,lot
+2026-04-11T06:17:06.953998+00:00,https://www.grays.com/lot/0001-21065104/motor-vehicles-motor-cycles/2017-honda-hr-v-vti-l-cvt-wagon,12988,12988.0,165,,,Sold,vic,VIC,lot
+2026-04-11T06:17:32.095697+00:00,https://www.grays.com/lot/0001-21065105/motor-vehicles-motor-cycles/2021-kia-carnival-s-ka4-automatic-8-speed-8-seats-people-mover,N/A,,106,,,Referred,vic,VIC,lot
+2026-04-11T06:18:00.524934+00:00,https://www.grays.com/lot/0001-21065106/motor-vehicles-motor-cycles/2021-isuzu-mu-x-4x2-ls-m-turbo-diesel-automatic-7-seats-wagon,N/A,,238,,,Referred,vic,VIC,lot
+2026-04-11T06:18:16.653847+00:00,https://www.grays.com/lot/0001-21065109/motor-vehicles-motor-cycles/2008-mercedes-benz-m-class-ml320cdi-w164-turbo-diesel-automatic-wagon,800,800.0,10,,,Sold,vic,VIC,lot
+2026-04-11T06:18:36.058570+00:00,https://www.grays.com/lot/0001-21065110/motor-vehicles-motor-cycles/2012-mercedes-benz-e250-cgi-blueeff-avantgarde-a207-automatic-convertible,11500,11500.0,145,,,Sold,vic,VIC,lot
+2026-04-11T06:19:01.490054+00:00,https://www.grays.com/lot/0001-21065111/motor-vehicles-motor-cycles/2013-volkswagen-tiguan-155-tsi-5n-automatic-wagon,4000,4000.0,58,,,Sold,vic,VIC,lot
+2026-04-11T06:19:21.588026+00:00,https://www.grays.com/lot/0001-21065112/motor-vehicles-motor-cycles/2009-mercedes-benz-e-350-350-elegance-c207-automatic-coupe,5199,5199.0,60,,,Sold,vic,VIC,lot
+2026-04-11T06:19:51.423739+00:00,https://www.grays.com/lot/0001-21065114/motor-vehicles-motor-cycles/2017-ford-escape-ambiente-fwd-zg-automatic-wagon,1209,1209.0,13,,,Sold,vic,VIC,lot
+2026-04-11T06:20:17.599228+00:00,https://www.grays.com/lot/0001-21065115/motor-vehicles-motor-cycles/2005-mitsubishi-pajero-gls-np-automatic-7-seats-wagon,3509,3509.0,68,,,Sold,vic,VIC,lot
+2026-04-11T06:20:38.781722+00:00,https://www.grays.com/lot/0001-21065116/motor-vehicles-motor-cycles/2013-mercedes-benz-m-class-ml250-bluetec-w166-turbo-diesel-automatic-wagon,10700,10700.0,123,,,Sold,vic,VIC,lot
+2026-04-11T06:21:05.643511+00:00,https://www.grays.com/lot/0001-21065118/motor-vehicles-motor-cycles/2013-holden-trax-ls-tj-manual-wagon,1410,1410.0,14,,,Sold,vic,VIC,lot
+2026-04-11T06:21:33.732564+00:00,https://www.grays.com/lot/0001-21065119/motor-vehicles-motor-cycles/2013-nissan-pathfinder-st-r52-cvt-7-seats-wagon,4009,4009.0,43,,,Sold,vic,VIC,lot
+2026-04-11T06:21:47.108979+00:00,https://www.grays.com/lot/0001-21065120/motor-vehicles-motor-cycles/2015-toyota-camry-atara-sx-asv50r-auto-sedan,7909,7909.0,121,,,Sold,vic,VIC,lot
+2026-04-11T06:21:57.661040+00:00,https://www.grays.com/lot/0001-21065122/motor-vehicles-motor-cycles/2017-ford-ranger-xl-4x4-px-ii-turbo-diesel-automatic-dual-cab,N/A,,152,,,Referred,vic,VIC,lot
+2026-04-11T06:22:26.449848+00:00,https://www.grays.com/lot/0001-21065123/motor-vehicles-motor-cycles/2010-volkswagen-golf-103tdi-comfortline-a6-turbo-diesel-automatic-hatchback,3009,3009.0,37,,,Sold,vic,VIC,lot
+2026-04-11T06:22:37.456942+00:00,https://www.grays.com/lot/0001-21065128/motor-vehicles-motor-cycles/2021-nissan-juke-st-l-f16-automatic-wagon,N/A,,160,,,Referred,vic,VIC,lot
+2026-04-11T06:22:58.973248+00:00,https://www.grays.com/lot/0001-21065130/motor-vehicles-motor-cycles/2012-volvo-xc60-d5-r-design-turbo-diesel-automatic-wagon,2300,2300.0,29,,,Sold,vic,VIC,lot
+2026-04-11T06:23:24.008580+00:00,https://www.grays.com/lot/0001-21065131/motor-vehicles-motor-cycles/2009-volvo-xc60-d5-turbo-diesel-automatic-wagon,3609,3609.0,45,,,Sold,vic,VIC,lot
+2026-04-11T06:23:45.298641+00:00,https://www.grays.com/lot/0001-21065135/motor-vehicles-motor-cycles/1996-volvo-850-se-automatic-sedan,409,409.0,8,,,Sold,vic,VIC,lot
+2026-04-11T06:24:11.597614+00:00,https://www.grays.com/lot/0001-21065136/motor-vehicles-motor-cycles/2012-subaru-impreza-wrx-g3-manual-sedan,N/A,,79,,,Referred,vic,VIC,lot
+2026-04-11T06:24:24.009243+00:00,https://www.grays.com/lot/0001-21065139/motor-vehicles-motor-cycles/2015-ford-ranger-xl-4x2-px-turbo-diesel-manual-cab-chassis-ex-gov,14100,14100.0,97,,,Sold,vic,VIC,lot
+2026-04-11T06:24:50.352255+00:00,https://www.grays.com/lot/0001-21065140/motor-vehicles-motor-cycles/2015-bmw-x1-xdrive-20d-e84-lci-turbo-diesel-automatic-8-speed-wagon,7000,7000.0,90,,,Sold,vic,VIC,lot
+2026-04-11T06:25:16.801557+00:00,https://www.grays.com/lot/0001-21065141/motor-vehicles-motor-cycles/2005-honda-accord-v6-7th-gen-automatic-sedan,1109,1109.0,15,,,Sold,vic,VIC,lot
+2026-04-11T06:25:43.010696+00:00,https://www.grays.com/lot/0001-21065142/motor-vehicles-motor-cycles/2003-toyota-corolla-ascent-zze122r-automatic-sedan,3009,3009.0,32,,,Sold,vic,VIC,lot
+2026-04-11T06:26:11.055658+00:00,https://www.grays.com/lot/0001-21065143/motor-vehicles-motor-cycles/2015-nissan-x-trail-st-l-fwd-t32-cvt-wagon,9400,9400.0,120,,,Sold,vic,VIC,lot
+2026-04-11T06:26:36.567034+00:00,https://www.grays.com/lot/0001-21065144/motor-vehicles-motor-cycles/2015-land-rover-range-rover-evoque-td4-150-se-turbo-diesel-9-auto-wagon,10200,10200.0,122,,,Sold,vic,VIC,lot
+2026-04-11T06:27:04.650960+00:00,https://www.grays.com/lot/0001-21065146/motor-vehicles-motor-cycles/2018-mitsubishi-triton-4x2-glx-mq-turbo-diesel-manual-cab-chassis,6800,6800.0,66,,,Sold,vic,VIC,lot
+2026-04-11T06:27:34.211302+00:00,https://www.grays.com/lot/0001-21065147/motor-vehicles-motor-cycles/2009-toyota-landcruiser-prado-gxl-kdj150r-turbo-diesel-auto-7-seats-wagon,11300,11300.0,125,,,Sold,vic,VIC,lot
+2026-04-11T06:28:02.510698+00:00,https://www.grays.com/lot/0001-21065148/motor-vehicles-motor-cycles/2012-mazda-cx-5-grand-touring-ke-turbo-diesel-automatic-wagon,4309,4309.0,69,,,Sold,vic,VIC,lot
+2026-04-11T06:28:31.886739+00:00,https://www.grays.com/lot/0001-21065149/motor-vehicles-motor-cycles/2014-holden-captiva-5-lt-2wd-cg-ii-automatic-wagon,2311,2311.0,37,,,Sold,vic,VIC,lot
+2026-04-11T06:28:59.326389+00:00,https://www.grays.com/lot/0001-21065150/motor-vehicles-motor-cycles/2014-hyundai-ix35-se-fwd-lm-automatic-wagon,6100,6100.0,80,,,Sold,vic,VIC,lot
+2026-04-11T06:29:25.065848+00:00,https://www.grays.com/lot/0001-21065151/motor-vehicles-motor-cycles/2005-mercedes-benz-vito-115-cdi-compact-turbo-diesel-automatic-van,1409,1409.0,20,,,Sold,vic,VIC,lot
+2026-04-11T06:29:51.505760+00:00,https://www.grays.com/lot/0001-21065152/motor-vehicles-motor-cycles/2013-toyota-kluger-kx-r-fwd-gsu40r-automatic-wagon,3709,3709.0,49,,,Sold,vic,VIC,lot
+2026-04-11T06:30:06.366500+00:00,https://www.grays.com/lot/0001-21065153/motor-vehicles-motor-cycles/2016-land-rover-range-rover-sport-3-0-v6sc-hse-auto-8-speed-7-seats-wagon,20400,20400.0,120,,,Sold,vic,VIC,lot
+2026-04-11T06:30:33.153074+00:00,https://www.grays.com/lot/0001-21065154/motor-vehicles-motor-cycles/2005-hyundai-getz-gl-tb-automatic-hatchback,2609,2609.0,41,,,Sold,vic,VIC,lot
+2026-04-11T06:30:58.803024+00:00,https://www.grays.com/lot/0001-21065155/motor-vehicles-motor-cycles/2017-bmw-x1-sdrive18d-f48-turbo-diesel-automatic-8-speed-wagon,15200,15200.0,202,,,Sold,vic,VIC,lot
+2026-04-11T06:31:24.742600+00:00,https://www.grays.com/lot/0001-21065156/motor-vehicles-motor-cycles/2011-volkswagen-tiguan-125-tsi-5n-automatic-wagon,3109,3109.0,44,,,Sold,vic,VIC,lot
+2026-04-11T06:31:51.655790+00:00,https://www.grays.com/lot/0001-21065157/motor-vehicles-motor-cycles/2020-mercedes-benz-gls-class-gls400d-4matic-x167-t-d-auto-7-seats-wagon,59500,59500.0,248,,,Sold,vic,VIC,lot
+2026-04-11T06:32:08.814987+00:00,https://www.grays.com/lot/0001-21065158/motor-vehicles-motor-cycles/2006-honda-odyssey-automatic-7-seats-people-mover,1309,1309.0,16,,,Sold,vic,VIC,lot
+2026-04-11T06:32:35.050809+00:00,https://www.grays.com/lot/0001-21065159/motor-vehicles-motor-cycles/2017-alfa-romeo-giulietta-super-series-2-automatic-hatchback,8299,8299.0,93,,,Sold,vic,VIC,lot
+2026-04-11T06:33:05.911499+00:00,https://www.grays.com/lot/0001-21065162/motor-vehicles-motor-cycles/2013-mercedes-benz-b-class-b200-be-w246-automatic-hatchback,5609,5609.0,64,,,Sold,vic,VIC,lot
+2026-04-11T06:33:34.528131+00:00,https://www.grays.com/lot/0001-21065163/motor-vehicles-motor-cycles/2011-mercedes-benz-c-class-c200-be-w204-automatic-sedan,3909,3909.0,72,,,Sold,vic,VIC,lot
+2026-04-11T06:34:02.218306+00:00,https://www.grays.com/lot/0001-21065165/motor-vehicles-motor-cycles/2017-audi-q7-3-0-tdi-quattro-4m-turbo-diesel-auto-8-speed-7-seats-wagon,N/A,,142,,,Referred,vic,VIC,lot
+2026-04-11T06:34:29.872109+00:00,https://www.grays.com/lot/0001-21065166/motor-vehicles-motor-cycles/2014-jeep-grand-cherokee-limited-wk-turbo-diesel-automatic-8-speed-wagon,4599,4599.0,67,,,Sold,vic,VIC,lot
+2026-04-11T06:34:57.161435+00:00,https://www.grays.com/lot/0001-21065169/motor-vehicles-motor-cycles/2002-toyota-camry-ateva-acv36r-automatic-sedan,1009,1009.0,15,,,Sold,vic,VIC,lot
+2026-04-11T06:35:24.372482+00:00,https://www.grays.com/lot/0001-21065170/motor-vehicles-motor-cycles/2009-bmw-x5-3-0sd-e70-turbo-diesel-automatic-7-seats-wagon,7650,7650.0,85,,,Sold,vic,VIC,lot
+2026-04-11T06:35:45.772128+00:00,https://www.grays.com/lot/0001-21065173/motor-vehicles-motor-cycles/2008-bmw-x5-4-8i-e70-automatic-wagon,2800,2800.0,42,,,Sold,vic,VIC,lot
+2026-04-11T06:36:12.177610+00:00,https://www.grays.com/lot/0001-21065178/motor-vehicles-motor-cycles/2007-mercedes-benz-b200-turbo-w245-cvt-hatchback,N/A,,18,,,Referred,vic,VIC,lot
+2026-04-11T06:36:40.358054+00:00,https://www.grays.com/lot/0001-21065189/motor-vehicles-motor-cycles/2014-mitsubishi-asx-aspire-2wd-xb-cvt-wagon,4709,4709.0,51,,,Sold,vic,VIC,lot
+2026-04-11T06:37:11.050502+00:00,https://www.grays.com/lot/0001-21065190/motor-vehicles-motor-cycles/2006-holden-commodore-acclaim-vz-automatic-sedan,1909,1909.0,29,,,Sold,vic,VIC,lot
+2026-04-11T06:37:35.231837+00:00,https://www.grays.com/lot/0001-21065191/motor-vehicles-motor-cycles/2022-mazda-cx-5-maxx-sport-kf-automatic-wagon,13600,13600.0,168,,,Sold,vic,VIC,lot
+2026-04-11T06:38:02.201835+00:00,https://www.grays.com/lot/0001-21065192/motor-vehicles-motor-cycles/2016-hyundai-tucson-elite-awd-tl-turbo-diesel-automatic-wagon,8600,8600.0,110,,,Sold,vic,VIC,lot
+2026-04-11T06:38:22.995825+00:00,https://www.grays.com/lot/0001-21065199/motor-vehicles-motor-cycles/2008-audi-a4-3-2-fsi-quattro-b8-automatic-sedan,N/A,,18,,,Referred,vic,VIC,lot
+2026-04-11T06:38:35.812243+00:00,https://www.grays.com/lot/0001-50517890/motor-vehicles-motor-cycles/2012-volkswagen-passat-125tdi-highline-3c-turbo-diesel-automatic-sedan,2450,2450.0,36,,,Sold,qld,QLD,lot
+2026-04-11T06:39:22.065579+00:00,https://www.grays.com/lot/0001-50715164/motor-vehicles-motor-cycles/2020-toyota-hilux-4x4-sr-gun126r-turbo-diesel-automatic-dual-cab,9,9.0,0,11d 3h 20m41s,267.345,Active,qld,QLD,lot
+2026-04-11T06:39:24.262018+00:00,https://www.grays.com/lot/0001-50517892/motor-vehicles-motor-cycles/2011-mercedes-benz-cls-500-cls-500-c218-automatic-coupe,16255,16255.0,127,,,Sold,qld,QLD,lot
+2026-04-11T06:39:52.481905+00:00,https://www.grays.com/lot/0001-50517893/motor-vehicles-motor-cycles/2014-toyota-camry-altise-asv50r-automatic-sedan,N/A,,18,,,Referred,qld,QLD,lot
+2026-04-11T06:40:17.672800+00:00,https://www.grays.com/lot/0001-50517894/motor-vehicles-motor-cycles/2016-mazda-bt-50-4x2-xt-turbo-diesel-manual-cab-chassis,3100,3100.0,4,,,Sold,qld,QLD,lot
+2026-04-11T06:40:29.591798+00:00,https://www.grays.com/lot/0001-50517895/motor-vehicles-motor-cycles/2016-holden-commodore-sv6-black-edition-vf-ii-v8-manual-upgrade,25100,25100.0,155,,,Sold,qld,QLD,lot
+2026-04-11T06:40:56.359272+00:00,https://www.grays.com/lot/0001-50517896/motor-vehicles-motor-cycles/2010-holden-cruze-cd-jg-turbo-diesel-manual-sedan,609,609.0,12,,,Sold,qld,QLD,lot
+2026-04-11T06:41:23.351272+00:00,https://www.grays.com/lot/0001-50517899/motor-vehicles-motor-cycles/2016-hyundai-iload-tq-turbo-diesel-automatic-van,N/A,,81,,,Referred,qld,QLD,lot
+2026-04-11T06:41:47.223459+00:00,https://www.grays.com/lot/0001-50517900/motor-vehicles-motor-cycles/2012-holden-cruze-cd-jh-automatic-sedan,609,609.0,11,,,Sold,qld,QLD,lot
+2026-04-11T06:42:14.435541+00:00,https://www.grays.com/lot/0001-50517901/motor-vehicles-motor-cycles/2009-volkswagen-passat-r36-3c-automatic-sedan,N/A,,49,,,Referred,qld,QLD,lot
+2026-04-11T06:42:44.485496+00:00,https://www.grays.com/lot/0001-50517902/motor-vehicles-motor-cycles/2012-holden-cruze-cd-jh-manual-hatchback,N/A,,19,,,Referred,qld,QLD,lot
+2026-04-11T06:43:09.425626+00:00,https://www.grays.com/lot/0001-50517904/motor-vehicles-motor-cycles/2018-ldv-g10-9-seat-automatic-9-seats-people-mover,N/A,,75,,,Referred,qld,QLD,lot
+2026-04-11T06:43:37.518732+00:00,https://www.grays.com/lot/0001-50517905/motor-vehicles-motor-cycles/2013-ford-focus-st-lw-manual-hatchback,N/A,,11,,,Referred,qld,QLD,lot
+2026-04-11T06:44:04.048483+00:00,https://www.grays.com/lot/0001-50715139/motor-vehicles-motor-cycles/2009-subaru-liberty-2-5i-sports-b5-cvt-wagon,1309,1309.0,18,,,Sold,qld,QLD,lot
+2026-04-11T06:44:35.478419+00:00,https://www.grays.com/lot/0001-50715153/motor-vehicles-motor-cycles/2000-mitsubishi-pajero-glx-lwb-4x4-nm-manual-7-seats-wagon,N/A,,9,,,Referred,qld,QLD,lot
+2026-04-11T06:44:48.758397+00:00,https://www.grays.com/lot/0001-50715157/motor-vehicles-motor-cycles/2015-mitsubishi-outlander-xls-4wd-zk-turbo-diesel-automatic-7-seats-wagon,8901,8901.0,103,,,Sold,qld,QLD,lot
+2026-04-11T06:45:14.718317+00:00,https://www.grays.com/lot/0001-50715158/motor-vehicles-motor-cycles/2011-mercedes-benz-r-class-r300-cdi-w251-tdl-auto-7-seats-wagon,1009,1009.0,18,,,Sold,qld,QLD,lot
+2026-04-11T06:45:40.709146+00:00,https://www.grays.com/lot/0001-50715160/motor-vehicles-motor-cycles/2007-jeep-wrangler-unlimited-sport-jk-turbo-diesel-automatic-wagon,7600,7600.0,74,,,Sold,qld,QLD,lot
+2026-04-11T06:46:07.857488+00:00,https://www.grays.com/lot/0001-50715161/motor-vehicles-motor-cycles/2011-holden-barina-tk-automatic-hatchback,N/A,,8,,,Referred,qld,QLD,lot
+2026-04-11T06:46:36.443241+00:00,https://www.grays.com/lot/0001-50715162/motor-vehicles-motor-cycles/2016-mitsubishi-triton-4x2-glx-mq-turbo-diesel-automatic-dual-cab,N/A,,10,,,Referred,qld,QLD,lot
+2026-04-11T06:47:09.045934+00:00,https://www.grays.com/lot/0001-50715163/motor-vehicles-motor-cycles/2015-ford-ranger-xlt-4x2-hi-rider-px-turbo-diesel-automatic-dual-cab,N/A,,48,,,Referred,qld,QLD,lot
+2026-04-11T06:47:35.610863+00:00,https://www.grays.com/lot/0001-50715164/motor-vehicles-motor-cycles/2020-toyota-hilux-4x4-sr-gun126r-turbo-diesel-automatic-dual-cab,9,9.0,0,11d 3h 12m27s,267.207,Active,qld,QLD,lot
+2026-04-11T06:48:03.670702+00:00,https://www.grays.com/lot/0001-50715166/motor-vehicles-motor-cycles/2009-volvo-xc90-d5-executive-turbo-diesel-automatic-7-seats-wagon,N/A,,36,,,Referred,qld,QLD,lot
+2026-04-11T06:48:34.120841+00:00,https://www.grays.com/lot/0001-50715167/motor-vehicles-motor-cycles/2006-mitsubishi-triton-4x4-glx-r-double-cab-ml-turbo-diesel-manual-dual-cab,3109,3109.0,44,,,Sold,qld,QLD,lot
+2026-04-11T06:49:01.300545+00:00,https://www.grays.com/lot/0001-50715168/motor-vehicles-motor-cycles/2003-toyota-mr2-spyder-zzw30r-automatic-convertible,6800,6800.0,103,,,Sold,qld,QLD,lot
+2026-04-11T06:49:27.729017+00:00,https://www.grays.com/lot/0001-50715169/motor-vehicles-motor-cycles/2012-volkswagen-jetta-118tsi-1b-automatic-sedan,N/A,,45,,,Referred,qld,QLD,lot
+2026-04-11T06:49:54.273874+00:00,https://www.grays.com/lot/0001-50715170/motor-vehicles-motor-cycles/2013-jeep-grand-cherokee-limited-wk-turbo-diesel-automatic-8-speed-wagon,4009,4009.0,28,,,Sold,qld,QLD,lot
+2026-04-11T06:50:24.684436+00:00,https://www.grays.com/lot/0001-50715171/motor-vehicles-motor-cycles/2015-nissan-x-trail-st-l-fwd-t32-cvt-wagon,N/A,,65,,,Referred,qld,QLD,lot
+2026-04-11T06:50:52.042927+00:00,https://www.grays.com/lot/0001-50715172/motor-vehicles-motor-cycles/2018-mazda-cx-5-akera-kf-turbo-diesel-automatic-wagon,N/A,,102,,,Referred,qld,QLD,lot
+2026-04-11T06:51:17.346306+00:00,https://www.grays.com/lot/0001-50715173/motor-vehicles-motor-cycles/2005-mercedes-benz-ml350-w164-automatic-wagon,N/A,,10,,,Referred,qld,QLD,lot
+2026-04-11T06:51:43.241563+00:00,https://www.grays.com/lot/0001-50715174/motor-vehicles-motor-cycles/2012-bmw-x3-xdrive-20i-f25-automatic-8-speed-wagon,N/A,,21,,,Referred,qld,QLD,lot
+2026-04-11T06:52:12.082345+00:00,https://www.grays.com/lot/0001-50715175/motor-vehicles-motor-cycles/2014-nissan-pathfinder-st-hybrid-r52-cvt-7-seats-wagon,N/A,,9,,,Referred,qld,QLD,lot
+2026-04-11T06:52:41.163658+00:00,https://www.grays.com/lot/0001-50715176/motor-vehicles-motor-cycles/2013-hyundai-santa-fe-elite-dm-turbo-diesel-automatic-7-seats-wagon,N/A,,76,,,Referred,qld,QLD,lot
+2026-04-11T06:53:09.186727+00:00,https://www.grays.com/lot/0001-50715178/motor-vehicles-motor-cycles/2004-mini-cooper-manual-hatchback,2600,2600.0,28,,,Sold,qld,QLD,lot
+2026-04-11T06:53:34.851704+00:00,https://www.grays.com/lot/0001-50715179/motor-vehicles-motor-cycles/2009-mazda-3-sp25-bl-automatic-hatchback,2109,2109.0,24,,,Sold,qld,QLD,lot
+2026-04-11T06:54:02.432622+00:00,https://www.grays.com/lot/0001-50715180/motor-vehicles-motor-cycles/2008-ford-territory-tx-sy-automatic-wagon,N/A,,18,,,Referred,qld,QLD,lot
+2026-04-11T06:54:27.401118+00:00,https://www.grays.com/lot/0001-50715181/motor-vehicles-motor-cycles/2006-volkswagen-caddy-life-1-9-tdi-tdl-auto-7-seats-people-mover,3309,3309.0,44,,,Sold,qld,QLD,lot
+2026-04-11T06:54:52.470152+00:00,https://www.grays.com/lot/0001-50715182/motor-vehicles-motor-cycles/2012-nissan-leaf-direct-drive-hatchback-77-142-kms,5300,5300.0,47,,,Sold,qld,QLD,lot
+2026-04-11T06:55:20.107973+00:00,https://www.grays.com/lot/0001-50715183/motor-vehicles-motor-cycles/2013-nissan-navara-4x4-st-x550-d40-turbo-diesel-automatic-dual-cab,7300,7300.0,100,,,Sold,qld,QLD,lot
+2026-04-11T06:55:48.535030+00:00,https://www.grays.com/lot/0001-50715184/motor-vehicles-motor-cycles/2015-hyundai-santa-fe-elite-dm-turbo-diesel-automatic-7-seats-wagon,N/A,,45,,,Referred,qld,QLD,lot
+2026-04-11T06:56:01.456206+00:00,https://www.grays.com/lot/0001-50715185/motor-vehicles-motor-cycles/2016-renault-megane-zen-fwd-automatic-7-speed-hatchback,5800,5800.0,60,,,Sold,qld,QLD,lot
+2026-04-11T06:56:25.990594+00:00,https://www.grays.com/lot/0001-50715186/motor-vehicles-motor-cycles/2016-skoda-octavia-ambition-110tsi-ne-automatic-wagon,N/A,,34,,,Referred,qld,QLD,lot
+2026-04-11T06:56:40.382882+00:00,https://www.grays.com/lot/0001-50715189/motor-vehicles-motor-cycles/2016-volkswagen-passat-140tdi-highline-b8-turbo-diesel-automatic-sedan,6209,6209.0,72,,,Sold,qld,QLD,lot
+2026-04-11T06:57:06.617361+00:00,https://www.grays.com/lot/0001-50715191/motor-vehicles-motor-cycles/2016-land-rover-range-rover-evoque-td4-180-se-turbo-diesel-9-auto-wagon,N/A,,70,,,Referred,qld,QLD,lot
+2026-04-11T06:57:33.890625+00:00,https://www.grays.com/lot/0001-50715193/motor-vehicles-motor-cycles/2012-jeep-grand-cherokee-srt-8-wk-automatic-wagon,N/A,,150,,,Referred,qld,QLD,lot
+2026-04-11T06:58:03.852873+00:00,https://www.grays.com/lot/0001-50715194/motor-vehicles-motor-cycles/2006-toyota-rav-4-cv-aca33r-automatic-wagon,N/A,,9,,,Referred,qld,QLD,lot
+2026-04-11T06:58:29.739861+00:00,https://www.grays.com/lot/0001-50715195/motor-vehicles-motor-cycles/2016-audi-a3-cabriolet-2-0-tfsi-quatt-s-lin-8v-automatic-convertible,N/A,,58,,,Referred,qld,QLD,lot
+2026-04-11T06:58:58.002227+00:00,https://www.grays.com/lot/0001-50715199/motor-vehicles-motor-cycles/2006-land-rover-discovery-se-series-3-turbo-diesel-automatic-7-seats-wagon,N/A,,4,,,Referred,qld,QLD,lot
+2026-04-11T06:59:24.267140+00:00,https://www.grays.com/lot/0001-50715203/motor-vehicles-motor-cycles/2024-great-wall-cannon-x-4x4-turbo-diesel-automatic-8-speed-dual-cab,20250,20250.0,32,,,Sold,qld,QLD,lot
+2026-04-11T06:59:53.808290+00:00,https://www.grays.com/lot/0001-50715204/motor-vehicles-motor-cycles/2016-holden-colorado-4x2-lx-rg-turbo-diesel-automatic-cab-chassis,7000,7000.0,40,,,Sold,qld,QLD,lot
+2026-04-11T07:00:20.491453+00:00,https://www.grays.com/lot/0001-50715205/motor-vehicles-motor-cycles/2014-mercedes-benz-ml250-bluetec-w166-turbo-diesel-automatic-wagon,N/A,,61,,,Referred,qld,QLD,lot
+2026-04-11T07:00:33.959326+00:00,https://www.grays.com/lot/0001-50715206/motor-vehicles-motor-cycles/2011-volkswagen-tiguan-132-tsi-5n-automatic-wagon,4909,4909.0,94,,,Sold,qld,QLD,lot
+2026-04-11T07:00:59.385257+00:00,https://www.grays.com/lot/0001-50715207/motor-vehicles-motor-cycles/2004-saab-9-3-linear-automatic-sedan,N/A,,2,,,Referred,qld,QLD,lot
+2026-04-11T07:01:27.325298+00:00,https://www.grays.com/lot/0001-50715209/motor-vehicles-motor-cycles/2004-nissan-patrol-st-3-0-gu-ii-turbo-diesel-manual-7-seats-wagon,N/A,,97,,,Referred,qld,QLD,lot
+2026-04-11T07:01:54.383223+00:00,https://www.grays.com/lot/0001-50715210/motor-vehicles-motor-cycles/2021-toyota-hiace-gl-gdh320r-turbo-diesel-automatic-11-seats-bus,N/A,,166,,,Referred,qld,QLD,lot
+2026-04-11T07:02:05.906255+00:00,https://www.grays.com/lot/0001-50715212/motor-vehicles-motor-cycles/2020-toyota-hilux-4x4-sr-gun126r-turbo-diesel-automatic-crew-cab-chassis,13800,13800.0,177,,,Sold,qld,QLD,lot
+2026-04-11T07:02:17.678981+00:00,https://www.grays.com/lot/0001-50715213/motor-vehicles-motor-cycles/2021-ldv-deliver-9-mwb-mid-roof-turbo-diesel-automatic-van,6600,6600.0,110,,,Sold,qld,QLD,lot
+2026-04-11T07:02:32.630010+00:00,https://www.grays.com/lot/0001-50715215/motor-vehicles-motor-cycles/2021-ldv-deliver-9-mwb-mid-roof-turbo-diesel-automatic-van,7600,7600.0,109,,,Sold,qld,QLD,lot
+2026-04-11T07:02:48.948874+00:00,https://www.grays.com/lot/0001-50715218/motor-vehicles-motor-cycles/2022-kia-sportage-s-2wd-nq5-automatic-wagon,N/A,,117,,,Referred,qld,QLD,lot
+2026-04-11T07:03:20.592839+00:00,https://www.grays.com/lot/0001-50715220/motor-vehicles-motor-cycles/2022-kia-sportage-s-2wd-nq5-automatic-wagon,N/A,,51,,,Referred,qld,QLD,lot
+2026-04-11T07:03:48.200719+00:00,https://www.grays.com/lot/0001-50715222/motor-vehicles-motor-cycles/2021-toyota-rav-4-fwd-gx-hybrid-axah52r-cvt-wagon,29500,29500.0,70,,,Sold,qld,QLD,lot
+2026-04-11T07:04:16.727672+00:00,https://www.grays.com/lot/0001-50715223/motor-vehicles-motor-cycles/2021-toyota-rav-4-fwd-gx-hybrid-axah52r-cvt-wagon,30900,30900.0,128,,,Sold,qld,QLD,lot
+2026-04-11T07:04:30.087437+00:00,https://www.grays.com/lot/0001-50715225/motor-vehicles-motor-cycles/2007-citroen-berlingo-manual-van,N/A,,7,,,Referred,qld,QLD,lot
+2026-04-11T07:04:41.310765+00:00,https://www.grays.com/lot/0001-50715226/motor-vehicles-motor-cycles/2011-jeep-grand-cherokee-laredo-4x4-wk-automatic-wagon,N/A,,20,,,Referred,qld,QLD,lot
+2026-04-11T07:04:54.348678+00:00,https://www.grays.com/lot/0001-50715227/motor-vehicles-motor-cycles/2007-toyota-rav-4-cruiser-aca33r-manual-wagon,N/A,,14,,,Referred,qld,QLD,lot
+2026-04-11T07:05:19.187462+00:00,https://www.grays.com/lot/0001-50715228/motor-vehicles-motor-cycles/2012-bmw-118i-118i-f20-automatic-8-speed-hatchback,3900,3900.0,36,,,Sold,qld,QLD,lot
+2026-04-11T07:05:43.094069+00:00,https://www.grays.com/lot/0001-50715229/motor-vehicles-motor-cycles/2014-lexus-rx-rx350-sports-luxury-ggl15r-automatic-wagon,N/A,,101,,,Referred,qld,QLD,lot
+2026-04-11T07:06:07.348441+00:00,https://www.grays.com/lot/0001-50715230/motor-vehicles-motor-cycles/2014-hyundai-i30-active-gd-automatic-hatchback,1909,1909.0,26,,,Sold,qld,QLD,lot
+2026-04-11T07:06:34.616716+00:00,https://www.grays.com/lot/0001-50715231/motor-vehicles-motor-cycles/2013-alfa-romeo-giulietta-progression-turbo-diesel-automatic-hatchback,1509,1509.0,25,,,Sold,qld,QLD,lot
+2026-04-11T07:07:01.653672+00:00,https://www.grays.com/lot/0001-50715236/motor-vehicles-motor-cycles/2007-toyota-corolla-ascent-zre152r-automatic-hatchback,3309,3309.0,41,,,Sold,qld,QLD,lot
+2026-04-11T07:07:28.164904+00:00,https://www.grays.com/lot/0001-50715237/motor-vehicles-motor-cycles/2008-subaru-impreza-rs-g3-automatic-hatchback,N/A,,1,,,Referred,qld,QLD,lot
+2026-04-11T07:07:55.228738+00:00,https://www.grays.com/lot/0001-50715238/motor-vehicles-motor-cycles/2010-mercedes-benz-ml350-cdi-w164-turbo-diesel-automatic-wagon,N/A,,16,,,Referred,qld,QLD,lot
+2026-04-11T07:08:21.253484+00:00,https://www.grays.com/lot/0001-50715239/motor-vehicles-motor-cycles/2017-hyundai-tucson-elite-awd-tl-automatic-wagon,N/A,,96,,,Referred,qld,QLD,lot
+2026-04-11T07:08:50.786547+00:00,https://www.grays.com/lot/0001-50715240/motor-vehicles-motor-cycles/2016-isuzu-d-max-4x4-sx-hi-ride-turbo-diesel-manual-crew-cab-chassis,N/A,,52,,,Referred,qld,QLD,lot
+2026-04-11T07:09:15.711254+00:00,https://www.grays.com/lot/0001-50715241/motor-vehicles-motor-cycles/2011-mazda-cx-7-classic-sports-automatic-wagon,N/A,,8,,,Referred,qld,QLD,lot
+2026-04-11T07:09:42.650406+00:00,https://www.grays.com/lot/0001-50715242/motor-vehicles-motor-cycles/2012-nissan-pathfinder-st-r51-manual-7-seats-wagon,N/A,,10,,,Referred,qld,QLD,lot
+2026-04-11T07:10:09.358826+00:00,https://www.grays.com/lot/0001-50715243/motor-vehicles-motor-cycles/2018-bmw-1-series-118i-f20-automatic-8-speed-hatchback,N/A,,111,,,Referred,qld,QLD,lot
+2026-04-11T07:10:36.191082+00:00,https://www.grays.com/lot/0001-50715244/motor-vehicles-motor-cycles/2020-mitsubishi-triton-4x4-glx-mr-turbo-diesel-automatic-dual-cab,N/A,,279,,,Referred,qld,QLD,lot
+2026-04-11T07:11:02.621422+00:00,https://www.grays.com/lot/0001-50715246/motor-vehicles-motor-cycles/2013-jeep-wrangler-sport-jk-automatic-wagon,N/A,,244,,,Referred,qld,QLD,lot
+2026-04-11T07:11:14.335404+00:00,https://www.grays.com/lot/0001-50715247/motor-vehicles-motor-cycles/2014-jeep-cherokee-limited-4x4-kl-automatic-wagon,N/A,,1,,,Referred,qld,QLD,lot
+2026-04-11T07:11:43.116284+00:00,https://www.grays.com/lot/0001-50715248/motor-vehicles-motor-cycles/2013-mitsubishi-pajero-exceed-nw-turbo-diesel-automatic-7-seats-wagon,N/A,,119,,,Referred,qld,QLD,lot
+2026-04-11T07:12:10.008610+00:00,https://www.grays.com/lot/0001-50715249/motor-vehicles-motor-cycles/2014-mercedes-benz-gla-250-gla250-4matic-x156-automatic-wagon,N/A,,126,,,Referred,qld,QLD,lot
+2026-04-11T07:12:22.999010+00:00,https://www.grays.com/lot/0001-50715250/motor-vehicles-motor-cycles/2014-volkswagen-golf-90tsi-comfortline-a7-automatic-hatchback,1309,1309.0,15,,,Sold,qld,QLD,lot
+2026-04-11T07:12:50.164848+00:00,https://www.grays.com/lot/0001-50715251/motor-vehicles-motor-cycles/2016-audi-q5-2-0-tdi-quattro-8r-turbo-diesel-automatic-wagon,N/A,,54,,,Referred,qld,QLD,lot
+2026-04-11T07:13:18.546398+00:00,https://www.grays.com/lot/0001-50715252/motor-vehicles-motor-cycles/2020-ford-ranger-xl-4x2-hi-rider-px-iii-turbo-diesel-automatic-cab-chassis,N/A,,76,,,Referred,qld,QLD,lot
+2026-04-11T07:13:27.068957+00:00,https://www.grays.com/lot/0001-50715253/motor-vehicles-motor-cycles/2019-nissan-navara-4wd-manual-ute,N/A,,10,,,Referred,gympie holding yard,GYMPIE HOLDING YARD,lot
+2026-04-11T07:13:35.850457+00:00,https://www.grays.com/lot/0001-50715254/motor-vehicles-motor-cycles/2002-ford-escape-xlt-ba-automatic-wagon,N/A,,6,,,Referred,gympie holding yard,GYMPIE HOLDING YARD,lot
+2026-04-11T07:14:01.558975+00:00,https://www.grays.com/lot/0001-50715256/motor-vehicles-motor-cycles/2006-mitsubishi-380-vrx-db-automatic-sedan,1000,1000.0,10,,,Sold,qld,QLD,lot
+2026-04-11T07:14:31.063056+00:00,https://www.grays.com/lot/0001-50715259/motor-vehicles-motor-cycles/2010-nissan-navara-st-4x4-d40-turbo-diesel-automatic-dual-cab,N/A,,5,,,Referred,qld,QLD,lot
+2026-04-11T07:14:58.858982+00:00,https://www.grays.com/lot/0001-50715260/motor-vehicles-motor-cycles/2009-volkswagen-golf-103tdi-comfortline-a6-turbo-diesel-automatic-hatchback,N/A,,3,,,Referred,qld,QLD,lot
+2026-04-11T07:15:24.657266+00:00,https://www.grays.com/lot/0001-50715261/motor-vehicles-motor-cycles/2021-great-wall-cannon-x-4x4-turbo-diesel-automatic-8-speed-dual-cab,N/A,,20,,,Referred,qld,QLD,lot
+2026-04-11T07:15:51.011087+00:00,https://www.grays.com/lot/0001-50715262/motor-vehicles-motor-cycles/2015-nissan-x-trail-st-fwd-t32-cvt-wagon,N/A,,78,,,Referred,qld,QLD,lot
+2026-04-11T07:16:21.575982+00:00,https://www.grays.com/lot/0001-50715263/motor-vehicles-motor-cycles/2012-suzuki-alto-gl-gf-manual-hatchback,1800,1800.0,22,,,Sold,qld,QLD,lot
+2026-04-11T07:16:48.157200+00:00,https://www.grays.com/lot/0001-50715265/motor-vehicles-motor-cycles/2016-nissan-juke-ti-s-f15-ii-cvt-wagon,N/A,,7,,,Referred,qld,QLD,lot
+2026-04-11T07:17:15.699020+00:00,https://www.grays.com/lot/0001-50715266/motor-vehicles-motor-cycles/2013-toyota-kluger-4x4-kx-s-gsu45r-automatic-7-seats-wagon,N/A,,53,,,Referred,qld,QLD,lot
+2026-04-11T07:17:30.902403+00:00,https://www.grays.com/lot/0001-60050424/motor-vehicles-motor-cycles/2007-mazda-tribute-2-3-automatic-wagon,609,609.0,7,,,Sold,sa,SA,lot
+2026-04-11T07:17:47.578644+00:00,https://www.grays.com/lot/0001-60050453/motor-vehicles-motor-cycles/2011-mercedes-benz-r-class-r350-cdi-w251-turbo-diesel-automatic,N/A,,51,,,Referred,sa,SA,lot
+2026-04-11T07:18:04.379225+00:00,https://www.grays.com/lot/0001-60050454/motor-vehicles-motor-cycles/2010-bmw-x1-xdrive-23d-e84-turbo-diesel-automatic-wagon,N/A,,67,,,Referred,sa,SA,lot
+2026-04-11T07:18:23.544946+00:00,https://www.grays.com/lot/0001-60050470/motor-vehicles-motor-cycles/2015-ford-kuga-titanium-awd-tf-ii-turbo-diesel-automatic-wagon,N/A,,36,,,Referred,sa,SA,lot
+2026-04-11T07:18:39.912047+00:00,https://www.grays.com/lot/0001-60050471/motor-vehicles-motor-cycles/2007-holden-caprice-wm-v8-6-0ltr-automatic-sedan,N/A,,37,,,Referred,sa,SA,lot
+2026-04-11T07:18:54.955506+00:00,https://www.grays.com/lot/0001-60050472/motor-vehicles-motor-cycles/2005-toyota-camry-sportivo-mcv36r-manual-sedan,750,750.0,8,,,Sold,sa,SA,lot
+2026-04-11T07:19:09.542772+00:00,https://www.grays.com/lot/0001-60050473/motor-vehicles-motor-cycles/2013-honda-cr-v-2wd-vti-rm-automatic-wagon,N/A,,76,,,Referred,sa,SA,lot
+2026-04-11T07:19:22.713534+00:00,https://www.grays.com/lot/0001-60050474/motor-vehicles-motor-cycles/2011-ford-territory-ts-sz-turbo-diesel-automatic-7-seats-wagon,N/A,,35,,,Referred,sa,SA,lot
+2026-04-11T07:19:37.984831+00:00,https://www.grays.com/lot/0001-60050475/motor-vehicles-motor-cycles/2019-peugeot-3008-gt-line-automatic-wagon,N/A,,68,,,Referred,sa,SA,lot
+2026-04-11T07:19:50.286915+00:00,https://www.grays.com/lot/0001-60050476/motor-vehicles-motor-cycles/2005-toyota-yaris-yr-ncp90r-manual-hatchback,N/A,,9,,,Referred,sa,SA,lot
+2026-04-11T07:20:08.187304+00:00,https://www.grays.com/lot/0001-60050478/motor-vehicles-motor-cycles/2004-mercedes-benz-slk200-kompressor-r171-automatic-convertible,N/A,,71,,,Referred,sa,SA,lot
+2026-04-11T07:20:25.220526+00:00,https://www.grays.com/lot/0001-60050479/motor-vehicles-motor-cycles/2019-ford-ranger-wildtrak-4x4-px-iii-turbo-diesel-10-auto-dual-cab,N/A,,151,,,Referred,sa,SA,lot
+2026-04-11T07:20:42.392896+00:00,https://www.grays.com/lot/0001-60050480/motor-vehicles-motor-cycles/2016-mini-cooper-f57-automatic-convertible-59-168-kms,N/A,,152,,,Referred,sa,SA,lot
+2026-04-11T07:20:59.072716+00:00,https://www.grays.com/lot/0001-60050481/motor-vehicles-motor-cycles/2005-subaru-impreza-wrx-g2-manual-hatchback,N/A,,9,,,Referred,sa,SA,lot
+2026-04-11T07:21:15.870830+00:00,https://www.grays.com/lot/0001-60050484/motor-vehicles-motor-cycles/2008-nissan-x-trail-st-l-t31-cvt-wagon,650,650.0,7,,,Sold,sa,SA,lot
+2026-04-11T07:21:30.483167+00:00,https://www.grays.com/lot/0001-60050485/motor-vehicles-motor-cycles/2014-hyundai-i40-active-vf-automatic-sedan,N/A,,14,,,Referred,sa,SA,lot
+2026-04-11T07:21:46.268917+00:00,https://www.grays.com/lot/0001-60050486/motor-vehicles-motor-cycles/2002-nissan-stagea-import-automatic-wagon,N/A,,33,,,Referred,sa,SA,lot
+2026-04-11T07:22:02.261114+00:00,https://www.grays.com/lot/0001-60050487/motor-vehicles-motor-cycles/2012-holden-caprice-wm-ii-automatic-sedan,N/A,,26,,,Referred,sa,SA,lot
+2026-04-11T07:22:17.954997+00:00,https://www.grays.com/lot/0001-60050488/motor-vehicles-motor-cycles/2017-mitsubishi-triton-4x4-glx-l-e-mq-turbo-diesel-automatic-dual-cab,N/A,,77,,,Referred,sa,SA,lot
+2026-04-11T07:22:32.885864+00:00,https://www.grays.com/lot/0001-60050491/motor-vehicles-motor-cycles/2023-ram-2500-laramie-turbo-diesel-automatic-dual-cab,123200,123200.0,341,,,Sold,sa,SA,lot
+2026-04-11T07:22:43.299008+00:00,https://www.grays.com/lot/0001-60050492/motor-vehicles-motor-cycles/2018-ldv-v80-swb-fwd-manual-van,N/A,,26,,,Referred,nt,NT,lot
+2026-04-11T07:22:57.253607+00:00,https://www.grays.com/lot/0001-60050494/motor-vehicles-motor-cycles/2017-toyota-hiace-commuter-automatic-people-mover,16609,16609.0,267,,,Sold,nt,NT,lot
+2026-04-11T07:23:14.533146+00:00,https://www.grays.com/lot/0001-60050495/motor-vehicles-motor-cycles/2008-mitsubishi-lancer-es-cj-cvt-sedan,N/A,,14,,,Referred,sa,SA,lot
+2026-04-11T07:23:30.995552+00:00,https://www.grays.com/lot/0001-60050496/motor-vehicles-motor-cycles/2007-holden-epica-cdx-ep-automatic-sedan,N/A,,13,,,Referred,sa,SA,lot
+2026-04-11T07:23:46.641930+00:00,https://www.grays.com/lot/0001-60050497/motor-vehicles-motor-cycles/2009-audi-q5-2-0-tdi-quattro-8r-turbo-diesel-automatic-wagon,N/A,,32,,,Referred,sa,SA,lot
+2026-04-11T07:24:03.313860+00:00,https://www.grays.com/lot/0001-60050498/motor-vehicles-motor-cycles/2011-volkswagen-touareg-150tdi-7p-turbo-diesel-automatic-8-speed-wagon,N/A,,14,,,Referred,sa,SA,lot
+2026-04-11T07:24:19.160521+00:00,https://www.grays.com/lot/0001-60050499/motor-vehicles-motor-cycles/1997-toyota-landcruiser-prado-gxl-v6-vzj95r-automatic-8-seats-wagon,N/A,,6,,,Referred,sa,SA,lot
+2026-04-11T07:24:35.671343+00:00,https://www.grays.com/lot/0001-60050500/motor-vehicles-motor-cycles/2010-suzuki-alto-glx-gf-manual-hatchback,N/A,,12,,,Referred,sa,SA,lot
+2026-04-11T07:24:52.229248+00:00,https://www.grays.com/lot/0001-60050501/motor-vehicles-motor-cycles/2013-toyota-camry-atara-s-asv50r-automatic-sedan,N/A,,42,,,Referred,sa,SA,lot
+2026-04-11T07:25:10.774055+00:00,https://www.grays.com/lot/0001-60050502/motor-vehicles-motor-cycles/2011-suzuki-sx4-awd-gy-cvt-hatchback,N/A,,28,,,Referred,sa,SA,lot
+2026-04-11T07:25:26.377995+00:00,https://www.grays.com/lot/0001-60050503/motor-vehicles-motor-cycles/2015-mazda-cx-3-maxx-dk-turbo-diesel-automatic-wagon,N/A,,119,,,Referred,sa,SA,lot
+2026-04-11T07:25:42.214770+00:00,https://www.grays.com/lot/0001-60050504/motor-vehicles-motor-cycles/2011-mazda-3-maxx-sport-bl-automatic-hatchback,N/A,,20,,,Referred,sa,SA,lot
+2026-04-11T07:25:58.912261+00:00,https://www.grays.com/lot/0001-60050505/motor-vehicles-motor-cycles/2005-mercedes-benz-ml-500-luxury-4x4-w164-automatic-wagon,N/A,,6,,,Referred,sa,SA,lot
+2026-04-11T07:26:15.611646+00:00,https://www.grays.com/lot/0001-60050506/motor-vehicles-motor-cycles/2008-holden-combo-xc-manual-van,1009,1009.0,20,,,Sold,sa,SA,lot
+2026-04-11T07:26:34.974728+00:00,https://www.grays.com/lot/0001-60050507/motor-vehicles-motor-cycles/2007-toyota-landcruiser-prado-grande-diesel-kdj120r-t-d-auto-wagon,N/A,,151,,,Referred,sa,SA,lot
+2026-04-11T07:26:54.012300+00:00,https://www.grays.com/lot/0001-60050508/motor-vehicles-motor-cycles/2020-mitsubishi-triton-4x4-gls-double-cab-mr-t-d-auto-dual-cab,N/A,,213,,,Referred,sa,SA,lot
+2026-04-11T07:27:12.684776+00:00,https://www.grays.com/lot/0001-60050509/motor-vehicles-motor-cycles/2012-toyota-camry-atara-s-asv50r-automatic-sedan,N/A,,72,,,Referred,sa,SA,lot
+2026-04-11T07:27:30.572510+00:00,https://www.grays.com/lot/0001-60050510/motor-vehicles-motor-cycles/2011-honda-civic-vti-l-8th-gen-automatic-sedan,N/A,,66,,,Referred,sa,SA,lot
+2026-04-11T07:27:46.424716+00:00,https://www.grays.com/lot/0001-60050511/motor-vehicles-motor-cycles/2020-mazda-cx-5-akera-kf-automatic-wagon,N/A,,182,,,Referred,sa,SA,lot
+2026-04-11T07:28:02.144474+00:00,https://www.grays.com/lot/0001-60050513/motor-vehicles-motor-cycles/2009-skoda-octavia-118tsi-1z-automatic-wagon,409,409.0,5,,,Sold,sa,SA,lot
+2026-04-11T07:28:19.325176+00:00,https://www.grays.com/lot/0001-60050516/motor-vehicles-motor-cycles/1997-hyundai-excel-gx-x3-manual-hatchback,N/A,,6,,,Referred,sa,SA,lot
+2026-04-11T07:28:36.417886+00:00,https://www.grays.com/lot/0001-60050517/motor-vehicles-motor-cycles/2012-ford-ranger-xlt-4x4-px-turbo-diesel-automatic-dual-cab,N/A,,57,,,Referred,sa,SA,lot
+2026-04-11T07:28:52.945621+00:00,https://www.grays.com/lot/0001-60050521/motor-vehicles-motor-cycles/2013-ford-kuga-awd-trend-tf-automatic-wagon,N/A,,48,,,Referred,sa,SA,lot
+2026-04-11T07:29:08.474047+00:00,https://www.grays.com/lot/0001-60050526/motor-vehicles-motor-cycles/2009-volkswagen-golf-77tdi-trendline-a6-turbo-diesel-automatic-hatchback,4000,4000.0,30,,,Sold,sa,SA,lot
+2026-04-11T07:29:23.820269+00:00,https://www.grays.com/lot/0001-60050527/motor-vehicles-motor-cycles/2014-volkswagen-touareg-150tdi-7p-turbo-diesel-automatic-8-speed-wagon,N/A,,86,,,Referred,sa,SA,lot
+2026-04-11T07:29:40.314689+00:00,https://www.grays.com/lot/0001-60050528/motor-vehicles-motor-cycles/2017-audi-q5-2-0-tdi-quattro-sprt-80a-turbo-diesel-automatic-wagon,N/A,,122,,,Referred,sa,SA,lot
+2026-04-11T07:29:56.760480+00:00,https://www.grays.com/lot/0001-60050529/motor-vehicles-motor-cycles/2021-mg-hs-excite-awd-automatic-wagon,N/A,,55,,,Referred,sa,SA,lot
+2026-04-11T07:30:12.915962+00:00,https://www.grays.com/lot/0001-60050530/motor-vehicles-motor-cycles/2009-holden-cruze-cdx-jg-automatic-sedan,N/A,,22,,,Referred,sa,SA,lot
+2026-04-11T07:30:20.305107+00:00,https://www.grays.com/lot/0001-60050531/motor-vehicles-motor-cycles/2017-hyundai-iload-tq-ii-turbo-diesel-automatic-van,N/A,,0,,,Referred,sa,SA,lot
+2026-04-11T07:30:33.033930+00:00,https://www.grays.com/lot/0001-60050533/motor-vehicles-motor-cycles/1999-mercedes-benz-clk430-automatic-coupe,N/A,,41,,,Referred,nt,NT,lot
+2026-04-11T07:30:49.223528+00:00,https://www.grays.com/lot/0001-60050534/motor-vehicles-motor-cycles/2018-ford-escape-trend-fwd-zg-automatic-wagon,N/A,,25,,,Referred,sa,SA,lot
+2026-04-11T07:31:04.654608+00:00,https://www.grays.com/lot/0001-60050535/motor-vehicles-motor-cycles/2004-jaguar-x-type-2-1-x400-automatic-sedan,609,609.0,7,,,Sold,sa,SA,lot
+2026-04-11T07:31:20.426790+00:00,https://www.grays.com/lot/0001-60050537/motor-vehicles-motor-cycles/2005-citroen-c5-automatic-sedan,N/A,,8,,,Referred,sa,SA,lot
+2026-04-11T07:31:36.418103+00:00,https://www.grays.com/lot/0001-60050538/motor-vehicles-motor-cycles/2017-hyundai-i30-active-pd-automatic-hatchback,11700,11700.0,108,,,Sold,sa,SA,lot
+2026-04-11T07:31:54.042569+00:00,https://www.grays.com/lot/0001-60050539/motor-vehicles-motor-cycles/2017-jeep-wrangler-unlimited-rubicon-jk-automatic-wagon,22090,22090.0,229,,,Sold,sa,SA,lot
+2026-04-11T07:32:16.059034+00:00,https://www.grays.com/lot/0001-9067853/motor-vehicles-motor-cycles/2006-holden-commodore-omega-v-limited-ed-ve-automatic-sedan,2509,2509.0,30,,,Sold,wa,WA,lot
+2026-04-11T07:32:36.115059+00:00,https://www.grays.com/lot/0001-9067877/motor-vehicles-motor-cycles/2013-jeep-grand-cherokee-overland-wk-automatic-8-speed-wagon,4900,4900.0,52,,,Sold,wa,WA,lot
+2026-04-11T07:32:55.167627+00:00,https://www.grays.com/lot/0001-9067880/motor-vehicles-motor-cycles/2014-suzuki-s-cross-glx-awd-jy-cvt-hatchback,4309,4309.0,68,,,Sold,wa,WA,lot
+2026-04-11T07:33:15.468350+00:00,https://www.grays.com/lot/0001-9067881/motor-vehicles-motor-cycles/2002-mazda-121-metro-1-3-dw-manual-hatchback,2009,2009.0,24,,,Sold,wa,WA,lot
+2026-04-11T07:33:33.340365+00:00,https://www.grays.com/lot/0001-9067882/motor-vehicles-motor-cycles/2017-mg-gs-vivid-manual-wagon,4500,4500.0,51,,,Sold,wa,WA,lot
+2026-04-11T07:33:54.193659+00:00,https://www.grays.com/lot/0001-9067883/motor-vehicles-motor-cycles/2008-hyundai-iload-tq-turbo-diesel-automatic-van,3000,3000.0,35,,,Sold,wa,WA,lot
+2026-04-11T07:34:14.741926+00:00,https://www.grays.com/lot/0001-9067885/motor-vehicles-motor-cycles/2010-mercedes-benz-c250-be-avantgarde-w204-automatic-sedan,1000,1000.0,15,,,Sold,wa,WA,lot
+2026-04-11T07:34:33.479725+00:00,https://www.grays.com/lot/0001-9067886/motor-vehicles-motor-cycles/2014-hyundai-sonata-premium-lf-automatic-sedan,5200,5200.0,79,,,Sold,wa,WA,lot
+2026-04-11T07:34:54.263732+00:00,https://www.grays.com/lot/0001-9067887/motor-vehicles-motor-cycles/2008-bmw-325i-e90-automatic-sedan,1309,1309.0,16,,,Sold,wa,WA,lot
+2026-04-11T07:35:15.167380+00:00,https://www.grays.com/lot/0001-9067891/motor-vehicles-motor-cycles/2007-toyota-tarago-ultima-gsr50r-automatic-7-seats-people-mover,1909,1909.0,35,,,Sold,wa,WA,lot
+2026-04-11T07:35:29.204003+00:00,https://www.grays.com/lot/0001-9067895/motor-vehicles-motor-cycles/2006-bmw-3-series-325i-e90-automatic-sedan,2009,2009.0,35,,,Sold,wa,WA,lot
+2026-04-11T07:35:49.387223+00:00,https://www.grays.com/lot/0001-9067896/motor-vehicles-motor-cycles/2013-volkswagen-multivan-tdi-340-comfortline-t5-t-d-auto-people-mover,7200,7200.0,91,,,Sold,wa,WA,lot
+2026-04-11T07:36:09.256666+00:00,https://www.grays.com/lot/0001-9067897/motor-vehicles-motor-cycles/2014-ford-ranger-xl-plus-4x4-px-turbo-diesel-automatic-dual-cab,5400,5400.0,91,,,Sold,wa,WA,lot
+2026-04-11T07:36:28.172610+00:00,https://www.grays.com/lot/0001-9067898/motor-vehicles-motor-cycles/2015-audi-a6-allroad-3-0-tdi-quattro-c7-turbo-diesel-automatic-wagon,14850,14850.0,177,,,Sold,wa,WA,lot
+2026-04-11T07:36:48.070728+00:00,https://www.grays.com/lot/0001-9067899/motor-vehicles-motor-cycles/2015-toyota-hilux-4x4-sr-gun126r-turbo-diesel-automatic-crew-cab-chassis,17000,17000.0,156,,,Sold,wa,WA,lot
+2026-04-11T07:37:06.382563+00:00,https://www.grays.com/lot/0001-9067900/motor-vehicles-motor-cycles/2015-audi-a6-3-0-tdi-biturbo-quat-c7-turbo-diesel-automatic-8-speed-sedan,9600,9600.0,132,,,Sold,wa,WA,lot
+2026-04-11T07:37:26.960077+00:00,https://www.grays.com/lot/0001-9067901/motor-vehicles-motor-cycles/2005-ford-territory-tx-sy-automatic-wagon,409,409.0,6,,,Sold,wa,WA,lot
+2026-04-11T07:37:46.655658+00:00,https://www.grays.com/lot/0001-9067902/motor-vehicles-motor-cycles/2014-hyundai-sonata-premium-lf-automatic-sedan,5600,5600.0,45,,,Sold,wa,WA,lot
+2026-04-11T07:38:06.852717+00:00,https://www.grays.com/lot/0001-9067903/motor-vehicles-motor-cycles/2008-subaru-liberty-2-5i-b4-manual-sedan,709,709.0,13,,,Sold,wa,WA,lot
+2026-04-11T07:38:27.360198+00:00,https://www.grays.com/lot/0001-9067904/motor-vehicles-motor-cycles/2009-ford-fiesta-zetec-ws-manual-hatchback,1709,1709.0,22,,,Sold,wa,WA,lot
+2026-04-11T07:38:46.339360+00:00,https://www.grays.com/lot/0001-9067905/motor-vehicles-motor-cycles/2002-toyota-avalon-csx-mcx10r-automatic-sedan,509,509.0,9,,,Sold,wa,WA,lot
+2026-04-11T07:39:06.177600+00:00,https://www.grays.com/lot/0001-9067906/motor-vehicles-motor-cycles/2011-jeep-grand-cherokee-limited-wk-automatic-wagon,2209,2209.0,27,,,Sold,wa,WA,lot
+2026-04-11T07:39:25.248227+00:00,https://www.grays.com/lot/0001-9067907/motor-vehicles-motor-cycles/2014-jeep-grand-cherokee-srt-8-wk-automatic-8-speed-wagon,N/A,,133,,,Referred,wa,WA,lot
+2026-04-11T07:39:45.243480+00:00,https://www.grays.com/lot/0001-9067908/motor-vehicles-motor-cycles/2020-isuzu-mu-x-4x4-ls-t-turbo-diesel-automatic-7-seats-wagon,10100,10100.0,72,,,Sold,wa,WA,lot
+2026-04-11T07:39:57.576369+00:00,https://www.grays.com/lot/0001-9067910/motor-vehicles-motor-cycles/2005-mercedes-benz-c-class-c180-k-classic-w203-automatic-sedan,700,700.0,7,,,Sold,wa,WA,lot
+2026-04-11T07:40:16.549222+00:00,https://www.grays.com/lot/0001-9067912/motor-vehicles-motor-cycles/2008-holden-commodore-omega-ve-automatic-sedan,2100,2100.0,21,,,Sold,wa,WA,lot
+2026-04-11T07:40:30.780486+00:00,https://www.grays.com/lot/0001-9067914/motor-vehicles-motor-cycles/2008-mitsubishi-lancer-es-cj-manual-sedan,1000,1000.0,8,,,Sold,wa,WA,lot
+2026-04-11T07:40:49.305745+00:00,https://www.grays.com/lot/0001-9067915/motor-vehicles-motor-cycles/2011-dodge-caliber-sxt-cvt-hatchback,500,500.0,7,,,Sold,wa,WA,lot
+2026-04-11T07:41:09.677827+00:00,https://www.grays.com/lot/0001-9067916/motor-vehicles-motor-cycles/2012-subaru-impreza-2-0i-g4-manual-hatchback,1000,1000.0,13,,,Sold,wa,WA,lot
+2026-04-11T07:41:31.281051+00:00,https://www.grays.com/lot/0001-9067919/motor-vehicles-motor-cycles/2006-holden-rodeo-lx-td-crew-cab-ra-turbo-diesel-manual-crew-cab-chassis,5000,5000.0,19,,,Sold,wa,WA,lot
+2026-04-11T07:41:50.453992+00:00,https://www.grays.com/lot/0001-9067920/motor-vehicles-motor-cycles/2021-ford-ranger-raptor-x-4x4-px-iii-turbo-diesel-10-auto-dual-cab,31633,31633.0,235,,,Sold,wa,WA,lot
+2026-04-11T07:42:10.919514+00:00,https://www.grays.com/lot/0001-9067923/motor-vehicles-motor-cycles/2007-mazda-cx-7-luxury-automatic-wagon,400,400.0,6,,,Sold,wa,WA,lot
+2026-04-11T07:42:32.316146+00:00,https://www.grays.com/lot/0001-9067924/motor-vehicles-motor-cycles/2015-holden-captiva-7-active-le-2wd-cg-ii-automatic-7-seats-wagon,700,700.0,7,,,Sold,wa,WA,lot
+2026-04-11T07:42:51.561510+00:00,https://www.grays.com/lot/0001-9067927/motor-vehicles-motor-cycles/2004-mazda-3-sp23-bk-manual-hatchback,1100,1100.0,12,,,Sold,wa,WA,lot
+2026-04-11T07:43:12.301236+00:00,https://www.grays.com/lot/0001-9067928/motor-vehicles-motor-cycles/2007-lexus-is250-prestige-automatic-sedan,800,800.0,11,,,Sold,wa,WA,lot
+2026-04-11T07:43:31.608717+00:00,https://www.grays.com/lot/0001-9067930/motor-vehicles-motor-cycles/1996-toyota-starlet-life-ep91r-manual-hatchback,609,609.0,7,,,Sold,wa,WA,lot
+2026-04-11T07:43:49.875007+00:00,https://www.grays.com/lot/0001-9067932/motor-vehicles-motor-cycles/2014-volkswagen-touareg-150tdi-7p-turbo-diesel-automatic-8-speed-wagon,9100,9100.0,73,,,Sold,wa,WA,lot
+2026-04-11T07:44:08.150285+00:00,https://www.grays.com/lot/0001-9067937/motor-vehicles-motor-cycles/2015-holden-trax-ls-tj-manual-wagon,5100,5100.0,39,,,Sold,wa,WA,lot
+2026-04-11T07:44:27.725879+00:00,https://www.grays.com/lot/0001-9067939/motor-vehicles-motor-cycles/2015-holden-trax-ls-tj-automatic-wagon,5750,5750.0,45,,,Sold,wa,WA,lot
+2026-04-11T07:44:46.283523+00:00,https://www.grays.com/lot/0001-9067941/motor-vehicles-motor-cycles/2006-nissan-x-trail-st-4x4-t30-automatic-wagon,1509,1509.0,22,,,Sold,wa,WA,lot
+2026-04-11T07:45:04.808493+00:00,https://www.grays.com/lot/0001-9067945/motor-vehicles-motor-cycles/2009-bmw-x5-3-0si-e70-automatic-7-seats-wagon,1309,1309.0,21,,,Sold,wa,WA,lot
+2026-04-11T07:45:23.343846+00:00,https://www.grays.com/lot/0001-9067947/motor-vehicles-motor-cycles/2007-audi-a5-3-2-fsi-8t-cvt-coupe,2100,2100.0,23,,,Sold,wa,WA,lot
+2026-04-11T07:45:43.606476+00:00,https://www.grays.com/lot/0001-9067948/motor-vehicles-motor-cycles/2014-kia-optima-si-tf-automatic-sedan,4300,4300.0,38,,,Sold,wa,WA,lot
+2026-04-11T07:46:03.808193+00:00,https://www.grays.com/lot/0001-9067949/motor-vehicles-motor-cycles/2004-mitsubishi-outlander-xls-zf-automatic-wagon,609,609.0,10,,,Sold,wa,WA,lot
+2026-04-11T07:46:22.946395+00:00,https://www.grays.com/lot/0001-9067950/motor-vehicles-motor-cycles/2016-ford-ranger-automatic-dual-cab-ute,5200,5200.0,69,,,Sold,wa,WA,lot
+2026-04-11T07:46:41.577343+00:00,https://www.grays.com/lot/0001-9067952/motor-vehicles-motor-cycles/2016-mazda-3-sp25-bn-automatic-hatchback,7709,7709.0,129,,,Sold,wa,WA,lot
+2026-04-11T07:47:01.771967+00:00,https://www.grays.com/lot/0001-9067953/motor-vehicles-motor-cycles/2011-great-wall-x240-4x4-manual-wagon,609,609.0,10,,,Sold,wa,WA,lot
+2026-04-11T07:47:21.150669+00:00,https://www.grays.com/lot/0001-9067954/motor-vehicles-motor-cycles/2018-ford-everest-trend-4wd-uaii-turbo-diesel-automatic-7-seats-wagon,21705,21705.0,195,,,Sold,wa,WA,lot
+2026-04-11T07:47:42.332051+00:00,https://www.grays.com/lot/0001-9067955/motor-vehicles-motor-cycles/2007-toyota-aurion-sportivo-sx6-gsv40r-automatic-sedan,1909,1909.0,28,,,Sold,wa,WA,lot
+2026-04-11T07:48:01.688438+00:00,https://www.grays.com/lot/0001-9067956/motor-vehicles-motor-cycles/2007-hyundai-elantra-sx-hd-automatic-sedan,1109,1109.0,12,,,Sold,wa,WA,lot
+2026-04-11T07:48:20.720984+00:00,https://www.grays.com/lot/0001-9067959/motor-vehicles-motor-cycles/2021-toyota-camry-ascent-sport-hybrid-axvh70r-cvt-sedan,N/A,,75,,,Referred,wa,WA,lot
+2026-04-11T07:48:34.628194+00:00,https://www.grays.com/lot/0001-9067962/motor-vehicles-motor-cycles/2012-peugeot-208-allure-sport-manual-hatchback,900,900.0,9,,,Sold,wa,WA,lot
+2026-04-11T07:48:55.952500+00:00,https://www.grays.com/lot/0001-9067963/motor-vehicles-motor-cycles/2013-mitsubishi-outlander-aspire-4wd-zj-t-d-auto-7-seats-wagon,3209,3209.0,45,,,Sold,wa,WA,lot
+2026-04-11T07:49:14.781195+00:00,https://www.grays.com/lot/0001-9067964/motor-vehicles-motor-cycles/2015-ford-kuga-ambiente-awd-tf-ii-automatic-wagon,2709,2709.0,35,,,Sold,wa,WA,lot
+2026-04-11T07:49:34.856613+00:00,https://www.grays.com/lot/0001-9067966/motor-vehicles-motor-cycles/2010-hyundai-ix35-highlander-awd-lm-turbo-diesel-automatic-wagon,2209,2209.0,23,,,Sold,wa,WA,lot
+2026-04-11T07:49:55.943707+00:00,https://www.grays.com/lot/0001-9067971/motor-vehicles-motor-cycles/2006-ford-falcon-xr6-bf-automatic-ute,1409,1409.0,15,,,Sold,wa,WA,lot
+2026-04-11T07:50:15.961107+00:00,https://www.grays.com/lot/0001-9067972/motor-vehicles-motor-cycles/2011-mitsubishi-outlander-vrx-zh-automatic-wagon,1309,1309.0,17,,,Sold,wa,WA,lot
+2026-04-11T07:50:35.885982+00:00,https://www.grays.com/lot/0001-9067973/motor-vehicles-motor-cycles/2014-mitsubishi-outlander-aspire-phev-4wd-zj-direct-drive-wagon,6309,6309.0,103,,,Sold,wa,WA,lot
+2026-04-11T07:50:55.023689+00:00,https://www.grays.com/lot/0001-9067974/motor-vehicles-motor-cycles/2012-kia-sorento-si-xm-turbo-diesel-manual-7-seats-wagon,1409,1409.0,21,,,Sold,wa,WA,lot
+2026-04-11T07:51:14.794590+00:00,https://www.grays.com/lot/0001-9067975/motor-vehicles-motor-cycles/2012-ssangyong-korando-s-automatic-wagon,709,709.0,10,,,Sold,wa,WA,lot
+2026-04-11T07:51:34.060299+00:00,https://www.grays.com/lot/0001-9067976/motor-vehicles-motor-cycles/2007-honda-civic-vti-l-8th-gen-automatic-sedan,2109,2109.0,27,,,Sold,wa,WA,lot
+2026-04-11T07:51:54.731613+00:00,https://www.grays.com/lot/0001-9067978/motor-vehicles-motor-cycles/2008-peugeot-308-xse-hdi-turbo-diesel-manual-hatchback,809,809.0,9,,,Sold,wa,WA,lot
+2026-04-11T07:52:14.951599+00:00,https://www.grays.com/lot/0001-9067983/motor-vehicles-motor-cycles/2005-bmw-x3-3-0i-e83-automatic-wagon,1550,1550.0,18,,,Sold,wa,WA,lot
+2026-04-11T07:52:30.370949+00:00,https://www.grays.com/lot/0001-9067985/motor-vehicles-motor-cycles/2017-holden-astra-r-bk-automatic-hatchback,4401,4401.0,54,,,Sold,wa,WA,lot
+2026-04-11T07:52:49.731086+00:00,https://www.grays.com/lot/0001-9067986/motor-vehicles-motor-cycles/2016-renault-clio-expression-automatic-hatchback,5150,5150.0,66,,,Sold,wa,WA,lot
+2026-04-11T07:53:08.146419+00:00,https://www.grays.com/lot/0001-9067988/motor-vehicles-motor-cycles/2008-bmw-1-series-120i-e87-automatic-hatchback,1509,1509.0,16,,,Sold,wa,WA,lot
+2026-04-11T07:53:27.840227+00:00,https://www.grays.com/lot/0001-9067990/motor-vehicles-motor-cycles/2012-audi-q7-4-2-tdi-quattro-turbo-diesel-automatic-8-speed-7-seats-wagon,N/A,,77,,,Referred,wa,WA,lot
+2026-04-11T07:53:48.901193+00:00,https://www.grays.com/lot/0001-9067991/motor-vehicles-motor-cycles/2013-hyundai-i30-active-gd-turbo-diesel-automatic-hatchback,4300,4300.0,59,,,Sold,wa,WA,lot
+2026-04-11T07:54:10.910820+00:00,https://www.grays.com/lot/0001-9067992/motor-vehicles-motor-cycles/2014-holden-cruze-z-series-jh-automatic-sedan,709,709.0,9,,,Sold,wa,WA,lot
+2026-04-11T07:54:32.119347+00:00,https://www.grays.com/lot/0001-9067993/motor-vehicles-motor-cycles/2010-nissan-x-trail-st-t31-cvt-wagon,509,509.0,9,,,Sold,wa,WA,lot
+2026-04-11T07:54:57.198801+00:00,https://www.grays.com/lot/0001-9067994/motor-vehicles-motor-cycles/2008-bmw-x5-3-0d-e70-turbo-diesel-automatic-7-seats-wagon,5209,5209.0,77,,,Sold,wa,WA,lot
+2026-04-11T07:55:17.615896+00:00,https://www.grays.com/lot/0001-9067995/motor-vehicles-motor-cycles/2007-toyota-aurion-at-x-gsv40r-automatic-sedan,1900,1900.0,21,,,Sold,wa,WA,lot
+2026-04-11T07:55:36.136411+00:00,https://www.grays.com/lot/0001-9067996/motor-vehicles-motor-cycles/2006-subaru-forester-2-5x-automatic-wagon,2200,2200.0,20,,,Sold,wa,WA,lot
+2026-04-11T07:55:55.667775+00:00,https://www.grays.com/lot/0001-9067997/motor-vehicles-motor-cycles/2008-mercedes-benz-gl-class-gl320cdi-x164-t-d-auto-7-seats-wagon,3500,3500.0,40,,,Sold,wa,WA,lot
+2026-04-11T07:56:16.373502+00:00,https://www.grays.com/lot/0001-9067998/motor-vehicles-motor-cycles/2007-bmw-x3-2-5si-e83-manual-wagon,2900,2900.0,33,,,Sold,wa,WA,lot
+2026-04-11T07:56:35.962459+00:00,https://www.grays.com/lot/0001-9067999/motor-vehicles-motor-cycles/2014-volkswagen-golf-90tsi-comfortline-a7-automatic-hatchback,3850,3850.0,47,,,Sold,wa,WA,lot
+2026-04-11T07:56:55.553364+00:00,https://www.grays.com/lot/0001-9068000/motor-vehicles-motor-cycles/2010-peugeot-308-sportium-le-turbo-automatic-hatchback,1009,1009.0,11,,,Sold,wa,WA,lot
+2026-04-11T07:57:10.552583+00:00,https://www.grays.com/lot/0002-60050490/motor-vehicles-motor-cycles/2001-holden-statesman-wh-automatic-sedan,N/A,,20,,,Referred,sa,SA,lot
+2026-04-11T07:57:21.462041+00:00,https://www.grays.com/lot/0002-60050493/motor-vehicles-motor-cycles/2009-holden-captiva-sx-4wd-automatic-suv,N/A,,0,,,Referred,nt,NT,lot
+2026-04-11T08:00:56.780128+00:00,https://www.grays.com/lot/0001-10353176/motor-vehicles-motor-cycles/2017-mercedes-benz-a-class-a180-w176-automatic-hatchback-wovr-inspected,6800,6800.0,64,,,,,,lot
+2026-04-11T08:01:20.626394+00:00,https://www.grays.com/lot/0001-10353179/motor-vehicles-motor-cycles/2012-mazda-cx-5-maxx-ke-manual-wagon-wovr-inspected,N/A,,51,,,,,,lot
+2026-04-11T08:01:55.994851+00:00,https://www.grays.com/lot/0001-10353189/motor-vehicles-motor-cycles/2021-mitsubishi-triton-4x4-glx-adas-double-mr-td-at-crew-cab-chassis,8100,8100.0,49,4d 1h 28m7s,97.469,Active,nsw,NSW,lot
+2026-04-11T08:02:26.741080+00:00,https://www.grays.com/lot/0001-10353227/motor-vehicles-motor-cycles/2022-toyota-yaris-zr-hybrid-cvt-hatchback-wovr-inspected,N/A,,149,,,,,,lot
+2026-04-11T08:03:08.318350+00:00,https://www.grays.com/lot/0001-10353238/motor-vehicles-motor-cycles/2009-subaru-impreza-r-g3-manual-hatchback-wovr-inspected,109,109.0,3,,,,,,lot
+2026-04-11T08:03:30.966214+00:00,https://www.grays.com/lot/0001-21064862/motor-vehicles-motor-cycles/2013-hyundai-iload-tq-turbo-diesel-wovr-inspected,3600,3600.0,47,,,,,,lot
+2026-04-11T08:03:53.423475+00:00,https://www.grays.com/lot/0001-21064976/motor-vehicles-motor-cycles/2008-mazda-3-sp23-luxury-pack-bk-automatic-sedan-wovr-inspected,N/A,,20,,,,,,lot
+2026-04-11T08:04:20.737147+00:00,https://www.grays.com/lot/0001-21065008/motor-vehicles-motor-cycles/2021-toyota-hilux-4x2-workmate-tgn121r-auto-cab-chassis-wovr-repairable,9200,9200.0,9,,,,,,lot
+2026-04-11T08:04:48.236935+00:00,https://www.grays.com/lot/0001-21065013/motor-vehicles-motor-cycles/2010-volkswagen-tiguan-125-tsi-5n-automatic-wagon-wovr-inspected,4100,4100.0,67,,,,,,lot
+2026-04-11T08:05:08.057636+00:00,https://www.grays.com/lot/0001-21065046/motor-vehicles-motor-cycles/2008-toyota-yaris-yr-ncp90r-automatic-wovr-inspected,2500,2500.0,15,,,,,,lot
+2026-04-11T08:05:29.570641+00:00,https://www.grays.com/lot/0001-21065052/motor-vehicles-motor-cycles/2003-mazda-3-neo-bk-automatic-sedan-wovr-repairable,909,909.0,18,,,,,,lot
+2026-04-11T08:05:58.799267+00:00,https://www.grays.com/lot/0001-21065064/motor-vehicles-motor-cycles/2015-holden-captiva-7-ltz-awd-cg-ii-td-at-7-seats-wagon-wovr-inspected,2009,2009.0,27,,,,,,lot
+2026-04-11T08:06:14.406318+00:00,https://www.grays.com/lot/0001-21065095/motor-vehicles-motor-cycles/2001-honda-s2000-manual-coupe-wovr-inspected,N/A,,95,,,,,,lot
+2026-04-11T08:06:46.725070+00:00,https://www.grays.com/lot/0001-21065096/motor-vehicles-motor-cycles/2019-nissan-patrol-ti-l-y62-automatic-7-seats-wovr-inspected,N/A,,42,,,,,,lot
+2026-04-11T08:06:57.694997+00:00,https://www.grays.com/lot/0001-21065171/motor-vehicles-motor-cycles/2006-holden-rodeo-lx-td-crew-cab-ra-t-d-auto-dual-cab-wovr-repairable,709,709.0,10,,,,,,lot
+2026-04-11T08:07:12.266347+00:00,https://www.grays.com/lot/0001-21065196/motor-vehicles-motor-cycles/2016-ford-ranger-xls-4x4-px-ii-automatic-dual-cab-wovr-repairable,9900,9900.0,22,,,,,,lot
+2026-04-11T08:07:38.722352+00:00,https://www.grays.com/lot/0001-50715148/motor-vehicles-motor-cycles/2018-honda-jazz-vti-l-gk-cvt-hatchback-wovr-inspected,N/A,,0,,,,,,lot
+2026-04-11T08:07:52.235863+00:00,https://www.grays.com/lot/0001-50715164/motor-vehicles-motor-cycles/2020-toyota-hilux-4x4-sr-gun126r-turbo-diesel-automatic-dual-cab,9,9.0,0,11d 1h 52m10s,265.869,Active,qld,QLD,lot
+2026-04-11T08:08:06.122506+00:00,https://www.grays.com/lot/0001-50715216/motor-vehicles-motor-cycles/2013-mazda-cx-5-maxx-sport-ke-turbo-diesel-wovr-repairable,1409,1409.0,27,,,,,,lot
+2026-04-11T08:08:17.364245+00:00,https://www.grays.com/lot/0001-50715245/motor-vehicles-motor-cycles/2023-hyundai-i30-active-pd-automatic-hatchback-wovr-repairable,12900,12900.0,97,,,,,,lot
+2026-04-11T08:08:38.468548+00:00,https://www.grays.com/lot/0001-9067893/motor-vehicles-motor-cycles/2015-land-rover-discovery-sport-td4-se-t-d-auto-wagon-wovr-inspected,N/A,,0,,,,,,lot
+2026-04-11T08:08:54.442672+00:00,https://www.grays.com/lot/0001-9067909/motor-vehicles-motor-cycles/2008-volkswagen-jetta-2-0-tdi-1km-turbo-diesel-auto-wovr-inspected,500,500.0,5,,,,,,lot
+2026-04-11T08:09:12.256829+00:00,https://www.grays.com/lot/0001-9067944/motor-vehicles-motor-cycles/2013-nissan-dualis-ti-l-2-j10-iii-cvt-7-seats-wagon-wovr-inspected,3200,3200.0,32,,,,,,lot
+2026-04-11T08:09:32.140661+00:00,https://www.grays.com/lot/0001-9067951/motor-vehicles-motor-cycles/2010-bmw-3-series-320i-exec-e90-automatic-sedan-wovr-inspected,1309,1309.0,14,,,,,,lot
+2026-04-11T09:00:35.952998+00:00,https://www.grays.com/lot/0001-10353162/motor-vehicles-motor-cycles/2020-toyota-hilux-4x4-rugged-x-gun126r-turbo-diesel-automatic-dual-cab,31850,31850.0,202,1d 0h 59m25s,24.99,Active,nsw,NSW,lot
+2026-04-11T09:00:54.104990+00:00,https://www.grays.com/lot/0001-10353189/motor-vehicles-motor-cycles/2021-mitsubishi-triton-4x4-glx-adas-double-mr-td-at-crew-cab-chassis,8100,8100.0,49,4d 0h 29m8s,96.486,Active,nsw,NSW,lot
+2026-04-11T09:01:17.691755+00:00,https://www.grays.com/lot/0001-10353202/motor-vehicles-motor-cycles/2016-jeep-wrangler-unlimited-sport-jk-automatic-wagon,4900,4900.0,73,1d 0h 58m44s,24.979,Active,nsw,NSW,lot
+2026-04-11T09:01:43.309735+00:00,https://www.grays.com/lot/0001-10353205/motor-vehicles-motor-cycles/1999-toyota-hiace-lwb-100-series-rzh113r-manual-van,2400,2400.0,18,1d 0h 58m18s,24.972,Active,nsw,NSW,lot
+2026-04-11T09:02:13.686731+00:00,https://www.grays.com/lot/0001-10353228/motor-vehicles-motor-cycles/2011-toyota-hiace-lwb-kdh201r-turbo-diesel-automatic-van,409,409.0,5,1d 0h 57m49s,24.964,Active,nsw,NSW,lot
+2026-04-11T09:02:45.033196+00:00,https://www.grays.com/lot/0001-10353229/motor-vehicles-motor-cycles/2005-toyota-hiace-lwb-trh201r-automatic-van,3300,3300.0,40,1d 0h 57m16s,24.954,Active,nsw,NSW,lot
+2026-04-11T09:03:13.659988+00:00,https://www.grays.com/lot/0001-10353230/motor-vehicles-motor-cycles/2009-mazda-cx-7-classic-automatic-wagon,1300,1300.0,12,1d 0h 56m48s,24.947,Active,nsw,NSW,lot
+2026-04-11T09:03:45.754416+00:00,https://www.grays.com/lot/0001-10353245/motor-vehicles-motor-cycles/2008-mitsubishi-pajero-vrx-ns-turbo-diesel-automatic-wagon,6200,6200.0,81,1d 0h 56m17s,24.938,Active,nsw,NSW,lot
+2026-04-11T09:04:06.229663+00:00,https://www.grays.com/lot/0001-10353246/motor-vehicles-motor-cycles/2012-hyundai-iload-tq-turbo-diesel-manual-van,109,109.0,2,1d 0h 55m56s,24.932,Active,nsw,NSW,lot
+2026-04-11T09:04:37.758679+00:00,https://www.grays.com/lot/0001-10353250/motor-vehicles-motor-cycles/2015-ford-transit-custom-330l-lwb-vn-turbo-diesel-manual-van,9,9.0,1,4d 0h 55m24s,96.923,Active,nsw,NSW,lot
+2026-04-11T09:05:02.271003+00:00,https://www.grays.com/lot/0001-10353255/motor-vehicles-motor-cycles/2012-mazda-cx-5-maxx-ke-manual-wagon-wovr-inspected,9,9.0,0,3d 0h 54m59s,72.916,Active,nsw,NSW,lot
+2026-04-11T09:05:26.844311+00:00,https://www.grays.com/lot/0001-10353256/motor-vehicles-motor-cycles/2004-toyota-tarago-gli-acr30r-automatic-8-seats-people-mover,609,609.0,7,3d 0h 54m36s,72.91,Active,nsw,NSW,lot
+2026-04-11T09:05:46.213692+00:00,https://www.grays.com/lot/0001-10353258/motor-vehicles-motor-cycles/2014-toyota-camry-hybrid-h-avv50r-cvt-sedan,4200,4200.0,43,3d 0h 54m15s,72.904,Active,nsw,NSW,lot
+2026-04-11T09:06:00.197948+00:00,https://www.grays.com/lot/0001-10353259/motor-vehicles-motor-cycles/2011-kia-cerato-si-td-manual-hatchback,9,9.0,0,5d 0h 54m2s,120.901,Active,nsw,NSW,lot
+2026-04-11T09:06:31.773214+00:00,https://www.grays.com/lot/0001-10353261/motor-vehicles-motor-cycles/2015-ford-kuga-trend-awd-tf-ii-turbo-diesel-automatic-wagon,309,309.0,4,4d 0h 53m30s,96.892,Active,nsw,NSW,lot
+2026-04-11T09:06:52.906940+00:00,https://www.grays.com/lot/0001-10353262/motor-vehicles-motor-cycles/2017-jaguar-f-pace-20d-prestige-turbo-diesel-automatic-8-speed-wagon,3129,3129.0,10,4d 0h 53m8s,96.886,Active,nsw,NSW,lot
+2026-04-11T09:07:15.691775+00:00,https://www.grays.com/lot/0001-10353263/motor-vehicles-motor-cycles/2011-ford-focus-ambiente-lw-manual-hatchback,9,9.0,0,4d 0h 52m46s,96.879,Active,nsw,NSW,lot
+2026-04-11T09:07:48.028063+00:00,https://www.grays.com/lot/0001-10353264/motor-vehicles-motor-cycles/2013-bmw-1-series-116i-f20-automatic-8-speed-hatchback,209,209.0,4,4d 0h 52m13s,96.87,Active,nsw,NSW,lot
+2026-04-11T09:08:09.892254+00:00,https://www.grays.com/lot/0001-10353265/motor-vehicles-motor-cycles/2006-volvo-s80-v8-awd-automatic-sedan,309,309.0,5,4d 0h 51m51s,96.864,Active,nsw,NSW,lot
+2026-04-11T09:08:31.345609+00:00,https://www.grays.com/lot/0001-10353266/motor-vehicles-motor-cycles/2006-bmw-x5-3-0i-e53-automatic-wagon,9,9.0,1,4d 0h 51m30s,96.858,Active,nsw,NSW,lot
+2026-04-11T09:08:54.685855+00:00,https://www.grays.com/lot/0001-10353267/motor-vehicles-motor-cycles/2013-nissan-pulsar-sss-c12-manual-hatchback,109,109.0,2,4d 0h 51m7s,96.852,Active,nsw,NSW,lot
+2026-04-11T09:09:17.988388+00:00,https://www.grays.com/lot/0001-10353268/motor-vehicles-motor-cycles/2014-toyota-camry-altise-asv50r-automatic-sedan,109,109.0,2,4d 0h 50m43s,96.845,Active,nsw,NSW,lot
+2026-04-11T09:09:51.385565+00:00,https://www.grays.com/lot/0001-10353269/motor-vehicles-motor-cycles/2013-mazda-bt-50-4x2-xt-turbo-diesel-manual-dual-cab,9,9.0,0,4d 0h 50m10s,96.836,Active,nsw,NSW,lot
+2026-04-11T09:10:15.032651+00:00,https://www.grays.com/lot/0001-10353270/motor-vehicles-motor-cycles/2011-audi-q5-3-0-tdi-quattro-8r-turbo-diesel-automatic-wagon,1200,1200.0,5,4d 0h 49m47s,96.83,Active,nsw,NSW,lot
+2026-04-11T09:10:39.195045+00:00,https://www.grays.com/lot/0001-10353271/motor-vehicles-motor-cycles/2007-toyota-tarago-gli-gsr50r-automatic-8-seats-people-mover,9,9.0,1,4d 0h 49m22s,96.823,Active,nsw,NSW,lot
+2026-04-11T09:11:10.242423+00:00,https://www.grays.com/lot/0001-10353273/motor-vehicles-motor-cycles/2015-jeep-renegade-limited-bu-automatic-wagon,2005,2005.0,18,4d 0h 48m51s,96.814,Active,nsw,NSW,lot
+2026-04-11T09:11:35.471388+00:00,https://www.grays.com/lot/0001-10353274/motor-vehicles-motor-cycles/2007-lexus-is-is250-prestige-automatic-sedan,9,9.0,0,3d 0h 48m26s,72.807,Active,nsw,NSW,lot
+2026-04-11T09:11:56.263237+00:00,https://www.grays.com/lot/0001-10353275/motor-vehicles-motor-cycles/2006-bmw-x5-4-4i-e53-automatic-wagon,9,9.0,1,3d 0h 48m6s,72.802,Active,nsw,NSW,lot
+2026-04-11T09:12:30.706411+00:00,https://www.grays.com/lot/0001-10353276/motor-vehicles-motor-cycles/2007-nissan-navara-st-x-4x4-double-cab-d40-turbo-diesel-manual-dual-cab,309,309.0,5,3d 0h 47m31s,72.792,Active,nsw,NSW,lot
+2026-04-11T09:12:59.064163+00:00,https://www.grays.com/lot/0001-10353277/motor-vehicles-motor-cycles/2020-hyundai-santa-fe-active-tm-turbo-diesel-auto-7-seats-wagon,2100,2100.0,2,3d 0h 47m3s,72.784,Active,nsw,NSW,lot
+2026-04-11T09:13:24.468791+00:00,https://www.grays.com/lot/0001-10353278/motor-vehicles-motor-cycles/2006-toyota-landcruiser-prado-gxl-grj120r-automatic-wagon,9,9.0,0,3d 0h 46m38s,72.777,Active,nsw,NSW,lot
+2026-04-11T09:13:56.395650+00:00,https://www.grays.com/lot/0001-10353279/motor-vehicles-motor-cycles/2010-mercedes-benz-c200-cgi-w204-automatic-sedan,9,9.0,1,3d 0h 46m6s,72.768,Active,nsw,NSW,lot
+2026-04-11T09:14:18.269118+00:00,https://www.grays.com/lot/0001-10353280/motor-vehicles-motor-cycles/2007-peugeot-207-cc-1-6-automatic-convertible,9,9.0,0,3d 0h 45m44s,72.762,Active,nsw,NSW,lot
+2026-04-11T09:14:48.705666+00:00,https://www.grays.com/lot/0001-10353281/motor-vehicles-motor-cycles/2011-mercedes-benz-gl-class-gl350-cdi-x164-turbo-diesel-auto-7-seats-wagon,9,9.0,1,3d 0h 45m13s,72.754,Active,nsw,NSW,lot
+2026-04-11T09:15:09.087158+00:00,https://www.grays.com/lot/0001-10353282/motor-vehicles-motor-cycles/2014-renault-captur-expression-manual-wagon,9,9.0,1,3d 0h 44m53s,72.748,Active,nsw,NSW,lot
+2026-04-11T09:15:29.064783+00:00,https://www.grays.com/lot/0001-10353283/motor-vehicles-motor-cycles/2014-porsche-macan-s-diesel-95b-turbo-diesel-automatic-wagon,10388,10388.0,97,3d 0h 44m32s,72.742,Active,nsw,NSW,lot
+2026-04-11T09:15:52.596809+00:00,https://www.grays.com/lot/0001-10353284/motor-vehicles-motor-cycles/2012-subaru-xv-2-0i-l-g4x-cvt-hatchback,9,9.0,1,3d 0h 44m9s,72.736,Active,nsw,NSW,lot
+2026-04-11T09:16:13.476830+00:00,https://www.grays.com/lot/0001-10353285/motor-vehicles-motor-cycles/2014-volkswagen-golf-90tsi-a7-manual-hatchback,9,9.0,0,3d 0h 43m48s,72.73,Active,nsw,NSW,lot
+2026-04-11T09:16:34.992425+00:00,https://www.grays.com/lot/0001-10353286/motor-vehicles-motor-cycles/2014-volkswagen-tiguan-132-tsi-5n-automatic-wagon,309,309.0,4,3d 0h 43m27s,72.724,Active,nsw,NSW,lot
+2026-04-11T09:16:57.029533+00:00,https://www.grays.com/lot/0001-10353287/motor-vehicles-motor-cycles/2011-nissan-elgrand-cvt-8-seats-people-mover,109,109.0,2,3d 0h 43m4s,72.718,Active,nsw,NSW,lot
+2026-04-11T09:17:17.407036+00:00,https://www.grays.com/lot/0001-10353288/motor-vehicles-motor-cycles/2018-mazda-bt-50-4x2-xt-turbo-diesel-automatic-cab-chassis,209,209.0,3,3d 0h 42m44s,72.712,Active,nsw,NSW,lot
+2026-04-11T09:17:48.108665+00:00,https://www.grays.com/lot/0001-10353290/motor-vehicles-motor-cycles/2015-volkswagen-touareg-150tdi-7p-turbo-diesel-automatic-8-speed-wagon,109,109.0,2,3d 0h 42m15s,72.704,Active,nsw,NSW,lot
+2026-04-11T09:18:20.360199+00:00,https://www.grays.com/lot/0001-10353291/motor-vehicles-motor-cycles/2017-holden-colorado-4x2-lx-rg-turbo-diesel-automatic-dual-cab,15000,15000.0,0,3d 0h 41m41s,72.695,Active,nsw,NSW,lot
+2026-04-11T09:18:52.319935+00:00,https://www.grays.com/lot/0001-10353292/motor-vehicles-motor-cycles/2019-kia-cerato-s-bd-automatic-hatchback,14200,14200.0,128,2d 0h 41m9s,48.686,Active,nsw,NSW,lot
+2026-04-11T09:19:13.130565+00:00,https://www.grays.com/lot/0001-10353293/motor-vehicles-motor-cycles/2022-mazda-cx-5-maxx-kf-manual-wagon,11100,11100.0,37,2d 0h 40m48s,48.68,Active,nsw,NSW,lot
+2026-04-11T09:19:38.023371+00:00,https://www.grays.com/lot/0001-10353294/motor-vehicles-motor-cycles/2016-holden-captiva-7-ls-2wd-cg-ii-turbo-diesel-automatic-7-seats-wagon,600,600.0,11,2d 0h 40m24s,48.673,Active,nsw,NSW,lot
+2026-04-11T09:19:57.149448+00:00,https://www.grays.com/lot/0001-10353295/motor-vehicles-motor-cycles/2007-audi-a4-1-8-quattro-b7-manual-sedan,9,9.0,1,3d 0h 40m4s,72.668,Active,nsw,NSW,lot
+2026-04-11T09:20:20.290818+00:00,https://www.grays.com/lot/0001-10353296/motor-vehicles-motor-cycles/2015-ford-kuga-titanium-awd-tf-ii-turbo-diesel-automatic-wagon,1009,1009.0,16,2d 0h 39m42s,48.662,Active,nsw,NSW,lot
+2026-04-11T09:20:44.897727+00:00,https://www.grays.com/lot/0001-10353301/motor-vehicles-motor-cycles/2005-mazda-6-limited-gg-automatic-sedan,9,9.0,0,4d 0h 39m17s,96.655,Active,nsw,NSW,lot
+2026-04-11T09:21:09.384219+00:00,https://www.grays.com/lot/0001-10353302/motor-vehicles-motor-cycles/2011-renault-megane-dynamique-cvt-hatchback,109,109.0,2,4d 0h 38m52s,96.648,Active,nsw,NSW,lot
+2026-04-11T09:21:33.974281+00:00,https://www.grays.com/lot/0001-10353303/motor-vehicles-motor-cycles/2010-nissan-tiida-st-c11-automatic-hatchback,9,9.0,0,4d 0h 38m28s,96.641,Active,nsw,NSW,lot
+2026-04-11T09:22:02.471617+00:00,https://www.grays.com/lot/0001-10353304/motor-vehicles-motor-cycles/2001-mitsubishi-lancer-gli-1-5-ce-manual-coupe,9,9.0,1,4d 0h 38m0s,96.633,Active,nsw,NSW,lot
+2026-04-11T09:22:24.138090+00:00,https://www.grays.com/lot/0001-10353308/motor-vehicles-motor-cycles/2005-volkswagen-polo-gti-9n-manual-hatchback,9,9.0,1,4d 0h 37m38s,96.627,Active,nsw,NSW,lot
+2026-04-11T09:22:43.985670+00:00,https://www.grays.com/lot/0001-10913025/motor-vehicles-motor-cycles/2005-nissan-pathfinder-ti-r51-automatic-7-seats-wagon,1650,1650.0,14,1d 0h 37m17s,24.621,Active,nsw,NSW,lot
+2026-04-11T09:23:02.817435+00:00,https://www.grays.com/lot/0001-10913029/motor-vehicles-motor-cycles/2012-audi-a5-3-0-tdi-quattro-8t-turbo-diesel-automatic-sedan,3100,3100.0,19,3d 0h 36m58s,72.616,Active,nsw,NSW,lot
+2026-04-11T09:23:26.586581+00:00,https://www.grays.com/lot/0001-10913030/motor-vehicles-motor-cycles/2014-bmw-x5-xdrive-40d-f15-turbo-diesel-automatic-8-speed-wagon,209,209.0,3,4d 0h 36m35s,96.61,Active,nsw,NSW,lot
+2026-04-11T09:23:58.100140+00:00,https://www.grays.com/lot/0001-10913031/motor-vehicles-motor-cycles/2012-volkswagen-golf-90tsi-trendline-a6-automatic-hatchback,9,9.0,0,4d 0h 36m5s,96.601,Active,nsw,NSW,lot
+2026-04-11T09:24:17.888427+00:00,https://www.grays.com/lot/0001-10913032/motor-vehicles-motor-cycles/2003-volkswagen-new-beetle-2-0-cabriolet-a4-automatic-convertible,309,309.0,4,4d 0h 35m44s,96.596,Active,nsw,NSW,lot
+2026-04-11T09:24:41.555694+00:00,https://www.grays.com/lot/0001-10913033/motor-vehicles-motor-cycles/2015-audi-q5-2-0-tfsi-quattro-8r-automatic-8-speed-wagon,2200,2200.0,40,4d 0h 35m20s,96.589,Active,nsw,NSW,lot
+2026-04-11T09:25:12.600839+00:00,https://www.grays.com/lot/0001-10913034/motor-vehicles-motor-cycles/2016-volvo-xc90-d5-inscription-l-series-turbo-diesel-auto,10100,10100.0,16,4d 0h 34m49s,96.58,Active,nsw,NSW,lot
+2026-04-11T09:25:34.155845+00:00,https://www.grays.com/lot/0001-10913035/motor-vehicles-motor-cycles/2014-honda-jazz-vti-gk-cvt-hatchback,209,209.0,3,4d 0h 34m28s,96.574,Active,nsw,NSW,lot
+2026-04-11T09:26:03.029849+00:00,https://www.grays.com/lot/0001-21064805/motor-vehicles-motor-cycles/2015-holden-commodore-evoke-vf-automatic-wagon,3200,3200.0,46,2d 0h 33m59s,48.566,Active,vic,VIC,lot
+2026-04-11T09:26:17.967332+00:00,https://www.grays.com/lot/0001-21064820/motor-vehicles-motor-cycles/2020-mitsubishi-triton-util-awd-automatic-ute,10250,10250.0,64,4d 0h 33m44s,96.562,Active,vic,VIC,lot
+2026-04-11T09:26:47.163519+00:00,https://www.grays.com/lot/0001-21064901/motor-vehicles-motor-cycles/2008-ford-falcon-xt-bf-ii-automatic-wagon,600,600.0,8,2d 0h 33m14s,48.554,Active,vic,VIC,lot
+2026-04-11T12:44:09.161631+00:00,https://www.grays.com/lot/0001-21065000/motor-vehicles-motor-cycles/2013-hyundai-i30-active-gd-automatic-hatchback-wovr-inspected,309,309.0,4,1d 21h 15m52s,45.264,Active,vic,VIC,lot
+2026-04-11T12:44:31.208195+00:00,https://www.grays.com/lot/0001-21065339/motor-vehicles-motor-cycles/2008-toyota-yaris-yr-ncp90r-automatic-hatchback,3510,3510.0,36,1d 21h 15m31s,45.259,Active,vic,VIC,lot
+2026-04-11T12:44:52.487964+00:00,https://www.grays.com/lot/0001-21065361/motor-vehicles-motor-cycles/2011-toyota-corolla-ascent-zre152r-automatic-sedan,609,609.0,11,2d 21h 15m9s,69.252,Active,vic,VIC,lot
+2026-04-11T12:45:06.510309+00:00,https://www.grays.com/lot/0001-60050540/motor-vehicles-motor-cycles/2013-hyundai-i30-active-gd-automatic-hatchback,2600,2600.0,29,3d 18h 14m56s,90.249,Active,sa,SA,lot
+2026-04-11T12:45:23.495314+00:00,https://www.grays.com/lot/0001-60050577/motor-vehicles-motor-cycles/2011-mazda-3-maxx-sport-bl-automatic-hatchback,3700,3700.0,0,3d 21h 14m39s,93.244,Active,sa,SA,lot
+2026-04-11T13:00:42.124152+00:00,https://www.grays.com/lot/0001-21065000/motor-vehicles-motor-cycles/2013-hyundai-i30-active-gd-automatic-hatchback-wovr-inspected,309,309.0,4,1d 20h 59m19s,44.989,Active,vic,VIC,lot
+2026-04-11T13:01:09.731197+00:00,https://www.grays.com/lot/0001-21065339/motor-vehicles-motor-cycles/2008-toyota-yaris-yr-ncp90r-automatic-hatchback,3510,3510.0,36,1d 20h 58m52s,44.981,Active,vic,VIC,lot
+2026-04-11T13:01:30.513881+00:00,https://www.grays.com/lot/0001-21065361/motor-vehicles-motor-cycles/2011-toyota-corolla-ascent-zre152r-automatic-sedan,609,609.0,11,2d 20h 58m31s,68.975,Active,vic,VIC,lot
+2026-04-11T13:01:44.372664+00:00,https://www.grays.com/lot/0001-60050540/motor-vehicles-motor-cycles/2013-hyundai-i30-active-gd-automatic-hatchback,2600,2600.0,29,3d 17h 58m17s,89.971,Active,sa,SA,lot
+2026-04-11T13:02:01.220036+00:00,https://www.grays.com/lot/0001-60050577/motor-vehicles-motor-cycles/2011-mazda-3-maxx-sport-bl-automatic-hatchback,3700,3700.0,0,3d 20h 58m0s,92.967,Active,sa,SA,lot
+2026-04-11T15:00:40.398319+00:00,https://www.grays.com/lot/0001-21065000/motor-vehicles-motor-cycles/2013-hyundai-i30-active-gd-automatic-hatchback-wovr-inspected,309,309.0,4,1d 18h 59m22s,42.989,Active,vic,VIC,lot
+2026-04-11T15:01:01.951966+00:00,https://www.grays.com/lot/0001-21065339/motor-vehicles-motor-cycles/2008-toyota-yaris-yr-ncp90r-automatic-hatchback,3510,3510.0,36,1d 18h 58m59s,42.983,Active,vic,VIC,lot
+2026-04-11T15:01:22.245707+00:00,https://www.grays.com/lot/0001-21065361/motor-vehicles-motor-cycles/2011-toyota-corolla-ascent-zre152r-automatic-sedan,609,609.0,11,2d 18h 58m40s,66.978,Active,vic,VIC,lot
+2026-04-11T15:01:36.014883+00:00,https://www.grays.com/lot/0001-60050540/motor-vehicles-motor-cycles/2013-hyundai-i30-active-gd-automatic-hatchback,2600,2600.0,29,3d 15h 58m27s,87.974,Active,sa,SA,lot
+2026-04-11T15:01:52.519798+00:00,https://www.grays.com/lot/0001-60050577/motor-vehicles-motor-cycles/2011-mazda-3-maxx-sport-bl-automatic-hatchback,3700,3700.0,0,3d 18h 58m10s,90.969,Active,sa,SA,lot
