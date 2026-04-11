@@ -1,6 +1,8 @@
 # Changelog
 
 ## 2026-04-12
+- Removed stale duplicate matcher-tag curve rows where a V2 base curve already exists, so Toyota hatch, Yaris, and Mazda 3 BL valuation now have one curve source of truth instead of competing matcher/base rows.
+- Tightened Corolla Ascent tagging so `Conquest` rows no longer feed the `zre152r` or `zre172r` Ascent lanes; the raw Grays `zre152r` Ascent sold lane now contains `42` Ascent rows and no Conquest rows.
 - Rebuilt the Hyundai i30 PD Active hatch curve as an exact Active-only lane with `2017/2019/2022` anchors; `2018`, `2020`, and `2021` interpolate.
 - Tightened Hyundai i30 PD tagging so `Active X`, higher trims, sport trims, and `N Line` no longer feed the Active valuation curve.
 - Retagged local Autotrader and Grays evidence after the Hyundai PD update: Autotrader now has `114` PD Active recent-market rows, Grays sold has `21` raw PD Active rows, and governance coverage sees `24` observed PD rows across active/sold/static.

@@ -1,6 +1,6 @@
 canonical_tag,observed_rows,static_rows,group_map_rows,sources,curve_rows,anchor_year_count,anchor_years,has_curve,status
 hyundai_i30_active_petrol_auto_hatch_gd,47,2,45,"active, sold, static",15,3,"2012, 2014, 2016",True,covered
-toyota_corolla_ascent_petrol_auto_sedan_zre152r,47,1,46,"active, sold, static",15,3,"2009, 2011, 2013",True,covered
+toyota_corolla_ascent_petrol_auto_sedan_zre152r,44,1,43,"active, sold, static",15,3,"2009, 2011, 2013",True,covered
 toyota_yaris_yr_petrol_auto_hatch_ncp90r,27,1,26,"active, sold, static",15,3,"2008, 2010, 2011",True,covered
 hyundai_i30_active_petrol_auto_hatch_pd,24,1,23,"active, sold, static",15,3,"2017, 2019, 2022",True,covered
 mazda_3_neo_petrol_auto_hatch_bl,15,0,15,sold,15,3,"2009, 2011, 2013",True,covered

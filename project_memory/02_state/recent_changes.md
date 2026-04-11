@@ -1,5 +1,7 @@
 # Recent Changes
 
+- Removed stale duplicate matcher-tag curve rows where a V2 base curve already exists. The affected matcher rows were `toyota_corolla_ascent_petrol_auto_hatch_zre18x`, `toyota_corolla_ascent-sport_petrol_auto_hatch_zre18x`, `toyota_yaris_yr_petrol_auto_hatch_ncp90r`, and `mazda_3_neo_petrol_auto_hatch_bl`; these now resolve to their base curves instead of carrying competing saved values.
+- Tightened Corolla Ascent tagging so `Conquest` is excluded from the Ascent lanes. After retagging, the raw Grays `toyota_corolla_ascent_petrol_auto_sedan_zre152r` sold lane contains `42` Ascent rows and no Conquest rows.
 - Rebuilt the Hyundai i30 PD curve as an exact `Active` hatch/auto/petrol slice rather than a broad PD hatch lane. The saved base curve `hyundai_i30_pd_hatch_auto_petrol` now uses `2017/2019/2022` anchors, and the stale duplicate matcher-tag curve rows were removed so the app resolves to one source of truth.
 - Tightened Hyundai PD tagging so `Active X`, `Elite`, `Premium`, `Trophy`, `SE`, `SR`, `SR Premium`, and `N Line` no longer map into `hyundai_i30_active_petrol_auto_hatch_pd`.
 - Rebuilt Grays restricted datasets after the Hyundai PD tag fix: the Hyundai PD Active sold lane now has `21` raw Grays sold rows and the governance coverage report sees `24` observed rows across active/sold/static for the matcher tag.

@@ -30,3 +30,4 @@ Why these anchors were chosen:
 
 Implementation note:
 - Current V2 curve was manually seeded from pasted Carsales listings and should be treated as a provisional Carsales-led curve until a proper Carsales evidence layer exists.
+- The stale duplicate `mazda_3_neo_petrol_auto_hatch_bl` curve rows have been removed. Neo still maps to `mazda_3_bl_hatch_auto_petrol` through the V2 group map, so the base curve is the only saved source of truth.

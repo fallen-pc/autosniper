@@ -95,3 +95,18 @@ def test_interpolate_base_by_year_falls_back_to_legacy_curve_when_v2_base_not_sa
 
     assert estimate == 10000.0
     curve_groups_v2.load_curve_groups_v2.cache_clear()
+
+
+def test_saved_curves_do_not_duplicate_v2_matcher_rows_when_base_exists():
+    curves_df = curves.load_curves()
+    groups_df = curve_groups_v2.load_curve_groups_v2()
+    saved_tags = set(curves_df["canonical_tag"].astype(str))
+
+    duplicates = []
+    for _, row in groups_df.iterrows():
+        match_tag = str(row.get("match_tag", "")).strip()
+        base_tag = str(row.get("base_curve_tag", "")).strip()
+        if match_tag and base_tag and match_tag != base_tag and base_tag in saved_tags and match_tag in saved_tags:
+            duplicates.append(f"{match_tag} -> {base_tag}")
+
+    assert duplicates == []

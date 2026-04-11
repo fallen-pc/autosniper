@@ -4,7 +4,7 @@
 2. Keep Toyota hatch evidence alignment stable across the Autotrader recent-market lane and the repaired sold/Grays lane, without silently turning that work into repricing.
 3. Keep `project_memory/02_state/` current after each meaningful work slice.
 4. Use the launcher bootstrap contract for every fresh AI task so new sessions start from repo memory instead of chat recall.
-5. If a Toyota hatch repricing review is explicitly requested later, run it as its own task; otherwise reassess the next safest Toyota curve, with `toyota_corolla_ascent_petrol_auto_sedan_zre152r` the current leading candidate.
+5. If a Toyota hatch or Corolla sedan repricing review is explicitly requested later, run it as its own task; the structural tag/duplicate cleanup is now separate from price changes.
 6. Treat Hyundai i30 `Active X`, `SE`, `Elite`, `Premium`, `Trophy`, `SR`, `SR Premium`, and `N Line` as separate curve candidates, not as fallback evidence for the GD or PD Active curves.
 7. Watch the next available scheduled hourly run only as a scheduler sanity check: it is acceptable to miss a run when the laptop is off/asleep, but the next run while awake/logged in should resume cleanly.
 8. Keep daily disabled until a full daily smoke test is run with the refreshed Autotrader session.
