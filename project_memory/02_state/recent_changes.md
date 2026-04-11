@@ -35,3 +35,7 @@
 - Confirmed the re-enabled scheduled hourly path works: the 2026-04-11 02:00 scheduled run exited with Task Scheduler `Last Result: 0` and wrote a fresh scraper health report.
 - Attempted a manual daily smoke run on 2026-04-11; it was interrupted during the Grays bid/status update stage around `38/508`, before Autotrader or the later daily stages ran.
 - Removed the stale daily lock left by the interrupted run and restored the partial daily CSV churn so it is not mistaken for a valid completed snapshot.
+- Repaired the active-listing data split after an interrupted broad Grays run: rebuilt restricted datasets from the current `508` broad active rows, restored `6` restricted active rows, and confirmed the AI Analysis/hourly scope is `5` curve-covered active listings.
+- Confirmed the Active Listings page should keep reading the broad `active_vehicle_details.csv` file, while AI Analysis and hourly monitoring should use the narrower restricted/curve-covered active scope.
+- Confirmed the 2026-04-12 01:00 scheduled hourly run completed successfully against the `5` AI Analysis listings and refreshed/revalued them without broad hourly churn.
+- Recorded the operational scheduler rule: laptop off/asleep/session-refused hourly runs are not automatically scraper failures; investigate only if the next available hourly run does not resume cleanly while the machine is awake and logged in.

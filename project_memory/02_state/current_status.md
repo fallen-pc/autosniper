@@ -26,3 +26,7 @@
 - AI Analysis cards now have the plumbing to show last-hour price increases from persisted valuation metadata, and hourly forced revaluation is tied to price-only changes rather than timer-only changes.
 - A manual daily smoke run was attempted on 2026-04-11, but it did not complete; it was interrupted during the Grays bid/status update stage around `38/508`.
 - The stale daily lock from that interrupted run was removed, and partial daily CSV churn was restored rather than treated as a valid dataset snapshot.
+- Active-listing scope is intentionally split: `CSV_data/scrapers/active_vehicle_details.csv` remains the broad Active Listings / Update Master working file, while `CSV_data/restricted/active_vehicle_details_restricted.csv` and the curve-covered AI scope are narrower inputs for AI Analysis and the hourly monitor.
+- As of the 2026-04-12 overnight check, the broad active set had `508` active Grays rows, restricted active had `6` rows, and AI Analysis had `5` viable active rows; the one restricted row outside AI Analysis was over the current curve km band.
+- The 2026-04-12 01:00 scheduled hourly monitor run completed successfully, refreshed the `5` AI Analysis active listings, revalued them, and left scraper health green.
+- A later scheduler attempt returned Windows `0x800710E0` / "operator or administrator refused the request" before the AutoSniper script started. Treat occasional missed hourly runs from laptop sleep/off/session state as acceptable if the next available hourly run resumes cleanly.

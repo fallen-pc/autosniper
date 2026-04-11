@@ -9,8 +9,8 @@
 - Curve Builder V2 expansion blockers are now better mapped; the current Toyota work is operational rebuilding, not silent legacy merging.
 - Scraper and extractor surfaces remain high sensitivity and should not be reopened casually.
 - Runtime memory enforcement still depends on using `scripts/start_ai_task.ps1` or an equivalent wrapper as the only front door into Codex/OpenClaw work for this repo.
-- The hourly monitor now runs far enough to process live Grays URLs, but it is heavy enough that manual smoke tests can run for several minutes.
-- The hourly monitor has now proven it can complete successfully, but the latest manual run took about `46` minutes, so the one-hour schedule has limited slack.
+- The hourly monitor should remain scoped to AI Analysis current viable listings, not the broad `508`-row active Grays working file.
+- Occasional hourly Task Scheduler misses are acceptable when the laptop is off/asleep or the interactive session refuses the run; repeated failures while the machine is awake/logged in should be treated as a Windows scheduler configuration issue, not a scraper-pipeline rewrite.
 - Hourly automation is back on; this means tracked runtime CSVs will continue to churn locally.
 - Autotrader now has a refreshed storage state and succeeds in visible-browser (`playwright-headful`) smoke tests, but headless mode still returns `403`.
 - The daily pipeline is still not proven healthy end-to-end with the refreshed Autotrader session because the scheduled tasks were paused before a full unattended daily run was completed.
