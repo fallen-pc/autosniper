@@ -155,7 +155,7 @@ seat torn driver",75,5420,2025-03-09,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2018,hyundai,accent,sport rb,hatchback,automatic,petrol,218560,5.0,KMHCT51EMJU373864,CQ41PY,Unregistered,4,1.6,White,Grey,Yes,No,Yes,Yes,Yes,nsw,https://www.grays.com/lot/0001-10347577/motor-vehicles-motor-cycles/2018-hyundai-accent-sport-rb-automatic-hatchback,"hail damage visible.
 large scratch on rear bar",42,6500,2025-03-10,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2020,hyundai,i30,active pd,hatchback,automatic,petrol,55152,5.0,KMHH351EMLU145530,1SR5PD,30-11-2025,4,2.0,White,Black,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21044998/motor-vehicles-motor-cycles/2020-hyundai-i30-active-pd-automatic-hatchback,"dents or marks on body consistent with age and kilometres.
-paint fading spoiler",33,18200,2025-03-10,0,UNCLASSIFIED,[OUT_OF_SCOPE_YEAR],,,
+paint fading spoiler",33,18200,2025-03-10,0,hyundai_i30_active_petrol_auto_hatch_pd,[OK],,,
 2021,kia,rio,s yb,hatchback,automatic,petrol,26580,5.0,KNADB514MN6626465,No plates,Unregistered,4,1.4,White,Black,Yes,Yes,No,No,Yes,sa,https://www.grays.com/lot/0001-60047404/motor-vehicles-motor-cycles/2021-kia-rio-s-yb-automatic-hatchback,please refer to the photos or arrange inspection to view the condition of this vehicle.,170,17300,2025-03-10,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2006,honda,accord,v6 7th gen,sedan,automatic,petrol,224856,5.0,MRHCM66806P030083,UGN883,07-07-2025,6,3.0,Gold,Cream,Yes,Yes,No,Yes,Yes,vic,https://www.grays.com/lot/0001-21044837/motor-vehicles-motor-cycles/2006-honda-accord-v6-7th-gen-automatic-sedan,"medium scratch on rear fender, passenger door, front bumper",36,3409,2025-03-10,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2000,jaguar,s,type v8 se x200,sedan,automatic,petrol,226325,5.0,SAJAC01S91GL95429,No plates,Unregistered,8,4.0,Blue,Cream Leather,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21044870/motor-vehicles-motor-cycles/2000-jaguar-s-type-v8-se-x200-automatic-sedan,medium scratch on doors,48,3150,2025-03-10,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
@@ -279,7 +279,7 @@ dents or marks on body consistent with age and kilometres.
 left rear passenger door door not working
 paint fading various panels
 carpet worn in places.",60,5409,2025-03-11,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
-2015,hyundai,i30,active gd,hatchback,automatic,petrol,154600,5.0,KMHD251EMGU255347,No plates,Unregistered,4,1.8,Red,Grey,Yes,No,Yes,Yes,Yes,nsw,https://www.grays.com/lot/0001-10347540/motor-vehicles-motor-cycles/2015-hyundai-i30-active-gd-automatic-hatchback,paint peeling rear roof spoiler.,92,7100,2025-03-11,0,UNCLASSIFIED,[OUT_OF_SCOPE_YEAR],,,
+2015,hyundai,i30,active gd,hatchback,automatic,petrol,154600,5.0,KMHD251EMGU255347,No plates,Unregistered,4,1.8,Red,Grey,Yes,No,Yes,Yes,Yes,nsw,https://www.grays.com/lot/0001-10347540/motor-vehicles-motor-cycles/2015-hyundai-i30-active-gd-automatic-hatchback,paint peeling rear roof spoiler.,92,7100,2025-03-11,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
 2005,hyundai,sonata,elite nf,sedan,automatic,petrol,136117,5.0,KMHEU41FR6A166626,No plates,Unregistered,6,3.3,Maroon,Beige Leather,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21044915/motor-vehicles-motor-cycles/2005-hyundai-sonata-elite-nf-automatic-sedan,"medium scratch on doors, rear panels, rear bumper, front fender, front bumper, bonnet
 dents or marks on body consistent with age and kilometres.",20,1909,2025-03-11,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2006,hyundai,terracan,,wagon,automatic,petrol,270926,7.0,KMHNM81CR6U216580,1WA6MS,01-03-2025,6,3.5,Silver,Grey,Yes,Yes,No,No,Yes,vic,https://www.grays.com/lot/0001-21045054/motor-vehicles-motor-cycles/2006-hyundai-terracan-automatic-7-seats-wagon,"dents or marks on body consistent with age and kilometres.
@@ -2252,7 +2252,7 @@ engine smoke visible",77,5401,2025-03-19,0,hyundai_i30_active_petrol_auto_hatch_
 large scuff on panel
 large scratch on panel
 engine smoke visible
-engine noise observed.",3,5709,2025-03-19,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
+engine noise observed.",3,5709,2025-03-19,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2011,hyundai,i30,sx fd,hatchback,automatic,petrol,174534,5.0,KMHDB51EMCU369671,No Plates,Unregistered,4,2.0,Black,Black,Yes,No,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21045242/motor-vehicles-motor-cycles/2011-hyundai-i30-sx-fd-automatic-hatchback,"dents or marks on body consistent with age and kilometres.
 medium scratch on front bumper
 medium scratch on drivers door",42,3009,2025-03-19,0,UNCLASSIFIED,[AMBIG_BADGE],,,
@@ -3373,7 +3373,7 @@ paint peeling various panels
 engine smoke visible
 large dent on fender
 medium scuff on quarter panel",5,409,2025-03-25,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
-2013,hyundai,i30,elite gd,hatchback,automatic,petrol,56874,5.0,KMHD351EMDU084299,ZOV766,21-03-2025,4,1.8,Silver,Black,Yes,No,No,Yes,Yes,vic,https://www.grays.com/lot/0001-21045674/motor-vehicles-motor-cycles/2013-hyundai-i30-elite-gd-automatic-hatchback,dents or marks on body consistent with age and kilometres.,84,10055,2025-03-25,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
+2013,hyundai,i30,elite gd,hatchback,automatic,petrol,56874,5.0,KMHD351EMDU084299,ZOV766,21-03-2025,4,1.8,Silver,Black,Yes,No,No,Yes,Yes,vic,https://www.grays.com/lot/0001-21045674/motor-vehicles-motor-cycles/2013-hyundai-i30-elite-gd-automatic-hatchback,dents or marks on body consistent with age and kilometres.,84,10055,2025-03-25,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2009,hyundai,i30,sx fd,hatchback,automatic,petrol,264221,5.0,KMHDB51EMAU203573,BLE61V,Unregistered,4,2.0,Grey,Black,Yes,Yes,Yes,Yes,Yes,nsw,https://www.grays.com/lot/0001-10347874/motor-vehicles-motor-cycles/2009-hyundai-i30-sx-fd-automatic-hatchback,dents or marks on body consistent with age and kilometres.,15,1450,2025-03-25,0,UNCLASSIFIED,[AMBIG_BADGE],,,
 2009,hyundai,i30,sx fd,hatchback,automatic,petrol,205035,5.0,KMHDB51EMAU231606,XMC869,23-04-2025,4,2.0,Red,Black,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21045763/motor-vehicles-motor-cycles/2009-hyundai-i30-sx-fd-automatic-hatchback,"paint peeling front bar, rear bar
 medium scratch on front bar",49,3400,2025-03-25,0,UNCLASSIFIED,[AMBIG_BADGE],,,
@@ -4436,7 +4436,7 @@ dents or marks on body consistent with age and kilometres.
 paint fading rear wing and exterior plastics
 medium scuff on front bumper",26,2109,2025-03-27,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2016,hyundai,i30,active x gd ii,hatchback,automatic,petrol,218747,5.0,KMHD351EMHU344620,AIU814,11-07-2025,4,1.8,White,Black Leather,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21045962/motor-vehicles-motor-cycles/2016-hyundai-i30-active-x-gd-ii-automatic-hatchback,"dents or marks on body consistent with age and kilometres.
-engine noise observed.",25,3709,2025-03-27,0,UNCLASSIFIED,[OUT_OF_SCOPE_YEAR],,,
+engine noise observed.",25,3709,2025-03-27,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2012,hyundai,i20,active pb,hatchback,manual,petrol,162808,5.0,MALBB51CLDM452221,ZPH240,18-02-2025,4,1.4,Black,Black,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21045936/motor-vehicles-motor-cycles/2012-hyundai-i20-active-pb-manual-hatchback,"engine noise observed.
 engine idling rough
 paint fading front bar, door handles, mirrors
@@ -4643,7 +4643,7 @@ large dent on panel
 medium scuff on passenger side",40,3109,2025-03-27,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2018,bmw,5,series 520i g30,sedan,automatic,petrol,207162,5.0,WBAJA12090WC09125,BAQ296,14-06-2025,4,2.0,Black,Black Leather,Yes,Yes,No,Yes,Yes,vic,https://www.grays.com/lot/0001-21045759/motor-vehicles-motor-cycles/2018-bmw-5-series-520i-g30-automatic-8-speed-sedan,dents or marks on body consistent with age and kilometres.,199,18900,2025-03-27,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2013,hyundai,i30,premium gd,hatchback,automatic,petrol,137098,5.0,KMHD351EMDU120040,1AM3YQ,23-01-2026,4,1.8,Silver,Black Leather,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21045886/motor-vehicles-motor-cycles/2013-hyundai-i30-premium-gd-automatic-hatchback,"dents or marks on body consistent with age and kilometres.
-dents or marks on body consistent with age and kilometres.",114,8300,2025-03-27,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
+dents or marks on body consistent with age and kilometres.",114,8300,2025-03-27,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2016,volvo,xc60,d4 kinetic,wagon,automatic,diesel,128550,5.0,YV1DZA5A6H2067341,APZ029,13-10-2025,5,2.4,Black,Black Leather,Yes,No,No,No,Yes,vic,https://www.grays.com/lot/0001-21045935/motor-vehicles-motor-cycles/2016-volvo-xc60-d4-kinetic-turbo-diesel-automatic-wagon,"dents or marks on body consistent with age and kilometres.
 windscreen chipped or cracked.",138,10209,2025-03-27,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2007,bmw,x5,3.0d e70,wagon,automatic,diesel,277157,7.0,WBAFF42000LZ19537,WDB712,15-04-2025,6,3.0,Gold,Brown,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21045973/motor-vehicles-motor-cycles/2007-bmw-x5-3-0d-e70-turbo-diesel-automatic-wagon-7-seats,"dents or marks on body consistent with age and kilometres.
@@ -5160,9 +5160,9 @@ paint fading mirrors
 dents or marks on body consistent with age and kilometres.",15,1409,2025-03-31,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2011,holden,barina,tk,sedan,manual,petrol,151111,5.0,KL3SF696JBB225613,YLE967,12-07-2025,4,1.6,Black,Grey,Yes,Yes,No,No,Yes,vic,https://www.grays.com/lot/0001-21046468/motor-vehicles-motor-cycles/2011-holden-barina-tk-manual-sedan,dents or marks on body consistent with age and kilometres.,15,1309,2025-03-31,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2013,hyundai,i30,premium gd,hatchback,automatic,petrol,159973,5.0,KMHD351EMDU124586,1FS4VL,26-04-2025,4,1.8,Black,Black,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21046434/motor-vehicles-motor-cycles/2013-hyundai-i30-premium-gd-automatic-hatchback,"dents or marks on body consistent with age and kilometres.
-large dent on drivers door",79,7200,2025-03-31,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
+large dent on drivers door",79,7200,2025-03-31,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2014,hyundai,i30,trophy gd,hatchback,automatic,petrol,163894,5.0,KMHD351EMEU242851,1ED3WH,24-05-2025,4,1.8,Red,Black Leather,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21046276/motor-vehicles-motor-cycles/2014-hyundai-i30-trophy-gd-automatic-hatchback,"dents or marks on body consistent with age and kilometres
-engine noise observed.",35,5900,2025-03-31,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
+engine noise observed.",35,5900,2025-03-31,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2005,hyundai,santa,fe (4x4),wagon,automatic,petrol,259902,5.0,KMHSC81DR5U972575,TZO698,13-04-2025,6,2.7,Blue,Grey,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21046281/motor-vehicles-motor-cycles/2005-hyundai-santa-fe-4x4-automatic-wagon,"dents or marks on body consistent with age and kilometres.
 medium scuff on driver side rear
 large dent on rear panel
@@ -6047,7 +6047,7 @@ damaged tail lights",13,1009,2025-04-03,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2013,hyundai,iload,tq,van,automatic,diesel,230967,3.0,KMFWBX7KMEU599549,CMJ404,20-05-2025,4,2.5,White,Black,Yes,No,No,No,Yes,vic,https://www.grays.com/lot/0001-21046608/motor-vehicles-motor-cycles/2013-hyundai-iload-tq-turbo-diesel-automatic-van,"dents or marks on body consistent with age and kilometres.
 seat torn on the driver seat
 medium dent on passenger side lower sill panel and scrape",92,8100,2025-04-03,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
-2014,hyundai,i30,trophy gd,hatchback,automatic,petrol,207932,5.0,KMHD351EMEU235672,1EC9TL,30-04-2025,4,1.8,Silver,Black Leather,Yes,No,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21046561/motor-vehicles-motor-cycles/2014-hyundai-i30-trophy-gd-automatic-hatchback,please refer to the photos or arrange inspection to view the condition of this vehicle.,72,5000,2025-04-03,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
+2014,hyundai,i30,trophy gd,hatchback,automatic,petrol,207932,5.0,KMHD351EMEU235672,1EC9TL,30-04-2025,4,1.8,Silver,Black Leather,Yes,No,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21046561/motor-vehicles-motor-cycles/2014-hyundai-i30-trophy-gd-automatic-hatchback,please refer to the photos or arrange inspection to view the condition of this vehicle.,72,5000,2025-04-03,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2011,hyundai,i45,premium yf,sedan,automatic,petrol,340797,5.0,KMHEC41DMBA286133,1BF9ZU,15-04-2025,4,2.4,White,Black Leather,Yes,Yes,No,No,Yes,vic,https://www.grays.com/lot/0001-21046604/motor-vehicles-motor-cycles/2011-hyundai-i45-premium-yf-automatic-sedan,dents or marks on body consistent with age and kilometres.,21,2350,2025-04-03,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2009,hyundai,tucson,city sx,wagon,automatic,petrol,122369,5.0,KMHJN81BMAU145479,No plates,Unregistered,4,2.0,White,Grey,Yes,No,Yes,Yes,Yes,wa,https://www.grays.com/lot/0001-9058393/motor-vehicles-motor-cycles/2009-hyundai-tucson-city-sx-automatic-wagon,"dents or marks on body consistent with age and kilometres.
 engine noise observed.",32,2210,2025-04-03,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
@@ -6447,7 +6447,7 @@ front seat worn drivers seat, passenger seat",12,809,2025-04-07,0,UNCLASSIFIED,[
 2012,holden,barina,tm,sedan,automatic,petrol,147345,5.0,KL3TA69E9CB140776,ZJW781,10-03-2025,4,1.6,Black,Black,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21046516/motor-vehicles-motor-cycles/2012-holden-barina-tm-automatic-sedan,"dents or marks on body consistent with age and kilometres.
 engine mounts require attention
 coolant / oil leaks",31,2309,2025-04-07,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
-2013,hyundai,i30,trophy gd,hatchback,automatic,petrol,157349,5.0,KMHD351EMEU172386,1BJ6UT,06-06-2025,4,1.8,White,Black Leather,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21046727/motor-vehicles-motor-cycles/2013-hyundai-i30-trophy-gd-automatic-hatchback,dents or marks on body consistent with age and kilometres.,70,7700,2025-04-07,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
+2013,hyundai,i30,trophy gd,hatchback,automatic,petrol,157349,5.0,KMHD351EMEU172386,1BJ6UT,06-06-2025,4,1.8,White,Black Leather,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21046727/motor-vehicles-motor-cycles/2013-hyundai-i30-trophy-gd-automatic-hatchback,dents or marks on body consistent with age and kilometres.,70,7700,2025-04-07,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2017,hyundai,santa,fe elite crdi (4x4) dm ii at,wagon,automatic,diesel,279347,7.0,KMHSU81XSJU815778,No plates,Unregistered,4,2.2,White,Black,Yes,Yes,Yes,Yes,Yes,sa,https://www.grays.com/lot/0001-60047584/motor-vehicles-motor-cycles/2017-hyundai-santa-fe-elite-crdi-4x4-dm-ii-turbo-diesel-at-7-seats-wagon,please refer to the photos or arrange inspection to view the condition of this vehicle.,99,9500,2025-04-07,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2011,kia,cerato,si td,hatchback,automatic,petrol,103656,5.0,KNAFT512MB5432407,YLJ609,28-06-2025,4,2.0,Blue,Black,Yes,Yes,No,No,Yes,vic,https://www.grays.com/lot/0001-21046760/motor-vehicles-motor-cycles/2011-kia-cerato-si-td-automatic-hatchback,"dents or marks on body consistent with age and kilometres.
 windscreen chipped or cracked.",67,5109,2025-04-07,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
@@ -6620,7 +6620,7 @@ large dent on driver side rear door
 paint peeling rear spoiler
 engine noise observed, engine smoke visible
 interior: wear and tear on interior consistent with age and kilometres travelled
-vehicle serviced at col crawford hyundai 2018 - 38,000kms and 2024 - 69,000kms.",77,5926,2025-04-08,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
+vehicle serviced at col crawford hyundai 2018 - 38,000kms and 2024 - 69,000kms.",77,5926,2025-04-08,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2012,hyundai,i45,active yf,sedan,automatic,petrol,151492,5.0,KMHEB41DMDA505629,1EGD175,31-07-2025,4,2.4,White,Black,Yes,Yes,Yes,Yes,No,wa,https://www.grays.com/lot/0001-9058466/motor-vehicles-motor-cycles/2012-hyundai-i45-active-yf-automatic-sedan,dents or marks on body consistent with age and kilometres.,11,1009,2025-04-08,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2021,hyundai,tucson,fwd nx4,wagon,automatic,petrol,20501,5.0,KMHJB81DMNU071353,1UV3RX,05-11-2025,4,2.0,Blue,Black,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21046592/motor-vehicles-motor-cycles/2021-hyundai-tucson-fwd-nx4-automatic-wagon,"dents or marks on body consistent with age and kilometres.
 large dent on rear drivers side and large scrape
@@ -7094,7 +7094,7 @@ large dent on driver side front guard
 engine noise observed.",34,3109,2025-04-09,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
 2014,hyundai,i30,trophy gd,hatchback,automatic,petrol,157729,5.0,KMHD351EMEU249748,1DA2ES,18-02-2026,4,1.8,Red,Black,Yes,No,Yes,No,Yes,vic,https://www.grays.com/lot/0001-21046846/motor-vehicles-motor-cycles/2014-hyundai-i30-trophy-gd-automatic-hatchback,"dents or marks on body consistent with age and kilometres.
 engine noise observed.
-airbag light on",72,4500,2025-04-09,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
+airbag light on",72,4500,2025-04-09,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2010,hyundai,i30,sx fd,hatchback,automatic,petrol,239197,5.0,KMHDB51EMAU260916,1DR9GS,15-06-2025,4,2.0,White,Black,Yes,No,No,No,Yes,vic,https://www.grays.com/lot/0001-21046897/motor-vehicles-motor-cycles/2010-hyundai-i30-sx-fd-automatic-hatchback,"dents or marks on body consistent with age and kilometres.
 medium dent on passenger side
 mechanical inspection recommended.",34,2009,2025-04-09,0,UNCLASSIFIED,[AMBIG_BADGE],,,
@@ -7639,7 +7639,7 @@ transmission requires attention strongly recommend inspection by qualified third
 paint peeling around the car",38,2709,2025-04-13,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2014,hyundai,i30,se gd,hatchback,automatic,petrol,184082,5.0,KMHD351EMEU219650,1CZ8VA,16-06-2025,4,1.8,Blue,Black Leather,Yes,No,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21046847/motor-vehicles-motor-cycles/2014-hyundai-i30-se-gd-automatic-hatchback,"dents or marks on body consistent with age and kilometres.
 engine noise observed.
-paint peeling various locations",37,3600,2025-04-13,0,UNCLASSIFIED,[AMBIG_BADGE],,,
+paint peeling various locations",37,3600,2025-04-13,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2021,mg,zs,excite,wagon,automatic,petrol,16736,5.0,LSJW74U91NZ058142,No plates,Unregistered,4,1.5,White,Black Leather,Yes,No,No,No,Yes,wa,https://www.grays.com/lot/0001-9058653/motor-vehicles-motor-cycles/2021-mg-zs-excite-automatic-wagon,"engine light on
 other warning light on
 rear (disjointed) cracked bumper.
@@ -8810,7 +8810,7 @@ medium scratch on boot",44,2809,2025-04-16,0,toyota_corolla_ascent_petrol_auto_s
 engine lacks power
 dents or marks on body consistent with age and kilometres.
 windscreen chipped or cracked.
-hail damage visible.",99,8600,2025-04-16,0,UNCLASSIFIED,[OUT_OF_SCOPE_YEAR],,,
+hail damage visible.",99,8600,2025-04-16,0,hyundai_i30_active_petrol_auto_hatch_pd,[OK],,,
 2014,peugeot,2008,allure,wagon,automatic,petrol,77383,5.0,VF3CU5FS9EY075280,1ESV074,29-06-2025,4,1.6,Grey,Black Leather,Yes,Yes,No,No,No,wa,https://www.grays.com/lot/0001-9058715/motor-vehicles-motor-cycles/2014-peugeot-2008-allure-automatic-wagon,"dents or marks on body consistent with age and kilometres.
 transmission requires attention strongly recommend inspection by qualified third party",8,709,2025-04-16,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2014,volkswagen,amarok,tdi420 highline 2h t d 4x4 - dual,cab chassis,automatic,diesel,250826,5.0,WV1ZZZ2HZEA021794,1OQ3PI,16-04-2025,4,2.0,White,Grey,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21047347/motor-vehicles-motor-cycles/2014-volkswagen-amarok-tdi420-highline-2h-t-d-4x4-auto-8-speed-dual-cab,dents or marks on body consistent with age and kilometres.,7,9000,2025-04-16,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
@@ -9423,7 +9423,7 @@ door handle not working or broken.
 engine light on",44,3400,2025-04-23,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2012,hyundai,i30,active gd,hatchback,automatic,petrol,143057,5.0,KMHD251EMDU058711,ZIT013,27-12-2025,4,1.8,Grey,Black,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21047519/motor-vehicles-motor-cycles/2012-hyundai-i30-active-gd-automatic-hatchback,dents or marks on body consistent with age and kilometres..engine noise observed.,46,5500,2025-04-23,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
 2016,hyundai,i30,active x gd ii,hatchback,automatic,petrol,92534,5.0,KMHD351EMHU366773,DKV63J,Unregistered,4,1.8,Silver,Black,Yes,Yes,Yes,Yes,Yes,nsw,https://www.grays.com/lot/0001-10348336/motor-vehicles-motor-cycles/2016-hyundai-i30-active-x-gd-ii-automatic-hatchback,"dents or marks on body consistent with age and kilometres.
-large scratch on rear bar",117,9700,2025-04-23,0,UNCLASSIFIED,[OUT_OF_SCOPE_YEAR],,,
+large scratch on rear bar",117,9700,2025-04-23,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2016,hyundai,tucson,active x tl,wagon,automatic,petrol,188263,5.0,KMHJ3814MHU384904,1GFB163,15-08-2025,4,2.0,White,Black Leather,Yes,Yes,Yes,Yes,Yes,wa,https://www.grays.com/lot/0001-9058882/motor-vehicles-motor-cycles/2016-hyundai-tucson-active-x-tl-automatic-wagon,"dents or marks on body consistent with age and kilometres.
 paint peeling various panels
 engine noise observed.
@@ -11002,7 +11002,7 @@ medium dent on driver side back door
 flat battery. jump start or towing required",246,17400,2025-05-06,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2013,hyundai,i30,premium gd,hatchback,automatic,petrol,246300,5.0,KMHD351EMDU087587,1IOK860,09-07-2025,4,1.8,Silver,Black Leather,Yes,Yes,Yes,Yes,Yes,wa,https://www.grays.com/lot/0001-9059200/motor-vehicles-motor-cycles/2013-hyundai-i30-premium-gd-automatic-hatchback,"dents or marks on body consistent with age and kilometres.
 airbag light on
-front seat scratches passenger front seat cut",74,5210,2025-05-06,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
+front seat scratches passenger front seat cut",74,5210,2025-05-06,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2015,hyundai,tucson,active x tl,wagon,automatic,petrol,346458,5.0,KMHJ3814MGU064493,1ICL138,08-07-2025,4,2.0,Blue,Black Leather,Yes,No,Yes,Yes,Yes,wa,https://www.grays.com/lot/0001-9059217/motor-vehicles-motor-cycles/2015-hyundai-tucson-active-x-tl-automatic-wagon,"engine noise observed.
 dents or marks on body consistent with age and kilometres.
 paint peeling driver door handle
@@ -11407,7 +11407,7 @@ medium scuff on front bumper",11,810,2025-05-07,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2012,hyundai,i30,active gd,hatchback,automatic,petrol,184272,5.0,KMHD251EMDU033460,No Plates,Unregistered,4,1.8,Silver,Black,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21048188/motor-vehicles-motor-cycles/2012-hyundai-i30-active-gd-automatic-hatchback,"dents or marks on body consistent with age and kilometres.
 paint fading various locations
 engine noise observed.",25,4400,2025-05-07,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
-2013,hyundai,i30,trophy gd,hatchback,automatic,petrol,191529,5.0,KMHD351EMEU161151,BAZ412,01-11-2025,4,1.8,White,Black Leather,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21048255/motor-vehicles-motor-cycles/2013-hyundai-i30-trophy-gd-automatic-hatchback,dents or marks on body consistent with age and kilometres.,23,7100,2025-05-07,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
+2013,hyundai,i30,trophy gd,hatchback,automatic,petrol,191529,5.0,KMHD351EMEU161151,BAZ412,01-11-2025,4,1.8,White,Black Leather,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21048255/motor-vehicles-motor-cycles/2013-hyundai-i30-trophy-gd-automatic-hatchback,dents or marks on body consistent with age and kilometres.,23,7100,2025-05-07,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2010,hyundai,i30,sx fd,hatchback,automatic,petrol,282709,5.0,KMHDB51EMAU251329,XQY428,09-04-2025,4,2.0,Red,Black,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21048184/motor-vehicles-motor-cycles/2010-hyundai-i30-sx-fd-automatic-hatchback,dents or marks on body consistent with age and kilometres.,46,2709,2025-05-07,0,UNCLASSIFIED,[AMBIG_BADGE],,,
 2017,hyundai,i30,active pd,hatchback,automatic,petrol,128089,5.0,KMHH351EMJU012217,1KG6QJ,06-06-2025,4,2.0,Red,Black,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21048257/motor-vehicles-motor-cycles/2017-hyundai-i30-active-pd-automatic-hatchback,"dents or marks on body consistent with age and kilometres.
 windscreen chipped or cracked.",62,12700,2025-05-07,0,hyundai_i30_active_petrol_auto_hatch_pd,[OK],,,
@@ -11415,7 +11415,7 @@ windscreen chipped or cracked.",62,12700,2025-05-07,0,hyundai_i30_active_petrol_
 engine lacks power
 dents or marks on body consistent with age and kilometres.
 windscreen chipped or cracked.
-hail damage visible.",120,8100,2025-05-07,0,UNCLASSIFIED,[OUT_OF_SCOPE_YEAR],,,
+hail damage visible.",120,8100,2025-05-07,0,hyundai_i30_active_petrol_auto_hatch_pd,[OK],,,
 2017,hyundai,tucson,active x tl,wagon,automatic,petrol,92893,5.0,KMHJ3814MHU418317,CID905,30-06-2025,4,2.0,White,Black Leather,Yes,No,No,Yes,Yes,vic,https://www.grays.com/lot/0001-21048261/motor-vehicles-motor-cycles/2017-hyundai-tucson-active-x-tl-automatic-wagon,dents or marks on body consistent with age and kilometres.,156,14900,2025-05-07,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2009,hyundai,tucson,city sx,wagon,manual,petrol,307121,5.0,KMHJN81BLAU178320,No plates,Unregistered,4,2.0,Other,Multi,Yes,No,Yes,Yes,Yes,sa,https://www.grays.com/lot/0001-60047753/motor-vehicles-motor-cycles/2009-hyundai-tucson-city-sx-manual-wagon,please refer to the photos or arrange inspection to view the condition of this vehicle.,5,309,2025-05-07,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2015,hyundai,ix35,active fwd lm,wagon,automatic,petrol,92818,5.0,KMHJT81FMFU086110,No plates,Unregistered,4,2.0,Grey,Multi,Yes,Yes,Yes,Yes,Yes,sa,https://www.grays.com/lot/0001-60047738/motor-vehicles-motor-cycles/2015-hyundai-ix35-active-fwd-lm-automatic-wagon,engine noise observed.,82,6900,2025-05-07,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
@@ -11903,7 +11903,7 @@ body/panel damage rear left corner",14,1209,2025-05-08,0,UNCLASSIFIED,[OUT_OF_SC
 2013,hyundai,i30,active gd,hatchback,automatic,petrol,172759,5.0,KMHD251EMDU080346,No plates,Unregistered,4,1.8,Blue,Grey,Yes,No,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21048203/motor-vehicles-motor-cycles/2013-hyundai-i30-active-gd-automatic-hatchback,dents or marks on body consistent with age and kilometres.,2,6100,2025-05-08,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
 2013,hyundai,i30,elite gd,hatchback,automatic,petrol,201081,5.0,KMHD351EMDU100354,ZTK336,28-05-2025,4,1.8,Dark Blue,Black,Yes,Yes,No,No,Yes,vic,https://www.grays.com/lot/0001-21048360/motor-vehicles-motor-cycles/2013-hyundai-i30-elite-gd-automatic-hatchback,"dents or marks on body consistent with age and kilometres.
 engine noise observed.
-large scratch on various parts of panel",12,3900,2025-05-08,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
+large scratch on various parts of panel",12,3900,2025-05-08,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2010,hyundai,i30,sx fd,hatchback,automatic,petrol,184587,5.0,KMHDB51EMAU253189,1RH5QS,28-05-2025,4,2.0,Red,Black,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21048386/motor-vehicles-motor-cycles/2010-hyundai-i30-sx-fd-automatic-hatchback,"dents or marks on body consistent with age and kilometres.
 large dent on front left fender
 on the front bumper cracked bumper.
@@ -12115,10 +12115,10 @@ radio not working",19,909,2025-05-11,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2012,hyundai,i30,elite gd,hatchback,automatic,petrol,151209,5.0,KMHD351EMDU008165,ZDR889,26-06-2025,4,1.8,White,Black,Yes,No,No,No,Yes,vic,https://www.grays.com/lot/0001-21048336/motor-vehicles-motor-cycles/2012-hyundai-i30-elite-gd-automatic-hatchback,"dents or marks on body consistent with age and kilometres.
 airbag light on
 windscreen chipped or cracked.
-engine noise observed.",44,6100,2025-05-11,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
+engine noise observed.",44,6100,2025-05-11,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2015,hyundai,i30,sr gd ii,hatchback,automatic,petrol,179550,5.0,KMHD351HMGU263268,1DF5QI,22-07-2025,4,2.0,White,Black,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21048425/motor-vehicles-motor-cycles/2015-hyundai-i30-sr-gd-ii-automatic-hatchback,"dents or marks on body consistent with age and kilometres.
 medium scratch on various scratches on panel
-back bumper cracked bumper.",28,6900,2025-05-11,0,UNCLASSIFIED,[AMBIG_BADGE],,,
+back bumper cracked bumper.",28,6900,2025-05-11,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2009,hyundai,i30,sx fd,hatchback,automatic,petrol,198068,5.0,KMHDB51EMAU222178,No plates,Unregistered,4,2.0,White,Black,Yes,No,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21048311/motor-vehicles-motor-cycles/2009-hyundai-i30-sx-fd-automatic-hatchback,"large scuff on passenger side
 medium scratch on passenger side
 dents or marks on body consistent with age and kilometres.
@@ -13003,14 +13003,14 @@ medium scratch on lh sliding door
 medium dent on boot",102,8800,2025-05-14,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2017,hyundai,accent,active rb,hatchback,cvt,petrol,151298,5.0,KMHCT51BTJU356426,No plates,Unregistered,4,1.4,White,Grey,Yes,Yes,Yes,Yes,Yes,qld,https://www.grays.com/lot/0001-50515117/motor-vehicles-motor-cycles/2017-hyundai-accent-active-rb-cvt-hatchback,dents or marks on body consistent with age and kilometres.,4,7500,2025-05-14,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2013,hyundai,i30,elite gd,hatchback,automatic,petrol,101330,5.0,KMHD351EMEU132992,MH205S,08-06-2025,4,1.8,Red,Black,Yes,Yes,Yes,Yes,Yes,wa,https://www.grays.com/lot/0001-9059579/motor-vehicles-motor-cycles/2013-hyundai-i30-elite-gd-automatic-hatchback,"front left side minor cracked bumper.
-dents or marks on body consistent with age and kilometres.",139,8600,2025-05-14,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
+dents or marks on body consistent with age and kilometres.",139,8600,2025-05-14,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2015,hyundai,i30,sr gd ii,hatchback,automatic,petrol,154339,5.0,KMHD351HMGU280358,No plates,Unregistered,4,2.0,Grey,Black,Yes,No,Yes,Yes,Yes,qld,https://www.grays.com/lot/0001-50515144/motor-vehicles-motor-cycles/2015-hyundai-i30-sr-gd-ii-automatic-hatchback,"engine noise observed.
 door card worn.
 paint fading multiple panels
 large scuff on rh front bumper
 dents or marks on body consistent with age and kilometres.
 medium scratch on lh front bumper
-reverse camera not working",48,4509,2025-05-14,0,UNCLASSIFIED,[AMBIG_BADGE],,,
+reverse camera not working",48,4509,2025-05-14,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2011,hyundai,i30,sx fd,hatchback,automatic,petrol,204361,5.0,KMHDB51DMCU386873,SW17149,24-05-2025,4,1.6,Red,Black,Yes,Yes,Yes,No,Yes,wa,https://www.grays.com/lot/0001-9059577/motor-vehicles-motor-cycles/2011-hyundai-i30-sx-fd-automatic-hatchback,"front cracked bumper.
 medium scuff on front bumper
 large scratch on along passenger side
@@ -13611,7 +13611,7 @@ fuel flap broken, missing",136,12201,2025-05-20,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2015,hyundai,i30,active gd,hatchback,automatic,petrol,178527,5.0,KMHD251EMGU263537,ELB50B,Unregistered,4,1.8,Silver,Black,Yes,Yes,Yes,Yes,Yes,nsw,https://www.grays.com/lot/0001-10348726/motor-vehicles-motor-cycles/2015-hyundai-i30-active-gd-automatic-hatchback,"dents or marks on body consistent with age and kilometres.
 large scratch on front bumper bar, passenger side rear door and quarter panel
 engine idling rough
-traction control light on",53,4009,2025-05-20,0,UNCLASSIFIED,[OUT_OF_SCOPE_YEAR],,,
+traction control light on",53,4009,2025-05-20,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
 2011,hyundai,i30,sx fd,hatchback,automatic,petrol,122443,5.0,KMHDB51EMBU346088,DYN49R,15-03-2026,4,2.0,Grey,Black,Yes,Yes,Yes,Yes,Yes,nsw,https://www.grays.com/lot/0001-10348727/motor-vehicles-motor-cycles/2011-hyundai-i30-sx-fd-automatic-hatchback,dents or marks on body consistent with age and kilometres.,77,5309,2025-05-20,0,UNCLASSIFIED,[AMBIG_BADGE],,,
 2014,hyundai,i40,active vf,sedan,automatic,petrol,170892,5.0,KMHLB41DMEU052070,1BL6SP,13-03-2025,4,2.0,White,Black,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21049012/motor-vehicles-motor-cycles/2014-hyundai-i40-active-vf-automatic-sedan,dents or marks on body consistent with age and kilometres.,62,6700,2025-05-20,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2009,kia,cerato,s td,sedan,automatic,petrol,96628,5.0,KNAFH222395039722,No plates,Unregistered,4,2.0,Silver,Grey,Yes,No,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21049023/motor-vehicles-motor-cycles/2009-kia-cerato-s-td-automatic-sedan,"medium scratch on various parts on panels
@@ -17214,7 +17214,7 @@ engine noise observed.",35,5800,2025-06-04,0,hyundai_i30_active_petrol_auto_hatc
 2013,hyundai,i30,trophy gd,hatchback,automatic,petrol,126343,5.0,KMHD351EMEU163075,1AZ5QI,29-01-2026,4,1.8,Silver,Black Leather,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21050025/motor-vehicles-motor-cycles/2013-hyundai-i30-trophy-gd-automatic-hatchback,"dents or marks on body consistent with age and kilometres.
 large dent on various parts of panel
 large scuff on various parts of panel
-large scratch on various parts of panel",65,7900,2025-06-04,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
+large scratch on various parts of panel",65,7900,2025-06-04,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2015,hyundai,tucson,active x tl,wagon,automatic,petrol,174462,5.0,KMHJ3814MGU045399,1HH6NT,29-07-2025,4,2.0,White,Black Leather,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21050031/motor-vehicles-motor-cycles/2015-hyundai-tucson-active-x-tl-automatic-wagon,"other warning light on
 engine light on
 dents or marks on body consistent with age and kilometres.
@@ -18099,7 +18099,7 @@ large scratch on rear drivers side
 medium scuff on front bumper",33,1909,2025-06-10,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2014,hyundai,i30,trophy gd,hatchback,automatic,petrol,176061,5.0,KMHD351EMEU230596,1DR6IS,14-01-2026,4,1.8,White,Black Leather,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21050296/motor-vehicles-motor-cycles/2014-hyundai-i30-trophy-gd-automatic-hatchback,"dents or marks on body consistent with age and kilometres.
 hail damage visible.
-medium scuff on rear bumper",22,5150,2025-06-10,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
+medium scuff on rear bumper",22,5150,2025-06-10,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2021,hyundai,i30,pd,hatchback,automatic,petrol,36636,5.0,KMHH351EMMU160479,No plates,Unregistered,4,2.0,White,Black,Yes,Yes,Yes,Yes,Yes,qld,https://www.grays.com/lot/0001-50711990/motor-vehicles-motor-cycles/2021-hyundai-i30-pd-automatic-hatchback,"medium scratch on rh rear bumper
 dents or marks on body consistent with age and kilometres.",72,19100,2025-06-10,0,UNCLASSIFIED,[AMBIG_BADGE],,,
 2021,hyundai,i30,pd,hatchback,automatic,petrol,57341,5.0,KMHH351EMNU175625,1UY8PP,07-03-2026,4,2.0,White,Black,Yes,No,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21050263/motor-vehicles-motor-cycles/2021-hyundai-i30-pd-automatic-hatchback,dents or marks on body consistent with age and kilometres.,130,18800,2025-06-10,0,UNCLASSIFIED,[AMBIG_BADGE],,,
@@ -18761,7 +18761,7 @@ large dent on rear passenger door",24,2300,2025-06-11,0,UNCLASSIFIED,[OUT_OF_SCO
 2008,hyundai,getz,s tb,hatchback,manual,petrol,373761,5.0,KMHBT51DR9U891638,1DAI146,25-08-2025,4,1.4,Red,Grey,Yes,No,No,No,Yes,wa,https://www.grays.com/lot/0001-9060379/motor-vehicles-motor-cycles/2008-hyundai-getz-s-tb-manual-hatchback,"large dent on driver door
 dents or marks on body consistent with age and kilometres.
 paint fading front bumper",19,1309,2025-06-11,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
-2015,hyundai,i30,active gd,hatchback,automatic,petrol,166647,5.0,KMHD251EMGU295293,1FS8JM,20-10-2025,4,1.8,Red,Black,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21050451/motor-vehicles-motor-cycles/2015-hyundai-i30-active-gd-automatic-hatchback,dents or marks on body consistent with age and kilometres.,45,8000,2025-06-11,0,UNCLASSIFIED,[OUT_OF_SCOPE_YEAR],,,
+2015,hyundai,i30,active gd,hatchback,automatic,petrol,166647,5.0,KMHD251EMGU295293,1FS8JM,20-10-2025,4,1.8,Red,Black,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21050451/motor-vehicles-motor-cycles/2015-hyundai-i30-active-gd-automatic-hatchback,dents or marks on body consistent with age and kilometres.,45,8000,2025-06-11,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
 2012,hyundai,i45,premium yf,sedan,automatic,petrol,120800,5.0,KMHEC41DMCA433307,2AP3EU,28-06-2025,4,2.4,Black,Black,Yes,Yes,No,No,Yes,vic,https://www.grays.com/lot/0001-21050481/motor-vehicles-motor-cycles/2012-hyundai-i45-premium-yf-automatic-sedan,"dents or marks on body consistent with age and kilometres.
 medium scratch on around the car",69,6400,2025-06-11,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2008,hyundai,tucson,city elite,wagon,automatic,petrol,226979,5.0,KMHJN81BR9U007511,WSQ146,17-08-2025,4,2.0,Blue,Black Leather,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21050450/motor-vehicles-motor-cycles/2008-hyundai-tucson-city-elite-automatic-wagon,"dents or marks on body consistent with age and kilometres.
@@ -19101,7 +19101,7 @@ engine smoke visible",20,1609,2025-06-11,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2013,nissan,pulsar,st b17,sedan,cvt,petrol,134363,5.0,MNTBAAB17A0003173,No plates,Unregistered,4,1.8,Grey,Black,Yes,No,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21050463/motor-vehicles-motor-cycles/2013-nissan-pulsar-st-b17-cvt-sedan,dents or marks on body consistent with age and kilometres.,43,4350,2025-06-11,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2017,hyundai,i30,active gd,hatchback,automatic,petrol,194987,5.0,KMHD251EMHU382971,1KJ1HE,26-05-2026,4,1.8,Silver,Black,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21050420/motor-vehicles-motor-cycles/2017-hyundai-i30-active-gd-automatic-hatchback,"dents or marks on body consistent with age and kilometres.
 dents or marks on body consistent with age and kilometres.
-paint peeling front bumper",38,7100,2025-06-11,0,hyundai_i30_active_petrol_auto_hatch_pd,[OK],,,
+paint peeling front bumper",38,7100,2025-06-11,0,UNCLASSIFIED,[OUT_OF_SCOPE_YEAR],,,
 2013,ford,ranger,xl 4x2 hi-rider px,crew cab chassis,automatic,diesel,194488,5.0,MNAUMEF80DW240384,No plates,Unregistered,4,2.2,White,Grey,Yes,Yes,No,Yes,Yes,qld,https://www.grays.com/lot/0001-50515649/motor-vehicles-motor-cycles/2013-ford-ranger-xl-4x2-hi-rider-px-turbo-diesel-automatic-crew-cab-chassis,"dents or marks on body consistent with age and kilometres.
 medium scuff on front bumper
 medium dent on lh c pillar",65,5101,2025-06-11,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
@@ -19430,7 +19430,7 @@ medium dent on passenger side sill panel",53,3209,2025-06-16,0,UNCLASSIFIED,[OUT
 dents or marks on body consistent with age and kilometres.
 back seat stains.",115,19800,2025-06-16,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2017,hyundai,accent,sr rb,hatchback,automatic,petrol,150437,5.0,KMHCT51EMHU334334,1KL7CF,05-06-2025,4,1.6,Black,Black,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21050584/motor-vehicles-motor-cycles/2017-hyundai-accent-sr-rb-automatic-hatchback,dents or marks on body consistent with age and kilometres.,98,8009,2025-06-16,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
-2013,hyundai,i30,premium gd,hatchback,automatic,petrol,143726,5.0,KMHD351EMDU087483,1VV4MO,07-08-2025,4,1.8,Dark Blue,Black,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21050602/motor-vehicles-motor-cycles/2013-hyundai-i30-premium-gd-automatic-hatchback,dents or marks on body consistent with age and kilometres.,83,7700,2025-06-16,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
+2013,hyundai,i30,premium gd,hatchback,automatic,petrol,143726,5.0,KMHD351EMDU087483,1VV4MO,07-08-2025,4,1.8,Dark Blue,Black,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21050602/motor-vehicles-motor-cycles/2013-hyundai-i30-premium-gd-automatic-hatchback,dents or marks on body consistent with age and kilometres.,83,7700,2025-06-16,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2010,hyundai,i30,sx fd,hatchback,manual,petrol,206212,5.0,KMHDB51ELAU241362,BNU12X,Unregistered,4,2.0,White,Black,Yes,Yes,Yes,Yes,Yes,nsw,https://www.grays.com/lot/0001-10349069/motor-vehicles-motor-cycles/2010-hyundai-i30-sx-fd-manual-hatchback,"dents or marks on body consistent with age and kilometres.
 large dent on sill panels, passenger side rear door
 clutch requires attention",8,709,2025-06-16,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
@@ -19957,7 +19957,7 @@ paint fading front bar and wheel arches
 windscreen chipped or cracked.
 damaged lh taillight",18,1309,2025-06-17,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2003,nissan,stagea,,wagon,automatic,petrol,171104,5.0,6U90000NM35315629,No plates,Unregistered,6,2.5,Silver,Grey,Yes,Yes,No,No,Yes,nsw,https://www.grays.com/lot/0001-10349173/motor-vehicles-motor-cycles/2003-nissan-stagea-automatic-wagon,please refer to the photos or arrange inspection to view the condition of this vehicle.,35,3310,2025-06-17,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
-2014,hyundai,i30,trophy gd,hatchback,automatic,petrol,58770,5.0,KMHD351EMEU226642,CWN05U,Unregistered,4,1.8,Red,Black,Yes,Yes,Yes,Yes,Yes,nsw,https://www.grays.com/lot/0001-10349164/motor-vehicles-motor-cycles/2014-hyundai-i30-trophy-gd-automatic-hatchback-58-770kms,please refer to the photos or arrange inspection to view the condition of this vehicle.,54,7700,2025-06-17,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
+2014,hyundai,i30,trophy gd,hatchback,automatic,petrol,58770,5.0,KMHD351EMEU226642,CWN05U,Unregistered,4,1.8,Red,Black,Yes,Yes,Yes,Yes,Yes,nsw,https://www.grays.com/lot/0001-10349164/motor-vehicles-motor-cycles/2014-hyundai-i30-trophy-gd-automatic-hatchback-58-770kms,please refer to the photos or arrange inspection to view the condition of this vehicle.,54,7700,2025-06-17,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2014,nissan,x-trail,st-l awd t32,wagon,cvt,petrol,119009,5.0,JN1TBNT32A0004543,1ILN853,05-08-2025,4,2.5,Red,Black Leather,Yes,Yes,Yes,Yes,Yes,wa,https://www.grays.com/lot/0001-9060509/motor-vehicles-motor-cycles/2014-nissan-x-trail-st-l-awd-t32-cvt-wagon,"medium dent on front bumper
 large scratch on along passenger side
 medium scratch on boot
@@ -21023,7 +21023,7 @@ paint peeling front bumper and wing mirror
 medium scuff on rear bumper",77,5850,2025-06-24,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2017,hyundai,i30,active gd,hatchback,automatic,petrol,194987,5.0,KMHD251EMHU382971,1KJ1HE,26-05-2026,4,1.8,Silver,Black,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21051079/motor-vehicles-motor-cycles/2017-hyundai-i30-active-gd-automatic-hatchback,"dents or marks on body consistent with age and kilometres.
 dents or marks on body consistent with age and kilometres.
-paint peeling front bumper",98,8600,2025-06-24,0,hyundai_i30_active_petrol_auto_hatch_pd,[OK],,,
+paint peeling front bumper",98,8600,2025-06-24,0,UNCLASSIFIED,[OUT_OF_SCOPE_YEAR],,,
 2011,hyundai,i45,active yf,sedan,automatic,petrol,235476,5.0,KMHEC41DMCA373091,1DVG272,26/07/2025,4,2.4,White,Charcoal,Yes,Yes,Yes,Partial,Yes,wa,https://www.grays.com/lot/0001-9060732/motor-vehicles-motor-cycles/2011-hyundai-i45-active-yf-automatic-sedan,"dents or marks on body consistent with age and kilometres.
 seat torn driver seat
 airbag light on
@@ -21726,7 +21726,7 @@ dents or marks on body consistent with age and kilometres.",31,2350,2025-06-26,0
 engine noise observed.
 dents or marks on body consistent with age and kilometres.
 medium scuff on various parts of panel",52,3800,2025-06-26,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
-2020,hyundai,i30,active pd,hatchback,automatic,petrol,63860,5.0,KMHH351EMLU148553,1SJ9QQ,Unregistered,4,2.0,White,Black,Yes,No,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21051261/motor-vehicles-motor-cycles/2020-hyundai-i30-active-pd-automatic-hatchback,medium scuff on rear bumper,136,15460,2025-06-26,0,UNCLASSIFIED,[OUT_OF_SCOPE_YEAR],,,
+2020,hyundai,i30,active pd,hatchback,automatic,petrol,63860,5.0,KMHH351EMLU148553,1SJ9QQ,Unregistered,4,2.0,White,Black,Yes,No,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21051261/motor-vehicles-motor-cycles/2020-hyundai-i30-active-pd-automatic-hatchback,medium scuff on rear bumper,136,15460,2025-06-26,0,hyundai_i30_active_petrol_auto_hatch_pd,[OK],,,
 2020,mg,mg3,core,hatchback,automatic,petrol,58976,5.0,LSJZ14U99MS013343,1TC8TV,14-07-2025,4,1.5,White,Black,Yes,No,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21051262/motor-vehicles-motor-cycles/2020-mg-mg3-core-automatic-hatchback,dents or marks on body consistent with age and kilometres.,50,7300,2025-06-26,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2007,mitsubishi,triton,glx-r (4x4) ml dual,dual cab,manual,petrol,281311,5.0,MMBJNKB907D116349,1IDN816,30-08-2025,6,3.5,White,Grey,Yes,No,No,No,Yes,wa,https://www.grays.com/lot/0001-9060945/motor-vehicles-motor-cycles/2007-mitsubishi-triton-glx-r-4x4-ml-manual-dual-cab,dents or marks on body consistent with age and kilometres.,43,3700,2025-06-26,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2013,renault,megane,gt-line,wagon,cvt,petrol,111719,5.0,VF1KZ1P0TD0680274,No Plates,Unregistered,4,2.0,Blue,Black Leather,Yes,No,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21051244/motor-vehicles-motor-cycles/2013-renault-megane-gt-line-cvt-wagon,"dents or marks on body consistent with age and kilometres.
@@ -22241,12 +22241,12 @@ paint peeling various panels
 dents or marks on body consistent with age and kilometres.",32,1900,2025-07-01,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2013,hyundai,i30,trophy gd,hatchback,automatic,petrol,161671,5.0,KMHD351EMEU163474,1AZ7MG,10-08-2025,4,1.8,White,Black Leather,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21051468/motor-vehicles-motor-cycles/2013-hyundai-i30-trophy-gd-automatic-hatchback,"dents or marks on body consistent with age and kilometres.
 engine noise observed.
-medium scratch on some places",32,3400,2025-07-01,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
+medium scratch on some places",32,3400,2025-07-01,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2012,hyundai,i30,sx trophy fd,hatchback,automatic,petrol,127254,5.0,KMHDB51EMCU393203,1DXC564,19-07-2025,4,2.0,Grey,Black,Yes,Yes,No,No,Yes,wa,https://www.grays.com/lot/0001-9061038/motor-vehicles-motor-cycles/2012-hyundai-i30-sx-trophy-fd-automatic-hatchback,"medium scuff on rear driver door
 paint peeling rear bumper
 dents or marks on body consistent with age and kilometres.
 medium scuff on rear bumper
-dents or marks on body consistent with age and kilometres.",45,4500,2025-07-01,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
+dents or marks on body consistent with age and kilometres.",45,4500,2025-07-01,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2008,hyundai,sonata,slx nf,sedan,automatic,petrol,233420,5.0,KMHET41DR9A600168,1GRE922,19-07-2025,4,2.4,Dark Blue,Black,Yes,No,Yes,Yes,Yes,wa,https://www.grays.com/lot/0001-9061043/motor-vehicles-motor-cycles/2008-hyundai-sonata-slx-nf-automatic-sedan,"dents or marks on body consistent with age and kilometres.
 medium scuff on wheel arch
 dash torn or cracked
@@ -22773,7 +22773,7 @@ paint fading various panels",15,1309,2025-07-06,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2012,hyundai,i30,premium gd,hatchback,automatic,petrol,97424,5.0,KMHD351EMDU043770,ZHW891,10-07-2025,4,1.8,Black,Black Leather,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21051745/motor-vehicles-motor-cycles/2012-hyundai-i30-premium-gd-automatic-hatchback,"dents or marks on body consistent with age and kilometres.
 engine smoke visible
 engine noise observed.
-large scuff on various parts of panel",57,7800,2025-07-06,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
+large scuff on various parts of panel",57,7800,2025-07-06,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2016,hyundai,veloster,sr turbo fs,coupe,automatic,petrol,156155,4.0,KMHTC61EVGU288533,AKL162,21-07-2025,4,1.6,Orange,Black Leather,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21051690/motor-vehicles-motor-cycles/2016-hyundai-veloster-sr-turbo-fs-automatic-coupe,dents or marks on body consistent with age and kilometres.,101,8400,2025-07-06,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2013,hyundai,imax,tq,people mover,automatic,diesel,196880,8.0,KMHWH81KMEU607700,1XO3MY,04-07-2025,4,2.5,Silver,Grey,Yes,No,No,No,Yes,vic,https://www.grays.com/lot/0001-21051747/motor-vehicles-motor-cycles/2013-hyundai-imax-tq-turbo-diesel-automatic-8-seats-people-mover,"medium scratch on various parts on panels
 seat torn driver seat",37,4700,2025-07-06,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
@@ -22923,7 +22923,7 @@ dents or marks on body consistent with age and kilometres.",74,5309,2025-07-06,0
 paint fading various panels
 seat torn driver",46,3202,2025-07-06,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2015,hyundai,i30,active gd,hatchback,automatic,petrol,211464,5.0,KMHD251EMHU324927,1GL1QW,14-04-2026,4,1.8,White,Black,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21051756/motor-vehicles-motor-cycles/2015-hyundai-i30-active-gd-automatic-hatchback,"dents or marks on body consistent with age and kilometres..
-engine noise observed.",19,6100,2025-07-06,0,UNCLASSIFIED,[OUT_OF_SCOPE_YEAR],,,
+engine noise observed.",19,6100,2025-07-06,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
 2014,mitsubishi,asx,xls 4wd xb,wagon,automatic,diesel,208445,5.0,JMFXLGA8WFZ000747,1CU5CN,15-06-2025,4,2.3,Silver,Black,Yes,Yes,Yes,No,Yes,vic,https://www.grays.com/lot/0001-21051728/motor-vehicles-motor-cycles/2014-mitsubishi-asx-xls-4wd-xb-turbo-diesel-automatic-wagon,"dents or marks on body consistent with age and kilometres.
 medium dents and large scuff marks.",49,6110,2025-07-06,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2009,audi,a5,2.0 tfsi quattro 8t,convertible,automatic,petrol,112818,4.0,WAUZZZ8F9AN010280,No plates,Unregistered,4,2.0,Grey,Black,Yes,No,Yes,Yes,Yes,nsw,https://www.grays.com/lot/0001-10349497/motor-vehicles-motor-cycles/2009-audi-a5-2-0-tfsi-quattro-8t-automatic-convertible,please refer to the photos or arrange inspection to view the condition of this vehicle.,50,3309,2025-07-06,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
@@ -24079,7 +24079,7 @@ medium scratch on various parts on panels",55,5300,2025-07-14,0,UNCLASSIFIED,[OU
 2014,holden,malibu,cdx em,sedan,automatic,petrol,88980,5.0,KL3GA69U9EB065447,1DZ8OG,18-02-2026,4,2.4,Grey,Black Leather,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21052216/motor-vehicles-motor-cycles/2014-holden-malibu-cdx-em-automatic-sedan,"medium scratch on various parts on panels
 dents or marks on body consistent with age and kilometres.
 small dent on rh wheel arch",82,5700,2025-07-14,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
-2020,hyundai,i30,active pd,hatchback,automatic,petrol,85841,5.0,KMHH351EMLU146889,1SJ2PL,16-09-2025,4,2.0,White,Black,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21052327/motor-vehicles-motor-cycles/2020-hyundai-i30-active-pd-automatic-hatchback,dents or marks on body consistent with age and kilometres.,202,16400,2025-07-14,0,UNCLASSIFIED,[OUT_OF_SCOPE_YEAR],,,
+2020,hyundai,i30,active pd,hatchback,automatic,petrol,85841,5.0,KMHH351EMLU146889,1SJ2PL,16-09-2025,4,2.0,White,Black,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21052327/motor-vehicles-motor-cycles/2020-hyundai-i30-active-pd-automatic-hatchback,dents or marks on body consistent with age and kilometres.,202,16400,2025-07-14,0,hyundai_i30_active_petrol_auto_hatch_pd,[OK],,,
 2020,hyundai,i30,pd,hatchback,automatic,petrol,91484,5.0,KMHH351EMMU155586,1TE1ED,09-02-2026,4,2.0,Blue,Black,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21052330/motor-vehicles-motor-cycles/2020-hyundai-i30-pd-automatic-hatchback,dents or marks on body consistent with age and kilometres.,203,16500,2025-07-14,0,UNCLASSIFIED,[AMBIG_BADGE],,,
 2018,kia,cerato,s bd,hatchback,automatic,petrol,84024,5.0,KNAF251CMK5026877,No plates,Unregistered,4,2.0,White,Grey,Yes,Yes,Yes,Yes,Yes,qld,https://www.grays.com/lot/0001-50712344/motor-vehicles-motor-cycles/2018-kia-cerato-s-bd-automatic-hatchback,"dents or marks on body consistent with age and kilometres.
 medium scratch on lh front bumper",65,14100,2025-07-14,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
@@ -24307,7 +24307,7 @@ medium scratch on various parts on panels",117,9509,2025-07-15,0,UNCLASSIFIED,[O
 2012,hyundai,i30,active gd,hatchback,automatic,petrol,147424,5.0,KMHD251EMDU056172,CJW37H,Unregistered,4,1.8,Blue,Black,Yes,No,No,No,Yes,nsw,https://www.grays.com/lot/0001-10349659/motor-vehicles-motor-cycles/2012-hyundai-i30-active-gd-automatic-hatchback,please refer to the photos or arrange inspection to view the condition of this vehicle.,46,3500,2025-07-15,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
 2014,hyundai,i30,trophy gd,hatchback,automatic,petrol,116278,5.0,KMHD351EMEU230021,1EC3IY,17-03-2026,4,1.8,White,Black Leather,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21052335/motor-vehicles-motor-cycles/2014-hyundai-i30-trophy-gd-automatic-hatchback,"dents or marks on body consistent with age and kilometres.
 medium scratch on various parts on panels
-engine noise observed.",198,11309,2025-07-15,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
+engine noise observed.",198,11309,2025-07-15,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2011,hyundai,i30,sx fd,hatchback,automatic,petrol,153978,5.0,KMHDB51DMCU381376,CPX33H,Unregistered,4,1.6,Silver,Grey,Yes,Yes,No,Yes,Yes,nsw,https://www.grays.com/lot/0001-10349664/motor-vehicles-motor-cycles/2011-hyundai-i30-sx-fd-automatic-hatchback,please refer to the photos or arrange inspection to view the condition of this vehicle.,35,3500,2025-07-15,0,UNCLASSIFIED,[AMBIG_BADGE],,,
 2019,hyundai,tucson,active x tl,wagon,automatic,petrol,105448,5.0,KMHJ2814MLU074302,BBH277,31-07-2025,4,2.0,White,Black Leather,Yes,No,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21052336/motor-vehicles-motor-cycles/2019-hyundai-tucson-active-x-tl-automatic-wagon,"engine noise observed.
 rear bumper cracked bumper.
@@ -25239,7 +25239,7 @@ medium scratch on various parts",78,3911,2025-07-17,0,UNCLASSIFIED,[OUT_OF_SCOPE
 2016,hyundai,iload,tq,van,automatic,diesel,176023,3.0,KMFWBX7KMGU809960,1HC3NG,19-05-2026,4,2.5,Silver,Grey,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21052466/motor-vehicles-motor-cycles/2016-hyundai-iload-tq-turbo-diesel-automatic-van,dents or marks on body consistent with age and kilometres.,152,14900,2025-07-17,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2004,hyundai,getz,gl tb,hatchback,automatic,petrol,151655,5.0,KMHBT51AR4U201289,SUR188,10-09-2025,4,1.5,Blue,Grey,Yes,No,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21052547/motor-vehicles-motor-cycles/2004-hyundai-getz-gl-tb-automatic-hatchback,"paint fading mirror, body
 dents or marks on body consistent with age and kilometres.",30,2309,2025-07-17,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
-2016,hyundai,i30,active gd,hatchback,automatic,petrol,115975,5.0,KMHD251EMHU357844,1IH6HQ,03-10-2025,4,1.8,Silver,Black,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21052486/motor-vehicles-motor-cycles/2016-hyundai-i30-active-gd-automatic-hatchback,dents or marks on body consistent with age and kilometres.,84,11400,2025-07-17,0,UNCLASSIFIED,[OUT_OF_SCOPE_YEAR],,,
+2016,hyundai,i30,active gd,hatchback,automatic,petrol,115975,5.0,KMHD251EMHU357844,1IH6HQ,03-10-2025,4,1.8,Silver,Black,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21052486/motor-vehicles-motor-cycles/2016-hyundai-i30-active-gd-automatic-hatchback,dents or marks on body consistent with age and kilometres.,84,11400,2025-07-17,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
 2013,hyundai,i40,premium vf,sedan,automatic,petrol,140224,5.0,KMHLC41DMDU032459,1WL9PV,Unregistered,4,2.0,Grey,Black Leather,Yes,No,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21052493/motor-vehicles-motor-cycles/2013-hyundai-i40-premium-vf-automatic-sedan,dents or marks on body consistent with age and kilometres.,65,5702,2025-07-17,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2014,ford,focus,trend lw ii,hatchback,automatic,petrol,144937,5.0,MPB1XXMXB1EJ69504,No plates,Unregistered,4,2.0,Blue,Black,Yes,No,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21052496/motor-vehicles-motor-cycles/2014-ford-focus-trend-lw-ii-automatic-hatchback,"medium scuff on drivers door and dented
 dents or marks on body consistent with age and kilometres.",38,3650,2025-07-17,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
@@ -25352,7 +25352,7 @@ paint peeling around the car car
 dents or marks on body consistent with age and kilometres.",14,909,2025-07-17,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2006,kia,sorento,bl,wagon,automatic,petrol,183265,5.0,KNAJC523865617636,1VU2BV,23-08-2025,6,3.5,White,Grey,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21052449/motor-vehicles-motor-cycles/2006-kia-sorento-bl-automatic-wagon,dents or marks on body consistent with age and kilometres.,25,2100,2025-07-17,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2015,hyundai,i30,active gd,hatchback,automatic,petrol,211464,5.0,KMHD251EMHU324927,1GL1QW,14-04-2026,4,1.8,White,Black,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21052465/motor-vehicles-motor-cycles/2015-hyundai-i30-active-gd-automatic-hatchback,"dents or marks on body consistent with age and kilometres..
-engine noise observed.",67,5000,2025-07-17,0,UNCLASSIFIED,[OUT_OF_SCOPE_YEAR],,,
+engine noise observed.",67,5000,2025-07-17,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
 2018,mazda,cx-5,maxx sport kf,wagon,automatic,petrol,198653,5.0,JM0KF2W7A00205138,1NE4UM,21-06-2026,4,2.0,Silver,Black,Yes,Yes,No,Yes,Yes,vic,https://www.grays.com/lot/0001-21052489/motor-vehicles-motor-cycles/2018-mazda-cx-5-maxx-sport-kf-automatic-wagon,dents or marks on body consistent with age and kilometres.,106,12401,2025-07-17,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2007,kia,grand,carnival (ex) vq,people mover,automatic,petrol,231413,8.0,KNAMB763376169301,No plates,Unregistered,6,3.8,White,Grey,Yes,No,No,No,Yes,vic,https://www.grays.com/lot/0001-21052160/motor-vehicles-motor-cycles/2007-kia-grand-carnival-ex-vq-automatic-8-seats-people-mover,"dents or marks on body consistent with age and kilometres.
 engine smoke visible
@@ -25390,7 +25390,7 @@ dents or marks on body consistent with age and kilometres.",13,2500,2025-07-20,0
 2014,hyundai,i30,trophy gd,hatchback,automatic,petrol,140533,5.0,KMHD351EMEU220475,No plates,Unregistered,4,1.8,Red,Black Leather,Yes,No,No,No,Yes,vic,https://www.grays.com/lot/0001-21052070/motor-vehicles-motor-cycles/2014-hyundai-i30-trophy-gd-automatic-hatchback,"dents or marks on body consistent with age and kilometres.
 paint peeling drivers door handle
 medium scratch on below fuel cap
-engine noise observed.",5,6300,2025-07-20,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
+engine noise observed.",5,6300,2025-07-20,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2015,hyundai,tucson,active x tl,wagon,automatic,petrol,172487,5.0,KMHJ3814MGU079257,No plates,Unregistered,4,2.0,White,Black Leather,Yes,Yes,Yes,Yes,Yes,qld,https://www.grays.com/lot/0001-50712384/motor-vehicles-motor-cycles/2015-hyundai-tucson-active-x-tl-automatic-wagon,"front seat worn driver seat
 dents or marks on body consistent with age and kilometres.",103,8500,2025-07-20,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2009,hyundai,tucson,city elite,wagon,automatic,petrol,227529,5.0,KMHJN81BMAU179690,No Plates,Unregistered,4,2.0,Grey,Black Leather,Yes,No,No,No,Yes,vic,https://www.grays.com/lot/0001-21052513/motor-vehicles-motor-cycles/2009-hyundai-tucson-city-elite-automatic-wagon,"seat torn driver seat
@@ -25534,7 +25534,7 @@ seat torn driver",24,1909,2025-07-21,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2009,hyundai,iload,crew tq,van,manual,petrol,222942,6.0,KMFWBX7RLAU219557,No Plates,Unregistered,4,2.5,White,Grey,Yes,Yes,Yes,No,Yes,vic,https://www.grays.com/lot/0001-21052535/motor-vehicles-motor-cycles/2009-hyundai-iload-crew-tq-manual-van,small dents/scratches around vehicel,34,2709,2025-07-21,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2010,hyundai,getz,s tb,hatchback,automatic,petrol,143728,5.0,KMHBT51DR9U869564,No plates,Unregistered,4,1.4,Mint,Multi,Yes,Yes,Yes,Yes,Yes,sa,https://www.grays.com/lot/0001-60048359/motor-vehicles-motor-cycles/2010-hyundai-getz-s-tb-automatic-hatchback,please refer to the photos or arrange inspection to view the condition of this vehicle.,45,3250,2025-07-21,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2014,hyundai,i30,elite gd,hatchback,automatic,petrol,269720,5.0,KMHD351EMEU245982,1EG2NQ,27-09-2025,4,1.8,Black,Grey,Yes,Yes,No,Yes,Yes,vic,https://www.grays.com/lot/0001-21052622/motor-vehicles-motor-cycles/2014-hyundai-i30-elite-gd-automatic-hatchback,"dents or marks on body consistent with age and kilometres.
-paint fading top back",52,4809,2025-07-21,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
+paint fading top back",52,4809,2025-07-21,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2016,hyundai,elantra,active ad,sedan,automatic,petrol,170167,5.0,KMHD841FMHU094213,2AW4MA,19-11-2025,4,2.0,Black,Black,Yes,Yes,Yes,No,Yes,vic,https://www.grays.com/lot/0001-21052740/motor-vehicles-motor-cycles/2016-hyundai-elantra-active-ad-automatic-sedan,"transmission requires attention
 dents or marks on body consistent with age and kilometres.
 medium scuff on around the car
@@ -25855,9 +25855,9 @@ paint fading bonnet, roof, and rear",45,3909,2025-07-22,0,UNCLASSIFIED,[OUT_OF_S
 2012,hyundai,i30,elite gd,hatchback,automatic,petrol,155312,5.0,KMHD351EMDU008856,1LV5TV,14-06-2026,4,1.8,Blue,Black,Yes,Yes,No,No,Yes,vic,https://www.grays.com/lot/0001-21052637/motor-vehicles-motor-cycles/2012-hyundai-i30-elite-gd-automatic-hatchback,"large dent on right rear panel, left rear door. front bumper bar.
 rear bumper cracked bumper.
 dents or marks on body consistent with age and kilometres.
-engine smoke visible",45,3209,2025-07-22,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
-2012,hyundai,i30,premium gd,hatchback,automatic,petrol,199275,5.0,KMHD351EMDU077522,CMN96X,Unregistered,4,1.8,Grey,Black,Yes,Yes,Yes,Yes,Yes,nsw,https://www.grays.com/lot/0001-10349743/motor-vehicles-motor-cycles/2012-hyundai-i30-premium-gd-automatic-hatchback,please refer to the photos or arrange inspection to view the condition of this vehicle.,70,4810,2025-07-22,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
-2014,hyundai,i30,trophy gd,hatchback,automatic,petrol,141573,5.0,KMHD351EMEU237802,DE29PJ,Unregistered,4,1.8,White,Black,Yes,Yes,Yes,Yes,Yes,nsw,https://www.grays.com/lot/0001-10349703/motor-vehicles-motor-cycles/2014-hyundai-i30-trophy-gd-automatic-hatchback,please refer to the photos or arrange inspection to view the condition of this vehicle.,36,4600,2025-07-22,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
+engine smoke visible",45,3209,2025-07-22,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
+2012,hyundai,i30,premium gd,hatchback,automatic,petrol,199275,5.0,KMHD351EMDU077522,CMN96X,Unregistered,4,1.8,Grey,Black,Yes,Yes,Yes,Yes,Yes,nsw,https://www.grays.com/lot/0001-10349743/motor-vehicles-motor-cycles/2012-hyundai-i30-premium-gd-automatic-hatchback,please refer to the photos or arrange inspection to view the condition of this vehicle.,70,4810,2025-07-22,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
+2014,hyundai,i30,trophy gd,hatchback,automatic,petrol,141573,5.0,KMHD351EMEU237802,DE29PJ,Unregistered,4,1.8,White,Black,Yes,Yes,Yes,Yes,Yes,nsw,https://www.grays.com/lot/0001-10349703/motor-vehicles-motor-cycles/2014-hyundai-i30-trophy-gd-automatic-hatchback,please refer to the photos or arrange inspection to view the condition of this vehicle.,36,4600,2025-07-22,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2009,hyundai,i30,sx fd,hatchback,automatic,petrol,242058,5.0,KMHDB51ER9U193819,DO54GB,18-05-2026,4,2.0,White,Black,Yes,No,Yes,Yes,Yes,nsw,https://www.grays.com/lot/0001-10349705/motor-vehicles-motor-cycles/2009-hyundai-i30-sx-fd-automatic-hatchback,please refer to the photos or arrange inspection to view the condition of this vehicle.,33,3200,2025-07-22,0,UNCLASSIFIED,[AMBIG_BADGE],,,
 2017,hyundai,i30,active pd,hatchback,automatic,petrol,64548,5.0,KMHH351EMJU012062,1QK2NK,17-09-2025,4,2.0,White,Grey,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21052779/motor-vehicles-motor-cycles/2017-hyundai-i30-active-pd-automatic-hatchback,"dents or marks on body consistent with age and kilometres.
 front seat stains drivers seat",134,11500,2025-07-22,0,hyundai_i30_active_petrol_auto_hatch_pd,[OK],,,
@@ -26913,7 +26913,7 @@ paint peeling front bumper
 corrosion visible back left panel below light",5,10190,2025-07-24,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2013,hyundai,i30,trophy gd,hatchback,automatic,petrol,78475,5.0,KMHD351EMEU164628,ECQ54T,Unregistered,4,1.8,White,Black Leather,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21053026/motor-vehicles-motor-cycles/2013-hyundai-i30-trophy-gd-automatic-hatchback,"dents or marks on body consistent with age and kilometres.
 engine noise observed.interior: steering wheel wear
-interior: steering wheel wear",101,7100,2025-07-24,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
+interior: steering wheel wear",101,7100,2025-07-24,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2018,ldv,g10,,van,automatic,diesel,127613,2.0,LSKG4GL1XJA043721,1XG1LS,Unregistered,4,1.9,White,Cream,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21053000/motor-vehicles-motor-cycles/2018-ldv-g10-turbo-diesel-automatic-van,"medium dent on right side
 medium dent on rear bumper
 dents or marks on body consistent with age and kilometres.
@@ -27384,8 +27384,8 @@ paint fading multiple panels",11,800,2025-07-28,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 dents or marks on body consistent with age and kilometres.
 medium scratch on multiple panels",21,1409,2025-07-28,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2016,holden,barina,tm,hatchback,automatic,petrol,118214,5.0,KL3TA48E9GB679492,DZW25F,Unregistered,4,1.6,Silver,Black,Yes,Yes,Yes,Yes,Yes,nsw,https://www.grays.com/lot/0001-10349840/motor-vehicles-motor-cycles/2016-holden-barina-tm-automatic-hatchback,please refer to the photos or arrange inspection to view the condition of this vehicle.,37,4300,2025-07-28,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
-2012,hyundai,i30,elite gd,hatchback,automatic,petrol,173963,5.0,KMHD351EMDU064058,ZKF345,01-08-2025,4,1.8,Black,Black,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21053224/motor-vehicles-motor-cycles/2012-hyundai-i30-elite-gd-automatic-hatchback,dents or marks on body consistent with age and kilometres.,69,6100,2025-07-28,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
-2020,hyundai,i30,active pd,hatchback,automatic,petrol,75550,5.0,KMHH351EMLU146882,1SJ2PV,Unregistered,4,2.0,White,Black,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21053375/motor-vehicles-motor-cycles/2020-hyundai-i30-active-pd-automatic-hatchback,"paint fading rear spoiler, lhs cant rail, rear passenger 1/4 panel",67,15500,2025-07-28,0,UNCLASSIFIED,[OUT_OF_SCOPE_YEAR],,,
+2012,hyundai,i30,elite gd,hatchback,automatic,petrol,173963,5.0,KMHD351EMDU064058,ZKF345,01-08-2025,4,1.8,Black,Black,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21053224/motor-vehicles-motor-cycles/2012-hyundai-i30-elite-gd-automatic-hatchback,dents or marks on body consistent with age and kilometres.,69,6100,2025-07-28,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
+2020,hyundai,i30,active pd,hatchback,automatic,petrol,75550,5.0,KMHH351EMLU146882,1SJ2PV,Unregistered,4,2.0,White,Black,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21053375/motor-vehicles-motor-cycles/2020-hyundai-i30-active-pd-automatic-hatchback,"paint fading rear spoiler, lhs cant rail, rear passenger 1/4 panel",67,15500,2025-07-28,0,hyundai_i30_active_petrol_auto_hatch_pd,[OK],,,
 2020,hyundai,i30,pd,hatchback,automatic,petrol,28055,5.0,KMHH351EMMU150686,1TD9YM,05-01-2026,4,2.0,White,Grey,Yes,No,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21053374/motor-vehicles-motor-cycles/2020-hyundai-i30-pd-automatic-hatchback,medium scuff on passenger side front quarter panel,43,18400,2025-07-28,0,UNCLASSIFIED,[AMBIG_BADGE],,,
 2013,mahindra,xuv500,,suv,manual,diesel,184234,7.0,MA1YM2HWUD6072709,No plates,Unregistered,4,2.0,White,Black Leather,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21053091/motor-vehicles-motor-cycles/2013-mahindra-xuv500-manual-7-seats-suv,"dents or marks on body consistent with age and kilometres.
 medium scratch on various panels.",56,3809,2025-07-28,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
@@ -28203,11 +28203,11 @@ engine noise observed.",4,309,2025-07-30,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2013,hyundai,i30,active gd,hatchback,automatic,petrol,96847,5.0,KMHD251EMDU127415,1EHT401,31-08-2025,4,1.8,White,Charcoal,Yes,Yes,No,No,Yes,wa,https://www.grays.com/lot/0001-9061975/motor-vehicles-motor-cycles/2013-hyundai-i30-active-gd-automatic-hatchback,"dents or marks on body consistent with age and kilometres.
 paint peeling door handles
 airbag light on",97,8805,2025-07-30,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
-2013,hyundai,i30,trophy gd,hatchback,automatic,petrol,102489,5.0,KMHD351EMEU169638,1AZ5VJ,28-08-2025,4,1.8,White,Black Leather,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21053462/motor-vehicles-motor-cycles/2013-hyundai-i30-trophy-gd-automatic-hatchback,dents or marks on body consistent with age and kilometres.,75,7610,2025-07-30,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
+2013,hyundai,i30,trophy gd,hatchback,automatic,petrol,102489,5.0,KMHD351EMEU169638,1AZ5VJ,28-08-2025,4,1.8,White,Black Leather,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21053462/motor-vehicles-motor-cycles/2013-hyundai-i30-trophy-gd-automatic-hatchback,dents or marks on body consistent with age and kilometres.,75,7610,2025-07-30,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2015,hyundai,i30,active x gd ii,hatchback,automatic,petrol,71183,5.0,KMHD351EMGU300592,No plates,Unregistered,4,1.8,Red,Black Leather,Yes,No,Yes,Yes,Yes,qld,https://www.grays.com/lot/0001-50516126/motor-vehicles-motor-cycles/2015-hyundai-i30-active-x-gd-ii-automatic-hatchback,"dents or marks on body consistent with age and kilometres.
 paint peeling mirrors, door handles, spoiler and rear bumper
 large scratch on rear bumper
-seat torn back seat",23,10000,2025-07-30,0,UNCLASSIFIED,[OUT_OF_SCOPE_YEAR],,,
+seat torn back seat",23,10000,2025-07-30,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2015,hyundai,sonata,premium lf,sedan,automatic,petrol,154048,5.0,KMHE341BMFA142803,No plates,Unregistered,4,2.0,Black,Black Leather,Yes,No,Yes,Yes,Yes,sa,https://www.grays.com/lot/0001-60048498/motor-vehicles-motor-cycles/2015-hyundai-sonata-premium-lf-automatic-sedan,please refer to the photos or arrange inspection to view the condition of this vehicle.,67,7250,2025-07-30,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2012,hyundai,i45,active yf,sedan,automatic,petrol,214359,5.0,KMHEB41DMDA505395,No plates,Unregistered,4,2.4,Red,Grey,Yes,No,No,No,Yes,qld,https://www.grays.com/lot/0001-50516145/motor-vehicles-motor-cycles/2012-hyundai-i45-active-yf-automatic-sedan,"dash torn or cracked
 door card worn.
@@ -28651,7 +28651,7 @@ medium scuff on rear bumper",11,1009,2025-07-30,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2007,bmw,x5,4.8i e70,wagon,automatic,petrol,174615,5.0,WBAFE82000LJ52590,No plates,Unregistered,8,4.8,Silver,Grey,Yes,Yes,Yes,Yes,Yes,nsw,https://www.grays.com/lot/0001-10912007/motor-vehicles-motor-cycles/2007-bmw-x5-4-8i-e70-automatic-wagon,"dents or marks on body consistent with age and kilometres.
 engine oil leak - requires attention",41,2809,2025-07-30,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2015,hyundai,i30,active gd,hatchback,automatic,petrol,211464,5.0,KMHD251EMHU324927,1GL1QW,14-04-2026,4,1.8,White,Black,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21053475/motor-vehicles-motor-cycles/2015-hyundai-i30-active-gd-automatic-hatchback,"dents or marks on body consistent with age and kilometres..
-engine noise observed.",61,4700,2025-07-30,0,UNCLASSIFIED,[OUT_OF_SCOPE_YEAR],,,
+engine noise observed.",61,4700,2025-07-30,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
 2012,jeep,grand,cherokee laredo (4x4) wk,wagon,automatic,petrol,186053,5.0,1C4RJFEG3DC527130,ZHG916,03-10-2025,6,3.6,White,Black,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21053421/motor-vehicles-motor-cycles/2012-jeep-grand-cherokee-laredo-4x4-wk-automatic-wagon,"large dent on front driver side quarter panel
 dents or marks on body consistent with age and kilometres.
 medium scuff on front bumper",8,3200,2025-07-30,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
@@ -29883,7 +29883,7 @@ dents or marks on body consistent with age and kilometres.
 paint fading all door handles
 medium scuff on front bumper",63,5200,2025-08-06,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
 2015,hyundai,i30,active gd,hatchback,automatic,petrol,211464,5.0,KMHD251EMHU324927,1GL1QW,14-04-2026,4,1.8,White,Black,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21053818/motor-vehicles-motor-cycles/2015-hyundai-i30-active-gd-automatic-hatchback,"dents or marks on body consistent with age and kilometres..
-engine noise observed.",44,4800,2025-08-06,0,UNCLASSIFIED,[OUT_OF_SCOPE_YEAR],,,
+engine noise observed.",44,4800,2025-08-06,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
 2014,hyundai,i30,,hatchback,automatic,petrol,206658,5.0,KMHD351EMEU240921,No plates,Unregistered,4,1.8,Blue,Black Leather,Yes,Yes,Yes,No,Yes,qld,https://www.grays.com/lot/0001-50516181/motor-vehicles-motor-cycles/2014-hyundai-i30-automatic-hatchback,"engine noise observed.
 door card worn.
 front seat worn driver seat
@@ -30489,7 +30489,7 @@ medium scratch on back passenger door sill
 door card worn.
 seat torn driver",44,5009,2025-08-10,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2016,hyundai,i30,active gd,hatchback,automatic,petrol,360374,5.0,KMHD251EMHU368406,1JF8XD,29-12-2025,4,1.8,Grey,Black,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21054042/motor-vehicles-motor-cycles/2016-hyundai-i30-active-gd-automatic-hatchback,"dents or marks on body consistent with age and kilometres.
-drivers seat stains.",83,5909,2025-08-10,0,UNCLASSIFIED,[OUT_OF_SCOPE_YEAR],,,
+drivers seat stains.",83,5909,2025-08-10,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
 2014,hyundai,i40,elite vf,sedan,automatic,diesel,145014,5.0,KMHLC41UMEU056664,No plates,Unregistered,4,1.7,Grey,Black Leather,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21054021/motor-vehicles-motor-cycles/2014-hyundai-i40-elite-vf-turbo-diesel-automatic-sedan,"engine noise observed.
 front seat scratches minor
 medium scratch on various parts on panels
@@ -31034,7 +31034,7 @@ corrosion visible on top of roof",12,1200,2025-08-12,0,UNCLASSIFIED,[OUT_OF_SCOP
 dents or marks on body consistent with age and kilometres.
 medium scratch on various parts on panels
 dents or marks on body consistent with age and kilometres.
-paint cracked various parts on panels",37,3009,2025-08-12,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
+paint cracked various parts on panels",37,3009,2025-08-12,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2015,hyundai,i30,active x gd ii,hatchback,automatic,diesel,129898,5.0,KMHD351UVGU277122,1EVR950,12-10-2025,4,1.6,Silver,Black Leather,Yes,Yes,Yes,Yes,Yes,wa,https://www.grays.com/lot/0001-9062481/motor-vehicles-motor-cycles/2015-hyundai-i30-active-x-gd-ii-turbo-diesel-automatic-hatchback,"engine noise observed.
 dents or marks on body consistent with age and kilometres.
 medium scratch on rear bumper.
@@ -31678,7 +31678,7 @@ medium scratch on various along panel",66,4220,2025-08-13,0,hyundai_i30_active_p
 paint peeling lhr ext. door handle
 dents or marks on body consistent with age and kilometres.
 comment: lhf fog light lens condensation. lh side indicator lens cracked.
-comment: lhf fog light lens condensation. lh side indicator lens cracked.",70,4609,2025-08-13,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
+comment: lhf fog light lens condensation. lh side indicator lens cracked.",70,4609,2025-08-13,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2020,hyundai,i30,pd,hatchback,automatic,petrol,57676,5.0,KMHH351EMMU151363,1XR2SR,02-09-2025,4,2.0,Grey,Black,Yes,No,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21054225/motor-vehicles-motor-cycles/2020-hyundai-i30-pd-automatic-hatchback,"front seat worn drivers
 back seat stains.
 medium dent on passenger rear door
@@ -32051,7 +32051,7 @@ medium scuff on lh front bumper
 medium scratch on lh rear quarter and bonnet
 medium dent on lh rear door and lh rear guard
 front seat stains passenger seat",106,6975,2025-08-14,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
-2014,hyundai,i30,sr gd,hatchback,automatic,petrol,87225,5.0,KMHD351HMEU205158,1CN3XW,14-07-2026,4,2.0,White,Black Leather,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21054422/motor-vehicles-motor-cycles/2014-hyundai-i30-sr-gd-automatic-hatchback,dents or marks on body consistent with age and kilometres.,136,10400,2025-08-14,0,UNCLASSIFIED,[AMBIG_BADGE],,,
+2014,hyundai,i30,sr gd,hatchback,automatic,petrol,87225,5.0,KMHD351HMEU205158,1CN3XW,14-07-2026,4,2.0,White,Black Leather,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21054422/motor-vehicles-motor-cycles/2014-hyundai-i30-sr-gd-automatic-hatchback,dents or marks on body consistent with age and kilometres.,136,10400,2025-08-14,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2016,hyundai,tucson,active x tl,wagon,automatic,petrol,157907,5.0,KMHJ3814MHU312200,No Plates,Unregistered,4,2.0,White,Tan,Yes,No,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21054385/motor-vehicles-motor-cycles/2016-hyundai-tucson-active-x-tl-automatic-wagon,"dents or marks on body consistent with age and kilometres.
 front seat worn driver door",118,10000,2025-08-14,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2015,ford,ranger,xl 4x2 hi-rider px ii dual,cab chassis,automatic,diesel,293715,5.0,MNAUMFF80FW463767,1YZ9MM,31-10-2025,4,2.2,Grey,Black,Yes,No,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21054396/motor-vehicles-motor-cycles/2015-ford-ranger-xl-4x2-hi-rider-px-ii-turbo-diesel-automatic-dual-cab,"medium dent on rhr quarter panel.
@@ -32298,7 +32298,7 @@ difficulty starting, possible starter motor or shift selector.
 paint cracked rear bar
 large dent on rhr quarter panel
 medium dent on rhr door
-engine noise observed.",2,5100,2025-08-17,0,UNCLASSIFIED,[OUT_OF_SCOPE_YEAR],,,
+engine noise observed.",2,5100,2025-08-17,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
 2012,hyundai,veloster,sr turbo fs,coupe,manual,petrol,127535,4.0,KMHTC61ELDU108002,No plates,Unregistered,4,1.6,Orange,Black Leather,Yes,No,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21054260/motor-vehicles-motor-cycles/2012-hyundai-veloster-sr-turbo-fs-manual-coupe,"paint fading around exterior
 medium scratch on around exterior
 dents or marks on body consistent with age and kilometres.",49,4509,2025-08-17,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
@@ -33936,7 +33936,7 @@ dents or marks on body consistent with age and kilometres.",78,6200,2025-08-21,0
 paint peeling various parts on panels
 medium scratch on various parts on panels
 dents or marks on body consistent with age and kilometres.
-engine noise observed.",39,4600,2025-08-23,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
+engine noise observed.",39,4600,2025-08-23,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2018,land,rover,discovery sport td4 hse 132kw t d 9,wagon,automatic,diesel,167663,7.0,SALCA2AN7JH777710,DYU50C,Unregistered,4,2.0,Grey,Black Leather,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21054794/motor-vehicles-motor-cycles/2018-land-rover-discovery-sport-td4-hse-132kw-t-d-9-auto-7-seats-wagon,dents or marks on body consistent with age and kilometres.,162,13300,2025-08-23,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2016,land,rover,range rover evoque td4 150 se 9,wagon,automatic,diesel,122895,5.0,SALVA2AN0GH153989,No plates,Unregistered,4,2.0,Black,Beige Leather,Yes,No,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21054843/motor-vehicles-motor-cycles/2016-land-rover-range-rover-evoque-td4-150-se-turbo-diesel-9-auto-wagon,"dents or marks on body consistent with age and kilometres.
 front seat stains driver seat
@@ -34016,7 +34016,7 @@ dents or marks on body consistent with age and kilometres.
 front seat worn driver seat torn",21,1701,2025-08-24,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2017,hyundai,i30,active gd,hatchback,automatic,petrol,162047,5.0,KMHD251EMHU382977,1KJ1HD,26-05-2026,4,1.8,Silver,Black,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21054866/motor-vehicles-motor-cycles/2017-hyundai-i30-active-gd-automatic-hatchback,"dents or marks on body consistent with age and kilometres.
 large dent on drivers door,
-passenger side bumper damaged.",75,7300,2025-08-24,0,hyundai_i30_active_petrol_auto_hatch_pd,[OK],,,
+passenger side bumper damaged.",75,7300,2025-08-24,0,UNCLASSIFIED,[OUT_OF_SCOPE_YEAR],,,
 2009,hyundai,tucson,city elite,wagon,automatic,petrol,241561,5.0,KMHJN81BR9U080276,No plates,Unregistered,4,2.0,Silver,Black Leather,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21054681/motor-vehicles-motor-cycles/2009-hyundai-tucson-city-elite-automatic-wagon,"medium scratch on front bumper
 dents or marks on body consistent with age and kilometres.
 front seat worn driver seat torn, has tape over it",12,909,2025-08-24,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
@@ -34320,11 +34320,11 @@ medium scratch on tailgate",15,1109,2025-08-25,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 minor scuffs, scratches on various panels.",51,3809,2025-08-25,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2017,hyundai,i30,active gd,hatchback,automatic,petrol,88153,5.0,KMHD251EMHU382835,No plates,Unregistered,4,1.8,White,Black,Yes,Yes,No,No,Yes,qld,https://www.grays.com/lot/0001-50712841/motor-vehicles-motor-cycles/2017-hyundai-i30-active-gd-automatic-hatchback,"dents or marks on body consistent with age and kilometres.
 medium scratch on front bumper
-front seat worn drivers",72,10200,2025-08-25,0,hyundai_i30_active_petrol_auto_hatch_pd,[OK],,,
+front seat worn drivers",72,10200,2025-08-25,0,UNCLASSIFIED,[OUT_OF_SCOPE_YEAR],,,
 2014,hyundai,i30,trophy gd,hatchback,automatic,petrol,165333,5.0,KMHD351EMEU200113,1CI3EY,26-06-2026,4,1.8,Red,Black Leather,Yes,No,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21054953/motor-vehicles-motor-cycles/2014-hyundai-i30-trophy-gd-automatic-hatchback,"engine noise observed.
 dents or marks on body consistent with age and kilometres.
 medium dent on front rh quarter
-medium dent on rh rear bumper quarter",37,5250,2025-08-25,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
+medium dent on rh rear bumper quarter",37,5250,2025-08-25,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2009,hyundai,tucson,city sx,wagon,automatic,petrol,162590,5.0,KMHJN81BMAU161180,1IRP161,27-10-2025,4,2.0,Black,Charcoal,Yes,No,Yes,Partial,Yes,wa,https://www.grays.com/lot/0001-9062908/motor-vehicles-motor-cycles/2009-hyundai-tucson-city-sx-automatic-wagon,"dents or marks on body consistent with age and kilometres.
 paint fading various panels
 windscreen chipped or cracked.",46,3700,2025-08-25,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
@@ -34606,7 +34606,7 @@ front bumper cracked bumper.
 windscreen chipped or cracked.",62,5100,2025-08-26,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2013,hyundai,i30,elite gd,hatchback,automatic,petrol,119132,5.0,KMHD351EMDU109521,ZTJ911,01-12-2025,4,1.8,Silver,Black,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21055051/motor-vehicles-motor-cycles/2013-hyundai-i30-elite-gd-automatic-hatchback,"dents or marks on body consistent with age and kilometres.
 engine smoke visible
-windscreen chipped or cracked.",59,5930,2025-08-26,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
+windscreen chipped or cracked.",59,5930,2025-08-26,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2012,hyundai,i30,sx fd,hatchback,automatic,petrol,145971,5.0,KMHDB51EMCU391558,ZJX710,15-01-2026,4,2.0,Blue,Black,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21055003/motor-vehicles-motor-cycles/2012-hyundai-i30-sx-fd-automatic-hatchback,"lhf door won`t open from outside. door not working
 large scuff on lhr door,
 large scratch on rear bar,, front bar
@@ -35652,7 +35652,7 @@ large scuff on front bar",48,3600,2025-08-28,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2014,hyundai,i30,trophy gd,hatchback,automatic,petrol,104778,5.0,KMHD351EMEU191393,1BY5PU,08-07-2026,4,1.8,Silver,Black Leather,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21055182/motor-vehicles-motor-cycles/2014-hyundai-i30-trophy-gd-automatic-hatchback,"engine noise observed.
 large scratch on rear bar, front bar
 large scuff on front bar
-engine idling rough",29,7300,2025-08-28,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
+engine idling rough",29,7300,2025-08-28,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2010,hyundai,santa,fe slx cm,wagon,automatic,diesel,347895,5.0,KMHSH81XNBU706261,1HRI572,17-10-2025,4,2.2,White,Grey,Yes,No,Yes,Yes,Yes,wa,https://www.grays.com/lot/0001-9063038/motor-vehicles-motor-cycles/2010-hyundai-santa-fe-slx-cm-turbo-diesel-automatic-wagon,"large dent on front end damage
 dents or marks on body consistent with age and kilometres.
 engine noise observed.
@@ -36368,15 +36368,15 @@ large scratch on rear drivers side",46,5000,2025-09-02,0,hyundai_i30_active_petr
 2015,hyundai,i30,active gd,hatchback,automatic,petrol,224188,5.0,KMHD251EMGU267666,1JN6HR,15-07-2026,4,1.8,Red,Black,Yes,No,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21055378/motor-vehicles-motor-cycles/2015-hyundai-i30-active-gd-automatic-hatchback,"dents or marks on body consistent with age and kilometres.
 paint fading around exterior, mirrors
 medium dent on boot
-engine noise observed.",37,3850,2025-09-02,0,UNCLASSIFIED,[OUT_OF_SCOPE_YEAR],,,
+engine noise observed.",37,3850,2025-09-02,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
 2012,hyundai,i30,elite gd,hatchback,manual,petrol,246115,5.0,KMHD351ELDU013464,CI12NH,Unregistered,4,1.8,Silver,Black,Yes,Yes,Yes,Yes,Yes,nsw,https://www.grays.com/lot/0001-10350225/motor-vehicles-motor-cycles/2012-hyundai-i30-elite-gd-manual-hatchback,please refer to the photos or arrange inspection to view the condition of this vehicle.,13,1209,2025-09-02,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
-2014,hyundai,i30,trophy gd,hatchback,automatic,petrol,58770,5.0,KMHD351EMEU226642,CWN05U,Unregistered,4,1.8,Red,Black,Yes,Yes,Yes,Yes,Yes,nsw,https://www.grays.com/lot/0001-10350448/motor-vehicles-motor-cycles/2014-hyundai-i30-trophy-gd-automatic-hatchback-58-770kms,please refer to the photos or arrange inspection to view the condition of this vehicle.,80,5900,2025-09-02,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
+2014,hyundai,i30,trophy gd,hatchback,automatic,petrol,58770,5.0,KMHD351EMEU226642,CWN05U,Unregistered,4,1.8,Red,Black,Yes,Yes,Yes,Yes,Yes,nsw,https://www.grays.com/lot/0001-10350448/motor-vehicles-motor-cycles/2014-hyundai-i30-trophy-gd-automatic-hatchback-58-770kms,please refer to the photos or arrange inspection to view the condition of this vehicle.,80,5900,2025-09-02,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2015,hyundai,i30,sr gd ii,hatchback,automatic,petrol,102234,5.0,KMHD351HMGU286724,1GD7UH,04-12-2025,4,2.0,Blue,Black,Yes,No,No,No,Yes,vic,https://www.grays.com/lot/0001-21055396/motor-vehicles-motor-cycles/2015-hyundai-i30-sr-gd-ii-automatic-hatchback,"front seats worn
 paint fading roof spoiler
-medium scratch on lhr door",105,7700,2025-09-02,0,UNCLASSIFIED,[AMBIG_BADGE],,,
+medium scratch on lhr door",105,7700,2025-09-02,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2018,hyundai,i30,premium pd,hatchback,automatic,petrol,86539,5.0,KMHH351EMJU085895,1WKC1KK,Unregistered,4,2.0,Black,Black Leather,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21055220/motor-vehicles-motor-cycles/2018-hyundai-i30-premium-pd-automatic-hatchback,"dents or marks on body consistent with age and kilometres.
 medium scratch on in few spots
-medium scuff on medium to large in few spots",122,14000,2025-09-02,0,UNCLASSIFIED,[OUT_OF_SCOPE_YEAR],,,
+medium scuff on medium to large in few spots",122,14000,2025-09-02,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2004,hyundai,tucson,elite,wagon,automatic,petrol,219249,5.0,KMHJN81DR5U030664,ENA04Z,Unregistered,6,2.7,Black,Grey,Yes,Yes,No,No,Yes,nsw,https://www.grays.com/lot/0001-10350405/motor-vehicles-motor-cycles/2004-hyundai-tucson-elite-automatic-wagon,please refer to the photos or arrange inspection to view the condition of this vehicle.,13,1209,2025-09-02,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2013,hyundai,ix35,active fwd lm,wagon,automatic,petrol,142556,5.0,KMHJT81BMDU699165,No plates,Unregistered,4,2.0,Red,Multi,Yes,No,Yes,Yes,Yes,sa,https://www.grays.com/lot/0001-60048826/motor-vehicles-motor-cycles/2013-hyundai-ix35-active-fwd-lm-automatic-wagon,please refer to the photos or arrange inspection to view the condition of this vehicle.,52,5500,2025-09-02,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2018,hyundai,kona,active,wagon,automatic,petrol,105490,5.0,KMHK281AMKU188939,1GPG371,23-09-2025,4,2.0,White,Black,Yes,No,Yes,Yes,Yes,wa,https://www.grays.com/lot/0001-9063122/motor-vehicles-motor-cycles/2018-hyundai-kona-active-automatic-wagon,"dents or marks on body consistent with age and kilometres.
@@ -36938,11 +36938,11 @@ medium scratch on various parts on panels
 paint fading various parts on panels",67,9100,2025-09-03,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2014,hyundai,i30,elite gd,hatchback,automatic,petrol,173664,5.0,KMHD351EMEU230237,1DH8YT,21-10-2025,4,1.8,White,Black,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21055397/motor-vehicles-motor-cycles/2014-hyundai-i30-elite-gd-automatic-hatchback,"engine noise observed.
 dents or marks on body consistent with age and kilometres.
-medium scratch on various panels",67,5600,2025-09-03,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
+medium scratch on various panels",67,5600,2025-09-03,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2019,hyundai,i30,n-line pd,hatchback,automatic,petrol,92522,5.0,KMHH551CVLU136132,TRILLO,19-09-2025,4,1.6,Black,Black Leather,Yes,No,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21055480/motor-vehicles-motor-cycles/2019-hyundai-i30-n-line-pd-automatic-hatchback,"dents or marks on body consistent with age and kilometres.
 medium dent on small to medium in few spots
 medium scratch on small to medium in few spots
-medium scuff on in few spots",152,17600,2025-09-03,0,UNCLASSIFIED,[AMBIG_BADGE],,,
+medium scuff on in few spots",152,17600,2025-09-03,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2008,hyundai,tucson,city sx,wagon,manual,petrol,282281,5.0,KMHJN81BR9U012797,1IA2TY,30-09-2025,4,2.0,Grey,Black,Yes,No,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21055489/motor-vehicles-motor-cycles/2008-hyundai-tucson-city-sx-manual-wagon,"medium scratch on some places
 medium dent on some places
 paint fading roof and some places",9,809,2025-09-03,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
@@ -39029,7 +39029,7 @@ windscreen chipped or cracked.",47,3509,2025-09-11,0,UNCLASSIFIED,[OUT_OF_SCOPE]
 2014,hyundai,i30,trophy gd,hatchback,automatic,petrol,91497,5.0,KMHD351EMEU229422,1EYW267,02-08-2026,4,1.8,Silver,Black Leather,Yes,Yes,Yes,Yes,Yes,wa,https://www.grays.com/lot/0001-9063422/motor-vehicles-motor-cycles/2014-hyundai-i30-trophy-gd-automatic-hatchback,"dents or marks on body consistent with age and kilometres.
 engine issues, noise observed.
 medium scuff on rear drivers wheel
-windscreen chipped or cracked.",62,10000,2025-09-11,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
+windscreen chipped or cracked.",62,10000,2025-09-11,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2010,hyundai,ix35,active fwd lm,wagon,automatic,petrol,231097,5.0,KMHJT81BMAU060543,XRE422,29-10-2025,4,2.0,Blue,Grey,Yes,No,No,No,Yes,vic,https://www.grays.com/lot/0001-21055936/motor-vehicles-motor-cycles/2010-hyundai-ix35-active-fwd-lm-automatic-wagon,"front seat stains passenger seat
 dents or marks on body consistent with age and kilometres.
 body/panel damage big scrape drivers door to back wheel arch",24,1609,2025-09-11,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
@@ -41001,13 +41001,13 @@ dents or marks on body consistent with age and kilometres.",2,2609,2025-10-15,0,
 dents or marks on body consistent with age and kilometres.
 paint fading rear spoiler
 engine noise observed.
-medium scratch on bumper",53,4200,2025-10-15,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
+medium scratch on bumper",53,4200,2025-10-15,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2016,hyundai,i30,active x gd ii,hatchback,automatic,petrol,105496,5.0,KMHD351EMHU355996,1HZ1GV,30-11-2025,4,1.8,Black,Beige Leather,Yes,No,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21057911/motor-vehicles-motor-cycles/2016-hyundai-i30-active-x-gd-ii-automatic-hatchback,"drivers seat stains
 front cracked bumper.
 medium dent, paint peeling on bonnet
 dents or marks on body consistent with age and kilometres.
 medium dent on left rear quarter
-paint fading rear spoiler",73,8400,2025-10-15,0,UNCLASSIFIED,[OUT_OF_SCOPE_YEAR],,,
+paint fading rear spoiler",73,8400,2025-10-15,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2010,hyundai,i30,sx fd,hatchback,automatic,petrol,204312,5.0,KMHDB51EMBU274762,1DG6SL,20-10-2025,4,2.0,Blue,Black,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21057907/motor-vehicles-motor-cycles/2010-hyundai-i30-sx-fd-automatic-hatchback,"medium scratch on bonnet and front bumper
 large dent on front right fender
 dents or marks on body consistent with age and kilometres.
@@ -41824,7 +41824,7 @@ engine light on",6,409,2025-10-21,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2018,hyundai,i30,active pd,hatchback,automatic,petrol,179315,5.0,KMHH351EMJU052551,2AY7MP,18-10-2025,4,2.0,White,Black,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21058213/motor-vehicles-motor-cycles/2018-hyundai-i30-active-pd-automatic-hatchback,"engine light on
 medium dent on rhr guard
 dents or marks on body consistent with age and kilometres.
-carpet worn in places.",103,7900,2025-10-21,0,UNCLASSIFIED,[OUT_OF_SCOPE_YEAR],,,
+carpet worn in places.",103,7900,2025-10-21,0,hyundai_i30_active_petrol_auto_hatch_pd,[OK],,,
 2019,hyundai,tucson,active x tl,wagon,automatic,petrol,192189,5.0,KMHJ2814MKU011738,1PJ3TI,30-08-2025,4,2.0,Grey,Black Leather,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21058224/motor-vehicles-motor-cycles/2019-hyundai-tucson-active-x-tl-automatic-wagon,"dents or marks on body consistent with age and kilometres.
 paint fading rear spoiler
 medium scratch on rear bumper
@@ -43177,7 +43177,7 @@ dents or marks on body consistent with age and kilometres.",19,1109,2025-10-27,0
 2011,holden,barina,tk,sedan,automatic,petrol,40553,5.0,KL3SA696JBB280679,ZBC056,31-07-2026,4,1.6,Black,Grey,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21058424/motor-vehicles-motor-cycles/2011-holden-barina-tk-automatic-sedan,"dents or marks on body consistent with age and kilometres.
 medium scuff on front and rear bumpers",40,3499,2025-10-27,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2013,hyundai,i30,trophy gd,hatchback,automatic,petrol,148940,5.0,KMHD351EMEU163096,1AZ9GL,31-01-2026,4,1.8,Silver,Black Leather,Yes,No,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21058459/motor-vehicles-motor-cycles/2013-hyundai-i30-trophy-gd-automatic-hatchback,"dents or marks on body consistent with age and kilometres.
-seat torn driver seat",77,6600,2025-10-27,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
+seat torn driver seat",77,6600,2025-10-27,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2015,hyundai,santa,fe highlander dm,wagon,automatic,diesel,172911,7.0,KMHSU81XSFU515696,No Plates,Unregistered,4,2.2,Red,Black Leather,Yes,No,No,Partial,Yes,vic,https://www.grays.com/lot/0001-21058431/motor-vehicles-motor-cycles/2015-hyundai-santa-fe-highlander-dm-turbo-diesel-automatic-7-seats-wagon,dents or marks on body consistent with age and kilometres.,154,10200,2025-10-27,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2011,kia,cerato,s td,sedan,automatic,petrol,175430,5.0,KNAFT412MB5421176,YQY434,10-04-2026,4,2.0,Grey,Black,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21058327/motor-vehicles-motor-cycles/2011-kia-cerato-s-td-automatic-sedan,"door card worn.
 paint peeling clear peel on mirrors
@@ -45032,7 +45032,7 @@ carpet worn in places.
 paint fading various panels
 paint cracked rear bumper",30,1909,2025-11-12,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2017,holden,colorado,4x4 lx rg,cab chassis,automatic,diesel,136802,2.0,MMU143DK0JH630319,DH45MD,Unregistered,4,2.8,White,Black,Yes,No,Yes,No,Yes,nsw,https://www.grays.com/lot/0001-10351342/motor-vehicles-motor-cycles/2017-holden-colorado-4x4-lx-rg-turbo-diesel-automatic-cab-chassis,please refer to the photos or arrange inspection to view the condition of this vehicle.,83,11200,2025-11-12,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
-2017,hyundai,i30,sr pd,hatchback,automatic,petrol,185467,5.0,KMHH551CVJU040903,FGJ89P,Unregistered,4,1.6,Black,Black,Yes,Yes,Yes,Partial,Yes,nsw,https://www.grays.com/lot/0001-10351352/motor-vehicles-motor-cycles/2017-hyundai-i30-sr-pd-automatic-hatchback,please refer to the photos or arrange inspection to view the condition of this vehicle.,108,6509,2025-11-12,0,UNCLASSIFIED,[AMBIG_BADGE],,,
+2017,hyundai,i30,sr pd,hatchback,automatic,petrol,185467,5.0,KMHH551CVJU040903,FGJ89P,Unregistered,4,1.6,Black,Black,Yes,Yes,Yes,Partial,Yes,nsw,https://www.grays.com/lot/0001-10351352/motor-vehicles-motor-cycles/2017-hyundai-i30-sr-pd-automatic-hatchback,please refer to the photos or arrange inspection to view the condition of this vehicle.,108,6509,2025-11-12,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2016,audi,q7,3.0 tdi quattro 200kw,wagon,automatic,diesel,259166,7.0,WAUZZZ4M9GD047932,EWH09W,Unregistered,6,3.0,Blue,Black,Yes,Yes,Yes,Partial,Yes,nsw,https://www.grays.com/lot/0001-10351370/motor-vehicles-motor-cycles/2016-audi-q7-3-0-tdi-quattro-4m-200kw-turbo-diesel-8-speed-7-seats-wagon,please refer to the photos or arrange inspection to view the condition of this vehicle.,75,6005,2025-11-12,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2006,audi,a3,2.0 tdi ambition 8p,hatchback,automatic,diesel,246309,5.0,WAUZZZ8P46A126297,No Plates,Unregistered,4,2.0,White,Grey,Yes,No,No,No,Yes,nsw,https://www.grays.com/lot/0001-10351396/motor-vehicles-motor-cycles/2006-audi-a3-2-0-tdi-ambition-8p-turbo-diesel-automatic-hatchback,engine noise observed.,9,909,2025-11-12,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2008,audi,q7,3.0 tdi quattro,wagon,automatic,diesel,261925,7.0,WAUZZZ4L08D051585,No plates,Unregistered,6,3.0,Grey,Black Leather,Yes,No,No,No,Yes,vic,https://www.grays.com/lot/0001-21059011/motor-vehicles-motor-cycles/2008-audi-q7-3-0-tdi-quattro-turbo-diesel-automatic-7-seats-wagon,"traction control light on
@@ -47489,7 +47489,7 @@ large dent on around vehicle",57,5200,2025-11-24,0,UNCLASSIFIED,[OUT_OF_SCOPE],,
 medium scuff on rear side panel
 dents or marks on body consistent with age and kilometres.",83,4950,2025-11-24,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2013,hyundai,i30,elite gd,hatchback,automatic,petrol,144443,5.0,KMHD351EMEU134914,1AC5PW,04-03-2026,4,1.8,Blue,Black,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21059637/motor-vehicles-motor-cycles/2013-hyundai-i30-elite-gd-automatic-hatchback,"dents or marks on body consistent with age and kilometres.
-medium scratch on various panels",83,8090,2025-11-24,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
+medium scratch on various panels",83,8090,2025-11-24,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2007,mazda,cx-7,luxury,wagon,automatic,petrol,225028,5.0,JM0ER103100106299,UWB871,27-10-2025,4,2.3,Black,Cream Leather,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21059638/motor-vehicles-motor-cycles/2007-mazda-cx-7-luxury-automatic-wagon,"engine smoke visible
 dents or marks on body consistent with age and kilometres.
 large scuff on around vehicle
@@ -47629,7 +47629,7 @@ escapade camper and accessories included (please refer to the photos)",30,2510,2
 2012,hyundai,i30,active gd,hatchback,automatic,petrol,161855,5.0,KMHD251EMDU012784,DM83CM,Unregistered,4,1.8,White,Grey,Yes,No,Yes,Yes,Yes,nsw,https://www.grays.com/lot/0001-10351574/motor-vehicles-motor-cycles/2012-hyundai-i30-active-gd-automatic-hatchback,please refer to the photos or arrange inspection to view the condition of this vehicle.,20,1909,2025-11-25,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
 2014,fiat,500,pop,hatchback,manual,petrol,70028,4.0,ZFA3120000J142357,CWB60N,Unregistered,4,1.2,Blue,Grey,Yes,Yes,Yes,Partial,Yes,nsw,https://www.grays.com/lot/0001-10351575/motor-vehicles-motor-cycles/2014-fiat-500-pop-manual-hatchback,please refer to the photos or arrange inspection to view the condition of this vehicle.,27,2009,2025-11-25,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2012,subaru,xv,2.0i-s g4x,hatchback,cvt,petrol,193111,5.0,JF1GP7KC5CG012291,CGX43K,Unregistered,4,2.0,White,Black,Yes,Yes,Yes,Partial,Yes,nsw,https://www.grays.com/lot/0001-10351576/motor-vehicles-motor-cycles/2012-subaru-xv-2-0i-s-g4x-cvt-hatchback,please refer to the photos or arrange inspection to view the condition of this vehicle.,39,3709,2025-11-25,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
-2014,hyundai,i30,trophy gd,hatchback,automatic,petrol,158759,5.0,KMHD351EMEU221320,CXP37N,Unregistered,4,1.8,Silver,Black,Yes,Yes,Yes,Partial,Yes,nsw,https://www.grays.com/lot/0001-10351578/motor-vehicles-motor-cycles/2014-hyundai-i30-trophy-gd-automatic-hatchback,please refer to the photos or arrange inspection to view the condition of this vehicle.,59,4200,2025-11-25,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
+2014,hyundai,i30,trophy gd,hatchback,automatic,petrol,158759,5.0,KMHD351EMEU221320,CXP37N,Unregistered,4,1.8,Silver,Black,Yes,Yes,Yes,Partial,Yes,nsw,https://www.grays.com/lot/0001-10351578/motor-vehicles-motor-cycles/2014-hyundai-i30-trophy-gd-automatic-hatchback,please refer to the photos or arrange inspection to view the condition of this vehicle.,59,4200,2025-11-25,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2012,mitsubishi,triton,4x2 glx mn,cab chassis,automatic,diesel,315170,2.0,MMAERKA40CD014210,No plates,Unregistered,4,2.5,White,Black,Yes,No,No,No,Yes,nsw,https://www.grays.com/lot/0001-10351579/motor-vehicles-motor-cycles/2012-mitsubishi-triton-4x2-glx-mn-turbo-diesel-automatic-cab-chassis,please refer to the photos or arrange inspection to view the condition of this vehicle.,27,1809,2025-11-25,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2011,peugeot,508,allure touring,wagon,automatic,diesel,111194,5.0,VF38ERHHABL083665,FTK96B,Unregistered,4,2.0,White,Black,Yes,Yes,Yes,Partial,Yes,nsw,https://www.grays.com/lot/0001-10351581/motor-vehicles-motor-cycles/2011-peugeot-508-allure-touring-turbo-diesel-automatic-wagon,please refer to the photos or arrange inspection to view the condition of this vehicle.,36,3310,2025-11-25,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2004,mercedes,benz,clk 240 240 avantgarde c209,coupe,automatic,petrol,106662,4.0,WDB2093612F153199,CWP17W,Unregistered,6,2.6,Black,Black,Yes,Yes,Yes,Partial,Yes,nsw,https://www.grays.com/lot/0001-10351582/motor-vehicles-motor-cycles/2004-mercedes-benz-clk-240-240-avantgarde-c209-automatic-coupe,please refer to the photos or arrange inspection to view the condition of this vehicle.,43,2909,2025-11-25,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
@@ -48769,7 +48769,7 @@ medium scratch on around vehicle
 corrosion visible around vehicle",84,5400,2025-11-30,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2013,hyundai,i30,premium gd,hatchback,automatic,petrol,167469,5.0,KMHD351EMDU118263,ZVI997,30-01-2026,4,1.8,Black,Black Leather,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21059898/motor-vehicles-motor-cycles/2013-hyundai-i30-premium-gd-automatic-hatchback,"windscreen chipped or cracked.
 paint fading roof spoiler
-dents or marks on body consistent with age and kilometres.",75,6500,2025-11-30,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
+dents or marks on body consistent with age and kilometres.",75,6500,2025-11-30,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2014,mercedes,benz,gla 250 gla250 4matic x156,wagon,automatic,petrol,94167,5.0,WDC1569462J018622,No plates,Unregistered,4,2.0,Red,Black Leather,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21059899/motor-vehicles-motor-cycles/2014-mercedes-benz-gla-250-gla250-4matic-x156-automatic-wagon,"dents or marks on body consistent with age and kilometres.
 paint peeling around vehicle",157,13200,2025-11-30,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2015,mercedes,benz,gl-class gl350 bluetec x166 t d,wagon,automatic,diesel,164876,7.0,WDC1668242A605478,EYS12V,Unregistered,6,3.0,Grey,Black Leather,Yes,No,No,Contact authorised Mercedes Benz dealer for potential online service history,Yes,vic,https://www.grays.com/lot/0001-21059900/motor-vehicles-motor-cycles/2015-mercedes-benz-gl-class-gl350-bluetec-x166-t-d-auto-7-seats-wagon,"engine light on
@@ -49072,7 +49072,7 @@ door mirror broken side mirror",76,7900,2025-12-01,0,UNCLASSIFIED,[OUT_OF_SCOPE]
 2014,hyundai,i30,trophy gd,hatchback,automatic,petrol,296186,5.0,KMHD351EMEU221241,1EC5GR,26-02-2026,4,1.8,Silver,Black Leather,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21059976/motor-vehicles-motor-cycles/2014-hyundai-i30-trophy-gd-automatic-hatchback,"dents or marks on body consistent with age and kilometres.
 paint fading roof spoiler
 medium scratch on around vehicle
-windscreen chipped or cracked.",41,3200,2025-12-01,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
+windscreen chipped or cracked.",41,3200,2025-12-01,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2003,toyota,rav,4 extreme aca20r,wagon,automatic,petrol,285048,4.0,JTEYH20V900050703,No plates,Unregistered,4,2.0,Silver,Blue,Yes,No,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21059977/motor-vehicles-motor-cycles/2003-toyota-rav-4-extreme-aca20r-automatic-wagon,"paint peeling spare wheel cover
 large scratch on around vehicle
 seat torn front and rear
@@ -49215,13 +49215,13 @@ front seat worn driver seat",118,7100,2025-12-02,0,UNCLASSIFIED,[OUT_OF_SCOPE],,
 2014,hyundai,i30,trophy gd,hatchback,automatic,petrol,145143,5.0,KMHD351EMEU215703,1YF8OL,26-01-2026,4,1.8,Silver,Black Leather,Yes,No,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21060009/motor-vehicles-motor-cycles/2014-hyundai-i30-trophy-gd-automatic-hatchback,"dents or marks on body consistent with age and kilometres.
 windscreen chipped or cracked.
 paint fading rear spoiler
-medium scratch around vehicle",91,6500,2025-12-02,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
+medium scratch around vehicle",91,6500,2025-12-02,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2010,subaru,impreza,r g3,sedan,automatic,petrol,231783,5.0,JF1GE7KS5BG017264,YGC398,07-03-2026,4,2.0,Blue,Black Leather,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21060010/motor-vehicles-motor-cycles/2010-subaru-impreza-r-g3-automatic-sedan,"dents or marks on body consistent with age and kilometres.
 medium scratch on rear bumper
 door card worn.
 front seat worn drivers",34,2709,2025-12-02,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2014,hyundai,i30,trophy gd,hatchback,automatic,petrol,169218,5.0,KMHD351EMEU214564,1EE3CK,10-12-2025,4,1.8,Silver,Black Leather,Yes,No,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21060012/motor-vehicles-motor-cycles/2014-hyundai-i30-trophy-gd-automatic-hatchback,"dents or marks on body consistent with age and kilometres.
-seat torn driver seat",88,6400,2025-12-02,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
+seat torn driver seat",88,6400,2025-12-02,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2003,nissan,pulsar,st n16,sedan,automatic,petrol,102115,5.0,JN1CBAN16A0056786,SBW465,28-03-2026,4,1.8,White,Grey,Yes,No,No,No,Yes,vic,https://www.grays.com/lot/0001-21060013/motor-vehicles-motor-cycles/2003-nissan-pulsar-st-n16-automatic-sedan,"dents or marks on body consistent with age and kilometres.
 corrosion visible around vehicle
 medium scuff on various panels
@@ -50651,7 +50651,7 @@ dents or marks on body consistent with age and kilometres.",12,1110,2025-12-17,0
 2007,honda,jazz,gli gd,hatchback,cvt,petrol,150623,5.0,MRHGD18507P041621,Unable to locate,Unregistered,4,1.3,Black,Grey,Yes,Yes,No,Yes,Yes,vic,https://www.grays.com/lot/0001-21060747/motor-vehicles-motor-cycles/2007-honda-jazz-gli-gd-cvt-hatchback,"medium scratch on all around vehicle
 paint fading all around vehicle
 dents or marks on body consistent with age and kilometres.
-medium scuff on rear bumper",35,2600,2025-12-17,0,,,,,
+medium scuff on rear bumper",35,2600,2025-12-17,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2013,nissan,pulsar,st b17,sedan,cvt,petrol,132769,5.0,MNTBAAB17A0010587,ZVT034,29-06-2026,4,1.8,Bronze,Grey,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21060748/motor-vehicles-motor-cycles/2013-nissan-pulsar-st-b17-cvt-sedan,"rear view mirror broken
 paint fading roof and boot
 medium scratch on around vehicle
@@ -50699,7 +50699,7 @@ dents or marks on body consistent with age and kilometres.",23,2009,2025-12-17,0
 dents or marks on body consistent with age and kilometres.
 large dent on rear bumper with hole
 comment: reversing camera screen requireas attention.
-comment: reversing camera screen requireas attention.",58,3000,2025-12-17,0,UNCLASSIFIED,[OUT_OF_SCOPE_YEAR],,,
+comment: reversing camera screen requireas attention.",58,3000,2025-12-17,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
 1998,ford,festiva,glxi wf,hatchback,automatic,petrol,246447,5.0,KNADB1225W6360547,DR8909,Unregistered,4,1.5,White,Multi,Yes,Yes,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21060765/motor-vehicles-motor-cycles/1998-ford-festiva-glxi-wf-automatic-hatchback,"carpet worn in places.
 windscreen chipped or cracked.
 dents or marks on body consistent with age and kilometres.
@@ -52250,7 +52250,7 @@ door card damaged.
 front seats torn
 windscreen cracked.
 corrosion visible, paint cracked around vehicle
-large dents, scratches around vehicle",2,109,2026-01-24,0,,,109.0,109.0,2.0
+large dents, scratches around vehicle",2,109,2026-01-24,0,UNCLASSIFIED,[OUT_OF_SCOPE],109.0,109.0,2.0
 2012,mercedes,benz,c200 be w204,sedan,automatic,petrol,131726,5.0,WDD2040482A765521,2DC7CV,08-01-2026,4,1.8,Silver,Black Leather,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21061340/motor-vehicles-motor-cycles/2012-mercedes-benz-c200-be-w204-automatic-sedan,"dents or marks on body consistent with age and kilometres.
 seat torn drivers seat",97,7409,2026-01-24,0,UNCLASSIFIED,[OUT_OF_SCOPE],7409.0,7409.0,97.0
 2007,bmw,3,series 320d luminance e90,sedan,automatic,diesel,121052,5.0,WBAVG96010NG61410,WGE634,02-01-2026,4,2.0,Black,Beige Leather,Yes,No,Yes,No,Yes,vic,https://www.grays.com/lot/0001-21061502/motor-vehicles-motor-cycles/2007-bmw-3-series-320d-luminance-e90-turbo-diesel-automatic-sedan,"dents or marks on body consistent with age and kilometres.
@@ -52371,7 +52371,7 @@ front seat worn driver side",53,4690,2026-01-18,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 medium dent on around vehicle
 front seat worn driver side
 dents or marks on body consistent with age and kilometres.
-paint fading on roof",49,4801,2026-01-18,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
+paint fading on roof",49,4801,2026-01-18,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2006,mazda,mx-5,nc,convertible,automatic,petrol,94043,2.0,JM0NC30F100101783,2EB1ZB,12-05-2026,4,2.0,Blue,Black Leather,Yes,No,No,No,Yes,vic,https://www.grays.com/lot/0001-21061737/motor-vehicles-motor-cycles/2006-mazda-mx-5-nc-automatic-convertible,"medium scratch on around vehicle
 paint peeling around vehicle
 damaged driver side tail light",82,9143,2026-01-20,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
@@ -52753,7 +52753,7 @@ damaged passenger indicator
 paint fading around vehicle
 rear cracked bumper.
 large dent on around vehicle
-abs light on",10,509,2026-01-21,0,,,,,
+abs light on",10,509,2026-01-21,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2011,holden,commodore,berlina ve,wagon,automatic,petrol,187191,5.0,6G1EL8E51BL533598,ADT579,15-03-2026,6,3.0,Blue,Black,Yes,No,Yes,Yes,Yes,vic,https://www.grays.com/lot/0001-21061902/motor-vehicles-motor-cycles/2011-holden-commodore-berlina-ve-automatic-wagon,"front seat stains drivers
 dents or marks on body consistent with age and kilometres.
 damaged left side indicator lens
@@ -52935,7 +52935,7 @@ dents or marks on body consistent with age and kilometres.",54,5100,2026-01-21,0
 2015,hyundai,i30,active x gd ii,hatchback,automatic,petrol,126383,5.0,KMHD351EMGU312325,No plates,Unregistered,4,1.8,Dark Grey,Black Leather,Yes,Yes,Yes,Partial,Yes,qld,https://www.grays.com/lot/0001-50714167/motor-vehicles-motor-cycles/2015-hyundai-i30-active-x-gd-ii-automatic-hatchback,"dents or marks on body consistent with age and kilometres.
 paint fading rear spoiler
 paint peeling front bumper
-medium scuff on rhf guard and front bumper",54,5009,2026-01-20,0,UNCLASSIFIED,[OUT_OF_SCOPE_YEAR],,,
+medium scuff on rhf guard and front bumper",54,5009,2026-01-20,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2012,mercedes,benz,c-class c180 be c204,coupe,automatic,petrol,179895,4.0,WDD2043492F908266,No plates,Unregistered,4,1.8,White,Black Leather,Yes,Yes,Yes,Partial,Yes,qld,https://www.grays.com/lot/0001-50714181/motor-vehicles-motor-cycles/2012-mercedes-benz-c-class-c180-be-c204-automatic-coupe,"hood lining sagging
 suspension requires attention
 front seat worn lhf
@@ -53582,7 +53582,7 @@ medium scratch on around vehicle
 medium dent on around vehicle
 corrosion visible passenger side sill panel
 dents or marks on body consistent with age and kilometres.",52,2709,2026-01-25,0,UNCLASSIFIED,[OUT_OF_SCOPE],2709.0,2709.0,52.0
-2014,hyundai,i30,trophy gd,hatchback,automatic,petrol,182474,5.0,KMHD351EMEU236637,1DZ7PM,12-02-2026,4,1.8,White,Black Leather,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21062053/motor-vehicles-motor-cycles/2014-hyundai-i30-trophy-gd-automatic-hatchback,medium scratch on around vehicle,87,5200,2026-01-25,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],5200.0,5200.0,87.0
+2014,hyundai,i30,trophy gd,hatchback,automatic,petrol,182474,5.0,KMHD351EMEU236637,1DZ7PM,12-02-2026,4,1.8,White,Black Leather,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21062053/motor-vehicles-motor-cycles/2014-hyundai-i30-trophy-gd-automatic-hatchback,medium scratch on around vehicle,87,5200,2026-01-25,0,UNCLASSIFIED,[DISALLOWED_VARIANT],5200.0,5200.0,87.0
 2012,ford,kuga,trend te,wagon,automatic,petrol,129086,5.0,WF0RXXGCDRCE07527,ZRO838,28-03-2026,5,2.5,Grey,Black,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21062054/motor-vehicles-motor-cycles/2012-ford-kuga-trend-te-automatic-wagon,"medium scuffs, scratches various panels
 windscreen chipped.
 dents or marks on body consistent with age and kilometres.",8,709,2026-01-25,0,UNCLASSIFIED,[OUT_OF_SCOPE],709.0,709.0,8.0
@@ -54192,7 +54192,7 @@ door card worn.",3,209,2026-01-25,0,UNCLASSIFIED,[OUT_OF_SCOPE],209.0,209.0,3.0
 2010,mazda,cx-7,sports,wagon,manual,diesel,165641,5.0,JM0ER10A200217517,No plates,Unregistered,4,2.2,Black,Black Leather,Yes,No,Yes,Yes,Yes,sa,https://www.grays.com/lot/0001-60049987/motor-vehicles-motor-cycles/2010-mazda-cx-7-diesel-sports-turbo-diesel-manual-wagon,engine noise observed.,6,509,2026-01-25,0,UNCLASSIFIED,[OUT_OF_SCOPE],509.0,509.0,6.0
 2011,bmw,3,series 323i e90,sedan,automatic,petrol,174727,5.0,WBAPG76030NN52201,No plates,Unregistered,6,2.5,White,Black Leather,Yes,Yes,Yes,Yes,Yes,sa,https://www.grays.com/lot/0001-60049999/motor-vehicles-motor-cycles/2011-bmw-3-series-323i-e90-automatic-sedan,please refer to the photos or arrange inspection to view the condition of this vehicle.,53,4200,2026-01-25,0,UNCLASSIFIED,[OUT_OF_SCOPE],4200.0,4200.0,53.0
 2002,volkswagen,golf,1.6 generation a4,hatchback,manual,petrol,184677,5.0,WVWZZZ1JZ3W069075,No plates,Unregistered,4,1.6,White,Multi,Yes,No,Yes,Yes,Yes,sa,https://www.grays.com/lot/0001-60050004/motor-vehicles-motor-cycles/2002-volkswagen-golf-1-6-generation-a4-manual-hatchback,please refer to the photos or arrange inspection to view the condition of this vehicle.,7,609,2026-01-25,0,UNCLASSIFIED,[OUT_OF_SCOPE],609.0,609.0,7.0
-2013,hyundai,i30,premium gd,hatchback,automatic,petrol,212112,5.0,KMHD351EMEU140316,No plates,Unregistered,4,1.8,White,Black Leather,Yes,Yes,Yes,Yes,Yes,sa,https://www.grays.com/lot/0001-60050006/motor-vehicles-motor-cycles/2013-hyundai-i30-premium-gd-automatic-hatchback,please refer to the photos or arrange inspection to view the condition of this vehicle.,57,4500,2026-01-25,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],4500.0,4500.0,57.0
+2013,hyundai,i30,premium gd,hatchback,automatic,petrol,212112,5.0,KMHD351EMEU140316,No plates,Unregistered,4,1.8,White,Black Leather,Yes,Yes,Yes,Yes,Yes,sa,https://www.grays.com/lot/0001-60050006/motor-vehicles-motor-cycles/2013-hyundai-i30-premium-gd-automatic-hatchback,please refer to the photos or arrange inspection to view the condition of this vehicle.,57,4500,2026-01-25,0,UNCLASSIFIED,[DISALLOWED_VARIANT],4500.0,4500.0,57.0
 2007,nissan,x-trail,st t30,wagon,automatic,petrol,184838,5.0,JN1TBNT30A0216986,No plates,Unregistered,4,2.5,Grey,Multi,Yes,Yes,Yes,Yes,Yes,sa,https://www.grays.com/lot/0001-60050008/motor-vehicles-motor-cycles/2007-nissan-x-trail-st-t30-automatic-wagon,engine noise observed.,5,500,2026-01-25,0,UNCLASSIFIED,[OUT_OF_SCOPE],500.0,500.0,5.0
 2017,ldv,g10,,people mover,automatic,petrol,146958,7.0,LSKG4AL13HA074817,No plates,Unregistered,4,2.0,White,Grey,Yes,No,Yes,Yes,Yes,sa,https://www.grays.com/lot/0001-60050012/motor-vehicles-motor-cycles/2017-ldv-g10-7-seat-automatic-7-seats-people-mover,"please refer to the photos or arrange inspection to view the condition of this vehicle.
 left panel discoloured.
@@ -54759,7 +54759,7 @@ dents or marks on body consistent with age and kilometres.",54,3709,2026-02-02,0
 2008,hyundai,i30,sr fd,hatchback,automatic,petrol,206994,5.0,KMHDC51ER8U128000,WSQ100,24-01-2026,4.0,2.0,Blue,Black Leather,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21062224/motor-vehicles-motor-cycles/2008-hyundai-i30-sr-fd-automatic-hatchback,"paint peeling passenger side and rear bumper
 medium dent on around exterior
 medium scuff on rear driver side
-dents or marks on body consistent with age and kilometres.",22,2900,2026-02-02,0,UNCLASSIFIED,[AMBIG_BADGE],,,
+dents or marks on body consistent with age and kilometres.",22,2900,2026-02-02,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2020,mitsubishi,outlander,black edition 2wd zl,wagon,cvt,petrol,293876,7.0,JMFXTGF8WLZ013829,1SW2WO,24-12-2025,4.0,2.4,White,Black Leather,Yes,No,No,Yes,Yes,vic,https://www.grays.com/lot/0001-21062225/motor-vehicles-motor-cycles/2020-mitsubishi-outlander-black-edition-2wd-zl-cvt-7-seats-wagon,dents or marks on body consistent with age and kilometres.,120,9100,2026-02-02,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2011,bmw,118i,118i f20,hatchback,automatic,petrol,135026,5.0,WBA1A32040J064436,1UA4MV,19-09-2026,4.0,1.6,Black,Black Leather,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21062240/motor-vehicles-motor-cycles/2011-bmw-118i-118i-f20-automatic-8-speed-hatchback,"engine noise observed.
 medium scratch on around vehicle",27,2409,2026-02-02,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
@@ -55439,7 +55439,7 @@ dents or marks on body consistent with age and kilometres.",17,1410,2026-05-02,0
 2012,hyundai,i30,elite gd,hatchback,automatic,petrol,160737,5.0,KMHD351EMDU008856,No Plates,Unregistered,4,1.8,Blue,Black,Yes,Yes,No,No,Yes,vic,https://www.grays.com/lot/0001-21062513/motor-vehicles-motor-cycles/2012-hyundai-i30-elite-gd-automatic-hatchback,"rear bumper cracked.
 medium dents,scuffs, paint fade around vehicle
 engine light on
-damaged lhf fog light",37,3100,2026-05-02,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
+damaged lhf fog light",37,3100,2026-05-02,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2016,ford,falcon,xr6 fg x,sedan,automatic,petrol,296442,5.0,6FPAAAJGSWGR97502,No plates,Unregistered,6,4.0,Red,Black,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21062515/motor-vehicles-motor-cycles/2016-ford-falcon-xr6-fg-x-automatic-sedan,"windscreen chipped or cracked.
 dents or marks on body consistent with age and kilometres.
 front seat worn damaged trim driver side",63,6600,2026-05-02,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
@@ -56064,7 +56064,7 @@ damaged side indicator drivers side
 large scuff on drivers side
 other warning light on",14,709,2026-09-02,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2015,hyundai,i30,sr premium gd ii,hatchback,automatic,petrol,192166,5.0,KMHD351HMGU287539,CMW424,30-10-2026,4,2.0,Silver,Black Leather,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21062569/motor-vehicles-motor-cycles/2015-hyundai-i30-sr-premium-gd-ii-automatic-hatchback,"dents or marks on body consistent with age and kilometres.
-medium scratch, corrosion visible on rear driver side",127,8200,2026-09-02,0,UNCLASSIFIED,[AMBIG_BADGE],,,
+medium scratch, corrosion visible on rear driver side",127,8200,2026-09-02,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2004,toyota,camry,altise acv36r,sedan,automatic,petrol,356797,5.0,6T153BK360X051431,SWL982,01-10-2026,4.0,2.4,Grey,Grey,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21062453/motor-vehicles-motor-cycles/2004-toyota-camry-altise-acv36r-automatic-sedan,"dents or marks on body consistent with age and kilometres.
 body/panel damage front bumper
 paint fading boot
@@ -56418,7 +56418,7 @@ interior: centre console damaged.
 interior: centre console damaged.",5,309,2026-11-02,0,UNCLASSIFIED,[OUT_OF_SCOPE],309.0,309.0,5.0
 2012,hyundai,i30,elite gd,hatchback,automatic,petrol,140062,5.0,KMHD351EMDU048114,ZOV928,14-05-2026,4,1.8,Black,Black,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21062697/motor-vehicles-motor-cycles/2012-hyundai-i30-elite-gd-automatic-hatchback,"dents or marks on body consistent with age and kilometres.
 medium scratch rear bumper.
-paint fade various panels",7,609,2026-11-02,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],609.0,609.0,7.0
+paint fade various panels",7,609,2026-11-02,0,UNCLASSIFIED,[DISALLOWED_VARIANT],609.0,609.0,7.0
 2016,renault,kangoo,van,van,automatic,petrol,186718,2.0,VF1FW1UBAG0734303,No plates,Unregistered,4,1.6,White,Black,Yes,No,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21062713/motor-vehicles-motor-cycles/2016-renault-kangoo-automatic-van,"seat torn drivers
 door handle not working or broken.
 medium scratch on around vehicle
@@ -56606,7 +56606,7 @@ medium scratch on various panels",8,1700,2026-11-02,0,UNCLASSIFIED,[OUT_OF_SCOPE
 medium dent on around vehicle
 front seat worn driver side
 paint fading some places
-engine noise/knock observed.",6,809,2026-11-02,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],809.0,809.0,6.0
+engine noise/knock observed.",6,809,2026-11-02,0,UNCLASSIFIED,[DISALLOWED_VARIANT],809.0,809.0,6.0
 2007,volkswagen,golf,2.0 tdi comfortline a5 at,hatchback,automatic,diesel,172359,5.0,WVWZZZ1KZ8U006126,No plates,Unregistered,4.0,2.0,Blue,Grey,Yes,No,No,No,Yes,vic,https://www.grays.com/lot/0001-21062817/motor-vehicles-motor-cycles/2007-volkswagen-golf-2-0-tdi-comfortline-a5-turbo-diesel-at-hatchback,"hood lining sagging
 dents or marks on body consistent with age and kilometres.
 medium scratch on around vehicle",4,309,2026-11-02,0,UNCLASSIFIED,[OUT_OF_SCOPE],309.0,309.0,4.0
@@ -57424,7 +57424,7 @@ dents or marks on body consistent with age and kilometres.
 paint fading on various panels",42,4700,2026-02-18,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2014,KIA,Cerato,s premium yd,Hatchback,Automatic,Petrol,180023,5.0,KNAFK516MF5307450,1OU4XP,12-05-2026,4,1.8,White,Black,Yes,Yes,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21062962/motor-vehicles-motor-cycles/2014-kia-cerato-s-premium-yd-automatic-hatchback,"paint fading around vehicle
 medium scuff on around vehicle",59,5100,2026-02-18,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
-2013,HYUNDAI,I30,elite gd,Hatchback,Automatic,Petrol,256665,5.0,KMHD351EMDU090805,ZSU761,21-05-2026,4,1.8,Silver,Black,Yes,Yes,No,Partial,Yes,vic,https://www.grays.com/lot/0001-21062964/motor-vehicles-motor-cycles/2013-hyundai-i30-elite-gd-automatic-hatchback,medium scuff on around vehicle,71,5300,2026-02-18,0,hyundai_i30_active_petrol_auto_hatch_gd,[OK],,,
+2013,HYUNDAI,I30,elite gd,Hatchback,Automatic,Petrol,256665,5.0,KMHD351EMDU090805,ZSU761,21-05-2026,4,1.8,Silver,Black,Yes,Yes,No,Partial,Yes,vic,https://www.grays.com/lot/0001-21062964/motor-vehicles-motor-cycles/2013-hyundai-i30-elite-gd-automatic-hatchback,medium scuff on around vehicle,71,5300,2026-02-18,0,UNCLASSIFIED,[DISALLOWED_VARIANT],,,
 2011,HOLDEN,Captiva,7 sx 2wd cg ii,Wagon,Automatic,Diesel,216533,7.0,KL3CA266JBB032145,1DO9NF,15-04-2026,4,2.2,Blue,Grey,Yes,No,Yes,No,Yes,vic,https://www.grays.com/lot/0001-21062965/motor-vehicles-motor-cycles/2011-holden-captiva-7-sx-2wd-cg-ii-turbo-diesel-automatic-7-seats-wagon,"engine noise observed.
 seat torn drivers
 dents or marks on body consistent with age and kilometres.
@@ -59292,7 +59292,7 @@ dents or marks on body consistent with age and kilometres.
 front seat worn drivers",36,2550,2026-02-26,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2014,BMW,320d,320d f30,Sedan,Automatic,Diesel,160690,5.0,WBA3D36000NS45794,1GSU315,05-02-2027,4,2.0,White,Black Leather,Yes,No,No,Partial,Yes,wa,https://www.grays.com/lot/0001-9067202/motor-vehicles-motor-cycles/2014-bmw-320d-320d-f30-turbo-diesel-automatic-8-speed-sedan,"dents or marks on body consistent with age and kilometres.
 front seat worn drivers
-medium scuff on front bumper",139,10000,2026-02-26,0,,,,,
+medium scuff on front bumper",139,10000,2026-02-26,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
 2003,HOLDEN,Commodore,25th anniversary vy ii,Sedan,Automatic,Petrol,316215,5.0,6G1YK52A54L194346,1BOP716,17-03-2026,6,3.8,White,Grey,Yes,No,No,No,Yes,wa,https://www.grays.com/lot/0001-9067203/motor-vehicles-motor-cycles/2003-holden-commodore-25th-anniversary-vy-ii-automatic-sedan,"airbag light on
 seat torn driver
 door card damaged.
@@ -60001,7 +60001,7 @@ paint peeling peeling off painted chrome grill and trim",84,4755,2026-03-11,0,UN
 medium scratches around vehicle
 corrosion visible around vehicle
 dents or marks on body consistent with age and kilometres.",31,2100,2026-03-11,0,UNCLASSIFIED,[OUT_OF_SCOPE],,,
-2018,HYUNDAI,I30,active pd (wovr-repairable),Hatchback,Automatic,Petrol,88621,5.0,KMHH351EMJU074708,DZC432,12-08-2026,4.0,2.0,Grey,Black,Yes,No,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063958/motor-vehicles-motor-cycles/2018-hyundai-i30-active-pd-automatic-hatchback-wovr-repairable,windscreen chipped.,81,8600,2026-03-11,0,UNCLASSIFIED,[OUT_OF_SCOPE_YEAR],,,
+2018,HYUNDAI,I30,active pd (wovr-repairable),Hatchback,Automatic,Petrol,88621,5.0,KMHH351EMJU074708,DZC432,12-08-2026,4.0,2.0,Grey,Black,Yes,No,Yes,Partial,Yes,vic,https://www.grays.com/lot/0001-21063958/motor-vehicles-motor-cycles/2018-hyundai-i30-active-pd-automatic-hatchback-wovr-repairable,windscreen chipped.,81,8600,2026-03-11,0,hyundai_i30_active_petrol_auto_hatch_pd,[OK],,,
 2014,FORD,Ranger,xl 4x4 px,Dual Cab,Automatic,Diesel,207550,5.0,MNAUMFF50EW265038,No plates,Unregistered,5.0,3.2,White,Black,Yes,No,Yes,Partial,Yes,qld,https://www.grays.com/lot/0001-50714772/motor-vehicles-motor-cycles/2014-ford-ranger-xl-4x4-px-turbo-diesel-automatic-dual-cab,"paint peeling bonnet
 hail damage visible.
 seat torn rhf

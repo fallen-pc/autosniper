@@ -1,5 +1,13 @@
 # Recent Changes
 
+- Rebuilt the Hyundai i30 PD curve as an exact `Active` hatch/auto/petrol slice rather than a broad PD hatch lane. The saved base curve `hyundai_i30_pd_hatch_auto_petrol` now uses `2017/2019/2022` anchors, and the stale duplicate matcher-tag curve rows were removed so the app resolves to one source of truth.
+- Tightened Hyundai PD tagging so `Active X`, `Elite`, `Premium`, `Trophy`, `SE`, `SR`, `SR Premium`, and `N Line` no longer map into `hyundai_i30_active_petrol_auto_hatch_pd`.
+- Rebuilt Grays restricted datasets after the Hyundai PD tag fix: the Hyundai PD Active sold lane now has `21` raw Grays sold rows and the governance coverage report sees `24` observed rows across active/sold/static for the matcher tag.
+- Retagged the local Autotrader recent-market cache after the Hyundai PD tag fix; the Hyundai PD Active Autotrader lane now contains `114` rows.
+- Rebuilt the Hyundai i30 GD curve as an exact `Active` hatch/auto/petrol slice rather than the older mixed-mainstream slice. The saved base curve `hyundai_i30_gd_hatch_auto_petrol` now uses `2012/2014/2016` anchors, and the stale duplicate matcher-tag curve rows were removed so the app resolves to one source of truth.
+- Tightened Hyundai GD tagging so `Elite`, `Premium`, `Trophy`, `Active X`, `SE`, `SR`, and `SR Premium` no longer map into `hyundai_i30_active_petrol_auto_hatch_gd`.
+- Rebuilt Grays restricted datasets after the Hyundai tag fix: the Hyundai GD Active sold lane now has `43` raw Grays sold rows and the governance coverage report sees `47` observed rows across active/sold/static for the matcher tag.
+- Retagged the local Autotrader recent-market cache after the Hyundai tag fix; the Hyundai GD Active Autotrader lane now contains `57` rows and all sampled rows are `Active` variants, not `Elite`, `Premium`, or `Trophy`.
 - Added persistent price-change metadata for active AI valuation rows and updated the AI Analysis cards to show whether each listing's current price increased in the last hour. Hourly revaluation now uses price-only changes for forced refreshes instead of treating countdown-only changes as price movement.
 - Found and fixed an hourly monitor scope bug: the scheduled hourly bid refresh was reading the broad live Grays `active_vehicle_details.csv` file instead of the AI Analysis eligible active scope. Hourly is now wired to the same curve-covered restricted active scope used by AI Analysis before it updates bids, and a fast smoke run with `0` viable AI Analysis URLs exited without touching broad Grays rows.
 - Fixed Toyota Corolla `zre182r` sold-tagging so valid Ascent and Ascent Sport Grays auto/CVT hatch rows are no longer rejected just because the saved curve anchors start later than the real model years.

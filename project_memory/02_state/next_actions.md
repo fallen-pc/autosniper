@@ -5,8 +5,9 @@
 3. Keep `project_memory/02_state/` current after each meaningful work slice.
 4. Use the launcher bootstrap contract for every fresh AI task so new sessions start from repo memory instead of chat recall.
 5. If a Toyota hatch repricing review is explicitly requested later, run it as its own task; otherwise reassess the next safest Toyota curve, with `toyota_corolla_ascent_petrol_auto_sedan_zre152r` the current leading candidate.
-6. Watch the next available scheduled hourly run only as a scheduler sanity check: it is acceptable to miss a run when the laptop is off/asleep, but the next run while awake/logged in should resume cleanly.
-7. Keep daily disabled until a full daily smoke test is run with the refreshed Autotrader session.
-8. When running that daily smoke test, use the refreshed storage state and keep the visible-browser Autotrader path in mind.
-9. Only after a successful daily smoke test should unattended daily automation be re-enabled.
-10. Before retrying daily, consider adding a safer daily smoke mode or a resume/limit path so the test does not need to churn through the full Grays update set in one fragile run.
+6. Treat Hyundai i30 `Active X`, `SE`, `Elite`, `Premium`, `Trophy`, `SR`, `SR Premium`, and `N Line` as separate curve candidates, not as fallback evidence for the GD or PD Active curves.
+7. Watch the next available scheduled hourly run only as a scheduler sanity check: it is acceptable to miss a run when the laptop is off/asleep, but the next run while awake/logged in should resume cleanly.
+8. Keep daily disabled until a full daily smoke test is run with the refreshed Autotrader session.
+9. When running that daily smoke test, use the refreshed storage state and keep the visible-browser Autotrader path in mind.
+10. Only after a successful daily smoke test should unattended daily automation be re-enabled.
+11. Before retrying daily, consider adding a safer daily smoke mode or a resume/limit path so the test does not need to churn through the full Grays update set in one fragile run.

@@ -14,5 +14,5 @@ mazda_3_neo-sport_petrol_auto_hatch_bl,mazda_3_bl_hatch_auto_petrol,active,Merge
 mazda_3_maxx_petrol_auto_hatch_bl,mazda_3_bl_hatch_auto_petrol,active,Merge trim into base Mazda 3 BL curve
 mazda_3_maxx-sport_petrol_auto_hatch_bl,mazda_3_bl_hatch_auto_petrol,active,Merge trim into base Mazda 3 BL curve
 mazda_3_touring_petrol_auto_hatch_bl,mazda_3_bl_hatch_auto_petrol,active,Merge trim into base Mazda 3 BL curve
-hyundai_i30_active_petrol_auto_hatch_gd,hyundai_i30_gd_hatch_auto_petrol,active,Merge trim into base i30 GD curve
-hyundai_i30_active_petrol_auto_hatch_pd,hyundai_i30_pd_hatch_auto_petrol,active,Merge trim into base i30 PD curve
+hyundai_i30_active_petrol_auto_hatch_gd,hyundai_i30_gd_hatch_auto_petrol,active,Map exact Active trim into the i30 GD Active-only base curve
+hyundai_i30_active_petrol_auto_hatch_pd,hyundai_i30_pd_hatch_auto_petrol,active,Map exact Active trim into the i30 PD Active-only base curve

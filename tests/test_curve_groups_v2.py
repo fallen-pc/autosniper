@@ -72,7 +72,7 @@ def test_get_supported_curve_row_returns_metadata(tmp_path: Path):
     universe_path = tmp_path / "supported_curve_universe_v1.csv"
     universe_path.write_text(
         "base_curve_tag,make,model,body,fuel,transmission,series,status,priority,notes\n"
-        "hyundai_i30_gd_hatch_auto_petrol,hyundai,i30,hatch,petrol,auto,gd,live_now,1,Core i30 GD hatch\n",
+        "hyundai_i30_gd_hatch_auto_petrol,hyundai,i30,hatch,petrol,auto,gd,live_now,1,Core i30 GD Active hatch\n",
         encoding="utf-8",
     )
 
@@ -88,14 +88,27 @@ def test_get_anchor_override_years_returns_configured_years(tmp_path: Path):
     overrides_path = tmp_path / "curve_anchor_overrides_v2.csv"
     overrides_path.write_text(
         "base_curve_tag,anchor_years,notes\n"
-        "hyundai_i30_gd_hatch_auto_petrol,2012|2014,early rebuild\n",
+        "hyundai_i30_gd_hatch_auto_petrol,2012|2014|2016,active rebuild\n",
         encoding="utf-8",
     )
 
     overrides_df = load_curve_anchor_overrides_v2(overrides_path)
 
-    assert get_anchor_override_years("hyundai_i30_gd_hatch_auto_petrol", overrides_df) == [2012, 2014]
+    assert get_anchor_override_years("hyundai_i30_gd_hatch_auto_petrol", overrides_df) == [2012, 2014, 2016]
     assert get_anchor_override_years("unknown_tag", overrides_df) == []
+
+
+def test_get_anchor_override_years_returns_pd_active_years(tmp_path: Path):
+    overrides_path = tmp_path / "curve_anchor_overrides_v2.csv"
+    overrides_path.write_text(
+        "base_curve_tag,anchor_years,notes\n"
+        "hyundai_i30_pd_hatch_auto_petrol,2017|2019|2022,pd active rebuild\n",
+        encoding="utf-8",
+    )
+
+    overrides_df = load_curve_anchor_overrides_v2(overrides_path)
+
+    assert get_anchor_override_years("hyundai_i30_pd_hatch_auto_petrol", overrides_df) == [2017, 2019, 2022]
 
 
 def test_build_legacy_curve_seed_rows_blocks_conflicting_legacy_rows():

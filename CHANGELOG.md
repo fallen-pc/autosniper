@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-04-12
+- Rebuilt the Hyundai i30 PD Active hatch curve as an exact Active-only lane with `2017/2019/2022` anchors; `2018`, `2020`, and `2021` interpolate.
+- Tightened Hyundai i30 PD tagging so `Active X`, higher trims, sport trims, and `N Line` no longer feed the Active valuation curve.
+- Retagged local Autotrader and Grays evidence after the Hyundai PD update: Autotrader now has `114` PD Active recent-market rows, Grays sold has `21` raw PD Active rows, and governance coverage sees `24` observed PD rows across active/sold/static.
+- Rebuilt the Hyundai i30 GD Active hatch curve as an exact Active-only lane with `2012/2014/2016` anchors and removed the stale duplicate matcher-tag curve rows.
+- Tightened Hyundai i30 GD tagging so `Elite`, `Premium`, `Trophy`, `Active X`, `SE`, `SR`, and `SR Premium` no longer feed the Active valuation curve.
+- Rebuilt the restricted Grays datasets and refreshed governance coverage after the Hyundai tag/curve update.
+
 ## 2026-04-10
 - Split the Toyota Corolla `zre182r` hatch family by trim in the supported curve universe and V2 group mapping so `ascent` and `ascent-sport` no longer share one base curve.
 - Added a governed manual/provisional Ascent hatch curve for `toyota_corolla_ascent_zre182r_hatch_auto_petrol` using a simplified `2013/2015/2018` anchor set while evidence alignment is still being verified.
