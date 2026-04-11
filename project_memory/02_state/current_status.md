@@ -19,4 +19,8 @@
 - A fresh Autotrader Playwright storage state has now been captured successfully.
 - Autotrader smoke scraping now works again in `playwright-headful` mode with the refreshed storage state and returns live data (`26` rows from the VIC/Melbourne seed page in the latest smoke test).
 - Headless Autotrader scraping is still not reliable with the refreshed session; current successful recovery depends on a visible browser session.
-- Daily and hourly Windows scheduled tasks are intentionally paused right now so the repo stays clean between work sessions.
+- The hourly Windows scheduled task has now been re-enabled after a successful manual smoke run.
+- The daily Windows scheduled task remains disabled until a full end-to-end daily smoke run is completed.
+- The scheduled hourly path has now also completed successfully by itself: the 2026-04-11 02:00 run exited with Task Scheduler `Last Result: 0`.
+- A manual daily smoke run was attempted on 2026-04-11, but it did not complete; it was interrupted during the Grays bid/status update stage around `38/508`.
+- The stale daily lock from that interrupted run was removed, and partial daily CSV churn was restored rather than treated as a valid dataset snapshot.

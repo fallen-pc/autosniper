@@ -28,3 +28,8 @@
 - Refreshed the Autotrader Playwright storage state manually and confirmed that a one-page VIC/Melbourne smoke scrape succeeds in `playwright-headful` mode, producing `26` rows with HTTP `200`.
 - Confirmed that the same refreshed Autotrader session still fails in headless mode with `403`, so current recovery is session-valid but not headless-stable.
 - Stopped the live hourly monitor run and intentionally disabled both Windows scheduled tasks so the repo stays clean and paused between sessions.
+- Ran a full manual hourly monitor smoke test to completion: it exited `0`, touched `170` listings, refreshed `active_vehicle_details.csv` and `vehicle_state.csv`, and wrote a fresh `output/health/scraper_health.json`.
+- Re-enabled the hourly Windows scheduled task after that successful manual proof, while keeping the daily task disabled.
+- Confirmed the re-enabled scheduled hourly path works: the 2026-04-11 02:00 scheduled run exited with Task Scheduler `Last Result: 0` and wrote a fresh scraper health report.
+- Attempted a manual daily smoke run on 2026-04-11; it was interrupted during the Grays bid/status update stage around `38/508`, before Autotrader or the later daily stages ran.
+- Removed the stale daily lock left by the interrupted run and restored the partial daily CSV churn so it is not mistaken for a valid completed snapshot.
