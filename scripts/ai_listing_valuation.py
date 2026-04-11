@@ -55,6 +55,11 @@ REQUIRED_COLUMNS = [
     "top_buy_passed_reasons",
     "current_bid",
     "current_bid_numeric",
+    "previous_current_bid",
+    "previous_current_bid_numeric",
+    "price_change_delta",
+    "price_change_direction",
+    "price_changed_at",
     "bids_observed",
     "time_remaining_observed",
 ]
@@ -173,6 +178,63 @@ def load_cached_results() -> pd.DataFrame:
     return df
 
 
+def _is_missing_value(value: Any) -> bool:
+    if value is None:
+        return True
+    if isinstance(value, float) and pd.isna(value):
+        return True
+    if isinstance(value, str) and not value.strip():
+        return True
+    return False
+
+
+def _current_bid_value(row: Mapping[str, Any] | None) -> Optional[float]:
+    if not row:
+        return None
+    for field in ("current_bid_numeric", "current_bid", "price"):
+        parsed = _parse_currency(row.get(field))
+        if parsed is not None:
+            return parsed
+    return None
+
+
+def _with_price_change_metadata(
+    row: Dict[str, Any],
+    existing_row: Mapping[str, Any] | None,
+    *,
+    changed_at: str | None = None,
+) -> Dict[str, Any]:
+    enriched = dict(row)
+    new_bid = _current_bid_value(enriched)
+    old_bid = _current_bid_value(existing_row)
+
+    if new_bid is not None and _is_missing_value(enriched.get("current_bid_numeric")):
+        enriched["current_bid_numeric"] = new_bid
+
+    if old_bid is None or new_bid is None:
+        return enriched
+
+    delta = float(new_bid) - float(old_bid)
+    if abs(delta) > 0.01:
+        enriched["previous_current_bid"] = existing_row.get("current_bid") or _format_currency(old_bid)
+        enriched["previous_current_bid_numeric"] = old_bid
+        enriched["price_change_delta"] = delta
+        enriched["price_change_direction"] = "increased" if delta > 0 else "decreased"
+        enriched["price_changed_at"] = changed_at or datetime.now(tz=timezone.utc).isoformat()
+        return enriched
+
+    for column in (
+        "previous_current_bid",
+        "previous_current_bid_numeric",
+        "price_change_delta",
+        "price_change_direction",
+        "price_changed_at",
+    ):
+        if _is_missing_value(enriched.get(column)):
+            enriched[column] = existing_row.get(column)
+    return enriched
+
+
 def _save_result_row(row: Dict[str, Any]) -> None:
     df = load_cached_results()
     existing_row: Dict[str, Any] | None = None
@@ -181,6 +243,7 @@ def _save_result_row(row: Dict[str, Any]) -> None:
         existing_matches = df[df["url"] == url]
         if not existing_matches.empty:
             existing_row = existing_matches.iloc[-1].to_dict()
+    row = _with_price_change_metadata(row, existing_row)
     new_row = pd.DataFrame([row])
     combined = pd.concat([df, new_row], ignore_index=True)
     combined = combined.drop_duplicates(subset=["url"], keep="last")

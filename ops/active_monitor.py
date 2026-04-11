@@ -420,6 +420,41 @@ def diff_changed_listing_urls(before_df: pd.DataFrame, after_df: pd.DataFrame) -
     return changed_urls
 
 
+def diff_price_changed_listing_urls(before_df: pd.DataFrame, after_df: pd.DataFrame) -> set[str]:
+    if after_df.empty or "url" not in after_df.columns:
+        return set()
+    after = after_df.copy()
+    after["url"] = after["url"].astype(str).str.strip()
+    if "price" not in after.columns:
+        return set()
+
+    after = after[["url", "price"]].drop_duplicates("url")
+    if before_df.empty or "url" not in before_df.columns or "price" not in before_df.columns:
+        return set(after["url"].dropna().astype(str).tolist())
+
+    before = before_df.copy()
+    before["url"] = before["url"].astype(str).str.strip()
+    before = before[["url", "price"]].drop_duplicates("url")
+    before_prices = {
+        str(url).strip(): parse_currency(price)
+        for url, price in before[["url", "price"]].itertuples(index=False, name=None)
+        if str(url).strip()
+    }
+
+    changed_urls: set[str] = set()
+    for url, price in after[["url", "price"]].itertuples(index=False, name=None):
+        url_text = str(url).strip()
+        if not url_text:
+            continue
+        before_price = before_prices.get(url_text)
+        after_price = parse_currency(price)
+        if before_price is None and after_price is None:
+            continue
+        if before_price is None or after_price is None or abs(float(after_price) - float(before_price)) > 0.01:
+            changed_urls.add(url_text)
+    return changed_urls
+
+
 def load_live_active_df() -> pd.DataFrame:
     df = _load_csv(ACTIVE_LIVE_PATH)
     if df.empty:

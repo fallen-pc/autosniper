@@ -21,7 +21,7 @@ if str(ROOT_DIR) not in sys.path:
 from scripts import extract_links, extract_vehicle_details, update_bids, update_master
 from scripts.active_monitor import (
     active_urls_from_frame,
-    diff_changed_listing_urls,
+    diff_price_changed_listing_urls,
     load_ai_analysis_active_df,
     revalue_active_listings,
 )
@@ -240,11 +240,11 @@ def run_hourly_monitor() -> None:
     urls = active_urls_from_frame(before_df)
     _run_update_bids(urls, skip_master=True)
     after_df = load_ai_analysis_active_df()
-    changed_urls = diff_changed_listing_urls(before_df, after_df)
-    summary = revalue_active_listings(target_urls=changed_urls, stale_minutes=60, force_refresh=True)
+    price_changed_urls = diff_price_changed_listing_urls(before_df, after_df)
+    summary = revalue_active_listings(target_urls=price_changed_urls, stale_minutes=60, force_refresh=True)
     print(
         "Hourly monitor complete: "
-        f"{len(changed_urls):,} changed URLs, {int(summary.get('evaluated', 0)):,} listings revalued."
+        f"{len(price_changed_urls):,} price-changed URLs, {int(summary.get('evaluated', 0)):,} listings revalued."
     )
 
 

@@ -84,3 +84,35 @@ def test_load_ai_analysis_active_df_uses_prepared_scope(monkeypatch) -> None:
     result = active_monitor.load_ai_analysis_active_df()
 
     assert result is expected_df
+
+
+def test_diff_price_changed_listing_urls_ignores_timer_changes() -> None:
+    before_df = pd.DataFrame(
+        [
+            {
+                "url": "https://example.com/lot/1",
+                "price": "$10,000",
+                "time_remaining_or_date_sold": "2h 10m",
+            }
+        ]
+    )
+    after_df = pd.DataFrame(
+        [
+            {
+                "url": "https://example.com/lot/1",
+                "price": "$10,000",
+                "time_remaining_or_date_sold": "1h 10m",
+            }
+        ]
+    )
+
+    assert active_monitor.diff_price_changed_listing_urls(before_df, after_df) == set()
+
+
+def test_diff_price_changed_listing_urls_detects_price_increase() -> None:
+    before_df = pd.DataFrame([{"url": "https://example.com/lot/1", "price": "$10,000"}])
+    after_df = pd.DataFrame([{"url": "https://example.com/lot/1", "price": "$10,500"}])
+
+    assert active_monitor.diff_price_changed_listing_urls(before_df, after_df) == {
+        "https://example.com/lot/1"
+    }

@@ -2461,6 +2461,24 @@ st.markdown(
         .metric-box.primary .metric-value {
             font-size: 1.18rem;
         }
+        .metric-box.price-up {
+            border-color: rgba(44, 255, 154, 0.8);
+            background: rgba(44, 255, 154, 0.1);
+        }
+        .metric-box.price-up .metric-value {
+            color: #2cff9a;
+        }
+        .metric-box.price-down {
+            border-color: rgba(255, 179, 71, 0.75);
+            background: rgba(255, 179, 71, 0.1);
+        }
+        .metric-box.price-down .metric-value {
+            color: #ffb347;
+        }
+        .metric-box.price-flat {
+            border-color: rgba(255, 255, 255, 0.14);
+            background: rgba(255, 255, 255, 0.04);
+        }
         .metric-sub {
             font-size: 0.62rem;
             color: rgba(255, 255, 255, 0.6);
@@ -3013,6 +3031,42 @@ def _build_metric_box_with_sub(
     )
 
 
+def _format_age_minutes(minutes: float) -> str:
+    if minutes < 1:
+        return "just now"
+    if minutes < 60:
+        return f"{int(round(minutes))}m ago"
+    hours = minutes / 60.0
+    if hours < 24:
+        return f"{hours:.1f}h ago"
+    days = hours / 24.0
+    return f"{days:.1f}d ago"
+
+
+def _price_update_box(row: pd.Series) -> tuple[str, str, str]:
+    direction = _safe_text(row.get("price_change_direction"), fallback="").strip().lower()
+    changed_at = pd.to_datetime(row.get("price_changed_at"), errors="coerce", utc=True)
+    if pd.isna(changed_at):
+        return "No increase", "No recent price increase logged", "price-flat"
+
+    now = pd.Timestamp.now(tz="UTC")
+    age_minutes = max(0.0, (now - changed_at).total_seconds() / 60.0)
+    delta_value = parse_currency(row.get("price_change_delta"))
+    delta_display = _format_currency_value(abs(delta_value)) if delta_value is not None else "N/A"
+    previous_display = _format_price_text(row.get("previous_current_bid"))
+    age_display = _format_age_minutes(age_minutes)
+
+    if direction == "increased" and age_minutes <= 60:
+        return "Up last hour", f"+{delta_display} from {previous_display} ({age_display})", "price-up"
+    if direction == "decreased" and age_minutes <= 60:
+        return "Down last hour", f"-{delta_display} from {previous_display} ({age_display})", "price-down"
+    if direction == "increased":
+        return "No increase", f"Last up +{delta_display} {age_display}", "price-flat"
+    if direction == "decreased":
+        return "No increase", f"Last down -{delta_display} {age_display}", "price-flat"
+    return "No increase", f"Last price change {age_display}", "price-flat"
+
+
 def _render_bullets(title: str, items: list[str]) -> None:
     cleaned = [item for item in items if item]
     if not cleaned:
@@ -3130,6 +3184,7 @@ def render_listing_card(row: pd.Series) -> None:
             score_100_display = "N/A"
 
     current_price_display = _format_price_text(row.get("price"))
+    price_update_value, price_update_sub, price_update_class = _price_update_box(row)
     raw_time_value = row.get("time_remaining_or_date_sold") or row.get("date_sold")
     time_left_display = _format_time_remaining(row.get("hours_remaining"), raw_time_value)
 
@@ -3223,6 +3278,7 @@ def render_listing_card(row: pd.Series) -> None:
             "</div>",
             '<div class="card-metrics">',
             _build_metric_box("Current price", current_price_display),
+            _build_metric_box_with_sub("Price update", price_update_value, price_update_sub, price_update_class),
             _build_metric_box("Time left", time_left_display),
             _build_metric_box("Max bid", max_bid_display),
             _build_metric_box("Expected resale", resale_display),

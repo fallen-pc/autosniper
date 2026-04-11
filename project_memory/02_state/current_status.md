@@ -23,5 +23,6 @@
 - The daily Windows scheduled task remains disabled until a full end-to-end daily smoke run is completed.
 - The scheduled hourly path has now also completed successfully by itself: the 2026-04-11 02:00 run exited with Task Scheduler `Last Result: 0`.
 - A later hourly run exposed a scope bug: hourly was updating the broad live Grays active set instead of only the AI Analysis current viable set. The task was stopped, fixed, smoke-tested with `0` viable AI Analysis URLs, and re-enabled for the next scheduled run.
+- AI Analysis cards now have the plumbing to show last-hour price increases from persisted valuation metadata, and hourly forced revaluation is tied to price-only changes rather than timer-only changes.
 - A manual daily smoke run was attempted on 2026-04-11, but it did not complete; it was interrupted during the Grays bid/status update stage around `38/508`.
 - The stale daily lock from that interrupted run was removed, and partial daily CSV churn was restored rather than treated as a valid dataset snapshot.
