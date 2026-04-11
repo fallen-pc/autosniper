@@ -63,3 +63,24 @@ def test_mark_dropped_coverage_urls_ignores_non_targets(monkeypatch) -> None:
 
     assert count == 0
     assert captured == []
+
+
+def test_load_ai_analysis_active_df_uses_prepared_scope(monkeypatch) -> None:
+    expected_df = pd.DataFrame(
+        [
+            {
+                "url": "https://example.com/lot/ai-viable",
+                "curve_coverage": True,
+            }
+        ]
+    )
+
+    monkeypatch.setattr(
+        active_monitor,
+        "_prepare_active_scope",
+        lambda: (expected_df, pd.DataFrame(), pd.DataFrame()),
+    )
+
+    result = active_monitor.load_ai_analysis_active_df()
+
+    assert result is expected_df

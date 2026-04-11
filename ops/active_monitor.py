@@ -432,6 +432,11 @@ def load_live_active_df() -> pd.DataFrame:
     return df
 
 
+def load_ai_analysis_active_df() -> pd.DataFrame:
+    active_df, _, _ = _prepare_active_scope()
+    return active_df
+
+
 def active_urls_from_frame(df: pd.DataFrame) -> list[str]:
     if df.empty or "url" not in df.columns:
         return []

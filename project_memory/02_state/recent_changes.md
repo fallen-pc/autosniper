@@ -1,5 +1,6 @@
 # Recent Changes
 
+- Found and fixed an hourly monitor scope bug: the scheduled hourly bid refresh was reading the broad live Grays `active_vehicle_details.csv` file instead of the AI Analysis eligible active scope. Hourly is now wired to the same curve-covered restricted active scope used by AI Analysis before it updates bids, and a fast smoke run with `0` viable AI Analysis URLs exited without touching broad Grays rows.
 - Fixed Toyota Corolla `zre182r` sold-tagging so valid Ascent and Ascent Sport Grays auto/CVT hatch rows are no longer rejected just because the saved curve anchors start later than the real model years.
 - Re-tagged `CSV_data/scrapers/sold_cars.csv` and rebuilt the restricted sold outputs, which moved the Toyota hatch sold counts from `1` to `6` for Ascent and from `4` to `10` for Ascent Sport.
 - Removed the stale `toyota_corolla_hatch_petrol_auto_ascent_fwd_2013_2015` leakage from the Toyota hatch sold lane.

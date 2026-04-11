@@ -19,7 +19,12 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 from scripts import extract_links, extract_vehicle_details, update_bids, update_master
-from scripts.active_monitor import active_urls_from_frame, diff_changed_listing_urls, load_live_active_df, revalue_active_listings
+from scripts.active_monitor import (
+    active_urls_from_frame,
+    diff_changed_listing_urls,
+    load_ai_analysis_active_df,
+    revalue_active_listings,
+)
 from scripts.outcome_tracking import compute_outcome_metrics
 from shared.data_loader import dataset_path
 from shared.governance import write_governance_report_bundle
@@ -231,10 +236,10 @@ def run_daily_pipeline() -> None:
 
 
 def run_hourly_monitor() -> None:
-    before_df = load_live_active_df()
+    before_df = load_ai_analysis_active_df()
     urls = active_urls_from_frame(before_df)
     _run_update_bids(urls, skip_master=True)
-    after_df = load_live_active_df()
+    after_df = load_ai_analysis_active_df()
     changed_urls = diff_changed_listing_urls(before_df, after_df)
     summary = revalue_active_listings(target_urls=changed_urls, stale_minutes=60, force_refresh=True)
     print(
