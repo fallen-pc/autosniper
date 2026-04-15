@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import html
 import json
+import math
 import re
 import time
 import textwrap
@@ -230,6 +231,84 @@ def _find_curve_year_bounds(
     return lower, upper
 
 
+def _clean_price_km_points(points: list[tuple[float, float]] | None) -> list[tuple[float, float]]:
+    cleaned: list[tuple[float, float]] = []
+    for km_value, price_value in points or []:
+        try:
+            km_float = float(km_value)
+            price_float = float(price_value)
+        except (TypeError, ValueError):
+            continue
+        if not math.isfinite(km_float) or not math.isfinite(price_float):
+            continue
+        if km_float <= 0 or price_float <= 0:
+            continue
+        cleaned.append((km_float, price_float))
+    return cleaned
+
+
+def _linear_fit_line_points(points: list[tuple[float, float]] | None) -> list[tuple[float, float]]:
+    cleaned = _clean_price_km_points(points)
+    if len(cleaned) < 2:
+        return []
+
+    km_values = [pt[0] for pt in cleaned]
+    price_values = [pt[1] for pt in cleaned]
+    if len(set(km_values)) < 2:
+        return []
+
+    km_mean = sum(km_values) / len(km_values)
+    price_mean = sum(price_values) / len(price_values)
+    denominator = sum((km_value - km_mean) ** 2 for km_value in km_values)
+    if denominator <= 0:
+        return []
+
+    slope = sum(
+        (km_value - km_mean) * (price_value - price_mean)
+        for km_value, price_value in cleaned
+    ) / denominator
+    intercept = price_mean - slope * km_mean
+    km_min = min(km_values)
+    km_max = max(km_values)
+    return [
+        (km_min, slope * km_min + intercept),
+        (km_max, slope * km_max + intercept),
+    ]
+
+
+def _plot_sold_comparable_overlay(sold_points: list[tuple[float, float]] | None) -> None:
+    import matplotlib.pyplot as plt
+
+    cleaned = _clean_price_km_points(sold_points)
+    if not cleaned:
+        return
+
+    sold_km = [pt[0] for pt in cleaned]
+    sold_price = [pt[1] for pt in cleaned]
+    plt.scatter(
+        sold_km,
+        sold_price,
+        color="#6b7280",
+        alpha=0.65,
+        s=28,
+        label="Grays sold comps",
+    )
+
+    fit_line = _linear_fit_line_points(cleaned)
+    if fit_line:
+        fit_km = [pt[0] for pt in fit_line]
+        fit_price = [pt[1] for pt in fit_line]
+        plt.plot(
+            fit_km,
+            fit_price,
+            color="#111827",
+            linestyle="--",
+            linewidth=2,
+            alpha=0.9,
+            label="Sold best fit",
+        )
+
+
 def _render_interpolated_curve_plot(
     curves_df: pd.DataFrame,
     canonical_tag: str,
@@ -238,6 +317,7 @@ def _render_interpolated_curve_plot(
     lower_year: int,
     upper_year: int,
     autotrader_points: list[tuple[float, float]] | None = None,
+    sold_points: list[tuple[float, float]] | None = None,
 ) -> bool:
     if km is None:
         return False
@@ -273,6 +353,7 @@ def _render_interpolated_curve_plot(
         auto_km = [pt[0] for pt in autotrader_points]
         auto_price = [pt[1] for pt in autotrader_points]
         plt.scatter(auto_km, auto_price, color="#ff7f0e", s=35, label="Autotrader (year match)")
+    _plot_sold_comparable_overlay(sold_points)
 
     plt.xlabel("Kilometres")
     plt.ylabel("Resale price ($)")
@@ -289,6 +370,7 @@ def _render_single_curve_plot(
     year: int,
     km: Optional[float],
     autotrader_points: list[tuple[float, float]] | None = None,
+    sold_points: list[tuple[float, float]] | None = None,
 ) -> bool:
     if km is None:
         return False
@@ -307,6 +389,7 @@ def _render_single_curve_plot(
         auto_km = [pt[0] for pt in autotrader_points]
         auto_price = [pt[1] for pt in autotrader_points]
         plt.scatter(auto_km, auto_price, color="#ff7f0e", s=35, label="Autotrader (year match)")
+    _plot_sold_comparable_overlay(sold_points)
     plt.xlabel("Kilometres")
     plt.ylabel("Resale price ($)")
     plt.grid(alpha=0.2)
@@ -999,6 +1082,7 @@ def _render_curve_section(row: pd.Series) -> None:
     confidence_label = _curve_confidence_label(row.get("confidence"))
     listing_year = _safe_int(row.get("year"))
     autotrader_points: list[tuple[float, float]] = []
+    sold_points: list[tuple[float, float]] = []
 
     st.markdown("**Resale Curve (Carsales)**")
     if curve_tag:
@@ -1021,6 +1105,18 @@ def _render_curve_section(row: pd.Series) -> None:
                 if km_val is not None and price_val is not None and not pd.isna(km_val) and not pd.isna(price_val):
                     autotrader_points.append((float(km_val), float(price_val)))
 
+    if curve_tag and "sold_df" in globals():
+        sold_subset = _select_sold_subset(sold_df, curve_tag, listing_year)
+        for _, sold_row in sold_subset.iterrows():
+            km_val = sold_row.get("odometer_numeric")
+            if km_val is None or pd.isna(km_val):
+                km_val = parse_numeric(sold_row.get("odometer_reading"))
+            price_val = sold_row.get("price_numeric")
+            if price_val is None or pd.isna(price_val):
+                price_val = parse_currency(sold_row.get("price"))
+            if km_val is not None and price_val is not None and not pd.isna(km_val) and not pd.isna(price_val):
+                sold_points.append((float(km_val), float(price_val)))
+
     lower_year, upper_year = _find_curve_year_bounds(curves_df, curve_tag, listing_year)
     if lower_year is not None and upper_year is not None and lower_year != upper_year:
         st.caption(f"Interpolated between {lower_year} and {upper_year} curves.")
@@ -1032,6 +1128,7 @@ def _render_curve_section(row: pd.Series) -> None:
             lower_year,
             upper_year,
             autotrader_points=autotrader_points if autotrader_points else None,
+            sold_points=sold_points if sold_points else None,
         )
         if not plotted:
             st.info("Curve image not available for this tag.")
@@ -1048,6 +1145,7 @@ def _render_curve_section(row: pd.Series) -> None:
             plot_year,
             parse_numeric(row.get("odometer_reading")),
             autotrader_points=autotrader_points if autotrader_points else None,
+            sold_points=sold_points if sold_points else None,
         )
         if plotted:
             return

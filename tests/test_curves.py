@@ -110,3 +110,41 @@ def test_saved_curves_do_not_duplicate_v2_matcher_rows_when_base_exists():
             duplicates.append(f"{match_tag} -> {base_tag}")
 
     assert duplicates == []
+
+
+def test_mzea12r_saved_curve_resolves_through_v2_base_tag():
+    curves_df = curves.load_curves()
+
+    base_rows = curves_df[curves_df["canonical_tag"].astype(str) == "toyota_corolla_mzea12r_hatch_auto_petrol"]
+    matcher_rows = curves_df[
+        curves_df["canonical_tag"].astype(str) == "toyota_corolla_ascent-sport_petrol_auto_hatch_mzea12r"
+    ]
+
+    assert len(base_rows) == 15
+    assert matcher_rows.empty
+
+
+def test_axvh71r_saved_curve_resolves_through_v2_base_tag():
+    curves_df = curves.load_curves()
+
+    base_rows = curves_df[curves_df["canonical_tag"].astype(str) == "toyota_camry_axvh71r_sedan_auto_hybrid"]
+    matcher_rows = curves_df[
+        curves_df["canonical_tag"].astype(str) == "toyota_camry_ascent_hybrid_auto_sedan_axvh71r"
+    ]
+
+    assert len(base_rows) == 20
+    assert matcher_rows.empty
+
+
+def test_camry_ascent_sport_axvh71r_saved_curve_resolves_through_v2_base_tag():
+    curves_df = curves.load_curves()
+
+    base_rows = curves_df[
+        curves_df["canonical_tag"].astype(str) == "toyota_camry_ascent-sport_axvh71r_sedan_auto_hybrid"
+    ]
+    matcher_rows = curves_df[
+        curves_df["canonical_tag"].astype(str) == "toyota_camry_ascent-sport_hybrid_auto_sedan_axvh71r"
+    ]
+
+    assert len(base_rows) == 15
+    assert matcher_rows.empty

@@ -1,6 +1,7 @@
 # Current Status
 
 - The sandbox is broadly runnable and documented enough for real product work.
+- AI Analysis resale curve plots now show Grays sold comparable points and a sold-data best-fit line for visual context only; this does not alter valuation or bidding calculations.
 - The repo now has an enforced project-memory system with manifest loading, generated machine rules, protected layers, and a task bootstrap CLI.
 - Commit hygiene now enforces that meaningful code/config/UI/governance changes should carry a matching `project_memory/02_state/` update in the same commit unless an intentional exception is declared.
 - Existing root memory files remain in place only as compatibility summaries during the rollout.
@@ -8,12 +9,21 @@
   - verify profit determination accuracy across producer, ranking, display, and calibration surfaces
   - identify what blocks adding more curves safely in Curve Builder V2
 - Toyota Corolla `zre182r` hatch mapping is now split by trim at the base-curve level so `ascent` and `ascent-sport` no longer pretend to be one shared curve family.
+- Corolla Ascent sedan ZRE152R and ZRE172R are now locked in as V2 base curves, with saved rows under `toyota_corolla_zre152r_sedan_auto_petrol` and `toyota_corolla_zre172r_sedan_auto_petrol` instead of their detailed matcher tags.
 - Curve Builder V2 now blocks silent legacy fallback merges when mapped legacy rows disagree on the same anchor-year and km-bucket cell.
 - `toyota_corolla_ascent_zre182r_hatch_auto_petrol` and `toyota_corolla_ascent-sport_zre182r_hatch_auto_petrol` now both have manual/provisional curves from Carsales-style market evidence.
+- `toyota_corolla_ascent_zre182r_hatch_auto_petrol` has been rechecked against a 2026-04-12 private Carsales same-lane sample and remains accepted as-is in V2; this was not a repricing change.
+- `toyota_corolla_mzea12r_hatch_auto_petrol` is now locked in as the saved V2 base curve for Corolla Ascent Sport MZEA12R hatch/auto/petrol. The existing `2019/2021/2024` price grid was retained and moved off the detailed matcher tag.
+- `toyota_camry_axvh71r_sedan_auto_hybrid` is now locked in as the saved V2 base curve for Camry Ascent Hybrid AXVH71R sedan/auto/hybrid. The existing `2018/2020/2022/2024` price grid was retained and moved off the detailed matcher tag.
+- `toyota_camry_ascent-sport_axvh71r_sedan_auto_hybrid` is now locked in as a separate saved V2 base curve for Camry Ascent Sport Hybrid AXVH71R sedan/auto/hybrid, using a reviewed `2018/2019/2020` anchor set from private-market evidence.
+- `toyota_corolla_zwe211r_hatch_auto_hybrid` is now locked in as the saved V2 base curve for Corolla Ascent Sport Hybrid ZWE211R hatch/auto/hybrid. The existing `2020/2021/2022` price grid was retained and moved off the detailed matcher tag.
+- `toyota_corolla_zwe219r_hatch_auto_hybrid` is now locked in as the saved V2 base curve for Corolla Ascent Sport Hybrid ZWE219R hatch/auto/hybrid. The existing `2024/2025` price grid was retained and moved off the detailed matcher tag; 2025 pricing can be reviewed separately if needed.
+- Corolla hybrid hatch evidence matching now uses explicit year bands: ZWE211R maps `2018-2022`, and ZWE219R maps `2023-2025`. The local Autotrader cache now has no rejected same-lane Ascent Sport Hybrid hatch rows for those two series, and the Grays sold export now has `4` matched ZWE211R rows and `0` matched ZWE219R rows while SX/ZR/Hybrid EX/Axio-style rows remain excluded.
 - Autotrader evidence for the split Toyota hatch curves already exists in `autotrader_isolated/output/autotrader_recent_market_tagged.csv`, with about `24` recent-market Ascent rows and `33` recent-market Ascent Sport rows resolving cleanly to the new split base tags.
 - Grays sold-tagging for the split Toyota hatch curves has now been repaired as well: the sold lane recovers `6` Ascent rows and `10` Ascent Sport rows after removing a bad year-band gate and a stale legacy tag leak.
 - Stale duplicate matcher-tag curve rows have now been removed where a V2 base curve already exists, including the Toyota hatch split, Yaris, and Mazda 3 BL rows. Those match tags still resolve through the V2 group map; they no longer carry competing saved curve values.
 - Corolla Ascent sedan tagging now excludes `Conquest`, so the raw Grays `toyota_corolla_ascent_petrol_auto_sedan_zre152r` lane has `42` Ascent rows and no Conquest rows after retagging.
+- Camry AXVH71R now has separate saved Ascent Hybrid and Ascent Sport Hybrid lanes. Keep them separate, and treat `2025` Ascent Hybrid rows or later-year Ascent Sport Hybrid rows as deliberate extension reviews rather than automatic merges.
 - The remaining Toyota hatch work is no longer basic tag alignment. It is deciding whether to keep the current manual curves as-is or run a separate repricing review against the aligned evidence lanes.
 - Hyundai i30 GD work has moved from the old mixed-mainstream interpretation to an exact Active-only curve. `hyundai_i30_active_petrol_auto_hatch_gd` resolves to the base curve `hyundai_i30_gd_hatch_auto_petrol`, which now has `2012/2014/2016` anchors.
 - Hyundai i30 GD tag alignment is intentionally strict: `Elite`, `Premium`, `Trophy`, `Active X`, `SE`, `SR`, and `SR Premium` are excluded from the Active curve and should be handled as separate future curves if needed.

@@ -1,12 +1,13 @@
 base_curve_tag,make,model,body,fuel,transmission,series,status,priority,notes
-toyota_corolla_zre152r_sedan_auto_petrol,toyota,corolla,sedan,petrol,auto,zre152r,live_now,1,Older Corolla sedan
-toyota_corolla_zre172r_sedan_auto_petrol,toyota,corolla,sedan,petrol,auto,zre172r,live_now,1,Later Corolla sedan
-toyota_corolla_ascent_zre182r_hatch_auto_petrol,toyota,corolla,hatch,petrol,auto,zre182r,live_now,1,Split from grouped zre182r hatch because Ascent and Ascent Sport price differently
+toyota_corolla_zre152r_sedan_auto_petrol,toyota,corolla,sedan,petrol,auto,zre152r,live_now,1,Saved Ascent-only ZRE152R sedan curve; V2 base owns the price grid
+toyota_corolla_zre172r_sedan_auto_petrol,toyota,corolla,sedan,petrol,auto,zre172r,live_now,1,Saved Ascent-only ZRE172R sedan curve; V2 base owns the price grid
+toyota_corolla_ascent_zre182r_hatch_auto_petrol,toyota,corolla,hatch,petrol,auto,zre182r,live_now,1,Saved Ascent-only ZRE182R hatch curve; 2026-04-12 private Carsales check supports keeping current values
 toyota_corolla_ascent-sport_zre182r_hatch_auto_petrol,toyota,corolla,hatch,petrol,auto,zre182r,live_now,1,Split from grouped zre182r hatch because Ascent Sport carries a distinct trim premium
 toyota_corolla_mzea12r_hatch_auto_petrol,toyota,corolla,hatch,petrol,auto,mzea12r,live_now,1,Newer petrol Corolla hatch
-toyota_corolla_zwe211r_hatch_auto_hybrid,toyota,corolla,hatch,hybrid,auto,zwe211r,live_now,1,Hybrid Corolla hatch
-toyota_corolla_zwe219r_hatch_auto_hybrid,toyota,corolla,hatch,hybrid,auto,zwe219r,live_now,2,Keep separate for now
-toyota_camry_axvh71r_sedan_auto_hybrid,toyota,camry,sedan,hybrid,auto,axvh71r,live_now,1,Core Camry hybrid curve
+toyota_corolla_zwe211r_hatch_auto_hybrid,toyota,corolla,hatch,hybrid,auto,zwe211r,live_now,1,Saved Ascent Sport Hybrid ZWE211R hatch curve; 2018/2019 private evidence observed but not yet used as anchor extension
+toyota_corolla_zwe219r_hatch_auto_hybrid,toyota,corolla,hatch,hybrid,auto,zwe219r,live_now,2,Saved Ascent Sport Hybrid ZWE219R hatch curve; 2025 pricing should be reviewed separately if needed
+toyota_camry_axvh71r_sedan_auto_hybrid,toyota,camry,sedan,hybrid,auto,axvh71r,live_now,1,Exact Camry Ascent Hybrid AXVH71R lane; Ascent Sport Hybrid is separate
+toyota_camry_ascent-sport_axvh71r_sedan_auto_hybrid,toyota,camry,sedan,hybrid,auto,axvh71r,live_now,1,Separate Camry Ascent Sport Hybrid AXVH71R lane built from 2018/2019/2020 private-market evidence
 toyota_yaris_ncp90r_hatch_auto_petrol,toyota,yaris,hatch,petrol,auto,ncp90r,live_now,1,Simple stable Yaris segment
 mazda_3_bl_hatch_auto_petrol,mazda,3,hatch,petrol,auto,bl,live_now,1,All BL hatch petrol trims grouped
 hyundai_i30_gd_hatch_auto_petrol,hyundai,i30,hatch,petrol,auto,gd,live_now,1,Core i30 GD Active hatch
