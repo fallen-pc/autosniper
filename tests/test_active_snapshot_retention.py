@@ -6,6 +6,7 @@ import pandas as pd
 
 from scripts.active_snapshot_retention import compact_active_snapshots
 from scripts.prepare_sold_training_data import merge_snapshot_features
+from scripts.update_bids import select_snapshot_retention_urls
 
 
 SNAPSHOT_COLUMNS = [
@@ -111,3 +112,22 @@ def test_merge_snapshot_features_reads_archived_snapshots(tmp_path: Path) -> Non
     assert merged["snapshot_bids_numeric"].tolist() == [3]
     assert merged["snapshot_location_state"].tolist() == ["VIC"]
     assert merged["snapshot_hours_to_close"].tolist() == [1.0]
+
+
+def test_select_snapshot_retention_urls_respects_hourly_scope() -> None:
+    full_active_url = "https://example.com/lot/full-active"
+    hourly_active_url = "https://example.com/lot/hourly-active"
+    hourly_sold_url = "https://example.com/lot/hourly-sold"
+    df = pd.DataFrame(
+        [
+            {"url": full_active_url, "status": "Active"},
+            {"url": hourly_active_url, "status": "Active"},
+            {"url": hourly_sold_url, "status": "Sold"},
+        ]
+    )
+
+    hourly_urls = select_snapshot_retention_urls(df, [hourly_active_url, hourly_sold_url])
+    broad_urls = select_snapshot_retention_urls(df)
+
+    assert hourly_urls == [hourly_active_url]
+    assert broad_urls == [full_active_url, hourly_active_url]

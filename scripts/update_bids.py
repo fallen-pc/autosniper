@@ -397,6 +397,40 @@ def clean_url(url):
     return match.group(1) if match else url
 
 
+def select_snapshot_retention_urls(
+    df: pd.DataFrame,
+    scope_urls: list[str] | None = None,
+) -> list[str]:
+    """Return active URLs whose latest snapshots should stay in the live file."""
+    if df.empty or "url" not in df.columns:
+        return []
+
+    working = df.copy()
+    if "status" in working.columns:
+        active_mask = (
+            working["status"].fillna("").astype(str).str.strip().str.lower().eq("active")
+        )
+        working = working[active_mask].copy()
+
+    if scope_urls is not None:
+        scope_keys = {
+            clean_url(str(url)).strip().lower()
+            for url in scope_urls
+            if str(url or "").strip()
+        }
+        working = working[
+            working["url"]
+            .fillna("")
+            .astype(str)
+            .map(clean_url)
+            .str.strip()
+            .str.lower()
+            .isin(scope_keys)
+        ].copy()
+
+    return working["url"].dropna().astype(str).map(clean_url).tolist()
+
+
 def parse_price_text(text: str) -> str:
     """Return digits from a price-like string or empty string when not found."""
     if not text:
@@ -732,11 +766,9 @@ async def update_bids(
         # Save updated DataFrame
         persist_dataframe(df, "Final save")
         persist_state_dataframe(state_df, "Final state save")
-        active_urls = df.loc[
-            df["status"].fillna("").astype(str).str.strip().str.lower().eq("active"),
-            "url",
-        ].dropna()
-        retention_result = compact_active_snapshots(active_urls=active_urls.astype(str).tolist())
+        retention_scope_urls = urls if input_links else None
+        retention_urls = select_snapshot_retention_urls(df, retention_scope_urls)
+        retention_result = compact_active_snapshots(active_urls=retention_urls)
         print(
             "active_snapshots.csv compacted "
             f"({retention_result.current_rows} live latest rows, "
