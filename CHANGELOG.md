@@ -1,5 +1,8 @@
 # Changelog
 
+## 2026-04-17
+- Saved the Camry Ascent ASV70R petrol sedan curve as `toyota_camry_asv70r_sedan_auto_petrol` with `2018/2020/2022` anchors, moved the old matcher-tag rows onto the V2 base tag, and marked the lane `live_now`.
+
 ## 2026-04-12
 - Removed stale duplicate matcher-tag curve rows where a V2 base curve already exists, so Toyota hatch, Yaris, and Mazda 3 BL valuation now have one curve source of truth instead of competing matcher/base rows.
 - Tightened Corolla Ascent tagging so `Conquest` rows no longer feed the `zre152r` or `zre172r` Ascent lanes; the raw Grays `zre152r` Ascent sold lane now contains `42` Ascent rows and no Conquest rows.

@@ -12,4 +12,4 @@ toyota_yaris_ncp90r_hatch_auto_petrol,toyota,yaris,hatch,petrol,auto,ncp90r,live
 mazda_3_bl_hatch_auto_petrol,mazda,3,hatch,petrol,auto,bl,live_now,1,All BL hatch petrol trims grouped
 hyundai_i30_gd_hatch_auto_petrol,hyundai,i30,hatch,petrol,auto,gd,live_now,1,Core i30 GD Active hatch
 hyundai_i30_pd_hatch_auto_petrol,hyundai,i30,hatch,petrol,auto,pd,live_now,1,Core i30 PD Active hatch
-toyota_camry_asv70r_sedan_auto_petrol,toyota,camry,sedan,petrol,auto,asv70r,hold,2,Keep defined but not V1 priority
+toyota_camry_asv70r_sedan_auto_petrol,toyota,camry,sedan,petrol,auto,asv70r,live_now,1,Saved Ascent ASV70R petrol sedan curve built from private Carsales and Autotrader evidence

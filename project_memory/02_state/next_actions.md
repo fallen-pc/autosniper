@@ -9,8 +9,9 @@
 7. Treat Corolla ZWE219R `2025` pricing as a possible future repricing review because Autotrader sits below the saved grid; do not change it as part of tag/source-of-truth cleanup.
 8. Treat Hyundai i30 `Active X`, `SE`, `Elite`, `Premium`, `Trophy`, `SR`, `SR Premium`, and `N Line` as separate curve candidates, not as fallback evidence for the GD or PD Active curves.
 9. Keep Camry AXVH71R `Ascent Hybrid` and `Ascent Sport Hybrid` as separate saved lanes; review `2025` Ascent Hybrid and any later-year Ascent Sport Hybrid evidence as deliberate year-extension tasks, not automatic merges.
-10. Watch the next available scheduled hourly run only as a scheduler sanity check: it is acceptable to miss a run when the laptop is off/asleep, but the next run while awake/logged in should resume cleanly.
-11. Keep daily disabled until a full daily smoke test is run with the refreshed Autotrader session.
-12. When running that daily smoke test, use the refreshed storage state and keep the visible-browser Autotrader path in mind.
-13. Only after a successful daily smoke test should unattended daily automation be re-enabled.
-14. Before retrying daily, consider adding a safer daily smoke mode or a resume/limit path so the test does not need to churn through the full Grays update set in one fragile run.
+10. Treat the Camry ASV70R petrol curve as live-market built: private Carsales and Autotrader carry the evidence, while the current single Grays sold row is non-contributory for valuation.
+11. Watch the next available scheduled hourly run only as a scheduler sanity check: it is acceptable to miss a run when the laptop is off/asleep, but the next run while awake/logged in should resume cleanly.
+12. Keep daily disabled until a full daily smoke test is run with the refreshed Autotrader session.
+13. When running that daily smoke test, use the refreshed storage state and keep the visible-browser Autotrader path in mind.
+14. Only after a successful daily smoke test should unattended daily automation be re-enabled.
+15. Before retrying daily, consider adding a safer daily smoke mode or a resume/limit path so the test does not need to churn through the full Grays update set in one fragile run.

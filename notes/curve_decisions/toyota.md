@@ -26,6 +26,7 @@ Implementation note:
 - The ZWE211R hybrid hatch now resolves through the V2 base curve `toyota_corolla_zwe211r_hatch_auto_hybrid`; the detailed matcher tag `toyota_corolla_ascent-sport_hybrid_auto_hatch_zwe211r` no longer carries separate saved curve rows.
 - The ZWE219R hybrid hatch now resolves through the V2 base curve `toyota_corolla_zwe219r_hatch_auto_hybrid`; the detailed matcher tag `toyota_corolla_ascent-sport_hybrid_auto_hatch_zwe219r` no longer carries separate saved curve rows.
 - The Corolla sedan split now resolves through V2 base curves `toyota_corolla_zre152r_sedan_auto_petrol` and `toyota_corolla_zre172r_sedan_auto_petrol`; their detailed Ascent matcher tags no longer carry separate saved curve rows.
+- The Camry ASV70R petrol sedan now resolves through the V2 base curve `toyota_camry_asv70r_sedan_auto_petrol`; the detailed matcher tag `toyota_camry_ascent_petrol_auto_sedan_asv70r` no longer carries separate saved curve rows.
 
 ## Corolla Ascent Sport MZEA12R Hatch
 
@@ -66,6 +67,19 @@ Evidence snapshot:
 - The saved grid uses a `2018/2019/2020` anchor set derived from that private-market slice while excluding obvious high and low asking-price outliers from anchoring.
 - Grays sold has `5` same-lane Ascent Sport Hybrid AXVH71R sold rows across `2019-2020`.
 - The current local Autotrader recent-market cache has broader Ascent Sport Hybrid Camry rows, but the cached rows do not currently expose clean AXVH71R series proof, so they were not used as exact-series evidence for this saved lane.
+
+## Camry Ascent ASV70R Petrol
+
+Current working interpretation:
+- `toyota_camry_asv70r_sedan_auto_petrol` is the saved V2 base curve for Camry Ascent ASV70R sedan/auto/petrol evidence.
+- `toyota_camry_ascent_petrol_auto_sedan_asv70r` is the matcher tag that feeds that base curve through the V2 group map.
+- AXVH70R/AXVH71R hybrid rows, Ascent Sport, SX, SL, Atara, manual, and non-ASV70R rows must not be folded into this petrol lane.
+
+Evidence snapshot:
+- A 2026-04-17 private Carsales check supplied `15` same-lane Ascent ASV70R sedan/auto/petrol rows: `7` for `2018`, `7` for `2019`, and `1` for `2020`.
+- The current local Autotrader recent-market cache has `68` same-lane Ascent ASV70R rows: `15` for `2018`, `14` for `2019`, `10` for `2020`, `17` for `2021`, and `12` for `2022`.
+- The saved grid uses `2018/2020/2022` anchors so `2019` and `2021` interpolate.
+- Grays sold currently has only `1` same-lane ASV70R row, and that sale price is not useful valuation evidence, so the curve is intentionally live-market built from Carsales plus Autotrader.
 
 ## Corolla Ascent ZRE182R Hatch
 

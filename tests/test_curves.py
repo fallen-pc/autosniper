@@ -148,3 +148,15 @@ def test_camry_ascent_sport_axvh71r_saved_curve_resolves_through_v2_base_tag():
 
     assert len(base_rows) == 15
     assert matcher_rows.empty
+
+
+def test_camry_asv70r_saved_curve_resolves_through_v2_base_tag():
+    curves_df = curves.load_curves()
+
+    base_rows = curves_df[curves_df["canonical_tag"].astype(str) == "toyota_camry_asv70r_sedan_auto_petrol"]
+    matcher_rows = curves_df[
+        curves_df["canonical_tag"].astype(str) == "toyota_camry_ascent_petrol_auto_sedan_asv70r"
+    ]
+
+    assert len(base_rows) == 15
+    assert matcher_rows.empty

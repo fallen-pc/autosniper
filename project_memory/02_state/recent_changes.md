@@ -1,5 +1,6 @@
 # Recent Changes
 
+- Locked in `toyota_camry_asv70r_sedan_auto_petrol` as the V2 base curve for Camry Ascent ASV70R sedan/auto/petrol using a `2018/2020/2022` anchor grid from the reviewed private Carsales slice plus `68` same-lane Autotrader rows; the single Grays sold row was treated as non-contributory valuation evidence.
 - Added and locked in `toyota_camry_ascent-sport_axvh71r_sedan_auto_hybrid` as a separate V2 base curve for Camry Ascent Sport Hybrid AXVH71R sedan/auto/hybrid using a `2018/2019/2020` anchor set from reviewed private-market evidence; this was intentionally kept separate from the plain Ascent Hybrid lane.
 - Locked in `toyota_camry_axvh71r_sedan_auto_hybrid` as the V2 base curve for Camry Ascent Hybrid AXVH71R sedan/auto/hybrid by moving the existing `2018/2020/2022/2024` saved rows off the detailed matcher tag and onto the base tag without changing prices.
 - Locked in `toyota_corolla_mzea12r_hatch_auto_petrol` as the V2 base curve for Corolla Ascent Sport MZEA12R hatch/auto/petrol by moving the existing `2019/2021/2024` saved rows off the detailed matcher tag and onto the base tag without changing prices.
