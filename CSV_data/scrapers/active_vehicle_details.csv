@@ -1,14 +1,14 @@
 url,year,make,model,variant,body_type,transmission,fuel_type,odometer_reading,no_of_seats,vin,rego_no,rego_expiry,no_of_cylinders,engine_capacity,exterior_colour,interior_colour,key,spare_key,owners_manual,service_history,engine_turns_over,location,general_condition,canonical_tag,canonical_reason,status,price,bids,time_remaining_or_date_sold,date_sold
 https://www.grays.com/lot/0001-10353377/motor-vehicles-motor-cycles/2017-hyundai-i30-active-pd-automatic-hatchback,2017,HYUNDAI,I30,active pd,Hatchback,Automatic,Petrol,172372,5.0,KMHH351EMJU026285,988MS4,Unregistered,4.0,2.0,White,Black,Yes,No,Yes,Partial,Yes,nsw,"front cracked bumper.
 large dent on tailgate
-engine noise observed.",hyundai_i30_active_petrol_auto_hatch_pd,[OK],Active,9,0.0,4d 11h 59m33s,
+engine noise observed.",hyundai_i30_active_petrol_auto_hatch_pd,[OK],Active,9,0.0,4d 10h 59m9s,
 https://www.grays.com/lot/0001-10500717/motor-vehicles-motor-cycles/2017-toyota-corolla-ascent-zre182r-cvt-hatchback,2017,TOYOTA,Corolla,ascent zre182r,Hatchback,CVT,Petrol,60572,5.0,JTNKU3JE60J560698,DMH14B,Unregistered,4.0,1.8,White,Grey,Yes,No,Yes,Yes,Yes,nsw,"hail damage visible.
 paint peeling drivers side front guard
 medium dent on drivers door
 large scuff on passenger rear quarter
-large scratch on front bumper",toyota_corolla_ascent_petrol_auto_hatch_zre18x,[OK],Active,4900,42.0,4d 10h 29m24s,
+large scratch on front bumper",toyota_corolla_ascent_petrol_auto_hatch_zre18x,[OK],Active,4900,42.0,4d 9h 29m0s,
 https://www.grays.com/lot/0001-21065635/motor-vehicles-motor-cycles/2014-hyundai-i30-active-gd-automatic-hatchback,2014,HYUNDAI,I30,active gd,Hatchback,Automatic,Petrol,125639,5.0,KMHD251EMEU242810,1DT7HR,02-03-2027,4.0,1.8,White,Black,Yes,No,Yes,Partial,Yes,vic,"medium scratch on around vehicle
-dents or marks on body consistent with age and kilometres.",hyundai_i30_active_petrol_auto_hatch_gd,[OK],Active,409,5.0,4d 11h 59m10s,
+dents or marks on body consistent with age and kilometres.",hyundai_i30_active_petrol_auto_hatch_gd,[OK],Active,409,5.0,4d 10h 58m50s,
 https://www.grays.com/lot/0001-50715164/motor-vehicles-motor-cycles/2020-toyota-hilux-4x4-sr-gun126r-turbo-diesel-automatic-dual-cab,2020,TOYOTA,Hilux,4x4 sr gun126r,Dual Cab,Automatic,Diesel,57401,5.0,MR0KA3CD201249823,No plates,Unregistered,4.0,2.8,White,Black,Yes,No,Yes,Partial,Yes,qld,dents or marks on body consistent with age and kilometres. medium scratch on rhr door large scuff on lhr door windscreen chipped or cracked.,UNCLASSIFIED,[OUT_OF_SCOPE],active,20100.0,118.0,4d 13h 55m21s,
 https://www.grays.com/lot/0001-10353252/motor-vehicles-motor-cycles/2008-audi-a6-2-8-fsi-quattro-c6-automatic-sedan,2008,AUDI,A6,2.8 fsi quattro c6,Sedan,Automatic,Petrol,148496,5.0,WAUZZZ4F48N099563,DXC77U,30-04-2026,6.0,2.8,White,Black,Yes,Yes,Yes,Partial,Yes,nsw,"front cracked bumper.
 large dent on passenger side front guard, passenger side sill panel, rear quarter panels
@@ -1890,52 +1890,52 @@ rear bumper cracked bumper.
 medium dent on left rear quarter panel",UNCLASSIFIED,[OUT_OF_SCOPE],active,1009.0,72.0,4d 9h 52m32s,
 https://www.grays.com/lot/0001-10353359/motor-vehicles-motor-cycles/2017-mercedes-benz-a-class-a180-w176-automatic-hatchback-wovr-inspected,2017,mercedes,benz,a-class a180 w176 (wovr - inspected),hatchback,automatic,petrol,48750,5.0,WDD1760422J720257,No plates,Unregistered,4.0,1.6,Black,Black,Yes,No,Yes,No,Yes,nsw,"large scratch on bonnet, rear bumper bar
 other warning light on
-note: this vehicle is listed on the written off vehicle register (wovr). details of the status can be found in the ppsr attached at the bottom of this description. please refer to your relevant state-based road authority to determine whether this vehicle will require inspection or will be able to be registered based on the recorded wovr status.",unclassified,[out_of_scope],Active,,0.0,,
+note: this vehicle is listed on the written off vehicle register (wovr). details of the status can be found in the ppsr attached at the bottom of this description. please refer to your relevant state-based road authority to determine whether this vehicle will require inspection or will be able to be registered based on the recorded wovr status.",unclassified,[out_of_scope],Active,nan,0.0,nan,
 https://www.grays.com/lot/0001-21065011/motor-vehicles-motor-cycles/2011-mitsubishi-triton-4x4-glx-mn-automatic-dual-cab-wovr-inspected,2011,mitsubishi,triton,4x4 glx mn dual cab (wovr - inspected),cab chassis,automatic,diesel,257956,5.0,MMAJRKB40BD011284,1CU2HY,Unregistered,4.0,2.5,White,Grey,Yes,No,Yes,No,Yes,vic,"dents or marks on body consistent with age and kilometres.
 medium scratch on front bumper
-paint peeling front bumper",unclassified,[out_of_scope],Active,,0.0,,
+paint peeling front bumper",unclassified,[out_of_scope],Active,nan,0.0,nan,
 https://www.grays.com/lot/0001-21065551/motor-vehicles-motor-cycles/2009-mitsubishi-lancer-es-sportback-cj-cvt-hatchback-repairable-write-off,2009,mitsubishi,lancer,es sportback cj (repairable-write off),hatchback,cvt,petrol,187572,5.0,JMFLTCX4AAU001968,No plates,Unregistered,4.0,2.0,Silver,Black,Yes,No,No,No,Yes,vic,"front seat worn driver and passenger
 dents or marks on body consistent with age and kilometres.
 medium scratch on around exterior
 dents or marks on body consistent with age and kilometres.
-other warning light on",unclassified,[out_of_scope],Active,,0.0,,
+other warning light on",unclassified,[out_of_scope],Active,nan,0.0,nan,
 https://www.grays.com/lot/0001-21065586/motor-vehicles-motor-cycles/2022-subaru-forester-2-5i-sport-s5-cvt-wovr-inspected,2022,subaru,forester,2.5i sport s5 wovr-inspected,wagon,cvt,petrol,45371,5.0,JF2SK9KL5NG081191,DOE303,01-08-2026,4.0,2.5,Silver,Black Leather,Yes,No,No,Partial,Yes,vic,"door card worn.
 medium scratch on various panels
-dents or marks on body consistent with age and kilometres.",unclassified,[out_of_scope],Active,,0.0,,
+dents or marks on body consistent with age and kilometres.",unclassified,[out_of_scope],Active,nan,0.0,nan,
 https://www.grays.com/lot/0001-21065589/motor-vehicles-motor-cycles/2008-mazda-3-sp23-luxury-pack-bk-automatic-sedan-wovr-inspected,2008,mazda,3,sp23 luxury pack bk (wovr - inspected),sedan,automatic,petrol,217346,5.0,JM0BK103200404524,YRI439,18-04-2026,4.0,2.3,Black,Black Leather,Yes,No,Yes,Yes,Yes,vic,"large scratch on around vehicle
 large scuff on around vehicle
 paint fading around vehicle
-brakes require attention, recommend towing on collection",unclassified,[out_of_scope],Active,,0.0,,
+brakes require attention, recommend towing on collection",unclassified,[out_of_scope],Active,nan,0.0,nan,
 https://www.grays.com/lot/0001-21065645/motor-vehicles-motor-cycles/2021-toyota-hilux-4x2-workmate-tgn121r-auto-cab-chassis-wovr-repairable,2021,toyota,hilux,4x2 workmate tgn121r (wovr - repairable),cab chassis,automatic,petrol,90485,2.0,MR0CX3CB004323479,No plates,Unregistered,4.0,2.7,White,Black,Yes,Yes,No,No,Yes,vic,"medium dent on passenger door
-engine smoke visible",unclassified,[out_of_scope],Active,,0.0,,
+engine smoke visible",unclassified,[out_of_scope],Active,nan,0.0,nan,
 https://www.grays.com/lot/0001-21065656/motor-vehicles-motor-cycles/2010-volkswagen-tiguan-125-tsi-5n-automatic-wagon-wovr-inspected,2010,volkswagen,tiguan,125 tsi 5n (wovr - inspected),wagon,automatic,petrol,254666,5.0,WVGZZZ5NZAW076036,ABV041,11-04-2026,4.0,2.0,Black,Black Leather,Yes,No,Yes,Partial,Yes,vic,"engine noise observed.
 airbag light on
 engine light on
 front seat worn driver side
 paint peeling various panels
 dents or marks on body consistent with age and kilometres.
-coolant leak",unclassified,[out_of_scope],Active,,0.0,,
+coolant leak",unclassified,[out_of_scope],Active,nan,0.0,nan,
 https://www.grays.com/lot/0001-21065684/motor-vehicles-motor-cycles/2008-toyota-yaris-yr-ncp90r-automatic-wovr-inspected,2008,toyota,yaris,yr ncp90r wovr-inspected,hatchback,automatic,petrol,182695,5.0,JTDKW923802029043,No plates,Unregistered,4.0,1.3,Black,Black,Yes,No,No,No,Yes,vic,"medium dent on around vehicle
-paint fading on various panels",toyota_yaris_yr_petrol_auto_hatch_ncp90r,[ok],Active,,0.0,,
+paint fading on various panels",toyota_yaris_yr_petrol_auto_hatch_ncp90r,[ok],Active,nan,0.0,nan,
 https://www.grays.com/lot/0001-21065731/motor-vehicles-motor-cycles/2017-land-rover-range-rover-3-0-tdv6-se-automatic-wagon-wovr-inspected,2017,land,rover,range rover 3.0 tdv6 se (wovr - inspected),wagon,automatic,diesel,63670,5.0,SALWA2EKXHA691419,BUV651,16-04-2026,6.0,3.0,White,Black Leather,Yes,No,No,No,Yes,vic,"dents or marks on body consistent with age and kilometres.
-other warning light on",unclassified,[out_of_scope],Active,,0.0,,
+other warning light on",unclassified,[out_of_scope],Active,nan,0.0,nan,
 https://www.grays.com/lot/0001-21065752/motor-vehicles-motor-cycles/2012-volkswagen-passat-118tsi-3c-automatic-wagon-wovr-inspected,2012,volkswagen,passat,118tsi 3c (wovr-inspected),wagon,automatic,petrol,260250,5.0,WVWZZZ3CZCE177271,AMB539,19-07-2026,4.0,1.8,Grey,Black Leather,Yes,Yes,No,Partial,Yes,vic,"dents or marks on body consistent with age and kilometres.
 medium dent on rear left passenger door
-front seat worn driver seat",unclassified,[out_of_scope],Active,,0.0,,
-https://www.grays.com/lot/0001-21065778/motor-vehicles-motor-cycles/2017-mercedes-benz-cla250-sport-4matic-c117-coupe-wovr-inspected,2017,mercedes,benz,cla250 sport 4matic c117 (wovr - inspected),coupe,automatic,petrol,61755,5.0,WDD1173512N490973,CGK131,12-07-2026,4.0,2.0,White,Black Leather,Yes,Yes,No,Yes,Yes,vic,dents or marks on body consistent with age and kilometres.,unclassified,[out_of_scope],Active,,0.0,,
+front seat worn driver seat",unclassified,[out_of_scope],Active,nan,0.0,nan,
+https://www.grays.com/lot/0001-21065778/motor-vehicles-motor-cycles/2017-mercedes-benz-cla250-sport-4matic-c117-coupe-wovr-inspected,2017,mercedes,benz,cla250 sport 4matic c117 (wovr - inspected),coupe,automatic,petrol,61755,5.0,WDD1173512N490973,CGK131,12-07-2026,4.0,2.0,White,Black Leather,Yes,Yes,No,Yes,Yes,vic,dents or marks on body consistent with age and kilometres.,unclassified,[out_of_scope],Active,nan,0.0,nan,
 https://www.grays.com/lot/0001-50517921/motor-vehicles-motor-cycles/2011-audi-a5-3-0-tdi-quattro-8t-turbo-diesel-auto-wovr-inspected,2011,audi,a5,3.0 tdi quattro 8t (wovr-inspected),hatchback,automatic,diesel,250754,4.0,WAUZZZ8T7BA084702,No plates,Unregistered,6.0,3.0,Black,Black Leather,Yes,No,Yes,Partial,Yes,qld,"dents or marks on body consistent with age and kilometres.
 hood lining sagging
 paint fading bonnet
-windscreen chipped or cracked.",unclassified,[out_of_scope],Active,,0.0,,
+windscreen chipped or cracked.",unclassified,[out_of_scope],Active,nan,0.0,nan,
 https://www.grays.com/lot/0001-50715351/motor-vehicles-motor-cycles/2020-ldv-t60-luxe-mega-tub-tdl-auto-dual-cab-wovr-repairable,2020,ldv,t60,luxe mega tub tdl (wovr repairable),dual cab,automatic,diesel,63090,5.0,LSFAM11A4LA047769,No plates,Unregistered,4.0,2.8,Blue,Black Leather,Yes,No,Yes,Yes,Yes,qld,"other warning light on
 dents or marks on body consistent with age and kilometres.
 large scuff on rhr guard, rhr door, lhr door, lhr guard
 large scratch on lhr guard, lhr door, lhf door
 medium dent on lhr door, lhf door, rhr door
-paint fading various panels",unclassified,[out_of_scope],Active,,0.0,,
+paint fading various panels",unclassified,[out_of_scope],Active,nan,0.0,nan,
 https://www.grays.com/lot/0001-9068119/motor-vehicles-motor-cycles/2010-mercedes-e250-cgi-avantgarde-a207-auto-convertible-wovr-inspected,2010,mercedes,e250,cgi avantgarde a207 (wovr-inspected),convertible,automatic,petrol,175714,4.0,WDD2074472F067551,1IPU526,19-05-2026,4.0,1.8,Black,Grey,Yes,No,No,Partial,Yes,wa,"sat nav broken
 controls broken aircon display cracked
-large scuff on passenger door, passenger rear quarter, driver`s fender",unclassified,[out_of_scope],Active,,0.0,,
+large scuff on passenger door, passenger rear quarter, driver`s fender",unclassified,[out_of_scope],Active,nan,0.0,nan,
 https://www.grays.com/lot/0001-9068139/motor-vehicles-motor-cycles/2009-subaru-impreza-r-g3-manual-hatchback-wovr-inspected,2009,subaru,impreza,r g3 (wovr - inspected),hatchback,manual,petrol,260833,5.0,JF1GH7KF39G033396,Unlicensed,Unregistered,4.0,2.0,Silver,Charcoal,Yes,No,No,No,Yes,wa,"dents or marks on body consistent with age and kilometres.
 corrosion visible various locations
 paint peeling various panels
@@ -1943,7 +1943,7 @@ rear cracked bumper.
 medium scuff on front passenger side
 medium scratch on front passenger side
 medium dent on various panels
-paint cracked rear bumper",unclassified,[out_of_scope],Active,,0.0,,
+paint cracked rear bumper",unclassified,[out_of_scope],Active,nan,0.0,nan,
 https://www.grays.com/lot/0001-9068146/motor-vehicles-motor-cycles/2011-honda-jazz-vtis-ge-automatic-hatchback-wovr-inspected,2011,honda,jazz,vtis ge (wovr-inspected),hatchback,automatic,petrol,163547,5.0,MRHGE8860CP040189,Unlicensed,Unregistered,4.0,1.5,Dark Grey,Grey,Yes,No,Yes,Partial,Yes,wa,"back seat stains.
 flat battery. jump start or towing required
 traction control light on
@@ -1955,11 +1955,11 @@ medium dent on boot
 medium scuff on passenger rear quarter
 door mirror broken driver and passenger side
 paint peeling passenger side doors
-other warning light on",unclassified,[out_of_scope],Active,,0.0,,
+other warning light on",unclassified,[out_of_scope],Active,nan,0.0,nan,
 https://www.grays.com/lot/0001-9068189/motor-vehicles-motor-cycles/2010-bmw-3-series-320i-exec-e90-automatic-sedan-wovr-inspected,2010,bmw,3,series 320i exec. e90 (wovr-inspected),sedan,automatic,petrol,194440,5.0,WBAPG560X0NM22727,1GKP333,14-11-2026,4.0,2.0,Black,Black Leather,Yes,No,No,No,Yes,wa,"engine light on
 flat battery. jump start or towing required
 engine smoke visible
 hood lining sagging
 corrosion visible bonnet
 paint fading on various panels
-dents or marks on body consistent with age and kilometres.",unclassified,[out_of_scope],Active,,0.0,,
+dents or marks on body consistent with age and kilometres.",unclassified,[out_of_scope],Active,nan,0.0,nan,
