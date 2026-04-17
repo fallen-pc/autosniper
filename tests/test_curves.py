@@ -112,6 +112,47 @@ def test_saved_curves_do_not_duplicate_v2_matcher_rows_when_base_exists():
     assert duplicates == []
 
 
+def test_live_supported_curves_have_complete_standard_grid():
+    curves_df = curves.load_curves()
+    supported_df = curve_groups_v2.load_supported_curve_universe_v1()
+    live_base_tags = set(
+        supported_df.loc[
+            supported_df["status"].astype(str) == "live_now",
+            "base_curve_tag",
+        ].astype(str)
+    )
+    saved_tags = set(curves_df["canonical_tag"].astype(str))
+    expected_km_buckets = [30000, 60000, 100000, 150000, 200000]
+
+    assert live_base_tags <= saved_tags
+    assert saved_tags <= set(supported_df["base_curve_tag"].astype(str))
+
+    for curve_tag in sorted(live_base_tags):
+        curve_rows = curves_df[curves_df["canonical_tag"].astype(str) == curve_tag]
+        for anchor_year, year_rows in curve_rows.groupby("anchor_year"):
+            assert sorted(year_rows["km_bucket"].astype(int).tolist()) == expected_km_buckets, (
+                curve_tag,
+                int(anchor_year),
+            )
+
+
+def test_saved_curve_price_bands_are_ordered_and_decline_with_km():
+    curves_df = curves.load_curves()
+
+    assert (curves_df["price_low"] <= curves_df["price_mid"]).all()
+    assert (curves_df["price_mid"] <= curves_df["price_high"]).all()
+
+    for (curve_tag, anchor_year), year_rows in curves_df.sort_values("km_bucket").groupby(
+        ["canonical_tag", "anchor_year"]
+    ):
+        mids = year_rows["price_mid"].astype(float).tolist()
+        assert all(left >= right for left, right in zip(mids, mids[1:])), (
+            curve_tag,
+            int(anchor_year),
+            mids,
+        )
+
+
 def test_mzea12r_saved_curve_resolves_through_v2_base_tag():
     curves_df = curves.load_curves()
 
