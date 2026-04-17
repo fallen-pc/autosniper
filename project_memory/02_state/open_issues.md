@@ -11,7 +11,7 @@
 - Runtime memory enforcement still depends on using `scripts/start_ai_task.ps1` or an equivalent wrapper as the only front door into Codex/OpenClaw work for this repo.
 - The hourly monitor should remain scoped to AI Analysis current viable listings, not the broad `508`-row active Grays working file.
 - Occasional hourly Task Scheduler misses are acceptable when the laptop is off/asleep or the interactive session refuses the run; repeated failures while the machine is awake/logged in should be treated as a Windows scheduler configuration issue, not a scraper-pipeline rewrite.
-- Hourly automation is back on; this means tracked runtime CSVs will continue to churn locally.
+- Hourly automation is back on; live runtime CSVs can still change locally, but hourly snapshot history should now be compacted out of the tracked current snapshot file.
 - Autotrader now has a refreshed storage state and succeeds in visible-browser (`playwright-headful`) smoke tests, but headless mode still returns `403`.
 - The daily pipeline is still not proven healthy end-to-end with the refreshed Autotrader session because the scheduled tasks were paused before a full unattended daily run was completed.
 - The Windows scheduled tasks are still registered as `Interactive only`, so they depend on the user session being logged in.

@@ -22,6 +22,7 @@ from shared.data_loader import dataset_path
 DEFAULT_INPUT = ROOT_DIR / "artifacts" / "training_data" / "sold_cars_repairs_enriched.csv"
 DEFAULT_OUTPUT = ROOT_DIR / "artifacts" / "training_data" / "sold_training_table.csv"
 DEFAULT_SNAPSHOTS = dataset_path("active_snapshots.csv")
+DEFAULT_SNAPSHOT_ARCHIVE_DIR = dataset_path("archives/active_snapshots")
 
 STATE_ABBREVIATIONS = ("ACT", "NSW", "NT", "QLD", "SA", "TAS", "VIC", "WA")
 
@@ -31,6 +32,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--input", type=Path, default=DEFAULT_INPUT, help="Enriched sold CSV path.")
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT, help="Destination training CSV.")
     parser.add_argument("--snapshots-path", type=Path, default=DEFAULT_SNAPSHOTS, help="Active snapshot log path.")
+    parser.add_argument(
+        "--snapshot-archive-dir",
+        type=Path,
+        default=DEFAULT_SNAPSHOT_ARCHIVE_DIR,
+        help="Archived active snapshot directory.",
+    )
     return parser.parse_args()
 
 
@@ -139,12 +146,38 @@ def add_temporal_features(df: pd.DataFrame) -> pd.DataFrame:
     return working
 
 
-def merge_snapshot_features(df: pd.DataFrame, snapshot_path: Path) -> pd.DataFrame:
+def _load_snapshot_rows(snapshot_path: Path, archive_dir: Path | None = None) -> pd.DataFrame:
     snapshot_path = Path(snapshot_path)
-    if not snapshot_path.exists():
-        return df
-    snapshots = pd.read_csv(snapshot_path, parse_dates=["snapshot_ts"], low_memory=False)
+    frames: list[pd.DataFrame] = []
+    if snapshot_path.exists():
+        current_snapshots = pd.read_csv(snapshot_path, low_memory=False)
+        if not current_snapshots.empty:
+            frames.append(current_snapshots)
+    if archive_dir is not None:
+        archive_path = Path(archive_dir)
+        if archive_path.exists():
+            for path in sorted(archive_path.glob("active_snapshots_*.csv")):
+                archived_snapshots = pd.read_csv(path, low_memory=False)
+                if not archived_snapshots.empty:
+                    frames.append(archived_snapshots)
+    if not frames:
+        return pd.DataFrame()
+    snapshots = pd.concat(frames, ignore_index=True, sort=False)
+    if "snapshot_ts" in snapshots.columns:
+        parsed_ts = pd.to_datetime(snapshots["snapshot_ts"], errors="coerce", utc=True)
+        snapshots["snapshot_ts"] = parsed_ts.dt.tz_convert(None)
+    return snapshots
+
+
+def merge_snapshot_features(
+    df: pd.DataFrame,
+    snapshot_path: Path,
+    snapshot_archive_dir: Path | None = DEFAULT_SNAPSHOT_ARCHIVE_DIR,
+) -> pd.DataFrame:
+    snapshots = _load_snapshot_rows(snapshot_path, snapshot_archive_dir)
     if snapshots.empty or "url" not in snapshots.columns:
+        return df
+    if "snapshot_ts" not in snapshots.columns:
         return df
     snapshots = snapshots.sort_values("snapshot_ts").drop_duplicates(subset=["url"], keep="last")
     rename_map = {
@@ -171,7 +204,7 @@ def main() -> None:
     df = prepare_numeric_columns(df)
     df = add_repair_tag_features(df)
     df = add_temporal_features(df)
-    df = merge_snapshot_features(df, args.snapshots_path)
+    df = merge_snapshot_features(df, args.snapshots_path, args.snapshot_archive_dir)
     engine = CompsEngine(df)
     comps_df = engine.run()
     merged = pd.concat([df.reset_index(drop=True), comps_df], axis=1)

@@ -18,10 +18,12 @@ if __package__ in (None, ""):
     import sys
 
     sys.path.append(str(Path(__file__).resolve().parent.parent))
+    from scripts.active_snapshot_retention import compact_active_snapshots
     from scripts.atomic_csv import append_dict_rows_csv_atomic, write_dataframe_csv_atomic
     from shared.data_loader import dataset_path
     from shared.state_machine import ListingObservation, ensure_state_schema, upsert_state_row
 else:  # pragma: no cover
+    from scripts.active_snapshot_retention import compact_active_snapshots
     from scripts.atomic_csv import append_dict_rows_csv_atomic, write_dataframe_csv_atomic
     from shared.data_loader import dataset_path
     from shared.state_machine import ListingObservation, ensure_state_schema, upsert_state_row
@@ -730,6 +732,16 @@ async def update_bids(
         # Save updated DataFrame
         persist_dataframe(df, "Final save")
         persist_state_dataframe(state_df, "Final state save")
+        active_urls = df.loc[
+            df["status"].fillna("").astype(str).str.strip().str.lower().eq("active"),
+            "url",
+        ].dropna()
+        retention_result = compact_active_snapshots(active_urls=active_urls.astype(str).tolist())
+        print(
+            "active_snapshots.csv compacted "
+            f"({retention_result.current_rows} live latest rows, "
+            f"{retention_result.archived_rows} archived history rows)."
+        )
         touched_count = len(urls) if input_links else len(df)
         print(f"active_vehicle_details.csv refreshed ({touched_count} listings touched, {len(df)} total records).")
 

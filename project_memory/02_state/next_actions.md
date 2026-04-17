@@ -16,3 +16,4 @@
 14. Only after a successful daily smoke test should unattended daily automation be re-enabled.
 15. Before retrying daily, consider adding a safer daily smoke mode or a resume/limit path so the test does not need to churn through the full Grays update set in one fragile run.
 16. Before committing future CSV snapshots, run `scripts/readiness_smoke.py` and `scripts/governance_checks.py check`, and sanity-check broad active counts against `active_vehicle_links.csv` and `vehicle_state.csv`.
+17. Treat `active_snapshots.csv` as current live monitoring state only; if hourly snapshot history is needed later, read it from the active snapshot archive instead of restoring old hourly rows into the live file.

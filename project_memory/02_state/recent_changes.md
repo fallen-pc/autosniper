@@ -1,5 +1,7 @@
 # Recent Changes
 
+- Added active snapshot retention: hourly `active_snapshots.csv` now compacts to the latest row per still-active listing, while older rows and finished-listing rows are archived under `CSV_data/archives/active_snapshots/` for later analysis and end-of-day commits.
+- Updated sold-training preparation so archived active snapshots can still be read when generating later analysis/training datasets.
 - Repaired and committed the sandbox CSV data snapshot as `aed96d3` (`Update sandbox data snapshot`).
 - Diagnosed the `active_vehicle_details.csv` collapse to `2` rows: `vehicle_state.csv` was stale and only overlapped the current `479` active-link/static/raw/normalised URLs on `2` URLs.
 - Repaired `vehicle_state.csv` by seeding `477` missing active-link URLs as `active` and demoting `326` stale old active rows to `static_parsed`, then rebuilt master/restricted datasets with `scripts/update_master.py`.
