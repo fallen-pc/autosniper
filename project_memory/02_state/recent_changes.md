@@ -1,5 +1,10 @@
 # Recent Changes
 
+- Repaired and committed the sandbox CSV data snapshot as `aed96d3` (`Update sandbox data snapshot`).
+- Diagnosed the `active_vehicle_details.csv` collapse to `2` rows: `vehicle_state.csv` was stale and only overlapped the current `479` active-link/static/raw/normalised URLs on `2` URLs.
+- Repaired `vehicle_state.csv` by seeding `477` missing active-link URLs as `active` and demoting `326` stale old active rows to `static_parsed`, then rebuilt master/restricted datasets with `scripts/update_master.py`.
+- Final repaired counts: `active_vehicle_links.csv=479`, `vehicle_state.csv active=479`, `active_vehicle_details.csv=462`, `active_vehicle_details_restricted.csv=5`; the `17` link/detail gap is expected WOVR filtering.
+- Verified the repaired snapshot with `scripts/readiness_smoke.py` and `scripts/governance_checks.py check`; both passed before the data commit.
 - Added a permanent curve-grid regression guard: every `live_now` supported base curve must have saved rows, only supported base tags may carry saved rows, every anchor must use the standard `30000/60000/100000/150000/200000` km buckets, price bands must stay ordered, and `price_mid` must decline as kilometres increase.
 - Locked in `toyota_camry_asv70r_sedan_auto_petrol` as the V2 base curve for Camry Ascent ASV70R sedan/auto/petrol using a `2018/2020/2022` anchor grid from the reviewed private Carsales slice plus `68` same-lane Autotrader rows; the single Grays sold row was treated as non-contributory valuation evidence.
 - Added and locked in `toyota_camry_ascent-sport_axvh71r_sedan_auto_hybrid` as a separate V2 base curve for Camry Ascent Sport Hybrid AXVH71R sedan/auto/hybrid using a `2018/2019/2020` anchor set from reviewed private-market evidence; this was intentionally kept separate from the plain Ascent Hybrid lane.

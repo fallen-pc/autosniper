@@ -15,3 +15,4 @@
 13. When running that daily smoke test, use the refreshed storage state and keep the visible-browser Autotrader path in mind.
 14. Only after a successful daily smoke test should unattended daily automation be re-enabled.
 15. Before retrying daily, consider adding a safer daily smoke mode or a resume/limit path so the test does not need to churn through the full Grays update set in one fragile run.
+16. Before committing future CSV snapshots, run `scripts/readiness_smoke.py` and `scripts/governance_checks.py check`, and sanity-check broad active counts against `active_vehicle_links.csv` and `vehicle_state.csv`.
