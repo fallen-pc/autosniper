@@ -18,3 +18,4 @@
 - The latest manual daily smoke test did not reach Autotrader, master update, governance, or health-report completion; it was interrupted during Grays bid/status updates.
 - Do not re-enable daily automation until the daily run either completes end-to-end or is split into a safer/resumable smoke-test path.
 - If `active_vehicle_details.csv` collapses again, first compare URL overlap between `active_vehicle_links.csv`, `vehicle_static_details.csv`, and `vehicle_state.csv`; do not assume committing CSV churn fixes the issue.
+- The project is currently a healthy sandbox, not a finished production buying system: daily end-to-end proof, Autotrader headless/session stability, Windows scheduler reliability, and profit/valuation correctness still need focused verification before trusting real-money decisions.
