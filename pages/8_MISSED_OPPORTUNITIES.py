@@ -17,20 +17,9 @@ from shared.curves import (
 from shared.data_loader import dataset_path, ensure_datasets_available
 from shared.global_filters import apply_global_sidebar_filters, render_global_sidebar_filters
 from shared.parts_cost import estimate_parts_cost
-from shared.repair_pricing import assess_repairs, apply_repairs_to_max_bid
 from shared.repair_features import build_repair_features, serialize_tags
 from shared.styling import clean_html, display_banner, inject_global_styles, page_intro
-from scripts.ai_listing_valuation import (
-    MIN_NET_PROFIT_ABSOLUTE,
-    MIN_NET_PROFIT_RATIO,
-    _calculate_confidence,
-    _calculate_downside_percent,
-    _detect_risk_flags,
-    _estimate_costs as estimate_costs,
-    _round_to_10,
-    _solve_max_bid as solve_max_bid,
-    apply_platform_risk_adjustments,
-)
+from shared.missed_opportunities import compute_decision_metrics
 
 
 st.set_page_config(page_title="MISSED OPPORTUNITIES", layout="wide")
@@ -200,81 +189,6 @@ def interpolate_curve_value(
         return lower_price
     ratio = (year - lower_year) / float(upper_year - lower_year)
     return lower_price + ratio * (upper_price - lower_price)
-
-
-def compute_decision_metrics(
-    row: pd.Series,
-    resale_mid: float | None,
-    *,
-    include_repairs: bool,
-    repair_cost_estimate: float | None,
-) -> dict[str, object]:
-    if resale_mid is None or resale_mid <= 0:
-        return {
-            "max_bid": None,
-            "projected_profit_at_sold": None,
-            "profit_margin_pct": None,
-            "total_costs": None,
-            "platform_fees": None,
-            "transport": None,
-            "admin_costs": None,
-            "risk_buffer": None,
-        }
-
-    listing_data = row.to_dict()
-    risk_flags = _detect_risk_flags(listing_data)
-    downside_pct = _calculate_downside_percent(risk_flags)
-    confidence_val = _calculate_confidence(listing_data, risk_flags)
-    notes: list[str] = []
-    downside_pct, confidence_val, risk_flags, notes = apply_platform_risk_adjustments(
-        listing_data, downside_pct, confidence_val, risk_flags, notes
-    )
-
-    resale_low_val = _round_to_10(resale_mid * (1.0 - downside_pct))
-    min_net_profit = max(
-        MIN_NET_PROFIT_ABSOLUTE,
-        MIN_NET_PROFIT_RATIO * (resale_low_val or resale_mid),
-    )
-    max_bid_val = solve_max_bid(resale_low_val, min_net_profit, listing_data)
-
-    repair_assessment = assess_repairs(listing_data.get("general_condition", ""))
-    if max_bid_val is not None:
-        adjusted_bid, _ = apply_repairs_to_max_bid(
-            int(round(max_bid_val)),
-            repair_assessment,
-        )
-        max_bid_val = float(adjusted_bid)
-    if repair_assessment.hard_avoid:
-        max_bid_val = 0.0
-
-    sold_price = _to_float(row.get("price_numeric"))
-    platform_fees = transport = admin_costs = total_costs = None
-    projected_profit = None
-    profit_margin = None
-    risk_buffer = float(repair_assessment.risk_buffer or 0)
-    if sold_price is not None:
-        costs_map = estimate_costs(float(sold_price), listing_data)
-        platform_fees = float(costs_map.get("fees_estimate", 0.0))
-        transport = float(costs_map.get("transport_estimate", 0.0))
-        admin_costs = float(costs_map.get("rego_estimate", 0.0)) + float(
-            costs_map.get("prep_estimate", 0.0)
-        )
-        repair_cost_value = float(repair_cost_estimate or 0.0) if include_repairs else 0.0
-        total_costs = platform_fees + transport + admin_costs + repair_cost_value + risk_buffer
-        projected_profit = resale_mid - sold_price - total_costs
-        if resale_mid:
-            profit_margin = (projected_profit / resale_mid) * 100
-
-    return {
-        "max_bid": max_bid_val,
-        "projected_profit_at_sold": projected_profit,
-        "profit_margin_pct": profit_margin,
-        "total_costs": total_costs,
-        "platform_fees": platform_fees,
-        "transport": transport,
-        "admin_costs": admin_costs,
-        "risk_buffer": risk_buffer,
-    }
 
 
 def compute_underbid_pct(sold_price: object, max_bid: object) -> float | None:
@@ -668,22 +582,16 @@ for _, row in sold_df.iterrows():
         spec_reason = "NOT_COVERED"
 
     sold_price = row.get("price_numeric")
-    repair_cost = row.get("repair_cost_estimate") if include_repairs else None
     delta = None
     delta_pct = None
     if curve_estimate is not None and sold_price is not None:
         delta = curve_estimate - sold_price
         if curve_estimate > 0:
             delta_pct = (delta / curve_estimate) * 100
-    net_delta = None
-    if delta is not None:
-        net_delta = delta - (repair_cost or 0)
-
     decision = compute_decision_metrics(
         row,
         curve_estimate,
         include_repairs=include_repairs,
-        repair_cost_estimate=repair_cost,
     )
     max_bid = decision.get("max_bid")
     projected_profit_at_sold = decision.get("projected_profit_at_sold")
@@ -693,6 +601,10 @@ for _, row in sold_df.iterrows():
     transport_costs = decision.get("transport")
     admin_costs = decision.get("admin_costs")
     risk_buffer = decision.get("risk_buffer")
+    repair_cost = decision.get("repair_cost")
+    net_delta = None
+    if delta is not None:
+        net_delta = delta - (repair_cost or 0)
     underbid_pct = compute_underbid_pct(sold_price, max_bid)
 
     missed = False
