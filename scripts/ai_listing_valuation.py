@@ -1,4 +1,5 @@
 import json
+import os
 import re
 from datetime import datetime, timezone
 from pathlib import Path
@@ -66,7 +67,11 @@ REQUIRED_COLUMNS = [
 ]
 
 # Default cost assumptions (AUD)
-DEFAULT_TRANSPORT = 400.0
+DEFAULT_TRANSPORT = 200.0
+OPERATING_STATE = os.getenv("AUTOSNIPER_OPERATING_STATE", "VIC").strip().upper() or "VIC"
+INTERSTATE_BUYING_ALLOWED = os.getenv(
+    "AUTOSNIPER_ALLOW_INTERSTATE_BUYING", ""
+).strip().lower() in {"1", "true", "yes", "y"}
 DEFAULT_PREP = 300.0
 DETAILING_HATCH_SEDAN = 99.0
 DETAILING_SMALL_SUV_WAGON = 115.0
@@ -543,15 +548,39 @@ def _is_unregistered(listing: Mapping[str, Any]) -> bool:
 
 
 def _estimate_transport_cost(location: Any) -> float:
-    if not location or (isinstance(location, float) and pd.isna(location)):
-        return DEFAULT_TRANSPORT
-    text = str(location).upper()
-    cost = DEFAULT_TRANSPORT
-    if any(state in text for state in ("WA", "NT")):
-        cost += 300
-    elif any(state in text for state in ("SA", "QLD", "TAS")):
-        cost += 150
-    return cost
+    return DEFAULT_TRANSPORT
+
+
+def _state_from_text(value: Any) -> str | None:
+    if value is None or (isinstance(value, float) and pd.isna(value)):
+        return None
+    text = re.sub(r"[^A-Z]", " ", str(value).upper())
+    tokens = {token for token in text.split() if token}
+    for state in ("NSW", "VIC", "QLD", "SA", "WA", "TAS", "NT", "ACT"):
+        if state in tokens:
+            return state
+    return None
+
+
+def _listing_location_state(listing: Mapping[str, Any]) -> str | None:
+    for field in (
+        "location_state",
+        "state",
+        "yard_state",
+        "auction_state",
+        "location",
+        "yard",
+        "rego_state",
+    ):
+        state = _state_from_text(listing.get(field))
+        if state:
+            return state
+    return None
+
+
+def _is_interstate_listing(listing: Mapping[str, Any]) -> bool:
+    state = _listing_location_state(listing)
+    return bool(state and state != OPERATING_STATE)
 
 
 def _is_grays_listing(listing: Mapping[str, Any]) -> bool:
@@ -621,6 +650,8 @@ def _discounted_bid_cap(
 
 def _detect_risk_flags(listing: Mapping[str, Any]) -> list[str]:
     flags: list[str] = []
+    if _is_interstate_listing(listing) and not INTERSTATE_BUYING_ALLOWED:
+        flags.append("INTERSTATE")
     odometer_value = _parse_odometer(
         listing.get("odometer_numeric") or listing.get("odometer_reading")
     )
@@ -1452,6 +1483,8 @@ def run_curve_listing_analysis(
         recommended_max_bid_val = float(adjusted_bid)
     if repair_assessment.hard_avoid:
         recommended_max_bid_val = 0.0
+    if "INTERSTATE" in risk_flags and not INTERSTATE_BUYING_ALLOWED:
+        recommended_max_bid_val = 0.0
     repair_cost_val = 0.0 if repair_assessment.hard_avoid else float(repair_assessment.total_cost or 0.0)
 
     base_max_bid_val = recommended_max_bid_val
@@ -1557,6 +1590,8 @@ def run_curve_listing_analysis(
         profit_margin = f"{(expected_profit_val / resale_mid_val) * 100:.1f}%"
 
     def _derive_verdict() -> str:
+        if "INTERSTATE" in risk_flags and not INTERSTATE_BUYING_ALLOWED:
+            return "Avoid"
         if resale_low_val is None:
             return "Not Covered"
         if net_profit_worst_val is None or net_profit_worst_val <= 0:

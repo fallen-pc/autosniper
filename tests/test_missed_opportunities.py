@@ -29,8 +29,8 @@ def test_missed_decision_metrics_apply_ai_cap_and_repair_cost(monkeypatch) -> No
             "price_numeric": 10_000,
             "price": "$10,000",
             "body_type": "Hatch",
-            "location": "Sydney NSW",
-            "rego_state": "NSW",
+            "location": "Melbourne VIC",
+            "rego_state": "VIC",
             "general_condition": "Cosmetic damage. Please refer to photos.",
         }
     )
@@ -48,7 +48,7 @@ def test_missed_decision_metrics_apply_ai_cap_and_repair_cost(monkeypatch) -> No
     assert result["max_bid"] == 11_780
     assert result["repair_cost"] == 700
     assert result["risk_buffer"] == 300
-    assert result["projected_profit_at_sold"] == 6201
+    assert result["projected_profit_at_sold"] == 6401
 
 
 def test_missed_decision_metrics_can_run_no_repair_hypothesis(monkeypatch) -> None:
@@ -58,8 +58,8 @@ def test_missed_decision_metrics_can_run_no_repair_hypothesis(monkeypatch) -> No
             "price_numeric": 10_000,
             "price": "$10,000",
             "body_type": "Hatch",
-            "location": "Sydney NSW",
-            "rego_state": "NSW",
+            "location": "Melbourne VIC",
+            "rego_state": "VIC",
             "general_condition": "Cosmetic damage. Please refer to photos.",
         }
     )
@@ -76,4 +76,29 @@ def test_missed_decision_metrics_can_run_no_repair_hypothesis(monkeypatch) -> No
     assert result["max_bid"] == 12_780
     assert result["repair_cost"] == 0
     assert result["risk_buffer"] == 0
-    assert result["projected_profit_at_sold"] == 7201
+    assert result["projected_profit_at_sold"] == 7401
+
+
+def test_missed_decision_metrics_zeroes_interstate_max_bid(monkeypatch) -> None:
+    row = pd.Series(
+        {
+            "url": "test://missed-interstate",
+            "price_numeric": 10_000,
+            "price": "$10,000",
+            "body_type": "Hatch",
+            "location": "NSW",
+            "rego_state": "NSW",
+            "general_condition": "",
+        }
+    )
+
+    monkeypatch.setattr(missed_opportunities, "_solve_max_bid", lambda resale_low, min_profit, listing: 20_000)
+    monkeypatch.setattr(missed_opportunities, "assess_repairs", lambda condition: _repair_assessment(total_cost=0, risk_buffer=0))
+
+    result = missed_opportunities.compute_decision_metrics(
+        row,
+        20_000,
+        include_repairs=True,
+    )
+
+    assert result["max_bid"] == 0.0

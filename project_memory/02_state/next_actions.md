@@ -1,6 +1,6 @@
 # Next Actions
 
-1. Review the new valuation calibration output before changing margin/buffer constants: the first report shows no overbid-risk rows but many profitable rows priced out by current max-bid rules.
+1. Review the VIC-local valuation calibration output before changing margin/buffer constants: after correcting local transport to `$200` and excluding interstate buys, the report shows no local overbid-risk rows but still many local profitable rows priced out by current max-bid rules.
 2. Keep Toyota hatch evidence alignment stable across the Autotrader recent-market lane and the repaired sold/Grays lane, without silently turning that work into repricing.
 3. Keep `project_memory/02_state/` current after each meaningful work slice.
 4. Use the launcher bootstrap contract for every fresh AI task so new sessions start from repo memory instead of chat recall.

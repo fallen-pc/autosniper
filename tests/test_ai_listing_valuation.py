@@ -79,8 +79,8 @@ def test_curve_analysis_subtracts_repair_cost_from_displayed_profit(monkeypatch)
             "body_type": "Hatch",
             "transmission": "Auto",
             "fuel_type": "Petrol",
-            "location": "Sydney NSW",
-            "rego_state": "NSW",
+            "location": "Melbourne VIC",
+            "rego_state": "VIC",
             "general_condition": "Cosmetic test damage.",
         }
     )
@@ -133,8 +133,8 @@ def test_curve_analysis_uses_current_bid_profit_when_no_edge(monkeypatch) -> Non
             "body_type": "Hatch",
             "transmission": "Auto",
             "fuel_type": "Petrol",
-            "location": "Sydney NSW",
-            "rego_state": "NSW",
+            "location": "Melbourne VIC",
+            "rego_state": "VIC",
             "general_condition": "",
         }
     )
@@ -160,3 +160,56 @@ def test_curve_analysis_uses_current_bid_profit_when_no_edge(monkeypatch) -> Non
     assert result["no_edge"] is True
     assert net_profit_mid == round(current_bid_profit)
     assert net_profit_mid != round(impossible_zero_bid_profit)
+
+
+def test_curve_analysis_avoids_interstate_listings(monkeypatch) -> None:
+    repair_assessment = RepairAssessment(
+        hard_avoid=False,
+        pills=[],
+        cosmetic_panels=0,
+        glass_cost=0,
+        replacement_cost=0,
+        risk_buffer=0,
+        base_cost=0,
+        severity_level="minor",
+        severity_multiplier=1.0,
+        total_cost=0,
+        reasons=[],
+    )
+    listing = pd.Series(
+        {
+            "url": "test://interstate",
+            "price": "$5,000",
+            "make": "Toyota",
+            "model": "Corolla",
+            "variant": "Ascent",
+            "body_type": "Hatch",
+            "transmission": "Auto",
+            "fuel_type": "Petrol",
+            "location": "NSW",
+            "rego_state": "NSW",
+            "general_condition": "",
+        }
+    )
+
+    monkeypatch.setattr(ai_listing_valuation, "load_cached_results", lambda: pd.DataFrame(columns=ai_listing_valuation.REQUIRED_COLUMNS))
+    monkeypatch.setattr(ai_listing_valuation, "_save_result_row", lambda row: None)
+    monkeypatch.setattr(ai_listing_valuation, "assess_repairs", lambda condition: repair_assessment)
+
+    result = ai_listing_valuation.run_curve_listing_analysis(
+        listing,
+        resale_mid=20_000,
+        comps_count=5,
+        analysis_context="active",
+        force_refresh=True,
+    )
+
+    assert result["recommended_max_bid"] == "$0"
+    assert result["computed_verdict"] == "Avoid"
+    assert "INTERSTATE" in result["risk_flags"]
+
+
+def test_transport_default_matches_local_operating_cost() -> None:
+    assert ai_listing_valuation.DEFAULT_TRANSPORT == 200.0
+    assert ai_listing_valuation.OPERATING_STATE == "VIC"
+    assert ai_listing_valuation._estimate_transport_cost("Melbourne VIC") == 200.0

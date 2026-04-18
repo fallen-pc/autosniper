@@ -122,7 +122,7 @@ summary = summarize_calibration(detail_df)
 summary_cols = st.columns(5)
 summary_cards = [
     ("Rows checked", f"{summary['total_rows']:,}", "Restricted sold rows"),
-    ("Curve covered", f"{summary['covered_rows']:,}", "Rows with usable curve"),
+    ("Local covered", f"{summary['covered_rows']:,}", "In-state rows with usable curve"),
     ("Profitable wins", f"{summary['profitable_within_bid_rows']:,}", "Inside current max bid"),
     ("Overbid risk", f"{summary['overbid_risk_rows']:,}", "Would win but lose money"),
     ("Priced out", f"{summary['priced_out_profitable_rows']:,}", "Profitable but max bid too low"),

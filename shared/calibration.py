@@ -8,6 +8,11 @@ from typing import Any
 
 import pandas as pd
 
+from scripts.ai_listing_valuation import (
+    INTERSTATE_BUYING_ALLOWED,
+    OPERATING_STATE,
+    _is_interstate_listing,
+)
 from shared.comps_engine import parse_currency, parse_numeric
 from shared.curves import (
     interpolate_base_by_year,
@@ -136,6 +141,13 @@ def classify_calibration_row(row: pd.Series) -> str:
     spec_reason = _safe_text(row.get("spec_reason"), "")
     if spec_reason:
         return "not covered"
+    out_of_state = str(row.get("out_of_operating_state") or "").strip().lower() in {
+        "true",
+        "1",
+        "yes",
+    }
+    if out_of_state:
+        return "out of operating state"
 
     sold_price = _to_float(row.get("sold_price"))
     max_bid = _to_float(row.get("max_bid"))
@@ -241,6 +253,7 @@ def build_calibration_detail(
             curve_estimate,
             include_repairs=include_repairs,
         )
+        out_of_operating_state = _is_interstate_listing(row.to_dict()) and not INTERSTATE_BUYING_ALLOWED
         max_bid = decision.get("max_bid")
         projected_profit = decision.get("projected_profit_at_sold")
         delta = curve_estimate - sold_price if curve_estimate is not None and sold_price is not None else None
@@ -257,6 +270,8 @@ def build_calibration_detail(
             "model": row.get("model"),
             "variant": row.get("variant"),
             "canonical_tag": curve_key,
+            "operating_state": OPERATING_STATE,
+            "out_of_operating_state": out_of_operating_state,
             "spec_reason": spec_reason,
             "sold_price": sold_price,
             "curve_estimate": curve_estimate,
@@ -303,26 +318,29 @@ def summarize_calibration(detail_df: pd.DataFrame) -> dict[str, object]:
             "reason_counts": {},
         }
 
-    covered = detail_df[detail_df["spec_reason"].fillna("").astype(str).str.strip().eq("")]
-    profitable_within_bid = detail_df[
-        (detail_df["would_win"])
-        & (detail_df["projected_profit_at_sold"].fillna(0) > 0)
+    out_of_state = (
+        detail_df["out_of_operating_state"].fillna(False).astype(bool)
+        if "out_of_operating_state" in detail_df.columns
+        else pd.Series(False, index=detail_df.index)
+    )
+    covered = detail_df[
+        detail_df["spec_reason"].fillna("").astype(str).str.strip().eq("")
     ]
-    overbid_risk = detail_df[
-        (detail_df["would_win"])
-        & (detail_df["projected_profit_at_sold"].fillna(0) <= 0)
-    ]
-    priced_out_profitable = detail_df[
-        (~detail_df["would_win"])
-        & (detail_df["projected_profit_at_sold"].fillna(0) > 0)
-    ]
+    operating_scope = covered[~out_of_state.loc[covered.index]]
+    local_rows = ~out_of_state
+    would_win = detail_df["would_win"]
+    profitable = detail_df["projected_profit_at_sold"].fillna(0) > 0
+    profitable_within_bid = detail_df[local_rows & would_win & profitable]
+    overbid_risk = detail_df[local_rows & would_win & ~profitable]
+    priced_out_profitable = detail_df[local_rows & ~would_win & profitable]
     reason_counts = detail_df["calibration_reason"].fillna("unclassified").value_counts().to_dict()
     profit_series = profitable_within_bid["projected_profit_at_sold"].dropna()
     return {
         "total_rows": int(len(detail_df)),
-        "covered_rows": int(len(covered)),
+        "covered_rows": int(len(operating_scope)),
         "not_covered_rows": int(len(detail_df) - len(covered)),
-        "would_win_rows": int(detail_df["would_win"].sum()),
+        "out_of_operating_state_rows": int(out_of_state.sum()),
+        "would_win_rows": int((detail_df["would_win"] & ~out_of_state).sum()),
         "profitable_within_bid_rows": int(len(profitable_within_bid)),
         "overbid_risk_rows": int(len(overbid_risk)),
         "priced_out_profitable_rows": int(len(priced_out_profitable)),
@@ -341,7 +359,16 @@ def render_summary_markdown(summary: dict[str, object], detail_df: pd.DataFrame)
     avg_profit_text = "N/A" if avg_profit is None else f"${float(avg_profit):,.0f}"
     total_profit = float(summary.get("total_profitable_within_bid") or 0.0)
 
-    top_rows = detail_df.sort_values("projected_profit_at_sold", ascending=False, na_position="last").head(10)
+    out_of_state = (
+        detail_df["out_of_operating_state"].fillna(False).astype(bool)
+        if "out_of_operating_state" in detail_df.columns
+        else pd.Series(False, index=detail_df.index)
+    )
+    top_rows = (
+        detail_df[~out_of_state]
+        .sort_values("projected_profit_at_sold", ascending=False, na_position="last")
+        .head(10)
+    )
     top_lines = []
     for _, row in top_rows.iterrows():
         label = " ".join(
@@ -369,6 +396,7 @@ def render_summary_markdown(summary: dict[str, object], detail_df: pd.DataFrame)
             f"- Total sold rows checked: {summary.get('total_rows')}",
             f"- Covered by curves: {summary.get('covered_rows')}",
             f"- Not covered: {summary.get('not_covered_rows')}",
+            f"- Out of operating state: {summary.get('out_of_operating_state_rows', 0)}",
             f"- Would have been inside max bid: {summary.get('would_win_rows')}",
             f"- Profitable within max bid: {summary.get('profitable_within_bid_rows')}",
             f"- Overbid risk rows: {summary.get('overbid_risk_rows')}",
@@ -380,7 +408,7 @@ def render_summary_markdown(summary: dict[str, object], detail_df: pd.DataFrame)
             "",
             reason_lines,
             "",
-            "## Top Projected Profit Rows",
+            "## Top Local Projected Profit Rows",
             "",
             top_text,
             "",

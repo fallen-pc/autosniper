@@ -9,12 +9,14 @@ import pandas as pd
 from scripts.ai_listing_valuation import (
     MIN_NET_PROFIT_ABSOLUTE,
     MIN_NET_PROFIT_RATIO,
+    INTERSTATE_BUYING_ALLOWED,
     _calculate_confidence,
     _calculate_downside_percent,
     _detect_risk_flags,
     _discounted_bid_cap,
     _estimate_costs,
     _expected_auction_price,
+    _is_interstate_listing,
     _round_to_10,
     _solve_max_bid,
     apply_platform_risk_adjustments,
@@ -109,6 +111,8 @@ def compute_decision_metrics(
         )
         max_bid_val = float(adjusted_bid)
     if include_repairs and repair_assessment.hard_avoid:
+        max_bid_val = 0.0
+    if _is_interstate_listing(listing_data) and not INTERSTATE_BUYING_ALLOWED:
         max_bid_val = 0.0
 
     sold_price = _to_float(listing_data.get("price_numeric"))
