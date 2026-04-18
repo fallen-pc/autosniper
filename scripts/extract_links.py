@@ -163,15 +163,16 @@ def _fetch_via_proxy(session: requests.Session, url: str) -> tuple[str | None, b
     return None, False
 
 
-def extract_all_vehicle_links() -> None:
+def extract_all_vehicle_links(max_pages: int | None = None) -> None:
     session = requests.Session()
     session.headers.update(HEADERS)
 
     all_links: set[str] = set()
     page = 1
     empty_streak = 0
+    page_limit = max_pages if max_pages is not None and max_pages > 0 else MAX_PAGES
 
-    while page <= MAX_PAGES:
+    while page <= page_limit:
         url = f"{BASE_URL}?tab=items&isdesktop=1&page={page}"
         print(f"Fetching: {url}")
         content, used_proxy = fetch_page(session, url)

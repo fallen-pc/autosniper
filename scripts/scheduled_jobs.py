@@ -41,6 +41,7 @@ METRICS_PATH = ROOT_DIR / "status" / "metrics.json"
 LOCK_PATH = ROOT_DIR / "logs" / "scrape.lock"
 LOCK_TTLS = {
     "daily": 8,
+    "daily-smoke": 2,
     "hourly-monitor": 2,
     "vic-12h": 4,
     "vic-hourly": 2,
@@ -267,28 +268,82 @@ def run_vic_refresh_hourly() -> None:
     update_master.update_master_database()
 
 
-def _run_autotrader_scrape() -> None:
-    script_path = ROOT_DIR / "scripts" / "run_autotrader_scrape.ps1"
-    if not script_path.exists():
-        raise FileNotFoundError(f"Autotrader scrape script not found: {script_path}")
-    subprocess.run(
-        [
-            "powershell",
-            "-ExecutionPolicy",
-            "Bypass",
-            "-File",
-            str(script_path),
-        ],
-        check=True,
-    )
+def _run_autotrader_scrape(max_pages: int | None = None) -> None:
+    storage_state = ROOT_DIR / "autotrader_isolated" / "output" / "storage_state.json"
+    cookie_file = ROOT_DIR / "autotrader_isolated" / "output" / "autotrader_cookie.txt"
+    if not storage_state.exists():
+        raise FileNotFoundError(f"Missing Autotrader storage state: {storage_state}")
+    if not cookie_file.exists():
+        raise FileNotFoundError(f"Missing Autotrader cookie file: {cookie_file}")
+
+    command = [
+        sys.executable,
+        "autotrader_isolated/scrape_first_page.py",
+        "--all-pages",
+        "--playwright-headful",
+        "--playwright-browser",
+        "chrome",
+        "--storage-state",
+        str(storage_state),
+        "--cookie-file",
+        str(cookie_file),
+        "--page-retries",
+        "3",
+        "--page-retry-delay",
+        "10",
+    ]
+    if max_pages is not None and max_pages > 0:
+        command.extend(["--max-pages", str(max_pages)])
+    subprocess.run(command, check=True)
     print("Autotrader scrape completed.")
+
+
+def run_daily_smoke() -> None:
+    """Run a limited end-to-end pipeline proof without doing a full daily scrape."""
+    detail_limit = max(1, int(os.getenv("AUTOSNIPER_DAILY_SMOKE_DETAIL_LIMIT", "5")))
+    autotrader_pages = max(1, int(os.getenv("AUTOSNIPER_DAILY_SMOKE_AUTOTRADER_PAGES", "1")))
+
+    print(
+        "Daily smoke limits: "
+        f"detail_limit={detail_limit}, autotrader_pages={autotrader_pages}. "
+        "Grays link extraction runs full so the active queue is not narrowed."
+    )
+    extract_links.extract_all_vehicle_links()
+    extract_vehicle_details.main(
+        batch_size=detail_limit,
+        checkpoint_every=detail_limit,
+    )
+    before_df = load_ai_analysis_active_df()
+    urls = active_urls_from_frame(before_df)
+    _run_update_bids(urls, skip_master=True)
+    _run_autotrader_scrape(max_pages=autotrader_pages)
+    update_master.update_master_database()
+    after_df = load_ai_analysis_active_df()
+    price_changed_urls = diff_price_changed_listing_urls(before_df, after_df)
+    summary = revalue_active_listings(
+        target_urls=price_changed_urls or set(urls),
+        stale_minutes=60,
+        force_refresh=True,
+    )
+    report_bundle = write_governance_report_bundle(GOVERNANCE_REPORT_DIR)
+    compute_outcome_metrics()
+    coverage_summary = report_bundle["coverage_summary"]
+    monotonicity_summary = report_bundle["monotonicity_summary"]
+    print(
+        "Daily smoke complete: "
+        f"{len(urls):,} monitored URLs, "
+        f"{len(price_changed_urls):,} price-changed URLs, "
+        f"{int(summary.get('evaluated', 0)):,} listings revalued, "
+        f"coverage missing={coverage_summary['missing_tags']}, "
+        f"monotonicity errors={monotonicity_summary['errors']}."
+    )
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run scheduled scraping jobs. This is the primary production runner.")
     parser.add_argument(
         "--job",
-        choices=("daily", "hourly-monitor", "vic-12h", "vic-hourly"),
+        choices=("daily", "daily-smoke", "hourly-monitor", "vic-12h", "vic-hourly"),
         required=True,
         help="Job name to run.",
     )
@@ -308,6 +363,8 @@ def main() -> None:
     try:
         if args.job == "daily":
             run_daily_pipeline()
+        elif args.job == "daily-smoke":
+            run_daily_smoke()
         elif args.job == "hourly-monitor":
             run_hourly_monitor()
         elif args.job == "vic-12h":

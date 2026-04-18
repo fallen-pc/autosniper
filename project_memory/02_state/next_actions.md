@@ -17,4 +17,4 @@
 15. Before retrying daily, consider adding a safer daily smoke mode or a resume/limit path so the test does not need to churn through the full Grays update set in one fragile run.
 16. Before committing future CSV snapshots, run `scripts/readiness_smoke.py` and `scripts/governance_checks.py check`, and sanity-check broad active counts against `active_vehicle_links.csv` and `vehicle_state.csv`.
 17. Treat `active_snapshots.csv` as current live monitoring state only; hourly URL-scoped runs should reflect the monitored AI Analysis scope, and old history should be read from the archive instead of restored into the live file.
-18. Next milestone is controlled daily-pipeline proof: keep core logic stable, commit end-of-day runtime snapshots, then run a daily smoke path that reaches Grays, Autotrader, master update, governance, and health reporting.
+18. Next milestone is controlled daily-pipeline proof: rerun `scripts/scheduled_jobs.py --job daily-smoke` after the outcome-metrics fix, confirm it reaches Grays, Autotrader, master update, governance, outcome metrics, and health reporting, then only attempt the full daily run after the smoke path is clean.

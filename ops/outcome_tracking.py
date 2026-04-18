@@ -170,8 +170,13 @@ def _load_predicted_rows() -> pd.DataFrame:
         verdict_df = _ensure_columns(verdict_df, ["url", "verdict"])
         verdict_df["verdict"] = verdict_df["verdict"].apply(_normalise_verdict)
 
+    verdict_merge = (
+        verdict_df[["url", "verdict"]]
+        if not verdict_df.empty
+        else pd.DataFrame(columns=["url", "verdict"])
+    )
     df = df.merge(
-        verdict_df[["url", "verdict"]] if not verdict_df.empty else pd.DataFrame(),
+        verdict_merge,
         on="url",
         how="left",
         suffixes=("", "_verdict"),
