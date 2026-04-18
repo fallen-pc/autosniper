@@ -18,6 +18,7 @@ from shared.ops_utils import (
     time_bucket,
 )
 from shared.styling import clean_html, display_banner, inject_global_styles, page_intro, section_heading
+from shared.valuation_display import is_safe_opportunity_row
 
 
 st.set_page_config(page_title="Radar", layout="wide")
@@ -34,7 +35,7 @@ def _safe_text(value: object) -> str:
 
 
 def _build_profit_value(row: pd.Series) -> float | None:
-    for key in ("expected_profit", "net_profit_mid", "net_profit_worst"):
+    for key in ("net_profit_worst", "net_profit_mid", "expected_profit"):
         value = parse_currency(row.get(key))
         if value is not None:
             return value
@@ -146,6 +147,7 @@ radar_df["recommended_max_bid_value"] = radar_df.get("recommended_max_bid", pd.S
 radar_df["resale_mid_value"] = radar_df.get("resale_mid", pd.Series(dtype=float)).apply(parse_currency)
 radar_df["current_bid_value"] = radar_df.get("price", pd.Series(dtype=float)).apply(parse_currency)
 radar_df["profit_value"] = radar_df.apply(_build_profit_value, axis=1)
+radar_df["is_tradeable"] = radar_df.apply(is_safe_opportunity_row, axis=1)
 radar_df["severity"] = radar_df["severity"].fillna("green")
 radar_df["issue_summary"] = radar_df["issue_summary"].fillna("")
 radar_df["issue_codes"] = radar_df["issue_codes"].apply(
@@ -211,8 +213,11 @@ if hide_flagged:
     filtered_df = filtered_df[~filtered_df["is_flagged"]]
 if only_high_value:
     filtered_df = filtered_df[
-        (filtered_df["profit_value"].fillna(0) >= 5000)
-        | (filtered_df["profit_margin_value"].fillna(0) >= 20)
+        filtered_df["is_tradeable"]
+        & (
+            (filtered_df["profit_value"].fillna(0) >= 5000)
+            | (filtered_df["profit_margin_value"].fillna(0) >= 20)
+        )
     ]
 if ending_soon_only:
     filtered_df = filtered_df[filtered_df["time_remaining_hours"].fillna(9999) <= 24]
@@ -222,6 +227,7 @@ filtered_df["ranking_score"] = (
     + filtered_df["profit_margin_value"].fillna(0) * 45
     + filtered_df["confidence"].fillna(0) * 800
     - filtered_df["issue_count"].fillna(0) * 400
+    - (~filtered_df["is_tradeable"]).astype(int) * 1_000_000
 )
 filtered_df = filtered_df.sort_values(
     by=["ranking_score", "profit_value", "confidence", "time_remaining_hours"],

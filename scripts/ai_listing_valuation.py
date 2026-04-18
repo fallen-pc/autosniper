@@ -1532,14 +1532,22 @@ def run_curve_listing_analysis(
     if recommended_max_bid_val is not None and current_price_val is not None:
         no_edge_at_current_bid = recommended_max_bid_val <= current_price_val + EDGE_BUFFER
 
-    cost_basis = recommended_max_bid_val or current_price_val or 0.0
+    profit_bid_basis = recommended_max_bid_val
+    if (
+        current_price_val is not None
+        and profit_bid_basis is not None
+        and profit_bid_basis <= current_price_val + EDGE_BUFFER
+    ):
+        profit_bid_basis = current_price_val
+
+    cost_basis = profit_bid_basis if profit_bid_basis is not None else 0.0
     costs_map = _estimate_costs(cost_basis, listing_data)
 
     net_profit_mid_val = None
     net_profit_worst_val = None
-    if recommended_max_bid_val is not None and not repair_assessment.hard_avoid:
-        net_profit_mid_val = _net_profit_value(resale_mid_val or resale_mid, recommended_max_bid_val, listing_data) - repair_cost_val
-        net_profit_worst_val = _net_profit_value(resale_low_val or resale_mid, recommended_max_bid_val, listing_data) - repair_cost_val
+    if profit_bid_basis is not None and not repair_assessment.hard_avoid:
+        net_profit_mid_val = _net_profit_value(resale_mid_val or resale_mid, profit_bid_basis, listing_data) - repair_cost_val
+        net_profit_worst_val = _net_profit_value(resale_low_val or resale_mid, profit_bid_basis, listing_data) - repair_cost_val
 
     expected_profit_val = net_profit_mid_val
     expected_profit = _format_currency(expected_profit_val) if expected_profit_val is not None else None

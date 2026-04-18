@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pandas as pd
 
-from shared.valuation_display import first_currency_value, rank_live_opportunities
+from shared.valuation_display import first_currency_value, is_safe_opportunity_row, rank_live_opportunities
 
 
 def test_first_currency_value_preserves_zero_before_fallback() -> None:
@@ -76,3 +76,18 @@ def test_rank_live_opportunities_filters_unsafe_rows_and_uses_worst_profit() -> 
     assert ranked["url"].tolist() == ["safe"]
     assert ranked.iloc[0]["profit_value"] == 2500.0
     assert ranked.iloc[0]["max_bid_value"] == 13000.0
+
+
+def test_is_safe_opportunity_row_accepts_radar_profit_value() -> None:
+    row = pd.Series(
+        {
+            "price": "$10,000",
+            "recommended_max_bid": "$13,000",
+            "profit_value": 2500.0,
+            "computed_verdict": "Conditional Flip",
+            "no_edge": False,
+            "edge_buffer": 50,
+        }
+    )
+
+    assert is_safe_opportunity_row(row) is True

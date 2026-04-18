@@ -93,15 +93,45 @@ def _first_row_value(row: pd.Series, *columns: str) -> Any:
     return None
 
 
-def _truthy_flag(value: Any) -> bool:
+def truthy_flag(value: Any) -> bool:
     return str(value or "").strip().lower() in {"true", "1", "yes", "y"}
 
 
-def _is_safe_verdict(value: Any) -> bool:
+def is_safe_verdict(value: Any) -> bool:
     verdict = str(value or "").strip().lower()
     if not verdict:
         return False
     return not any(keyword in verdict for keyword in UNSAFE_VERDICT_KEYWORDS)
+
+
+def is_safe_opportunity_row(row: pd.Series, *, edge_buffer_default: float = 50.0) -> bool:
+    current_price = first_currency_value(
+        _first_row_value(row, "current_bid_numeric", "current_bid", "price"),
+        _first_row_value(row, "current_bid_numeric_ai", "current_bid_ai", "price_ai"),
+    )
+    max_bid = first_currency_value(
+        _first_row_value(row, "recommended_max_bid", "recommended_max_bid_ai", "max_bid")
+    )
+    worst_profit = first_currency_value(
+        _first_row_value(row, "net_profit_worst", "net_profit_worst_ai", "profit_value")
+    )
+    verdict = _first_row_value(row, "computed_verdict", "computed_verdict_ai", "verdict", "verdict_ai")
+    no_edge = truthy_flag(
+        _first_row_value(row, "no_edge", "no_edge_ai", "no_edge_at_current_bid", "no_edge_at_current_bid_ai")
+    )
+    edge_buffer = first_currency_value(_first_row_value(row, "edge_buffer", "edge_buffer_ai")) or edge_buffer_default
+
+    has_bid_edge = max_bid is not None and max_bid > 0
+    if current_price is not None and max_bid is not None:
+        has_bid_edge = has_bid_edge and max_bid > current_price + edge_buffer
+
+    return (
+        is_safe_verdict(verdict)
+        and not no_edge
+        and has_bid_edge
+        and worst_profit is not None
+        and worst_profit > 0
+    )
 
 
 def rank_live_opportunities(active_df: pd.DataFrame, valuations_df: pd.DataFrame) -> pd.DataFrame:
@@ -148,20 +178,7 @@ def rank_live_opportunities(active_df: pd.DataFrame, valuations_df: pd.DataFrame
             confidence = 0.0
 
         verdict = _first_row_value(row, "computed_verdict", "computed_verdict_ai", "verdict", "verdict_ai")
-        no_edge = _truthy_flag(_first_row_value(row, "no_edge", "no_edge_ai", "no_edge_at_current_bid", "no_edge_at_current_bid_ai"))
-        edge_buffer = first_currency_value(_first_row_value(row, "edge_buffer", "edge_buffer_ai")) or 50.0
-
-        has_bid_edge = max_bid is not None and max_bid > 0
-        if current_price is not None and max_bid is not None:
-            has_bid_edge = has_bid_edge and max_bid > current_price + edge_buffer
-
-        is_safe = (
-            _is_safe_verdict(verdict)
-            and not no_edge
-            and has_bid_edge
-            and worst_profit is not None
-            and worst_profit > 0
-        )
+        is_safe = is_safe_opportunity_row(row)
 
         current_prices.append(current_price)
         max_bids.append(max_bid)
