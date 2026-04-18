@@ -52,6 +52,7 @@ def build_navigation() -> "OrderedDict[str, list[st.Page]]":
                 "INTELLIGENCE",
                 [
                     st.Page("pages/8_MISSED_OPPORTUNITIES.py", title="Missed Opportunities"),
+                    st.Page("pages/16_VALUATION_CALIBRATION.py", title="Valuation Calibration"),
                     st.Page("pages/10_BIDDER_INSIGHTS.py", title="Bidder Insights"),
                     st.Page("pages/9_VEHICLE_REPAIRS.py", title="Vehicle Repairs"),
                 ],
