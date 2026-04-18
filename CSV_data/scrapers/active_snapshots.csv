@@ -1,4 +1,4 @@
 snapshot_ts,url,price_text,price_numeric,bids_numeric,time_remaining_text,time_remaining_hours,status,location,location_state,auction_site
-2026-04-18T02:13:54.539921+00:00,https://www.grays.com/lot/0001-10353377/motor-vehicles-motor-cycles/2017-hyundai-i30-active-pd-automatic-hatchback,9.0,9.0,0,4d 7h 46m7s,103.769,Active,nsw,NSW,lot
-2026-04-18T02:14:02.222252+00:00,https://www.grays.com/lot/0001-10500717/motor-vehicles-motor-cycles/2017-toyota-corolla-ascent-zre182r-cvt-hatchback,4900.0,4900.0,42,4d 6h 15m58s,102.266,Active,nsw,NSW,lot
-2026-04-18T02:14:09.850675+00:00,https://www.grays.com/lot/0001-21065635/motor-vehicles-motor-cycles/2014-hyundai-i30-active-gd-automatic-hatchback,509.0,509.0,6,4d 7h 45m51s,103.764,Active,vic,VIC,lot
+2026-04-18T07:00:56.122603+00:00,https://www.grays.com/lot/0001-10353377/motor-vehicles-motor-cycles/2017-hyundai-i30-active-pd-automatic-hatchback,9.0,9.0,0,4d 2h 59m8s,98.986,Active,nsw,NSW,lot
+2026-04-18T07:01:18.080636+00:00,https://www.grays.com/lot/0001-10500717/motor-vehicles-motor-cycles/2017-toyota-corolla-ascent-zre182r-cvt-hatchback,4900.0,4900.0,42,4d 1h 28m45s,97.479,Active,nsw,NSW,lot
+2026-04-18T07:01:31.682443+00:00,https://www.grays.com/lot/0001-21065635/motor-vehicles-motor-cycles/2014-hyundai-i30-active-gd-automatic-hatchback,509.0,509.0,6,4d 2h 58m32s,98.976,Active,vic,VIC,lot

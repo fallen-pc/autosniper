@@ -443,6 +443,11 @@ def _clean_text_or_blank(value: Any) -> str:
 def _to_int_or_blank(value: Any) -> Any:
     if value is None:
         return ""
+    try:
+        if pd.isna(value):
+            return ""
+    except (TypeError, ValueError):
+        pass
     if isinstance(value, bool):
         return ""
     if isinstance(value, int):

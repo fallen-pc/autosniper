@@ -11,10 +11,10 @@
 9. Keep Camry AXVH71R `Ascent Hybrid` and `Ascent Sport Hybrid` as separate saved lanes; review `2025` Ascent Hybrid and any later-year Ascent Sport Hybrid evidence as deliberate year-extension tasks, not automatic merges.
 10. Treat the Camry ASV70R petrol curve as live-market built: private Carsales and Autotrader carry the evidence, while the current single Grays sold row is non-contributory for valuation.
 11. Watch the next available scheduled hourly run only as a scheduler sanity check: it is acceptable to miss a run when the laptop is off/asleep, but the next run while awake/logged in should resume cleanly.
-12. Keep daily disabled until a full daily smoke test is run with the refreshed Autotrader session.
-13. When running that daily smoke test, use the refreshed storage state and keep the visible-browser Autotrader path in mind.
-14. Only after a successful daily smoke test should unattended daily automation be re-enabled.
-15. Before retrying daily, consider adding a safer daily smoke mode or a resume/limit path so the test does not need to churn through the full Grays update set in one fragile run.
+12. Keep daily automation disabled until one clean unattended `scripts/scheduled_jobs.py --job daily` run completes without manual resume, or until an explicit daily resume/guard path is added and tested.
+13. Keep using the refreshed Autotrader storage state and visible-browser Autotrader path unless headless mode is separately repaired; headless still should not be assumed stable.
+14. If daily is retried and fails after expensive Grays work, resume from the failed stage deliberately instead of rerunning the whole pipeline and overwriting useful completed stages.
+15. Add a safer daily resume/guard path if repeated full-run testing remains fragile; the 2026-04-18 full run proved the stages can complete, but it needed manual recovery after the Autotrader numeric crash.
 16. Before committing future CSV snapshots, run `scripts/readiness_smoke.py` and `scripts/governance_checks.py check`, and sanity-check broad active counts against `active_vehicle_links.csv` and `vehicle_state.csv`.
 17. Treat `active_snapshots.csv` as current live monitoring state only; hourly URL-scoped runs should reflect the monitored AI Analysis scope, and old history should be read from the archive instead of restored into the live file.
-18. Next milestone is controlled daily-pipeline proof: rerun `scripts/scheduled_jobs.py --job daily-smoke` after the outcome-metrics fix, confirm it reaches Grays, Autotrader, master update, governance, outcome metrics, and health reporting, then only attempt the full daily run after the smoke path is clean.
+18. Next milestone is clean unattended daily proof: run one more full `scripts/scheduled_jobs.py --job daily` from start to finish after the Autotrader NaN fix, then re-enable daily automation only if it completes without manual intervention.
