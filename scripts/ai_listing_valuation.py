@@ -32,6 +32,7 @@ REQUIRED_COLUMNS = [
     "transport_estimate",
     "rego_estimate",
     "prep_estimate",
+    "repair_estimate",
     "expected_auction_price",
     "discount_used",
     # Risk decisioning
@@ -1116,16 +1117,18 @@ def run_ai_listing_analysis(listing_row: pd.Series, force_refresh: bool = False)
     ):
         print(f"[WARN] Auction already above expected price: {url}")
 
+    repair_cost_val = 0.0 if repair_assessment.hard_avoid else float(repair_assessment.total_cost or 0.0)
+
     net_profit_mid_val = None
     net_profit_worst_val = None
     if assumed_purchase_val is not None and resale_mid_val is not None:
-        net_profit_mid_val = _net_profit_value(resale_mid_val, assumed_purchase_val, listing_row) - COST_BUFFER
+        net_profit_mid_val = _net_profit_value(resale_mid_val, assumed_purchase_val, listing_row) - COST_BUFFER - repair_cost_val
     if assumed_purchase_val is not None and resale_low_val is not None:
-        net_profit_worst_val = _net_profit_value(resale_low_val, assumed_purchase_val, listing_row) - COST_BUFFER
+        net_profit_worst_val = _net_profit_value(resale_low_val, assumed_purchase_val, listing_row) - COST_BUFFER - repair_cost_val
 
     expected_profit_val = None
     if resale_mid_val is not None and recommended_max_bid_val is not None:
-        expected_profit_val = _net_profit_value(resale_mid_val, recommended_max_bid_val, listing_row) - COST_BUFFER
+        expected_profit_val = _net_profit_value(resale_mid_val, recommended_max_bid_val, listing_row) - COST_BUFFER - repair_cost_val
 
     expected_profit_val = max(0.0, expected_profit_val or 0.0) if expected_profit_val is not None else None
     expected_profit = _format_currency(expected_profit_val) if expected_profit_val is not None else data.get("expected_profit")
@@ -1265,6 +1268,7 @@ def run_ai_listing_analysis(listing_row: pd.Series, force_refresh: bool = False)
         "transport_estimate": _format_currency(costs_map["transport_estimate"]),
         "rego_estimate": _format_currency(costs_map["rego_estimate"]),
         "prep_estimate": _format_currency(costs_map["prep_estimate"]),
+        "repair_estimate": _format_currency(repair_cost_val),
         "expected_auction_price": _format_currency(expected_auction_price_val),
         "discount_used": DEFAULT_DISCOUNT,
         "resale_low": _format_currency(resale_low_val),
@@ -1352,6 +1356,7 @@ def run_curve_listing_analysis(
             "transport_estimate": None,
             "rego_estimate": None,
             "prep_estimate": None,
+            "repair_estimate": None,
             "expected_auction_price": None,
             "discount_used": DEFAULT_DISCOUNT,
             "resale_low": None,
@@ -1447,6 +1452,7 @@ def run_curve_listing_analysis(
         recommended_max_bid_val = float(adjusted_bid)
     if repair_assessment.hard_avoid:
         recommended_max_bid_val = 0.0
+    repair_cost_val = 0.0 if repair_assessment.hard_avoid else float(repair_assessment.total_cost or 0.0)
 
     base_max_bid_val = recommended_max_bid_val
     base_no_edge_at_current_bid = False
@@ -1462,7 +1468,7 @@ def run_curve_listing_analysis(
 
     base_net_profit_mid = None
     if base_max_bid_val is not None and resale_mid_val is not None:
-        base_net_profit_mid = resale_mid_val - sum(base_costs_map.values()) - base_max_bid_val
+        base_net_profit_mid = resale_mid_val - sum(base_costs_map.values()) - base_max_bid_val - repair_cost_val
     base_margin_value = None
     if base_net_profit_mid is not None and resale_mid_val:
         base_margin_value = (base_net_profit_mid / resale_mid_val) * 100
@@ -1532,8 +1538,8 @@ def run_curve_listing_analysis(
     net_profit_mid_val = None
     net_profit_worst_val = None
     if recommended_max_bid_val is not None and not repair_assessment.hard_avoid:
-        net_profit_mid_val = _net_profit_value(resale_mid_val or resale_mid, recommended_max_bid_val, listing_data)
-        net_profit_worst_val = _net_profit_value(resale_low_val or resale_mid, recommended_max_bid_val, listing_data)
+        net_profit_mid_val = _net_profit_value(resale_mid_val or resale_mid, recommended_max_bid_val, listing_data) - repair_cost_val
+        net_profit_worst_val = _net_profit_value(resale_low_val or resale_mid, recommended_max_bid_val, listing_data) - repair_cost_val
 
     expected_profit_val = net_profit_mid_val
     expected_profit = _format_currency(expected_profit_val) if expected_profit_val is not None else None
@@ -1595,6 +1601,7 @@ def run_curve_listing_analysis(
         "transport_estimate": _format_currency(costs_map["transport_estimate"]),
         "rego_estimate": _format_currency(costs_map["rego_estimate"]),
         "prep_estimate": _format_currency(costs_map["prep_estimate"]),
+        "repair_estimate": _format_currency(repair_cost_val),
         "expected_auction_price": _format_currency(expected_auction_price_val),
         "discount_used": DEFAULT_DISCOUNT,
         "resale_low": _format_currency(resale_low_val),

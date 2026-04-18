@@ -14,6 +14,7 @@ from shared.curves import list_curve_tags, load_curves
 from shared.data_loader import dataset_path, ensure_datasets_available
 from shared.global_filters import apply_global_sidebar_filters, render_global_sidebar_filters
 from shared.styling import clean_html, display_banner, escape_html, inject_global_styles, page_intro, safe_url, section_heading
+from shared.valuation_display import parse_currency_value, parse_percent_value, rank_live_opportunities
 
 
 st.set_page_config(page_title="AutoSniper - Dashboard", layout="wide")
@@ -263,42 +264,6 @@ def count_csv_rows(path: Path) -> int | None:
         return None
 
 
-def parse_currency_value(value: object) -> float | None:
-    if value is None:
-        return None
-    if isinstance(value, float) and pd.isna(value):
-        return None
-    if isinstance(value, (int, float)):
-        return float(value)
-    text = str(value).strip()
-    if not text:
-        return None
-    text = text.replace(",", "")
-    matches = re.findall(r"-?\d+(?:\.\d+)?", text)
-    if not matches:
-        return None
-    numbers = [float(match) for match in matches]
-    if len(numbers) > 1 and "-" in text:
-        return sum(numbers) / len(numbers)
-    return numbers[0]
-
-
-def parse_percent_value(value: object) -> float | None:
-    if value is None:
-        return None
-    if isinstance(value, float) and pd.isna(value):
-        return None
-    if isinstance(value, (int, float)):
-        return float(value)
-    text = str(value).replace("%", "").strip()
-    if not text:
-        return None
-    try:
-        return float(text)
-    except ValueError:
-        return None
-
-
 def format_currency_value(value: float | None, default: str = "N/A") -> str:
     if value is None:
         return default
@@ -461,22 +426,11 @@ section_heading(
 if valuations_df.empty or active_live_df.empty:
     st.info("Need both active listings and AI valuations to rank live opportunities. Run the AI pricing analysis once.")
 else:
-    merged_top = active_scope_df.merge(valuations_df, on="url", how="inner", suffixes=("", "_ai"))
-    merged_top["current_price_value"] = merged_top["price"].apply(parse_currency_value)
-    merged_top["max_bid_value"] = merged_top["recommended_max_bid"].apply(parse_currency_value)
-    merged_top["resale_mid_value"] = merged_top["resale_mid"].apply(parse_currency_value)
-    merged_top["profit_value"] = merged_top["net_profit_mid"].apply(parse_currency_value)
-    merged_top["margin_value"] = merged_top["profit_margin_percent"].apply(parse_percent_value)
-    merged_top["potential_rank"] = (
-        merged_top["profit_value"].fillna(0)
-        + merged_top["margin_value"].fillna(0) * 50
-        + merged_top["confidence"].fillna(0) * 1000
-    )
-    merged_top = merged_top.sort_values(by=["potential_rank"], ascending=False)
+    merged_top = rank_live_opportunities(active_scope_df, valuations_df)
     top_rows = merged_top.head(5)
 
     if top_rows.empty:
-        st.info("AI valuations have not touched any of the current active listings yet.")
+        st.info("No active listings currently have a safe worst-case bidding edge.")
     else:
         cards = st.columns(len(top_rows))
         for idx, (row_index, row) in enumerate(top_rows.iterrows()):
@@ -512,7 +466,7 @@ else:
                                     <span class="top-auction-value">{escape_html(resale_estimate)}</span>
                                 </div>
                                 <div class="top-auction-metric">
-                                    <span class="top-auction-label">Profit</span>
+                                    <span class="top-auction-label">Worst profit</span>
                                     <span class="top-auction-value">{escape_html(profit)}</span>
                                 </div>
                                 <div class="top-auction-metric">

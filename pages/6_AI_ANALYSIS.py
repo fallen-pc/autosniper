@@ -36,6 +36,7 @@ from shared.repair_pricing import (
     assess_repairs,
 )
 from shared.styling import clean_html, display_banner, inject_global_styles, page_intro
+from shared.valuation_display import first_currency_value
 
 
 st.set_page_config(page_title="AI Analysis (Curve)", layout="wide")
@@ -2942,11 +2943,11 @@ def _compute_profit_margin_value(row: pd.Series) -> Optional[float]:
     margin_value = _parse_percent(row.get("profit_margin_percent"))
     if margin_value is not None:
         return margin_value
-    net_profit = parse_currency(row.get("net_profit_worst")) or parse_currency(row.get("net_profit_mid"))
-    resale = (
-        parse_currency(row.get("resale_mid"))
-        or parse_currency(row.get("expected_sale"))
-        or parse_currency(row.get("curve_adjusted"))
+    net_profit = first_currency_value(row.get("net_profit_worst"), row.get("net_profit_mid"))
+    resale = first_currency_value(
+        row.get("resale_mid"),
+        row.get("expected_sale"),
+        row.get("curve_adjusted"),
     )
     if net_profit is not None and resale:
         return (net_profit / resale) * 100
@@ -2954,15 +2955,15 @@ def _compute_profit_margin_value(row: pd.Series) -> Optional[float]:
 
 
 def _compute_resale_value(row: pd.Series) -> Optional[float]:
-    return (
-        parse_currency(row.get("expected_sale"))
-        or parse_currency(row.get("resale_mid"))
-        or parse_currency(row.get("curve_adjusted"))
+    return first_currency_value(
+        row.get("expected_sale"),
+        row.get("resale_mid"),
+        row.get("curve_adjusted"),
     )
 
 
 def _compute_max_bid_value(row: pd.Series) -> Optional[float]:
-    return parse_currency(row.get("recommended_max_bid")) or parse_currency(row.get("price"))
+    return first_currency_value(row.get("recommended_max_bid"), row.get("price"))
 
 
 def _compute_auction_cost_value(row: pd.Series) -> Optional[float]:
@@ -2971,6 +2972,7 @@ def _compute_auction_cost_value(row: pd.Series) -> Optional[float]:
         parse_currency(row.get("transport_estimate")),
         parse_currency(row.get("rego_estimate")),
         parse_currency(row.get("prep_estimate")),
+        parse_currency(row.get("repair_estimate")),
     ]
     if all(value is None for value in values):
         return None

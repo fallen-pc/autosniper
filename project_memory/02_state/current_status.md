@@ -13,6 +13,7 @@
 - Current product priorities are:
   - verify profit determination accuracy across producer, ranking, display, and calibration surfaces
   - identify what blocks adding more curves safely in Curve Builder V2
+- The first profit/valuation audit pass is now implemented: repair estimates are explicit valuation costs, displayed profit subtracts repair cost, `$0` max bids stay as real zero values instead of falling back to live price, and the dashboard top-opportunity cards only rank active listings with positive worst-case profit, safe verdicts, and bid room above the current auction price.
 - Toyota Corolla `zre182r` hatch mapping is now split by trim at the base-curve level so `ascent` and `ascent-sport` no longer pretend to be one shared curve family.
 - Corolla Ascent sedan ZRE152R and ZRE172R are now locked in as V2 base curves, with saved rows under `toyota_corolla_zre152r_sedan_auto_petrol` and `toyota_corolla_zre172r_sedan_auto_petrol` instead of their detailed matcher tags.
 - Curve Builder V2 now blocks silent legacy fallback merges when mapped legacy rows disagree on the same anchor-year and km-bucket cell.

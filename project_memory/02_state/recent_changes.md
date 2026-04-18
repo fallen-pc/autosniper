@@ -1,5 +1,7 @@
 # Recent Changes
 
+- Tightened valuation display and dashboard ranking after the first profit audit pass. `repair_estimate` is now persisted, repair cost is subtracted from displayed expected/worst profit, `$0` max bids are preserved as real zero values, and Live Opportunities now ranks only safe active listings with positive worst-case profit and bid room above the current price.
+- Added shared valuation display/ranking helpers plus regression tests for zero-value parsing, safe live-opportunity filtering, worst-case profit ranking, and repair-cost profit accounting.
 - Recorded the scheduler decision after explaining Windows `Interactive only`: daily automation is not being re-enabled in this work slice. The clean daily pipeline is proven, but the user will handle laptop power/sleep/logged-in session setup later before relying on scheduled daily runs.
 - Ran a clean full daily pipeline proof on 2026-04-18 via `scripts/scheduled_jobs.py --job daily` with no manual resume. It completed Grays link extraction, static detail refresh, all `482` Grays bid/status updates, Autotrader full sweep, master update, AI revaluation, governance reporting, outcome metrics, health reporting, and lock cleanup.
 - Clean daily Autotrader result: `414` pages fetched, `8,316` latest-snapshot rows, `16,430` total unique Autotrader rows, and listing-history counts of `listed=70`, `relisted=86`, `price_changes=21`, `sold=155`.
