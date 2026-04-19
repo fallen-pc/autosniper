@@ -2245,7 +2245,7 @@ else:
         active_df["canonical_tag"] = ""
     active_df["canonical_tag"] = active_df["canonical_tag"].astype(str).str.strip()
     active_df["curve_tag"] = active_df["canonical_tag"].apply(resolve_curve_canonical_tag)
-    active_df["tag_in_curves"] = active_df["canonical_tag"].isin(allowed_tags)
+    active_df["tag_in_curves"] = active_df["curve_tag"].isin(allowed_tags)
     active_df["canonical_eligible"] = active_df.apply(
         lambda r: is_canonical_eligible(r.get("canonical_tag"), r.get("canonical_reason")),
         axis=1,
@@ -2335,11 +2335,13 @@ else:
     if "canonical_tag" not in sold_df.columns:
         sold_df["canonical_tag"] = ""
     sold_df["canonical_tag"] = sold_df["canonical_tag"].astype(str).str.strip()
-    sold_df = sold_df[sold_df["canonical_tag"].isin(allowed_tags)].copy()
+    sold_df["curve_tag"] = sold_df["canonical_tag"].apply(resolve_curve_canonical_tag)
+    sold_df = sold_df[sold_df["curve_tag"].isin(allowed_tags)].copy()
 sold_df = _exclude_corolla_sport_comps(sold_df)
 sold_df = _exclude_major_engine_defects(sold_df)
 sold_df["year_int"] = sold_df["year"].apply(_safe_int) if "year" in sold_df.columns else None
-sold_df["curve_tag"] = sold_df["canonical_tag"].apply(resolve_curve_canonical_tag)
+if "curve_tag" not in sold_df.columns:
+    sold_df["curve_tag"] = sold_df["canonical_tag"].apply(resolve_curve_canonical_tag)
 
 curve_key_col = "curve_tag"
 
