@@ -199,6 +199,9 @@ def _curve_confidence_label(value: Optional[float]) -> str:
 
 
 def _curve_key_for_row(row: pd.Series) -> str:
+    curve_tag = _safe_text(row.get("curve_tag"), fallback="").strip()
+    if curve_tag:
+        return curve_tag
     return resolve_curve_canonical_tag(_safe_text(row.get("canonical_tag"), fallback="").strip())
 
 
@@ -2321,7 +2324,6 @@ else:
         "year_in_range",
         "km_in_range",
         "curve_coverage",
-        "curve_tag",
         "min_year",
         "max_year",
         "min_km",
@@ -2790,14 +2792,17 @@ if "hours_remaining" in filtered.columns and (min_hours is not None or max_hours
         filtered = filtered[filtered["hours_remaining"] < max_hours]
 
 if group_filter != "All":
-    filtered = filtered[filtered["canonical_tag"] == group_filter]
+    group_column = "curve_tag" if "curve_tag" in filtered.columns else "canonical_tag"
+    filtered = filtered[filtered[group_column] == group_filter]
 
 if "canonical_tag" not in filtered.columns:
     filtered["canonical_tag"] = ""
 filtered["canonical_tag"] = filtered["canonical_tag"].astype(str).str.strip()
 filtered = filtered[filtered["canonical_tag"] != ""].copy()
 if allowed_tags:
-    filtered = filtered[filtered["canonical_tag"].isin(allowed_tags)].copy()
+    if "curve_tag" not in filtered.columns:
+        filtered["curve_tag"] = filtered["canonical_tag"].apply(resolve_curve_canonical_tag)
+    filtered = filtered[filtered["curve_tag"].isin(allowed_tags)].copy()
 
 no_curve_filtered = no_curve_active_df.copy()
 if not no_curve_filtered.empty:
@@ -2807,8 +2812,10 @@ if not no_curve_filtered.empty:
             no_curve_filtered = no_curve_filtered[no_curve_filtered["hours_remaining"] >= min_hours]
         if max_hours is not None:
             no_curve_filtered = no_curve_filtered[no_curve_filtered["hours_remaining"] < max_hours]
-    if group_filter != "All" and "canonical_tag" in no_curve_filtered.columns:
-        no_curve_filtered = no_curve_filtered[no_curve_filtered["canonical_tag"] == group_filter]
+    if group_filter != "All":
+        group_column = "curve_tag" if "curve_tag" in no_curve_filtered.columns else "canonical_tag"
+        if group_column in no_curve_filtered.columns:
+            no_curve_filtered = no_curve_filtered[no_curve_filtered[group_column] == group_filter]
 
 def _render_no_curve_section(no_curve_df: pd.DataFrame) -> None:
     if no_curve_df.empty:
@@ -3082,11 +3089,12 @@ filtered_output = apply_global_sidebar_filters(
     state_columns=("location_state", "rego_state", "location"),
     vehicle_type_columns=("body_type", "body"),
     margin_columns=("profit_margin_value", "profit_margin_percent"),
-    canonical_tag_column="canonical_tag",
+    canonical_tag_column="curve_tag",
     curve_tags=allowed_tags,
 )
 if group_filter != "All":
-    filtered_output = filtered_output[filtered_output["canonical_tag"] == group_filter]
+    group_column = "curve_tag" if "curve_tag" in filtered_output.columns else "canonical_tag"
+    filtered_output = filtered_output[filtered_output[group_column] == group_filter]
 
 if hide_avoid:
     filtered_output = filtered_output[filtered_output["verdict_label"] != "Avoid"]
