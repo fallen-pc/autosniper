@@ -156,7 +156,7 @@ def _prepare_active_scope() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     year_band, km_band = _curve_band_maps(curves_df)
     active_df = active_df.merge(year_band, left_on="curve_tag", right_index=True, how="left")
     active_df = active_df.merge(km_band, left_on="curve_tag", right_index=True, how="left")
-    active_df["tag_in_curves"] = active_df["canonical_tag"].isin(allowed_tags)
+    active_df["tag_in_curves"] = active_df["curve_tag"].isin(allowed_tags)
     active_df["year_in_range"] = (
         active_df["year_int"].notna()
         & active_df["min_year"].notna()
@@ -186,7 +186,7 @@ def _prepare_active_scope() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
             sold_df["canonical_tag"] = ""
         sold_df["canonical_tag"] = sold_df["canonical_tag"].fillna("").astype(str).str.strip()
         sold_df["curve_tag"] = sold_df["canonical_tag"].apply(resolve_curve_canonical_tag)
-        sold_df = sold_df[sold_df["canonical_tag"].isin(allowed_tags)].copy()
+        sold_df = sold_df[sold_df["curve_tag"].isin(allowed_tags)].copy()
 
     return active_df, sold_df, curves_df
 

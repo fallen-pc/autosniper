@@ -92,6 +92,13 @@ class TestTopBuyGate4(unittest.TestCase):
         self.assertFalse(result.is_top_buy)
         self.assertTrue(any("G4_HIST_MATCH_COUNT_FAIL" in f for f in result.reasons_failed))
 
+    def test_g4_accepts_match_count_when_rows_are_not_available(self):
+        v = _perfect_vehicle()
+        v["historical"] = {"matches": [], "match_count": 5}
+        result = top_buy_gate_check(v)
+        self.assertTrue(result.is_top_buy)
+        self.assertTrue(any("G4_HIST_MATCH_COUNT_OK" in p for p in result.reasons_passed))
+
 
 class TestTopBuyGate5(unittest.TestCase):
     def test_g5_fail_autotrader_misaligned(self):

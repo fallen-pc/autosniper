@@ -1617,6 +1617,7 @@ def _render_bid_logic_tab(
     metric_rows = [
         ("Resale estimate", _format_currency_value(_compute_resale_value(row))),
         ("Expected auction", _format_price_text(row.get("expected_auction_price"))),
+        ("Profit at expected", _format_price_text(row.get("expected_auction_worst_profit") or row.get("expected_auction_profit"))),
         ("Current bid", _format_price_text(row.get("price"))),
         ("Auction cost", _format_currency_value(auction_cost)),
         ("Fees", _format_price_text(row.get("fees_estimate"))),
@@ -1628,7 +1629,7 @@ def _render_bid_logic_tab(
     ]
 
     first_row = st.columns(5)
-    second_row = st.columns(4)
+    second_row = st.columns(5)
     for column, (label, value) in zip(first_row, metric_rows[:5]):
         column.metric(label, value)
     for column, (label, value) in zip(second_row, metric_rows[5:]):
@@ -1639,6 +1640,10 @@ def _render_bid_logic_tab(
         [
             f"Discount used: {float(row.get('discount_used') or 0):.0%}" if pd.notna(row.get("discount_used")) else "Discount used: N/A",
             f"Expected auction price: {_format_price_text(row.get('expected_auction_price'))}",
+            f"Expected auction source: {_safe_text(row.get('expected_auction_source'), 'N/A')}",
+            f"Expected auction comps: {_safe_text(row.get('expected_auction_comps_count'), 'N/A')}",
+            f"Profit at expected auction (mid): {_format_price_text(row.get('expected_auction_profit'))}",
+            f"Profit at expected auction (worst): {_format_price_text(row.get('expected_auction_worst_profit'))}",
             f"Auction cost total: {_format_currency_value(auction_cost)}",
             f"Repair cost: {_format_currency_value(repair_deduction)}",
             f"Net profit (mid): {_format_price_text(row.get('net_profit_mid'))}",

@@ -212,6 +212,62 @@ def test_curve_analysis_avoids_interstate_listings(monkeypatch) -> None:
     assert "INTERSTATE" in result["risk_flags"]
 
 
+def test_curve_analysis_uses_historical_sold_median_for_expected_auction(monkeypatch) -> None:
+    repair_assessment = RepairAssessment(
+        hard_avoid=False,
+        pills=[],
+        cosmetic_panels=0,
+        glass_cost=0,
+        replacement_cost=0,
+        risk_buffer=0,
+        base_cost=0,
+        severity_level="minor",
+        severity_multiplier=1.0,
+        total_cost=0,
+        reasons=[],
+    )
+    listing = pd.Series(
+        {
+            "url": "test://historical-auction-price",
+            "price": "$2,000",
+            "make": "Hyundai",
+            "model": "i30",
+            "variant": "Active",
+            "body_type": "Hatch",
+            "transmission": "Auto",
+            "fuel_type": "Petrol",
+            "location": "Melbourne VIC",
+            "rego_state": "VIC",
+            "key": "Yes",
+            "spare_key": "Yes",
+            "owners_manual": "Yes",
+            "service_history": "Full",
+            "general_condition": "",
+        }
+    )
+
+    monkeypatch.setattr(ai_listing_valuation, "load_cached_results", lambda: pd.DataFrame(columns=ai_listing_valuation.REQUIRED_COLUMNS))
+    monkeypatch.setattr(ai_listing_valuation, "_save_result_row", lambda row: None)
+    monkeypatch.setattr(ai_listing_valuation, "assess_repairs", lambda condition: repair_assessment)
+
+    result = ai_listing_valuation.run_curve_listing_analysis(
+        listing,
+        resale_mid=20_000,
+        comps_median=6_200,
+        comps_count=5,
+        analysis_context="active",
+        force_refresh=True,
+    )
+
+    expected_profit = ai_listing_valuation._net_profit_value(20_000, 6_200, listing.to_dict())
+
+    assert result["expected_auction_price"] == "$6,200"
+    assert result["expected_auction_source"] == "historical_sold_median"
+    assert result["expected_auction_comps_count"] == 5
+    assert ai_listing_valuation._parse_currency(result["expected_auction_profit"]) == round(expected_profit)
+    assert ai_listing_valuation._parse_currency(result["recommended_max_bid"]) > 6_200
+
+
 def test_transport_default_matches_local_operating_cost() -> None:
     assert ai_listing_valuation.DEFAULT_TRANSPORT == 200.0
     assert ai_listing_valuation.OPERATING_STATE == "VIC"

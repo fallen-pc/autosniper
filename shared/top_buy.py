@@ -141,8 +141,16 @@ def top_buy_gate_check(vehicle: Dict[str, Any]) -> TopBuyResult:
     # Gate 4: Historical auction match (confirmation only)
     # ----------------------------
     matches = _get(vehicle, "historical.matches", []) or []
+    match_count = _get(vehicle, "historical.match_count", len(matches))
+    try:
+        match_count = int(match_count or 0)
+    except (TypeError, ValueError):
+        match_count = len(matches)
     if len(matches) < HIST_MATCH_MIN_COUNT:
-        failed.append(f"G4_HIST_MATCH_COUNT_FAIL: {len(matches)}")
+        if match_count >= HIST_MATCH_MIN_COUNT:
+            passed.append(f"G4_HIST_MATCH_COUNT_OK: count={match_count}")
+        else:
+            failed.append(f"G4_HIST_MATCH_COUNT_FAIL: {match_count}")
     else:
         # enforce spec_match and km proximity
         target_km = _get(vehicle, "odometer_reading", None)

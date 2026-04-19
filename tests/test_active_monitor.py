@@ -86,6 +86,87 @@ def test_load_ai_analysis_active_df_uses_prepared_scope(monkeypatch) -> None:
     assert result is expected_df
 
 
+def test_prepare_active_scope_keeps_sold_rows_after_curve_tag_resolution(monkeypatch) -> None:
+    detailed_tag = "hyundai_i30_active_petrol_auto_hatch_gd"
+    curve_tag = "hyundai_i30_gd_hatch_auto_petrol"
+    url = "https://example.com/lot/i30"
+
+    active_restricted = pd.DataFrame(
+        [
+            {
+                "url": url,
+                "year": 2014,
+                "odometer_reading": 125_000,
+                "price": "$2,000",
+                "status": "Active",
+            }
+        ]
+    )
+    live_active = pd.DataFrame(
+        [
+            {
+                "url": url,
+                "price": "$2,100",
+                "status": "Active",
+                "location": "vic",
+            }
+        ]
+    )
+    group_map = pd.DataFrame(
+        [
+            {
+                "url": url,
+                "source": "active",
+                "canonical_tag": detailed_tag,
+                "reason_code": "[OK]",
+            },
+            {
+                "url": "https://example.com/lot/sold-i30",
+                "source": "sold",
+                "canonical_tag": detailed_tag,
+                "reason_code": "[OK]",
+            },
+        ]
+    )
+    sold = pd.DataFrame(
+        [
+            {
+                "url": "https://example.com/lot/sold-i30",
+                "year": 2014,
+                "odometer_reading": 130_000,
+                "price": "$6,100",
+            }
+        ]
+    )
+    curves = pd.DataFrame(
+        [
+            {"canonical_tag": curve_tag, "anchor_year": 2014, "km_bucket": 100_000, "price_mid": 12_000},
+            {"canonical_tag": curve_tag, "anchor_year": 2014, "km_bucket": 150_000, "price_mid": 11_000},
+        ]
+    )
+
+    def fake_load_csv(path):
+        path_text = str(path)
+        if path_text.endswith("active_vehicle_details_restricted.csv"):
+            return active_restricted.copy()
+        if path_text.endswith("active_vehicle_details.csv"):
+            return live_active.copy()
+        if path_text.endswith("restricted_group_map.csv"):
+            return group_map.copy()
+        if path_text.endswith("sold_cars_restricted.csv"):
+            return sold.copy()
+        return pd.DataFrame()
+
+    monkeypatch.setattr(active_monitor, "_load_csv", fake_load_csv)
+    monkeypatch.setattr(active_monitor, "load_curves", lambda: curves.copy())
+
+    active_df, sold_df, _ = active_monitor._prepare_active_scope()
+
+    assert len(active_df) == 1
+    assert len(sold_df) == 1
+    assert sold_df.iloc[0]["curve_tag"] == curve_tag
+
+
 def test_diff_price_changed_listing_urls_ignores_timer_changes() -> None:
     before_df = pd.DataFrame(
         [

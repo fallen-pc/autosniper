@@ -5,7 +5,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional, Tuple
 
-import os
 import pandas as pd
 from dotenv import load_dotenv, find_dotenv
 from openai import OpenAI
@@ -35,6 +34,10 @@ REQUIRED_COLUMNS = [
     "prep_estimate",
     "repair_estimate",
     "expected_auction_price",
+    "expected_auction_profit",
+    "expected_auction_worst_profit",
+    "expected_auction_source",
+    "expected_auction_comps_count",
     "discount_used",
     # Risk decisioning
     "confidence",
@@ -77,6 +80,7 @@ DETAILING_HATCH_SEDAN = 99.0
 DETAILING_SMALL_SUV_WAGON = 115.0
 DETAILING_LARGE_SUV_4WD = 129.0
 DEFAULT_DISCOUNT = 0.75
+MIN_EXPECTED_AUCTION_COMPS = 3
 COST_BUFFER = 1_500.0
 UNREGISTERED_REGO_COST = 1_200.0
 REGISTERED_REGO_COST = 0.0
@@ -631,7 +635,41 @@ def _estimate_costs(purchase_price: float, listing: Mapping[str, Any]) -> dict[s
     }
 
 
-def _expected_auction_price(resale_value: Optional[float]) -> Optional[float]:
+def _expected_auction_estimate(
+    resale_value: Optional[float],
+    *,
+    comps_median: Any = None,
+    comps_count: int | None = None,
+) -> tuple[Optional[float], str | None, int | None]:
+    comp_count = _parse_int(comps_count)
+    comp_median = _parse_currency(comps_median)
+    if (
+        comp_median is not None
+        and comp_median > 0
+        and comp_count is not None
+        and comp_count >= MIN_EXPECTED_AUCTION_COMPS
+    ):
+        return _round_to_10(comp_median), "historical_sold_median", comp_count
+    if resale_value is None or resale_value <= 0:
+        return None, None, comp_count
+    return _round_to_10(resale_value * DEFAULT_DISCOUNT), "resale_discount", comp_count
+
+
+def _expected_auction_price(
+    resale_value: Optional[float],
+    *,
+    comps_median: Any = None,
+    comps_count: int | None = None,
+) -> Optional[float]:
+    estimate, _, _ = _expected_auction_estimate(
+        resale_value,
+        comps_median=comps_median,
+        comps_count=comps_count,
+    )
+    return estimate
+
+
+def _discounted_resale_cap_price(resale_value: Optional[float]) -> Optional[float]:
     if resale_value is None or resale_value <= 0:
         return None
     return _round_to_10(resale_value * DEFAULT_DISCOUNT)
@@ -1129,10 +1167,14 @@ def run_ai_listing_analysis(listing_row: pd.Series, force_refresh: bool = False)
     resale_mid_val = _round_to_10(resale_mid_val)
     resale_low_val = _round_to_10(resale_low_val)
     resale_high_val = _round_to_10(resale_high_val)
-    expected_auction_price_val = _expected_auction_price(resale_mid_val)
+    (
+        expected_auction_price_val,
+        expected_auction_source,
+        expected_auction_comps_count,
+    ) = _expected_auction_estimate(resale_mid_val)
 
     discounted_bid_cap = _discounted_bid_cap(
-        expected_auction_price_val,
+        _discounted_resale_cap_price(resale_mid_val),
         repair_cost=float(repair_assessment.total_cost or 0.0),
         margin=COST_BUFFER,
     )
@@ -1163,6 +1205,27 @@ def run_ai_listing_analysis(listing_row: pd.Series, force_refresh: bool = False)
 
     expected_profit_val = max(0.0, expected_profit_val or 0.0) if expected_profit_val is not None else None
     expected_profit = _format_currency(expected_profit_val) if expected_profit_val is not None else data.get("expected_profit")
+    expected_auction_purchase_basis = expected_auction_price_val
+    if (
+        expected_auction_purchase_basis is not None
+        and current_price_val is not None
+        and current_price_val > expected_auction_purchase_basis
+    ):
+        expected_auction_purchase_basis = current_price_val
+    expected_auction_profit_val = None
+    expected_auction_worst_profit_val = None
+    if expected_auction_purchase_basis is not None and resale_mid_val is not None:
+        expected_auction_profit_val = (
+            _net_profit_value(resale_mid_val, expected_auction_purchase_basis, listing_row)
+            - COST_BUFFER
+            - repair_cost_val
+        )
+    if expected_auction_purchase_basis is not None and resale_low_val is not None:
+        expected_auction_worst_profit_val = (
+            _net_profit_value(resale_low_val, expected_auction_purchase_basis, listing_row)
+            - COST_BUFFER
+            - repair_cost_val
+        )
 
     profit_margin = data.get("profit_margin_percent")
     margin_value: Optional[float] = None
@@ -1301,6 +1364,10 @@ def run_ai_listing_analysis(listing_row: pd.Series, force_refresh: bool = False)
         "prep_estimate": _format_currency(costs_map["prep_estimate"]),
         "repair_estimate": _format_currency(repair_cost_val),
         "expected_auction_price": _format_currency(expected_auction_price_val),
+        "expected_auction_profit": _format_currency(expected_auction_profit_val) if expected_auction_profit_val is not None else None,
+        "expected_auction_worst_profit": _format_currency(expected_auction_worst_profit_val) if expected_auction_worst_profit_val is not None else None,
+        "expected_auction_source": expected_auction_source,
+        "expected_auction_comps_count": expected_auction_comps_count,
         "discount_used": DEFAULT_DISCOUNT,
         "resale_low": _format_currency(resale_low_val),
         "resale_mid": _format_currency(resale_mid_val),
@@ -1349,7 +1416,12 @@ def run_curve_listing_analysis(
         and url in set(cached_df["url"].dropna().tolist())
     ):
         existing = cached_df[cached_df["url"] == url].iloc[0].to_dict()
-        if existing.get("expected_auction_price") is None or existing.get("discount_used") is None:
+        if (
+            existing.get("expected_auction_price") is None
+            or existing.get("expected_auction_source") is None
+            or existing.get("expected_auction_profit") is None
+            or existing.get("discount_used") is None
+        ):
             force_refresh = True
         else:
             if analysis_context and not existing.get("analysis_context"):
@@ -1389,6 +1461,10 @@ def run_curve_listing_analysis(
             "prep_estimate": None,
             "repair_estimate": None,
             "expected_auction_price": None,
+            "expected_auction_profit": None,
+            "expected_auction_worst_profit": None,
+            "expected_auction_source": None,
+            "expected_auction_comps_count": None,
             "discount_used": DEFAULT_DISCOUNT,
             "resale_low": None,
             "resale_mid": None,
@@ -1444,12 +1520,20 @@ def run_curve_listing_analysis(
     resale_mid_val = _round_to_10(resale_mid)
     resale_low_val = _round_to_10(resale_low_val)
     resale_high_val = _round_to_10(resale_high_val)
-    expected_auction_price_val = _expected_auction_price(resale_mid_val)
+    (
+        expected_auction_price_val,
+        expected_auction_source,
+        expected_auction_comps_count,
+    ) = _expected_auction_estimate(
+        resale_mid_val,
+        comps_median=comps_median,
+        comps_count=comps_count,
+    )
 
     min_net_profit = max(MIN_NET_PROFIT_ABSOLUTE, MIN_NET_PROFIT_RATIO * (resale_low_val or resale_mid))
     recommended_max_bid_val = _solve_max_bid(resale_low_val, min_net_profit, listing_data)
     discounted_bid_cap = _discounted_bid_cap(
-        expected_auction_price_val,
+        _discounted_resale_cap_price(resale_mid_val),
         repair_cost=0.0,
         margin=min_net_profit,
     )
@@ -1542,7 +1626,10 @@ def run_curve_listing_analysis(
             "carsales_estimate": carsales_estimate,
             "listings_cluster_ok": bool(cluster_ok),
         },
-        "historical": {"matches": matches_payload},
+        "historical": {
+            "matches": matches_payload,
+            "match_count": comps_count or len(matches_payload),
+        },
         "ai_sanity": {"status": ai_status, "new_risks": ai_new_risks},
         "profit_margin_pct": base_margin_value,
         "odometer_reading": listing_data.get("odometer_reading"),
@@ -1587,6 +1674,28 @@ def run_curve_listing_analysis(
 
     expected_profit_val = net_profit_mid_val
     expected_profit = _format_currency(expected_profit_val) if expected_profit_val is not None else None
+
+    expected_auction_purchase_basis = expected_auction_price_val
+    if (
+        expected_auction_purchase_basis is not None
+        and current_price_val is not None
+        and current_price_val > expected_auction_purchase_basis
+    ):
+        expected_auction_purchase_basis = current_price_val
+    expected_auction_profit_val = None
+    expected_auction_worst_profit_val = None
+    if expected_auction_purchase_basis is not None and not repair_assessment.hard_avoid:
+        expected_auction_profit_val = (
+            _net_profit_value(resale_mid_val or resale_mid, expected_auction_purchase_basis, listing_data)
+            - repair_cost_val
+        )
+        expected_auction_worst_profit_val = (
+            _net_profit_value(resale_low_val or resale_mid, expected_auction_purchase_basis, listing_data)
+            - repair_cost_val
+        )
+    if "INTERSTATE" in risk_flags and not INTERSTATE_BUYING_ALLOWED:
+        expected_auction_profit_val = 0.0
+        expected_auction_worst_profit_val = 0.0
 
     profit_margin = None
     if expected_profit_val is not None and resale_mid_val:
@@ -1649,6 +1758,10 @@ def run_curve_listing_analysis(
         "prep_estimate": _format_currency(costs_map["prep_estimate"]),
         "repair_estimate": _format_currency(repair_cost_val),
         "expected_auction_price": _format_currency(expected_auction_price_val),
+        "expected_auction_profit": _format_currency(expected_auction_profit_val) if expected_auction_profit_val is not None else None,
+        "expected_auction_worst_profit": _format_currency(expected_auction_worst_profit_val) if expected_auction_worst_profit_val is not None else None,
+        "expected_auction_source": expected_auction_source,
+        "expected_auction_comps_count": expected_auction_comps_count,
         "discount_used": DEFAULT_DISCOUNT,
         "resale_low": _format_currency(resale_low_val),
         "resale_mid": _format_currency(resale_mid_val),
