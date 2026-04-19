@@ -2810,19 +2810,21 @@ if not no_curve_filtered.empty:
     if group_filter != "All" and "canonical_tag" in no_curve_filtered.columns:
         no_curve_filtered = no_curve_filtered[no_curve_filtered["canonical_tag"] == group_filter]
 
-if not no_curve_filtered.empty:
+def _render_no_curve_section(no_curve_df: pd.DataFrame) -> None:
+    if no_curve_df.empty:
+        return
     no_curve_html = clean_html(
         f"""
         <div class="autosniper-section">
             <div class="section-title">No Curve Coverage</div>
             <div class="section-subtitle">
-                {len(no_curve_filtered):,} listing(s) excluded from curve analysis.
+                {len(no_curve_df):,} listing(s) excluded from curve analysis.
             </div>
         </div>
         """
     )
     st.markdown(no_curve_html, unsafe_allow_html=True)
-    with st.expander("View no-curve listings"):
+    with st.expander("View no-curve listings", expanded=False):
         display_cols = [
             "year",
             "make",
@@ -2834,10 +2836,10 @@ if not no_curve_filtered.empty:
             "no_curve_reason",
             "url",
         ]
-        available_cols = [col for col in display_cols if col in no_curve_filtered.columns]
+        available_cols = [col for col in display_cols if col in no_curve_df.columns]
         if available_cols:
             st.dataframe(
-                no_curve_filtered[available_cols],
+                no_curve_df[available_cols],
                 use_container_width=True,
                 hide_index=True,
             )
@@ -2847,6 +2849,7 @@ if filtered.empty:
         st.info("No active listings match the current filters.")
     else:
         st.info("No curve-covered listings match the current filters.")
+        _render_no_curve_section(no_curve_filtered)
     st.stop()
 
 
@@ -3521,5 +3524,7 @@ def render_listing_card(row: pd.Series) -> None:
 
 for _, row in filtered_output.iterrows():
     render_listing_card(row)
+
+_render_no_curve_section(no_curve_filtered)
 
 st.caption(f"Last refreshed: {time.strftime('%Y-%m-%d %H:%M:%S')}")
