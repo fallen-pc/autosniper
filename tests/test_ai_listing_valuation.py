@@ -208,6 +208,11 @@ def test_curve_analysis_avoids_interstate_listings(monkeypatch) -> None:
     assert result["expected_profit"] == "$0"
     assert result["net_profit_mid"] == "$0"
     assert result["net_profit_worst"] == "$0"
+    assert result["profit_at_current_bid"] == "$0"
+    assert result["profit_at_current_bid_worst"] == "$0"
+    assert result["current_profit_label"] == "No edge"
+    assert result["flip_difficulty"] == "Out of scope"
+    assert result["action_label"] == "Avoid"
     assert result["computed_verdict"] == "Avoid"
     assert "INTERSTATE" in result["risk_flags"]
 
@@ -266,6 +271,11 @@ def test_curve_analysis_uses_historical_sold_median_for_expected_auction(monkeyp
     assert result["expected_auction_comps_count"] == 5
     assert ai_listing_valuation._parse_currency(result["expected_auction_profit"]) == round(expected_profit)
     assert ai_listing_valuation._parse_currency(result["recommended_max_bid"]) > 6_200
+    assert result["current_profit_label"] == "Strong"
+    assert result["expected_auction_profit_label"] in {"Good", "Strong"}
+    assert result["hard_max_safety"] in {"Conditional", "Strong"}
+    assert result["bid_status"] == "Cheap"
+    assert result["action_label"] == "Watch"
 
 
 def test_transport_default_matches_local_operating_cost() -> None:

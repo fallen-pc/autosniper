@@ -1618,6 +1618,7 @@ def _render_bid_logic_tab(
         ("Resale estimate", _format_currency_value(_compute_resale_value(row))),
         ("Expected auction", _format_price_text(row.get("expected_auction_price"))),
         ("Profit at expected", _format_price_text(row.get("expected_auction_worst_profit") or row.get("expected_auction_profit"))),
+        ("Current profit", _format_price_text(row.get("profit_at_current_bid_worst") or row.get("profit_at_current_bid"))),
         ("Current bid", _format_price_text(row.get("price"))),
         ("Auction cost", _format_currency_value(auction_cost)),
         ("Fees", _format_price_text(row.get("fees_estimate"))),
@@ -1630,9 +1631,12 @@ def _render_bid_logic_tab(
 
     first_row = st.columns(5)
     second_row = st.columns(5)
+    third_row = st.columns(max(1, len(metric_rows) - 10))
     for column, (label, value) in zip(first_row, metric_rows[:5]):
         column.metric(label, value)
-    for column, (label, value) in zip(second_row, metric_rows[5:]):
+    for column, (label, value) in zip(second_row, metric_rows[5:10]):
+        column.metric(label, value)
+    for column, (label, value) in zip(third_row, metric_rows[10:]):
         column.metric(label, value)
 
     _render_bullets(
@@ -1644,6 +1648,13 @@ def _render_bid_logic_tab(
             f"Expected auction comps: {_safe_text(row.get('expected_auction_comps_count'), 'N/A')}",
             f"Profit at expected auction (mid): {_format_price_text(row.get('expected_auction_profit'))}",
             f"Profit at expected auction (worst): {_format_price_text(row.get('expected_auction_worst_profit'))}",
+            f"Current-bid profit label: {_safe_text(row.get('current_profit_label'), 'N/A')}",
+            f"Expected-finish profit label: {_safe_text(row.get('expected_auction_profit_label'), 'N/A')}",
+            f"Hard-max safety: {_safe_text(row.get('hard_max_safety'), 'N/A')}",
+            f"Flip difficulty: {_safe_text(row.get('flip_difficulty'), 'N/A')}",
+            f"Difficulty reasons: {_safe_text(row.get('difficulty_reasons'), 'N/A')}",
+            f"Bid status: {_safe_text(row.get('bid_status'), 'N/A')}",
+            f"Action: {_safe_text(row.get('action_label'), 'N/A')}",
             f"Auction cost total: {_format_currency_value(auction_cost)}",
             f"Repair cost: {_format_currency_value(repair_deduction)}",
             f"Net profit (mid): {_format_price_text(row.get('net_profit_mid'))}",
@@ -2622,6 +2633,12 @@ st.markdown(
             color: #ecfff5;
             box-shadow: 0 0 14px rgba(57, 255, 152, 0.45);
         }
+        .action-pill {
+            background: rgba(39, 182, 255, 0.14);
+            border-color: rgba(39, 182, 255, 0.85);
+            color: #e4f7ff;
+            box-shadow: 0 0 12px rgba(39, 182, 255, 0.28);
+        }
         .chip-row {
             margin-top: 0.3rem;
             display: flex;
@@ -3276,10 +3293,20 @@ def render_listing_card(row: pd.Series) -> None:
         if top_buy_badge and top_buy_badge != "N/A"
         else ""
     )
+    action_label = _safe_text(row.get("action_label"), fallback="Review")
+    action_html = f'<div class="verdict-pill action-pill">{html.escape(action_label)}</div>'
 
     max_bid_display = _format_currency_value(row.get("max_bid_value"))
     resale_display = _format_currency_value(row.get("resale_value"))
     profit_pct_display = _format_percent(row.get("profit_margin_value"))
+    current_profit_display = _format_price_text(row.get("profit_at_current_bid_worst") or row.get("profit_at_current_bid"))
+    current_profit_label = _safe_text(row.get("current_profit_label"), fallback="Unknown")
+    expected_auction_display = _format_price_text(row.get("expected_auction_price"))
+    expected_profit_display = _format_price_text(row.get("expected_auction_worst_profit") or row.get("expected_auction_profit"))
+    expected_profit_label = _safe_text(row.get("expected_auction_profit_label"), fallback="Unknown")
+    hard_max_safety = _safe_text(row.get("hard_max_safety"), fallback="Unknown")
+    flip_difficulty = _safe_text(row.get("flip_difficulty"), fallback="Unknown")
+    bid_status = _safe_text(row.get("bid_status"), fallback="Unknown")
     score_100 = row.get("score_100_value")
     score_100_display = "N/A"
     if score_100 is not None and not (isinstance(score_100, float) and pd.isna(score_100)):
@@ -3372,6 +3399,7 @@ def render_listing_card(row: pd.Series) -> None:
             "</div>",
             '<div class="card-top-right">',
             f'<div class="verdict-pill {verdict_pill_class}">{html.escape(verdict_label)}</div>',
+            action_html,
             top_buy_html,
             '<div class="card-actions">',
             f'<a href="{html.escape(_safe_text(row.get("url"), fallback=""))}" target="_blank">Open</a>'
@@ -3385,7 +3413,11 @@ def render_listing_card(row: pd.Series) -> None:
             _build_metric_box("Current price", current_price_display),
             _build_metric_box_with_sub("Price update", price_update_value, price_update_sub, price_update_class),
             _build_metric_box("Time left", time_left_display),
-            _build_metric_box("Max bid", max_bid_display),
+            _build_metric_box_with_sub("Current profit", current_profit_display, current_profit_label),
+            _build_metric_box_with_sub("Expected finish", expected_auction_display, bid_status),
+            _build_metric_box_with_sub("Profit @ expected", expected_profit_display, expected_profit_label),
+            _build_metric_box_with_sub("Hard max", max_bid_display, hard_max_safety),
+            _build_metric_box("Difficulty", flip_difficulty),
             _build_metric_box("Expected resale", resale_display),
             _build_metric_box("Profit %", profit_pct_display),
             _build_metric_box("Score /100", score_100_display),

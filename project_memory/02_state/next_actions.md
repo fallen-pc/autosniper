@@ -1,7 +1,7 @@
 # Next Actions
 
 1. Review the current VIC active opportunity before changing margin/buffer constants: after refreshing valuations under the VIC-local rules, only one current curve-covered active row remains buyable, a VIC Hyundai i30 `Conditional Flip`.
-2. Split the single verdict label into clearer live-auction fields next: profit at current bid, profit at expected auction finish, hard-max safety, flip difficulty, and action/watch/bid status.
+2. Review the AI Analysis page layout after the new live-auction labels settle in: action/watch/bid status, current profit, expected-finish profit, hard-max safety, and flip difficulty are now generated but may need UI tuning after use on more listings.
 3. Keep Toyota hatch evidence alignment stable across the Autotrader recent-market lane and the repaired sold/Grays lane, without silently turning that work into repricing.
 4. Keep `project_memory/02_state/` current after each meaningful work slice.
 5. Use the launcher bootstrap contract for every fresh AI task so new sessions start from repo memory instead of chat recall.

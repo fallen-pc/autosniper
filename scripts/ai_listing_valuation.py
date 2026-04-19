@@ -1,6 +1,7 @@
 import json
 import os
 import re
+import warnings
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional, Tuple
@@ -39,6 +40,16 @@ REQUIRED_COLUMNS = [
     "expected_auction_source",
     "expected_auction_comps_count",
     "discount_used",
+    "profit_at_current_bid",
+    "profit_at_current_bid_worst",
+    "current_profit_score",
+    "current_profit_label",
+    "expected_auction_profit_label",
+    "hard_max_safety",
+    "flip_difficulty",
+    "difficulty_reasons",
+    "bid_status",
+    "action_label",
     # Risk decisioning
     "confidence",
     "risk_flags",
@@ -255,7 +266,13 @@ def _save_result_row(row: Dict[str, Any]) -> None:
             existing_row = existing_matches.iloc[-1].to_dict()
     row = _with_price_change_metadata(row, existing_row)
     new_row = pd.DataFrame([row])
-    combined = pd.concat([df, new_row], ignore_index=True)
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            "ignore",
+            message="The behavior of DataFrame concatenation with empty or all-NA entries is deprecated",
+            category=FutureWarning,
+        )
+        combined = pd.concat([df, new_row], ignore_index=True)
     combined = combined.drop_duplicates(subset=["url"], keep="last")
     write_dataframe_csv_atomic(combined, AI_RESULTS_PATH, index=False)
     _maybe_send_listing_alerts(row, existing_row)
@@ -673,6 +690,153 @@ def _discounted_resale_cap_price(resale_value: Optional[float]) -> Optional[floa
     if resale_value is None or resale_value <= 0:
         return None
     return _round_to_10(resale_value * DEFAULT_DISCOUNT)
+
+
+def _profit_at_purchase_price(
+    resale_mid: Optional[float],
+    resale_low: Optional[float],
+    purchase_price: Optional[float],
+    listing: Mapping[str, Any],
+    repair_cost: float,
+) -> tuple[Optional[float], Optional[float]]:
+    if purchase_price is None:
+        return None, None
+    mid_profit = None
+    worst_profit = None
+    if resale_mid is not None:
+        mid_profit = _net_profit_value(resale_mid, purchase_price, listing) - repair_cost
+    if resale_low is not None:
+        worst_profit = _net_profit_value(resale_low, purchase_price, listing) - repair_cost
+    return mid_profit, worst_profit
+
+
+def _profit_score(profit_worst: Optional[float], resale_mid: Optional[float]) -> Optional[float]:
+    if profit_worst is None or resale_mid is None or resale_mid <= 0:
+        return None
+    if profit_worst <= 0:
+        return 0.0
+    target_score = (profit_worst / MIN_NET_PROFIT_ABSOLUTE) * 35.0
+    margin_score = (profit_worst / resale_mid) * 100.0
+    return round(max(0.0, min(100.0, target_score + margin_score)), 1)
+
+
+def _profit_label(profit_worst: Optional[float], resale_mid: Optional[float]) -> str:
+    score = _profit_score(profit_worst, resale_mid)
+    if score is None:
+        return "Unknown"
+    if score >= 80:
+        return "Strong"
+    if score >= 60:
+        return "Good"
+    if score >= 40:
+        return "Conditional"
+    if score > 0:
+        return "Thin"
+    return "No edge"
+
+
+def _hard_max_safety_label(net_profit_worst: Optional[float]) -> str:
+    if net_profit_worst is None:
+        return "Unknown"
+    if net_profit_worst >= 3_000:
+        return "Strong"
+    if net_profit_worst >= MIN_NET_PROFIT_ABSOLUTE:
+        return "Conditional"
+    if net_profit_worst > 0:
+        return "Thin"
+    return "No edge"
+
+
+def _flip_difficulty(
+    listing: Mapping[str, Any],
+    repair_assessment: Any,
+    risk_flags: list[str],
+) -> tuple[str, str]:
+    reasons: list[str] = []
+    points = 0
+    risk_set = set(risk_flags)
+    if "INTERSTATE" in risk_set and not INTERSTATE_BUYING_ALLOWED:
+        return "Out of scope", "Interstate listing"
+    if repair_assessment.hard_avoid or "MECHANICAL" in risk_set:
+        return "Hard", "Mechanical/hard-avoid risk"
+
+    if "WARNING_LIGHT" in risk_set or "ENGINE_UNKNOWN" in risk_set:
+        points += 3
+        reasons.append("warning/mechanical uncertainty")
+    if "UNREGISTERED" in risk_set:
+        points += 2
+        reasons.append("unregistered")
+    if "HIGH_KM" in risk_set:
+        points += 2
+        reasons.append("high kilometres")
+    if "NO_SERVICE_HISTORY" in risk_set:
+        points += 2
+        reasons.append("no service history")
+    elif str(listing.get("service_history") or "").strip().lower() == "partial":
+        points += 1
+        reasons.append("partial service history")
+    if "MISSING_KEYS" in risk_set:
+        points += 1
+        reasons.append("missing spare key")
+    cosmetic_panels = int(getattr(repair_assessment, "cosmetic_panels", 0) or 0)
+    if cosmetic_panels:
+        points += min(2, cosmetic_panels)
+        reasons.append("cosmetic repairs")
+
+    if points >= 5:
+        return "Hard", "; ".join(reasons)
+    if points >= 2:
+        return "Medium", "; ".join(reasons)
+    if points == 1:
+        return "Easy-medium", "; ".join(reasons)
+    return "Easy", "Clean basic flip checks"
+
+
+def _bid_status_label(
+    current_bid: Optional[float],
+    expected_auction_price: Optional[float],
+    hard_max_bid: Optional[float],
+) -> str:
+    if current_bid is None:
+        return "Unknown"
+    if hard_max_bid is not None:
+        if hard_max_bid <= 0 or current_bid > hard_max_bid + EDGE_BUFFER:
+            return "Over max"
+        if current_bid >= hard_max_bid * 0.95:
+            return "At ceiling"
+        if current_bid >= hard_max_bid * 0.85:
+            return "Near ceiling"
+    if expected_auction_price is not None and expected_auction_price > 0:
+        if current_bid <= expected_auction_price * 0.80:
+            return "Cheap"
+        if current_bid <= expected_auction_price:
+            return "Below expected"
+        return "Above expected"
+    return "Open"
+
+
+def _action_label(
+    computed_verdict: str,
+    bid_status: str,
+    expected_auction_worst_profit: Optional[float],
+    current_worst_profit: Optional[float],
+    hard_max_safety: str,
+) -> str:
+    if computed_verdict in {"Avoid", "Trap", "Not Viable"}:
+        return "Avoid"
+    if computed_verdict in {"Not Covered", "Not Eligible"}:
+        return "Review"
+    if bid_status in {"Over max", "At ceiling"}:
+        return "Avoid"
+    if hard_max_safety == "No edge":
+        return "Avoid"
+    if bid_status == "Near ceiling":
+        return "Bid carefully"
+    if (expected_auction_worst_profit or 0.0) >= MIN_NET_PROFIT_ABSOLUTE:
+        return "Watch"
+    if (current_worst_profit or 0.0) >= MIN_NET_PROFIT_ABSOLUTE:
+        return "Watch"
+    return "Review"
 
 
 def _discounted_bid_cap(
@@ -1325,6 +1489,26 @@ def run_ai_listing_analysis(listing_row: pd.Series, force_refresh: bool = False)
         return "Trap"
 
     computed_verdict = _derive_verdict()
+    current_profit_val, current_worst_profit_val = _profit_at_purchase_price(
+        resale_mid_val,
+        resale_low_val,
+        current_price_val,
+        listing_row,
+        repair_cost_val,
+    )
+    current_profit_score = _profit_score(current_worst_profit_val, resale_mid_val)
+    current_profit_label = _profit_label(current_worst_profit_val, resale_mid_val)
+    expected_auction_profit_label = _profit_label(expected_auction_worst_profit_val, resale_mid_val)
+    hard_max_safety = _hard_max_safety_label(net_profit_worst_val)
+    flip_difficulty, difficulty_reasons = _flip_difficulty(listing_row, repair_assessment, risk_flags)
+    bid_status = _bid_status_label(current_price_val, expected_auction_price_val, recommended_max_bid_val)
+    action_label = _action_label(
+        computed_verdict,
+        bid_status,
+        expected_auction_worst_profit_val,
+        current_worst_profit_val,
+        hard_max_safety,
+    )
 
     if notes_to_append:
         existing_notes = (
@@ -1369,6 +1553,16 @@ def run_ai_listing_analysis(listing_row: pd.Series, force_refresh: bool = False)
         "expected_auction_source": expected_auction_source,
         "expected_auction_comps_count": expected_auction_comps_count,
         "discount_used": DEFAULT_DISCOUNT,
+        "profit_at_current_bid": _format_currency(current_profit_val) if current_profit_val is not None else None,
+        "profit_at_current_bid_worst": _format_currency(current_worst_profit_val) if current_worst_profit_val is not None else None,
+        "current_profit_score": current_profit_score,
+        "current_profit_label": current_profit_label,
+        "expected_auction_profit_label": expected_auction_profit_label,
+        "hard_max_safety": hard_max_safety,
+        "flip_difficulty": flip_difficulty,
+        "difficulty_reasons": difficulty_reasons,
+        "bid_status": bid_status,
+        "action_label": action_label,
         "resale_low": _format_currency(resale_low_val),
         "resale_mid": _format_currency(resale_mid_val),
         "resale_high": _format_currency(resale_high_val),
@@ -1420,6 +1614,8 @@ def run_curve_listing_analysis(
             existing.get("expected_auction_price") is None
             or existing.get("expected_auction_source") is None
             or existing.get("expected_auction_profit") is None
+            or existing.get("action_label") is None
+            or existing.get("current_profit_label") is None
             or existing.get("discount_used") is None
         ):
             force_refresh = True
@@ -1466,6 +1662,16 @@ def run_curve_listing_analysis(
             "expected_auction_source": None,
             "expected_auction_comps_count": None,
             "discount_used": DEFAULT_DISCOUNT,
+            "profit_at_current_bid": None,
+            "profit_at_current_bid_worst": None,
+            "current_profit_score": None,
+            "current_profit_label": "Unknown",
+            "expected_auction_profit_label": "Unknown",
+            "hard_max_safety": "Unknown",
+            "flip_difficulty": "Unknown",
+            "difficulty_reasons": "No curve coverage",
+            "bid_status": "Unknown",
+            "action_label": "Review",
             "resale_low": None,
             "resale_mid": None,
             "resale_high": None,
@@ -1697,6 +1903,23 @@ def run_curve_listing_analysis(
         expected_auction_profit_val = 0.0
         expected_auction_worst_profit_val = 0.0
 
+    current_profit_val, current_worst_profit_val = _profit_at_purchase_price(
+        resale_mid_val or resale_mid,
+        resale_low_val or resale_mid,
+        current_price_val,
+        listing_data,
+        repair_cost_val,
+    )
+    if repair_assessment.hard_avoid or ("INTERSTATE" in risk_flags and not INTERSTATE_BUYING_ALLOWED):
+        current_profit_val = 0.0
+        current_worst_profit_val = 0.0
+    current_profit_score = _profit_score(current_worst_profit_val, resale_mid_val)
+    current_profit_label = _profit_label(current_worst_profit_val, resale_mid_val)
+    expected_auction_profit_label = _profit_label(expected_auction_worst_profit_val, resale_mid_val)
+    hard_max_safety = _hard_max_safety_label(net_profit_worst_val)
+    flip_difficulty, difficulty_reasons = _flip_difficulty(listing_data, repair_assessment, risk_flags)
+    bid_status = _bid_status_label(current_price_val, expected_auction_price_val, recommended_max_bid_val)
+
     profit_margin = None
     if expected_profit_val is not None and resale_mid_val:
         profit_margin = f"{(expected_profit_val / resale_mid_val) * 100:.1f}%"
@@ -1727,6 +1950,13 @@ def run_curve_listing_analysis(
         computed_verdict = "Avoid"
     elif repair_verdict == "Marginal" and computed_verdict not in ("Avoid", "Trap", "Not Viable"):
         computed_verdict = "Marginal (repairs)"
+    action_label = _action_label(
+        computed_verdict,
+        bid_status,
+        expected_auction_worst_profit_val,
+        current_worst_profit_val,
+        hard_max_safety,
+    )
     edge_note = ""
     if no_edge_at_current_bid:
         edge_note = NO_EDGE_MESSAGE.format(
@@ -1763,6 +1993,16 @@ def run_curve_listing_analysis(
         "expected_auction_source": expected_auction_source,
         "expected_auction_comps_count": expected_auction_comps_count,
         "discount_used": DEFAULT_DISCOUNT,
+        "profit_at_current_bid": _format_currency(current_profit_val) if current_profit_val is not None else None,
+        "profit_at_current_bid_worst": _format_currency(current_worst_profit_val) if current_worst_profit_val is not None else None,
+        "current_profit_score": current_profit_score,
+        "current_profit_label": current_profit_label,
+        "expected_auction_profit_label": expected_auction_profit_label,
+        "hard_max_safety": hard_max_safety,
+        "flip_difficulty": flip_difficulty,
+        "difficulty_reasons": difficulty_reasons,
+        "bid_status": bid_status,
+        "action_label": action_label,
         "resale_low": _format_currency(resale_low_val),
         "resale_mid": _format_currency(resale_mid_val),
         "resale_high": _format_currency(resale_high_val),
