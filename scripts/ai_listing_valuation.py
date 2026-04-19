@@ -1581,6 +1581,9 @@ def run_curve_listing_analysis(
     if profit_bid_basis is not None and not repair_assessment.hard_avoid:
         net_profit_mid_val = _net_profit_value(resale_mid_val or resale_mid, profit_bid_basis, listing_data) - repair_cost_val
         net_profit_worst_val = _net_profit_value(resale_low_val or resale_mid, profit_bid_basis, listing_data) - repair_cost_val
+    if "INTERSTATE" in risk_flags and not INTERSTATE_BUYING_ALLOWED:
+        net_profit_mid_val = 0.0
+        net_profit_worst_val = 0.0
 
     expected_profit_val = net_profit_mid_val
     expected_profit = _format_currency(expected_profit_val) if expected_profit_val is not None else None

@@ -205,6 +205,9 @@ def test_curve_analysis_avoids_interstate_listings(monkeypatch) -> None:
     )
 
     assert result["recommended_max_bid"] == "$0"
+    assert result["expected_profit"] == "$0"
+    assert result["net_profit_mid"] == "$0"
+    assert result["net_profit_worst"] == "$0"
     assert result["computed_verdict"] == "Avoid"
     assert "INTERSTATE" in result["risk_flags"]
 
