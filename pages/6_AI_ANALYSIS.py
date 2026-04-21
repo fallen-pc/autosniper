@@ -1364,7 +1364,7 @@ def _render_grays_comparables(row: pd.Series, comps_items: list[str]) -> None:
     _render_bullets("Comparable sales (Grays)", comps_items)
     tag_value = row.get("canonical_tag")
     if not tag_value or (isinstance(tag_value, float) and pd.isna(tag_value)):
-        st.info("Canonical tag missing. Historical Grays comparables unavailable.")
+        st.info("Vehicle curve tag missing. Historical Grays comparables unavailable.")
         return
 
     listing_year = _safe_int(row.get("year"))
@@ -1548,7 +1548,7 @@ def _render_overview_tab(
     summary_cols[2].metric("Risk flags", risk_count)
 
     profile_items = [
-        f"Canonical tag: {_safe_text(row.get('canonical_tag'), fallback='N/A')}",
+        f"Vehicle tag: {_safe_text(row.get('canonical_tag'), fallback='N/A')}",
         f"Expected sale source: {_safe_text(row.get('expected_sale_note'), fallback='N/A')}",
         f"Curve tag: {_curve_key_for_row(row) or 'N/A'}",
     ]
@@ -1619,17 +1619,17 @@ def _render_bid_logic_tab(
 
     metric_rows = [
         ("Resale estimate", _format_currency_value(_compute_resale_value(row))),
-        ("Expected auction", _format_price_text(row.get("expected_auction_price"))),
-        ("Profit at expected", _format_price_text(row.get("expected_auction_worst_profit") or row.get("expected_auction_profit"))),
-        ("Current profit", _format_price_text(row.get("profit_at_current_bid_worst") or row.get("profit_at_current_bid"))),
-        ("Current bid", _format_price_text(row.get("price"))),
+        ("Expected auction finish", _format_price_text(row.get("expected_auction_price"))),
+        ("Profit at expected finish", _format_price_text(row.get("expected_auction_worst_profit") or row.get("expected_auction_profit"))),
+        ("Profit if bought now", _format_price_text(row.get("profit_at_current_bid_worst") or row.get("profit_at_current_bid"))),
+        ("Current price", _format_price_text(row.get("price"))),
         ("Auction cost", _format_currency_value(auction_cost)),
         ("Fees", _format_price_text(row.get("fees_estimate"))),
         ("Transport", _format_price_text(row.get("transport_estimate"))),
         ("Repair cost", _format_currency_value(repair_deduction)),
         ("Confidence", confidence_display),
         ("Net profit", _format_price_text(row.get("net_profit_worst") or row.get("net_profit_mid"))),
-        ("Max bid", _format_currency_value(row.get("max_bid_value"))),
+        ("Max bid limit", _format_currency_value(row.get("max_bid_value"))),
     ]
 
     first_row = st.columns(5)
@@ -1646,12 +1646,12 @@ def _render_bid_logic_tab(
         "Profit notes",
         [
             f"Discount used: {float(row.get('discount_used') or 0):.0%}" if pd.notna(row.get("discount_used")) else "Discount used: N/A",
-            f"Expected auction price: {_format_price_text(row.get('expected_auction_price'))}",
-            f"Expected auction source: {_safe_text(row.get('expected_auction_source'), 'N/A')}",
-            f"Expected auction comps: {_safe_text(row.get('expected_auction_comps_count'), 'N/A')}",
-            f"Profit at expected auction (mid): {_format_price_text(row.get('expected_auction_profit'))}",
-            f"Profit at expected auction (worst): {_format_price_text(row.get('expected_auction_worst_profit'))}",
-            f"Current-bid profit label: {_safe_text(row.get('current_profit_label'), 'N/A')}",
+            f"Expected auction finish: {_format_price_text(row.get('expected_auction_price'))}",
+            f"Expected finish source: {_safe_text(row.get('expected_auction_source'), 'N/A')}",
+            f"Expected finish comps: {_safe_text(row.get('expected_auction_comps_count'), 'N/A')}",
+            f"Profit at expected finish (mid): {_format_price_text(row.get('expected_auction_profit'))}",
+            f"Profit at expected finish (worst): {_format_price_text(row.get('expected_auction_worst_profit'))}",
+            f"Profit-if-bought-now label: {_safe_text(row.get('current_profit_label'), 'N/A')}",
             f"Expected-finish profit label: {_safe_text(row.get('expected_auction_profit_label'), 'N/A')}",
             f"Hard-max safety: {_safe_text(row.get('hard_max_safety'), 'N/A')}",
             f"Flip difficulty: {_safe_text(row.get('flip_difficulty'), 'N/A')}",
@@ -2389,8 +2389,8 @@ else:
             if str(val).strip() and str(val).strip() != UNCLASSIFIED
         }
     )
-group_filter = st.sidebar.selectbox("Canonical tag", ["All"] + group_values)
-refresh_clicked = st.sidebar.button("Refresh curve valuations")
+group_filter = st.sidebar.selectbox("Vehicle curve", ["All"] + group_values)
+refresh_clicked = st.sidebar.button("Refresh valuations")
 force_refresh = refresh_clicked
 
 st.markdown(
@@ -2432,8 +2432,8 @@ with filter_cols[2]:
         horizontal=True,
     )
 with filter_cols[3]:
-    hide_avoid = st.checkbox("Hide Avoid", value=True)
-    hide_no_max_bid = st.checkbox("Hide N/A Max Bid", value=True)
+    hide_avoid = st.checkbox("Hide Avoid listings", value=True)
+    hide_no_max_bid = st.checkbox("Hide listings without max bid", value=True)
 
 TIME_BUCKETS: dict[str, tuple[Optional[float], Optional[float]]] = {
     "All": (None, None),
@@ -2823,15 +2823,15 @@ def _render_no_curve_section(no_curve_df: pd.DataFrame) -> None:
     no_curve_html = clean_html(
         f"""
         <div class="autosniper-section">
-            <div class="section-title">No Curve Coverage</div>
+            <div class="section-title">Diagnostics</div>
             <div class="section-subtitle">
-                {len(no_curve_df):,} listing(s) excluded from curve analysis.
+                {len(no_curve_df):,} active listing(s) do not currently have enough curve coverage for AI pricing.
             </div>
         </div>
         """
     )
     st.markdown(no_curve_html, unsafe_allow_html=True)
-    with st.expander("View no-curve listings", expanded=False):
+    with st.expander("View no-curve diagnostics", expanded=False):
         display_cols = [
             "year",
             "make",
@@ -3133,12 +3133,27 @@ else:
 if "url" in filtered_output.columns:
     filtered_output = filtered_output.drop_duplicates(subset=["url"], keep="first")
 
+hidden_count = max(0, len(output) - len(filtered_output))
+active_filter_labels = []
+if hide_avoid:
+    active_filter_labels.append("Avoid listings hidden")
+if hide_no_max_bid:
+    active_filter_labels.append("no-max-bid listings hidden")
+if min_margin > 0:
+    active_filter_labels.append(f"minimum margin {min_margin:.0f}%")
+if time_bucket != "All":
+    active_filter_labels.append(f"time bucket {time_bucket}")
+if group_filter != "All":
+    active_filter_labels.append("vehicle curve selected")
+active_filter_text = "; ".join(active_filter_labels) if active_filter_labels else "No extra filters active"
+
 summary_html = clean_html(
     f"""
     <div class="autosniper-section">
-        <div class="section-title">Restricted Listings</div>
+        <div class="section-title">Active AI Opportunities</div>
         <div class="section-subtitle">
-            Showing {len(filtered_output):,} of {len(output):,} listings in view.
+            Showing {len(filtered_output):,} of {len(output):,} curve-covered listing(s).
+            {hidden_count:,} hidden by current filters. {active_filter_text}.
         </div>
     </div>
     """
@@ -3426,10 +3441,10 @@ def render_listing_card(row: pd.Series) -> None:
             _build_metric_box("Current price", current_price_display),
             _build_metric_box_with_sub("Price update", price_update_value, price_update_sub, price_update_class),
             _build_metric_box("Time left", time_left_display),
-            _build_metric_box_with_sub("Current profit", current_profit_display, current_profit_label),
+            _build_metric_box_with_sub("Profit if bought now", current_profit_display, current_profit_label),
             _build_metric_box_with_sub("Expected finish", expected_auction_display, bid_status),
-            _build_metric_box_with_sub("Profit @ expected", expected_profit_display, expected_profit_label),
-            _build_metric_box_with_sub("Hard max", max_bid_display, hard_max_safety),
+            _build_metric_box_with_sub("Profit at expected finish", expected_profit_display, expected_profit_label),
+            _build_metric_box_with_sub("Max bid limit", max_bid_display, hard_max_safety),
             _build_metric_box("Difficulty", flip_difficulty),
             _build_metric_box("Expected resale", resale_display),
             _build_metric_box("Profit %", profit_pct_display),

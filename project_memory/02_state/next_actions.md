@@ -1,7 +1,7 @@
 # Next Actions
 
 1. Review the current VIC active opportunity before changing margin/buffer constants: after refreshing valuations under the VIC-local rules, only one current curve-covered active row remains buyable, a VIC Hyundai i30 `Conditional Flip`.
-2. Review the AI Analysis page layout after the new live-auction labels settle in: action/watch/bid status, current profit, expected-finish profit, hard-max safety, and flip difficulty are now generated but may need UI tuning after use on more listings.
+2. Use the updated AI Analysis page as the daily active-opportunity screen and judge it against real listings. The current UI is now good enough to use, but future tuning should be based on what is confusing during actual auction review, not on more speculative layout work.
 3. Keep Toyota hatch evidence alignment stable across the Autotrader recent-market lane and the repaired sold/Grays lane, without silently turning that work into repricing.
 4. Keep `project_memory/02_state/` current after each meaningful work slice.
 5. Use the launcher bootstrap contract for every fresh AI task so new sessions start from repo memory instead of chat recall.
@@ -12,10 +12,10 @@
 10. Keep Camry AXVH71R `Ascent Hybrid` and `Ascent Sport Hybrid` as separate saved lanes; review `2025` Ascent Hybrid and any later-year Ascent Sport Hybrid evidence as deliberate year-extension tasks, not automatic merges.
 11. Treat the Camry ASV70R petrol curve as live-market built: private Carsales and Autotrader carry the evidence, while the current single Grays sold row is non-contributory for valuation.
 12. Watch the next available scheduled hourly run only as a scheduler sanity check: it is acceptable to miss a run when the laptop is off/asleep, but the next run while awake/logged in should resume cleanly.
-13. Defer daily automation re-enable until the user has handled the Windows laptop setup: plugged in as needed, sleep disabled for run windows, logged-in user session available, and visible-browser Autotrader session still valid.
+13. Keep the enabled daily task in place and monitor only for regressions, not basic completion. The 2026-04-21 retry proved the current daily path can finish, but it is slow and still depends on the laptop being awake, plugged in if needed, logged in, and holding a valid visible-browser Autotrader session.
 14. Keep using the refreshed Autotrader storage state and visible-browser Autotrader path unless headless mode is separately repaired; headless still should not be assumed stable.
 15. If a future daily run fails after expensive Grays work, resume from the failed stage deliberately instead of rerunning the whole pipeline and overwriting useful completed stages.
-16. Consider adding a safer daily resume/guard path before relying on unattended daily runs long-term, even though the 2026-04-18 clean run passed.
+16. Add one-run missed-daily catch-up logic next so a disconnected/sleeping laptop can perform the latest missed daily run once when it reconnects, without replaying a backlog of old runs.
 17. Before committing future CSV snapshots, run `scripts/readiness_smoke.py` and `scripts/governance_checks.py check`, and sanity-check broad active counts against `active_vehicle_links.csv` and `vehicle_state.csv`.
 18. Treat `active_snapshots.csv` as current live monitoring state only; hourly URL-scoped runs should reflect the monitored AI Analysis scope, and old history should be read from the archive instead of restored into the live file.
 19. Next milestone is production-readiness hardening away from scheduler setup for now: profit/valuation correctness first, then scheduler reliability and Autotrader headless/session stability when the user is ready.
