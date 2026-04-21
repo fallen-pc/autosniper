@@ -14,8 +14,8 @@ if exist "%ROOT%\.venv\Scripts\python.exe" (
     set PYTHON=python
 )
 
-echo [%%date%% %%time%%] START daily with "%PYTHON%" >> "%LOGFILE%"
+echo [%date% %time%] START daily with "%PYTHON%" >> "%LOGFILE%"
 "%PYTHON%" "%ROOT%\scripts\scheduled_jobs.py" --job daily >> "%LOGFILE%" 2>&1
 set ERR=%ERRORLEVEL%
-echo [%%date%% %%time%%] END daily exit=%ERR% >> "%LOGFILE%"
+echo [%date% %time%] END daily exit=%ERR% >> "%LOGFILE%"
 exit /b %ERR%

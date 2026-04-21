@@ -1,4 +1,4 @@
-import os
+import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -18,6 +18,7 @@ from shared.styling import (
 DEFAULT_URL = "https://www.autotrader.com.au/for-sale/used/toyota/vic/melbourne"
 DEFAULT_OUTPUT = "autotrader_isolated/output/first_page_results.csv"
 DEFAULT_STORAGE_STATE = "autotrader_isolated/output/storage_state.json"
+ROOT_DIR = Path(__file__).resolve().parent.parent
 
 
 st.set_page_config(page_title="AUTOTRADER SCRAPER", layout="wide")
@@ -121,84 +122,107 @@ with helper_right:
     create_state_clicked = st.button("Create/Refresh storage state", key="autotrader_create_state")
 
 
-def _build_scrape_command() -> str:
-    command = f'"{sys.executable}" autotrader_isolated/scrape_first_page.py'
+def _build_scrape_command() -> list[str]:
+    command = [sys.executable, "autotrader_isolated/scrape_first_page.py"]
     if url:
-        command += f' --url "{url}"'
+        command.extend(["--url", url])
     if output_path:
-        command += f' --output "{output_path}"'
+        command.extend(["--output", output_path])
     if storage_state:
-        command += f' --storage-state "{storage_state}"'
+        command.extend(["--storage-state", storage_state])
     if cookie_file:
-        command += f' --cookie-file "{cookie_file}"'
+        command.extend(["--cookie-file", cookie_file])
     if all_pages:
-        command += " --all-pages"
+        command.append("--all-pages")
     if max_pages > 0:
-        command += f" --max-pages {int(max_pages)}"
+        command.extend(["--max-pages", str(int(max_pages))])
     if sleep_seconds > 0:
-        command += f" --sleep-seconds {sleep_seconds}"
+        command.extend(["--sleep-seconds", str(sleep_seconds)])
     if checkpoint_every >= 0:
-        command += f" --checkpoint-every {int(checkpoint_every)}"
+        command.extend(["--checkpoint-every", str(int(checkpoint_every))])
     if priority_state:
-        command += f' --priority-state "{priority_state}"'
+        command.extend(["--priority-state", priority_state])
     if skip_existing:
-        command += " --skip-existing"
+        command.append("--skip-existing")
     if headful:
-        command += " --playwright-headful"
+        command.append("--playwright-headful")
     if browser:
-        command += f" --playwright-browser {browser}"
+        command.extend(["--playwright-browser", browser])
     if wait_mode:
-        command += f" --playwright-wait {wait_mode}"
+        command.extend(["--playwright-wait", wait_mode])
     if block_resources:
-        command += " --playwright-block-resources"
+        command.append("--playwright-block-resources")
     if slowmo > 0:
-        command += f" --playwright-slowmo {int(slowmo)}"
+        command.extend(["--playwright-slowmo", str(int(slowmo))])
     if playwright_timeout:
-        command += f" --playwright-timeout {int(playwright_timeout)}"
+        command.extend(["--playwright-timeout", str(int(playwright_timeout))])
     return command
 
 
-def _build_storage_state_command() -> str:
-    command = f'"{sys.executable}" autotrader_isolated/create_storage_state.py'
+def _build_storage_state_command() -> list[str]:
+    command = [sys.executable, "autotrader_isolated/create_storage_state.py"]
     if state_url:
-        command += f' --url "{state_url}"'
+        command.extend(["--url", state_url])
     if storage_state:
-        command += f' --output "{storage_state}"'
+        command.extend(["--output", storage_state])
     if browser:
-        command += f" --browser {browser}"
+        command.extend(["--browser", browser])
     if wait_mode:
-        command += f" --wait {wait_mode}"
+        command.extend(["--wait", wait_mode])
     if playwright_timeout:
-        command += f" --timeout {int(playwright_timeout)}"
+        command.extend(["--timeout", str(int(playwright_timeout))])
     if slowmo > 0:
-        command += f" --slowmo {int(slowmo)}"
+        command.extend(["--slowmo", str(int(slowmo))])
     if retries:
-        command += f" --retries {int(retries)}"
+        command.extend(["--retries", str(int(retries))])
     if retry_delay:
-        command += f" --retry-delay {retry_delay}"
+        command.extend(["--retry-delay", str(retry_delay)])
     if wait_seconds:
-        command += f" --wait-seconds {int(wait_seconds)}"
+        command.extend(["--wait-seconds", str(int(wait_seconds))])
     return command
+
+
+def _command_preview(command: list[str]) -> str:
+    return subprocess.list2cmdline(command)
+
+
+def _run_command(command: list[str]) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        command,
+        cwd=ROOT_DIR,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+
+def _render_command_result(result: subprocess.CompletedProcess[str]) -> None:
+    if result.stdout.strip():
+        st.code(result.stdout, language="text")
+    if result.stderr.strip():
+        st.code(result.stderr, language="text")
 
 
 if show_command:
-    st.code(_build_scrape_command(), language="powershell")
+    st.code(_command_preview(_build_scrape_command()), language="powershell")
 
 if create_state_clicked:
     with st.spinner("Opening browser to refresh storage state..."):
-        exit_code = os.system(_build_storage_state_command())
-        if exit_code == 0:
+        result = _run_command(_build_storage_state_command())
+        if result.returncode == 0:
             st.success("Storage state saved.")
         else:
             st.error("Storage state refresh failed. Check the terminal output.")
+        _render_command_result(result)
 
 if run_clicked:
     with st.spinner("Running Autotrader scraper..."):
-        exit_code = os.system(_build_scrape_command())
-        if exit_code == 0:
+        result = _run_command(_build_scrape_command())
+        if result.returncode == 0:
             st.success("Scrape completed.")
         else:
             st.error("Scraper failed. Check the terminal output.")
+        _render_command_result(result)
 
 section_heading("Latest Output", "Preview the newest Autotrader results.")
 output_file = Path(output_path or DEFAULT_OUTPUT)

@@ -21,11 +21,13 @@ if __package__ in (None, ""):
     from scripts.active_snapshot_retention import compact_active_snapshots
     from scripts.atomic_csv import append_dict_rows_csv_atomic, write_dataframe_csv_atomic
     from shared.data_loader import dataset_path
+    from shared.schema import STATE_ACTIVE, STATE_STATIC_PARSED
     from shared.state_machine import ListingObservation, ensure_state_schema, upsert_state_row
 else:  # pragma: no cover
     from scripts.active_snapshot_retention import compact_active_snapshots
     from scripts.atomic_csv import append_dict_rows_csv_atomic, write_dataframe_csv_atomic
     from shared.data_loader import dataset_path
+    from shared.schema import STATE_ACTIVE, STATE_STATIC_PARSED
     from shared.state_machine import ListingObservation, ensure_state_schema, upsert_state_row
 
 # Set up logging
@@ -291,6 +293,36 @@ def _load_active_queue_urls() -> set[str]:
         if cleaned:
             queue_urls.add(cleaned)
     return queue_urls
+
+
+def reconcile_state_active_queue(state_df: pd.DataFrame, queue_urls: set[str] | None = None) -> tuple[pd.DataFrame, int]:
+    """Demote stale active state rows that are no longer present in the active link queue."""
+    out = ensure_state_schema(state_df)
+    if out.empty or "url" not in out.columns or "state" not in out.columns:
+        return out, 0
+
+    active_queue_urls = queue_urls if queue_urls is not None else _load_active_queue_urls()
+    if not active_queue_urls:
+        return out, 0
+
+    working = out.copy()
+    working["_url_norm"] = working["url"].fillna("").astype(str).map(clean_url).str.strip().str.lower()
+    state_series = working["state"].fillna("").astype(str).str.strip().str.lower()
+    stale_mask = state_series.eq(STATE_ACTIVE) & ~working["_url_norm"].isin(active_queue_urls)
+    stale_count = int(stale_mask.sum())
+    if stale_count == 0:
+        return out, 0
+
+    observed_at = _utc_now_iso()
+    working.loc[stale_mask, "state"] = STATE_STATIC_PARSED
+    working.loc[stale_mask, "state_updated_at"] = observed_at
+    working.loc[stale_mask, "time_remaining"] = ""
+    working.loc[stale_mask, "terminal_reason"] = ""
+    working.loc[stale_mask, "fetch_fail_count"] = 0
+    working.loc[stale_mask, "last_fetch_error"] = ""
+    working.loc[stale_mask, "last_evidence"] = "removed_from_active_queue"
+    working = working.drop(columns=["_url_norm"])
+    return ensure_state_schema(working), stale_count
 
 
 def _load_active_seed_dataframe() -> pd.DataFrame:
@@ -568,6 +600,11 @@ async def update_bids(
             print("No active seed dataset found. Expected active or static listings CSV.")
             return [], skipped_urls
         state_df = _load_state_dataframe()
+        state_df, reconciled_rows = reconcile_state_active_queue(state_df)
+        if reconciled_rows:
+            print(
+                f"Demoted {reconciled_rows} stale active state row(s) not present in active link queue."
+            )
 
         df["url"] = df["url"].apply(clean_url)
         if df.empty:

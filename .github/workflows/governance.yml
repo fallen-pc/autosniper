@@ -28,9 +28,13 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt pytest
 
-      - name: Run governance tests
+      - name: Run full test suite
         run: |
-          pytest tests/test_governance.py tests/test_curve_versioning.py tests/test_curves.py tests/test_canonical_tagging_cache.py tests/test_project_memory.py
+          pytest -q
+
+      - name: Run readiness smoke
+        run: |
+          python scripts/readiness_smoke.py
 
       - name: Run project memory checks
         run: |

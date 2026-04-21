@@ -14,8 +14,8 @@ if exist "%ROOT%\.venv\Scripts\python.exe" (
     set PYTHON=python
 )
 
-echo [%%date%% %%time%%] START hourly-monitor with "%PYTHON%" >> "%LOGFILE%"
+echo [%date% %time%] START hourly-monitor with "%PYTHON%" >> "%LOGFILE%"
 "%PYTHON%" "%ROOT%\scripts\scheduled_jobs.py" --job hourly-monitor >> "%LOGFILE%" 2>&1
 set ERR=%ERRORLEVEL%
-echo [%%date%% %%time%%] END hourly-monitor exit=%ERR% >> "%LOGFILE%"
+echo [%date% %time%] END hourly-monitor exit=%ERR% >> "%LOGFILE%"
 exit /b %ERR%

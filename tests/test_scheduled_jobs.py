@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+import json
+import sys
+from datetime import date, datetime, timezone
+
 import pandas as pd
 
 import scripts.scheduled_jobs as scheduled_jobs
@@ -158,3 +162,54 @@ def test_daily_smoke_runs_limited_pipeline(monkeypatch) -> None:
         ),
         ("outcomes", None),
     ]
+
+
+def test_explicit_daily_run_counts_today_even_before_schedule(monkeypatch) -> None:
+    monkeypatch.setenv("AUTOSNIPER_LOCAL_TIMEZONE", "Australia/Sydney")
+    monkeypatch.setenv("AUTOSNIPER_DAILY_SCHEDULE_LOCAL_TIME", "09:00")
+
+    before_schedule_utc = datetime(2026, 4, 20, 20, 18, tzinfo=timezone.utc)
+
+    assert scheduled_jobs._coverage_date_for_explicit_daily_run(before_schedule_utc) == date(2026, 4, 21)
+    assert scheduled_jobs._latest_due_daily_date_local(before_schedule_utc) == date(2026, 4, 20)
+
+
+def test_should_not_catch_up_if_metrics_already_cover_today(monkeypatch, tmp_path) -> None:
+    metrics_path = tmp_path / "metrics.json"
+    metrics_path.write_text(
+        json.dumps({"last_run_utc": "2026-04-21T01:49:24.105072Z"}),
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(scheduled_jobs, "METRICS_PATH", metrics_path)
+    monkeypatch.setattr(scheduled_jobs, "DAILY_STATE_PATH", tmp_path / "daily_run_state.json")
+    monkeypatch.setenv("AUTOSNIPER_LOCAL_TIMEZONE", "Australia/Sydney")
+    monkeypatch.setenv("AUTOSNIPER_DAILY_SCHEDULE_LOCAL_TIME", "09:00")
+
+    should_run, coverage_date = scheduled_jobs._should_run_missed_daily_catchup(
+        now=datetime(2026, 4, 21, 3, 0, tzinfo=timezone.utc)
+    )
+
+    assert should_run is False
+    assert coverage_date == date(2026, 4, 21)
+
+
+def test_main_runs_daily_catchup_before_hourly(monkeypatch) -> None:
+    calls: list[tuple[str, object]] = []
+
+    monkeypatch.setattr(sys, "argv", ["scheduled_jobs.py", "--job", "hourly-monitor"])
+    monkeypatch.setattr(scheduled_jobs, "_wait_for_internet", lambda max_wait_hours: True)
+    monkeypatch.setattr(
+        scheduled_jobs,
+        "_run_missed_daily_catchup_if_due",
+        lambda trigger_job: calls.append(("catchup", trigger_job)) or True,
+    )
+    monkeypatch.setattr(
+        scheduled_jobs,
+        "run_hourly_monitor",
+        lambda: calls.append(("hourly", None)),
+    )
+
+    scheduled_jobs.main()
+
+    assert calls == [("catchup", "hourly-monitor")]

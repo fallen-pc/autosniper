@@ -6,10 +6,11 @@ import json
 import os
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import date, datetime, time as dt_time, timedelta, timezone
 from pathlib import Path
 from typing import Any, Dict, Iterable, Optional
 import subprocess
+from zoneinfo import ZoneInfo
 
 import pandas as pd
 import requests
@@ -37,6 +38,7 @@ CHECK_INTERVAL_SECONDS = int(os.getenv("AUTOSNIPER_NET_CHECK_INTERVAL_SEC", "300
 MAX_WAIT_HOURS = int(os.getenv("AUTOSNIPER_MAX_WAIT_HOURS", "24"))
 GOVERNANCE_REPORT_DIR = ROOT_DIR / "output" / "governance"
 METRICS_PATH = ROOT_DIR / "status" / "metrics.json"
+DAILY_STATE_PATH = ROOT_DIR / "status" / "daily_run_state.json"
 
 LOCK_PATH = ROOT_DIR / "logs" / "scrape.lock"
 LOCK_TTLS = {
@@ -48,6 +50,146 @@ LOCK_TTLS = {
 }
 
 COMPLETED_STATUSES = {"sold", "referred", "canceled", "cancelled", "closed"}
+
+
+def _local_timezone() -> timezone | ZoneInfo:
+    timezone_name = os.getenv("AUTOSNIPER_LOCAL_TIMEZONE", "Australia/Sydney").strip() or "Australia/Sydney"
+    try:
+        return ZoneInfo(timezone_name)
+    except Exception:
+        return timezone.utc
+
+
+def _daily_schedule_time_local() -> dt_time:
+    raw = os.getenv("AUTOSNIPER_DAILY_SCHEDULE_LOCAL_TIME", "09:00").strip() or "09:00"
+    try:
+        hour_text, minute_text = raw.split(":", 1)
+        hour = int(hour_text)
+        minute = int(minute_text)
+        if not (0 <= hour <= 23 and 0 <= minute <= 59):
+            raise ValueError
+        return dt_time(hour=hour, minute=minute)
+    except ValueError:
+        return dt_time(hour=9, minute=0)
+
+
+def _now_local(now: datetime | None = None) -> datetime:
+    moment = now or datetime.now(timezone.utc)
+    if moment.tzinfo is None:
+        moment = moment.replace(tzinfo=timezone.utc)
+    return moment.astimezone(_local_timezone())
+
+
+def _latest_due_daily_date_local(now: datetime | None = None) -> date:
+    local_now = _now_local(now)
+    due_date = local_now.date()
+    if local_now.time() < _daily_schedule_time_local():
+        due_date -= timedelta(days=1)
+    return due_date
+
+
+def _coverage_date_for_explicit_daily_run(now: datetime | None = None) -> date:
+    return _now_local(now).date()
+
+
+def _load_daily_run_state() -> Dict[str, Any]:
+    if not DAILY_STATE_PATH.exists():
+        return {}
+    try:
+        return json.loads(DAILY_STATE_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+def _write_daily_run_state(payload: Dict[str, Any]) -> None:
+    DAILY_STATE_PATH.parent.mkdir(parents=True, exist_ok=True)
+    DAILY_STATE_PATH.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+
+
+def _parse_iso_date(value: Any) -> date | None:
+    text = str(value or "").strip()
+    if not text:
+        return None
+    try:
+        return date.fromisoformat(text)
+    except ValueError:
+        return None
+
+
+def _parse_iso_datetime(value: Any) -> datetime | None:
+    text = str(value or "").strip()
+    if not text:
+        return None
+    if text.endswith("Z"):
+        text = text[:-1] + "+00:00"
+    try:
+        return datetime.fromisoformat(text)
+    except ValueError:
+        return None
+
+
+def _last_attempted_daily_date_local() -> date | None:
+    state = _load_daily_run_state()
+    explicit = _parse_iso_date(state.get("last_coverage_date_local"))
+    if explicit is not None:
+        return explicit
+    metrics = _load_existing_metrics()
+    metrics_time = _parse_iso_datetime(metrics.get("last_run_utc"))
+    if metrics_time is None:
+        return None
+    return metrics_time.astimezone(_local_timezone()).date()
+
+
+def _record_daily_run_start(*, trigger: str, coverage_date_local: date) -> None:
+    state = _load_daily_run_state()
+    state.update(
+        {
+            "last_started_utc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+            "last_status": "running",
+            "last_trigger": trigger,
+            "last_coverage_date_local": coverage_date_local.isoformat(),
+            "last_error_message": "",
+        }
+    )
+    _write_daily_run_state(state)
+
+
+def _record_daily_run_finish(
+    *,
+    trigger: str,
+    coverage_date_local: date,
+    success: bool,
+    error_message: str = "",
+) -> None:
+    state = _load_daily_run_state()
+    completed_utc = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    state.update(
+        {
+            "last_completed_utc": completed_utc,
+            "last_status": "success" if success else "failure",
+            "last_trigger": trigger,
+            "last_coverage_date_local": coverage_date_local.isoformat(),
+            "last_error_message": error_message.strip(),
+        }
+    )
+    if success:
+        state["last_success_utc"] = completed_utc
+        state["last_success_coverage_date_local"] = coverage_date_local.isoformat()
+    else:
+        state["last_failure_utc"] = completed_utc
+        state["last_failure_coverage_date_local"] = coverage_date_local.isoformat()
+    _write_daily_run_state(state)
+
+
+def _should_run_missed_daily_catchup(now: datetime | None = None) -> tuple[bool, date]:
+    enabled = os.getenv("AUTOSNIPER_ENABLE_MISSED_DAILY_CATCHUP", "1").strip().lower()
+    if enabled in {"0", "false", "no", "off"}:
+        return False, _latest_due_daily_date_local(now)
+    target_date = _latest_due_daily_date_local(now)
+    last_attempted = _last_attempted_daily_date_local()
+    if last_attempted is not None and last_attempted >= target_date:
+        return False, target_date
+    return True, target_date
 
 
 def _load_existing_metrics() -> Dict[str, Any]:
@@ -339,6 +481,49 @@ def run_daily_smoke() -> None:
     )
 
 
+def _run_daily_job(*, trigger: str, coverage_date_local: date) -> None:
+    if not _acquire_lock("daily"):
+        return
+
+    started = time.time()
+    _record_daily_run_start(trigger=trigger, coverage_date_local=coverage_date_local)
+    try:
+        run_daily_pipeline()
+        write_scraper_health_report(job_name="daily" if trigger == "scheduled" else f"daily-{trigger}", job_status="success")
+        _record_daily_run_finish(trigger=trigger, coverage_date_local=coverage_date_local, success=True)
+        _write_daily_metrics(success=True, duration_sec=time.time() - started)
+    except Exception as exc:
+        error_message = f"{type(exc).__name__}: {exc}"
+        write_scraper_health_report(
+            job_name="daily" if trigger == "scheduled" else f"daily-{trigger}",
+            job_status="failure",
+            error_message=error_message,
+        )
+        _record_daily_run_finish(
+            trigger=trigger,
+            coverage_date_local=coverage_date_local,
+            success=False,
+            error_message=error_message,
+        )
+        _send_job_failure_alert("daily" if trigger == "scheduled" else f"daily-{trigger}", error_message)
+        _write_daily_metrics(success=False, duration_sec=time.time() - started)
+        raise
+    finally:
+        _release_lock()
+
+
+def _run_missed_daily_catchup_if_due(trigger_job: str) -> bool:
+    should_run, coverage_date_local = _should_run_missed_daily_catchup()
+    if not should_run:
+        return False
+    print(
+        "Missed daily run detected; "
+        f"starting catch-up for local date {coverage_date_local.isoformat()} before {trigger_job}."
+    )
+    _run_daily_job(trigger="catchup", coverage_date_local=coverage_date_local)
+    return True
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run scheduled scraping jobs. This is the primary production runner.")
     parser.add_argument(
@@ -354,6 +539,13 @@ def main() -> None:
         print(message)
         write_scraper_health_report(job_name=args.job, job_status="failure", error_message=message)
         _send_job_failure_alert(args.job, message)
+        return
+
+    if args.job not in {"daily", "daily-smoke"} and _run_missed_daily_catchup_if_due(args.job):
+        return
+
+    if args.job == "daily":
+        _run_daily_job(trigger="scheduled", coverage_date_local=_coverage_date_for_explicit_daily_run())
         return
 
     if not _acquire_lock(args.job):
@@ -372,14 +564,10 @@ def main() -> None:
         elif args.job == "vic-hourly":
             run_vic_refresh_hourly()
         write_scraper_health_report(job_name=args.job, job_status="success")
-        if args.job == "daily":
-            _write_daily_metrics(success=True, duration_sec=time.time() - started)
     except Exception as exc:
         error_message = f"{type(exc).__name__}: {exc}"
         write_scraper_health_report(job_name=args.job, job_status="failure", error_message=error_message)
         _send_job_failure_alert(args.job, error_message)
-        if args.job == "daily":
-            _write_daily_metrics(success=False, duration_sec=time.time() - started)
         raise
     finally:
         _release_lock()

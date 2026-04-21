@@ -15,7 +15,8 @@
 13. Keep the enabled daily task in place and monitor only for regressions, not basic completion. The 2026-04-21 retry proved the current daily path can finish, but it is slow and still depends on the laptop being awake, plugged in if needed, logged in, and holding a valid visible-browser Autotrader session.
 14. Keep using the refreshed Autotrader storage state and visible-browser Autotrader path unless headless mode is separately repaired; headless still should not be assumed stable.
 15. If a future daily run fails after expensive Grays work, resume from the failed stage deliberately instead of rerunning the whole pipeline and overwriting useful completed stages.
-16. Add one-run missed-daily catch-up logic next so a disconnected/sleeping laptop can perform the latest missed daily run once when it reconnects, without replaying a backlog of old runs.
+16. Validate the new app-level missed-daily catch-up path with a real scheduler miss when convenient, but treat it as hardening verification rather than missing functionality.
 17. Before committing future CSV snapshots, run `scripts/readiness_smoke.py` and `scripts/governance_checks.py check`, and sanity-check broad active counts against `active_vehicle_links.csv` and `vehicle_state.csv`.
 18. Treat `active_snapshots.csv` as current live monitoring state only; hourly URL-scoped runs should reflect the monitored AI Analysis scope, and old history should be read from the archive instead of restored into the live file.
-19. Next milestone is production-readiness hardening away from scheduler setup for now: profit/valuation correctness first, then scheduler reliability and Autotrader headless/session stability when the user is ready.
+19. Keep the tracked CSV/artifact footprint under deliberate control. If the sandbox keeps needing large generated files in Git, decide that explicitly; otherwise move more generated outputs out of tracked paths instead of accepting silent churn.
+20. Next milestone is production-readiness hardening away from scheduler setup for now: profit/valuation correctness first, then scheduler reliability and Autotrader headless/session stability when the user is ready.
