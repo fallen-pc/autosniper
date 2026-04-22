@@ -6,6 +6,7 @@ from shared.valuation_display import (
     conservative_margin_percent,
     first_currency_value,
     is_safe_opportunity_row,
+    recommended_max_bid_value,
     rank_live_opportunities,
 )
 
@@ -109,3 +110,14 @@ def test_conservative_margin_percent_prefers_worst_profit_over_stored_margin() -
     )
 
     assert conservative_margin_percent(row) == 5.0
+
+
+def test_recommended_max_bid_value_does_not_fallback_to_current_price() -> None:
+    row = pd.Series(
+        {
+            "recommended_max_bid": None,
+            "price": "$7,500",
+        }
+    )
+
+    assert recommended_max_bid_value(row) is None

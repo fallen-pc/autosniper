@@ -163,6 +163,58 @@ def test_curve_analysis_uses_current_bid_profit_when_no_edge(monkeypatch) -> Non
     assert net_profit_mid != round(impossible_zero_bid_profit)
 
 
+def test_curve_analysis_expected_profit_uses_final_max_bid_basis(monkeypatch) -> None:
+    repair_assessment = RepairAssessment(
+        hard_avoid=False,
+        pills=[],
+        cosmetic_panels=0,
+        glass_cost=0,
+        replacement_cost=0,
+        risk_buffer=0,
+        base_cost=0,
+        severity_level="minor",
+        severity_multiplier=1.0,
+        total_cost=0,
+        reasons=[],
+    )
+    listing = pd.Series(
+        {
+            "url": "test://expected-profit-max-basis",
+            "price": "$5,000",
+            "make": "Toyota",
+            "model": "Corolla",
+            "variant": "Ascent",
+            "body_type": "Hatch",
+            "transmission": "Auto",
+            "fuel_type": "Petrol",
+            "location": "Melbourne VIC",
+            "rego_state": "VIC",
+            "general_condition": "",
+        }
+    )
+
+    monkeypatch.setattr(ai_listing_valuation, "load_cached_results", lambda: pd.DataFrame(columns=ai_listing_valuation.REQUIRED_COLUMNS))
+    monkeypatch.setattr(ai_listing_valuation, "_save_result_row", lambda row: None)
+    monkeypatch.setattr(ai_listing_valuation, "assess_repairs", lambda condition: repair_assessment)
+    monkeypatch.setattr(ai_listing_valuation, "_solve_max_bid", lambda resale_low, min_profit, listing_data: 5_040.0)
+
+    result = ai_listing_valuation.run_curve_listing_analysis(
+        listing,
+        resale_mid=20_000,
+        comps_count=5,
+        analysis_context="active",
+        force_refresh=True,
+    )
+
+    max_bid_profit = ai_listing_valuation._net_profit_value(20_000, 5_040.0, listing.to_dict())
+    current_bid_profit = ai_listing_valuation._net_profit_value(20_000, 5_000.0, listing.to_dict())
+
+    assert result["no_edge"] is True
+    assert ai_listing_valuation._parse_currency(result["expected_profit"]) == round(max_bid_profit)
+    assert ai_listing_valuation._parse_currency(result["expected_profit"]) != round(current_bid_profit)
+    assert ai_listing_valuation._parse_currency(result["net_profit_mid"]) == round(current_bid_profit)
+
+
 def test_curve_analysis_avoids_interstate_listings(monkeypatch) -> None:
     repair_assessment = RepairAssessment(
         hard_avoid=False,

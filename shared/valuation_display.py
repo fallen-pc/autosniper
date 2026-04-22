@@ -117,6 +117,15 @@ def conservative_margin_percent(row: Mapping[str, Any]) -> float | None:
     )
 
 
+def recommended_max_bid_value(row: Mapping[str, Any]) -> float | None:
+    """Return only a real recommended max bid; do not fall back to current price."""
+    return first_currency_value(
+        row.get("recommended_max_bid"),
+        row.get("recommended_max_bid_ai"),
+        row.get("max_bid"),
+    )
+
+
 def _first_row_value(row: pd.Series, *columns: str) -> Any:
     for column in columns:
         if column in row.index:

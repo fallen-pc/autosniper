@@ -1372,12 +1372,17 @@ def run_curve_listing_analysis(
         )
         recommended_max_bid_val = float(adjusted_bid)
 
+    max_bid_mid_profit_val = None
     max_bid_worst_profit_val = None
     if recommended_max_bid_val is not None and not repair_assessment.hard_avoid:
+        max_bid_mid_profit_val = (
+            _net_profit_value(resale_mid_val or resale_mid, recommended_max_bid_val, listing_data) - repair_cost_val
+        )
         max_bid_worst_profit_val = (
             _net_profit_value(resale_low_val or resale_mid, recommended_max_bid_val, listing_data) - repair_cost_val
         )
     if "INTERSTATE" in risk_flags and not INTERSTATE_BUYING_ALLOWED:
+        max_bid_mid_profit_val = 0.0
         max_bid_worst_profit_val = 0.0
 
     no_edge_at_current_bid = False
@@ -1404,7 +1409,9 @@ def run_curve_listing_analysis(
         net_profit_mid_val = 0.0
         net_profit_worst_val = 0.0
 
-    expected_profit_val = net_profit_mid_val
+    # Keep the legacy expected_profit field tied to the final max-bid basis.
+    # Current-bid and expected-finish profit already have dedicated fields.
+    expected_profit_val = max_bid_mid_profit_val
     expected_profit = _format_currency(expected_profit_val) if expected_profit_val is not None else None
 
     expected_auction_purchase_basis = expected_auction_price_val

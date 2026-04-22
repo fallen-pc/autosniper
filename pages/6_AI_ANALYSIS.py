@@ -36,7 +36,11 @@ from shared.repair_pricing import (
     assess_repairs,
 )
 from shared.styling import clean_html, display_banner, inject_global_styles, page_intro
-from shared.valuation_display import conservative_margin_percent, first_currency_value
+from shared.valuation_display import (
+    conservative_margin_percent,
+    first_currency_value,
+    recommended_max_bid_value,
+)
 
 
 st.set_page_config(page_title="AI Analysis (Curve)", layout="wide")
@@ -3024,7 +3028,7 @@ def _compute_resale_value(row: pd.Series) -> Optional[float]:
 
 
 def _compute_max_bid_value(row: pd.Series) -> Optional[float]:
-    return first_currency_value(row.get("recommended_max_bid"), row.get("price"))
+    return recommended_max_bid_value(row)
 
 
 def _compute_auction_cost_value(row: pd.Series) -> Optional[float]:
