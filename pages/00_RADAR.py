@@ -18,7 +18,7 @@ from shared.ops_utils import (
     time_bucket,
 )
 from shared.styling import clean_html, display_banner, inject_global_styles, page_intro, section_heading
-from shared.valuation_display import conservative_margin_percent, is_safe_opportunity_row
+from shared.valuation_display import active_profit_value, conservative_margin_percent, is_safe_opportunity_row
 
 
 st.set_page_config(page_title="Radar", layout="wide")
@@ -35,10 +35,9 @@ def _safe_text(value: object) -> str:
 
 
 def _build_profit_value(row: pd.Series) -> float | None:
-    for key in ("net_profit_worst", "net_profit_mid", "expected_profit"):
-        value = parse_currency(row.get(key))
-        if value is not None:
-            return value
+    profit_value = active_profit_value(row)
+    if profit_value is not None:
+        return profit_value
     resale_mid = parse_currency(row.get("resale_mid"))
     current_bid = parse_currency(row.get("price"))
     if resale_mid is not None and current_bid is not None:
