@@ -117,6 +117,35 @@ def conservative_margin_percent(row: Mapping[str, Any]) -> float | None:
     )
 
 
+def active_profit_value(row: Mapping[str, Any]) -> float | None:
+    """Return the best available live-opportunity profit, preferring explicit newer fields."""
+    return first_currency_value(
+        row.get("net_profit_worst"),
+        row.get("net_profit_worst_ai"),
+        row.get("expected_auction_worst_profit"),
+        row.get("expected_auction_worst_profit_ai"),
+        row.get("net_profit_mid"),
+        row.get("net_profit_mid_ai"),
+        row.get("expected_auction_profit"),
+        row.get("expected_auction_profit_ai"),
+        row.get("expected_profit"),
+        row.get("expected_profit_ai"),
+        row.get("profit_at_current_bid_worst"),
+        row.get("profit_at_current_bid"),
+        row.get("profit_value"),
+    )
+
+
+def expected_finish_profit_value(row: Mapping[str, Any]) -> float | None:
+    """Return the best available expected-finish profit for calibration/tracking."""
+    return first_currency_value(
+        row.get("expected_auction_profit"),
+        row.get("expected_auction_profit_ai"),
+        row.get("expected_profit"),
+        row.get("expected_profit_ai"),
+    )
+
+
 def recommended_max_bid_value(row: Mapping[str, Any]) -> float | None:
     """Return only a real recommended max bid; do not fall back to current price."""
     return first_currency_value(

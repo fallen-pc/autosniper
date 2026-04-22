@@ -10,6 +10,7 @@ from scripts.atomic_csv import write_dataframe_csv_atomic
 from scripts.ai_listing_valuation import load_cached_results
 from scripts.ai_price_analysis import load_historical_sales
 from shared.data_loader import dataset_path
+from shared.valuation_display import expected_finish_profit_value
 
 
 SCORING_PATH = dataset_path("scored_listings.csv")
@@ -160,7 +161,7 @@ def _load_predicted_rows() -> pd.DataFrame:
     df["predicted_resale_price"] = df["carsales_price_estimate"].apply(
         _parse_currency_average
     )
-    df["predicted_profit"] = df["expected_profit"].apply(_parse_currency)
+    df["predicted_profit"] = df.apply(expected_finish_profit_value, axis=1)
     df["predicted_score"] = pd.to_numeric(df["score_out_of_10"], errors="coerce")
     verdict_from_score = df["predicted_score"].apply(_score_to_tier)
 

@@ -14,7 +14,12 @@ from shared.curves import list_curve_tags, load_curves
 from shared.data_loader import dataset_path, ensure_datasets_available
 from shared.global_filters import apply_global_sidebar_filters, render_global_sidebar_filters
 from shared.styling import clean_html, display_banner, escape_html, inject_global_styles, page_intro, safe_url, section_heading
-from shared.valuation_display import parse_currency_value, parse_percent_value, rank_live_opportunities
+from shared.valuation_display import (
+    active_profit_value,
+    parse_currency_value,
+    parse_percent_value,
+    rank_live_opportunities,
+)
 
 
 st.set_page_config(page_title="AutoSniper - Dashboard", layout="wide")
@@ -371,7 +376,7 @@ if VALUATIONS_FILE.exists():
                 valuations_df["analysis_timestamp"], errors="coerce"
             )
         valuations_df = valuations_df.sort_values("analysis_timestamp").drop_duplicates("url", keep="last")
-        valuations_df["expected_profit_value"] = valuations_df["expected_profit"].apply(parse_currency_value)
+        valuations_df["active_profit_value"] = valuations_df.apply(active_profit_value, axis=1)
         valuations_df["profit_margin_value"] = valuations_df["profit_margin_percent"].apply(parse_percent_value)
         valuations_df["score_value"] = pd.to_numeric(valuations_df.get("score_out_of_10"), errors="coerce")
 
@@ -383,7 +388,7 @@ if not valuations_df.empty and not active_scope_df.empty:
         "profit_margin_percent",
         "profit_margin_value",
         "expected_profit",
-        "expected_profit_value",
+        "active_profit_value",
         "confidence",
         "score_out_of_10",
         "score_value",
@@ -678,7 +683,7 @@ if not active_scope_df.empty:
         transparency_confidence_avg = float(confidence_series.mean())
         transparency_confidence_share = float((confidence_series >= 0.75).mean())
 
-    profit_series = pd.to_numeric(active_scope_df.get("expected_profit_value"), errors="coerce")
+    profit_series = pd.to_numeric(active_scope_df.get("active_profit_value"), errors="coerce")
     if profit_series.notna().any():
         profit_bands = pd.cut(
             profit_series,

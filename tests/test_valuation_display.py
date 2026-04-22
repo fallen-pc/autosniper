@@ -3,7 +3,9 @@ from __future__ import annotations
 import pandas as pd
 
 from shared.valuation_display import (
+    active_profit_value,
     conservative_margin_percent,
+    expected_finish_profit_value,
     first_currency_value,
     is_safe_opportunity_row,
     recommended_max_bid_value,
@@ -110,6 +112,29 @@ def test_conservative_margin_percent_prefers_worst_profit_over_stored_margin() -
     )
 
     assert conservative_margin_percent(row) == 5.0
+
+
+def test_active_profit_value_prefers_explicit_newer_fields() -> None:
+    row = pd.Series(
+        {
+            "net_profit_worst": "$1,000",
+            "expected_auction_profit": "$4,000",
+            "expected_profit": "$9,000",
+        }
+    )
+
+    assert active_profit_value(row) == 1000.0
+
+
+def test_expected_finish_profit_value_prefers_expected_auction_profit() -> None:
+    row = pd.Series(
+        {
+            "expected_auction_profit": "$2,500",
+            "expected_profit": "$7,500",
+        }
+    )
+
+    assert expected_finish_profit_value(row) == 2500.0
 
 
 def test_recommended_max_bid_value_does_not_fallback_to_current_price() -> None:
