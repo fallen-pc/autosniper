@@ -1884,6 +1884,14 @@ def run_curve_listing_analysis(
         )
         recommended_max_bid_val = float(adjusted_bid)
 
+    max_bid_worst_profit_val = None
+    if recommended_max_bid_val is not None and not repair_assessment.hard_avoid:
+        max_bid_worst_profit_val = (
+            _net_profit_value(resale_low_val or resale_mid, recommended_max_bid_val, listing_data) - repair_cost_val
+        )
+    if "INTERSTATE" in risk_flags and not INTERSTATE_BUYING_ALLOWED:
+        max_bid_worst_profit_val = 0.0
+
     no_edge_at_current_bid = False
     if recommended_max_bid_val is not None and current_price_val is not None:
         no_edge_at_current_bid = recommended_max_bid_val <= current_price_val + EDGE_BUFFER
@@ -1946,7 +1954,7 @@ def run_curve_listing_analysis(
     current_profit_score = _profit_score(current_worst_profit_val, resale_mid_val)
     current_profit_label = _profit_label(current_worst_profit_val, resale_mid_val)
     expected_auction_profit_label = _profit_label(expected_auction_worst_profit_val, resale_mid_val)
-    hard_max_safety = _hard_max_safety_label(net_profit_worst_val)
+    hard_max_safety = _hard_max_safety_label(max_bid_worst_profit_val)
     flip_difficulty, difficulty_reasons = _flip_difficulty(listing_data, repair_assessment, risk_flags)
     bid_status = _bid_status_label(current_price_val, expected_auction_price_val, recommended_max_bid_val)
 

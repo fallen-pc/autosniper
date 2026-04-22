@@ -467,6 +467,76 @@ def test_curve_analysis_keeps_raw_expected_finish_and_stores_profit_basis(monkey
     assert ai_listing_valuation._parse_currency(result["expected_auction_profit"]) == round(expected_profit)
 
 
+def test_curve_analysis_hard_max_safety_uses_final_max_bid_basis(monkeypatch) -> None:
+    repair_assessment = RepairAssessment(
+        hard_avoid=False,
+        pills=[],
+        cosmetic_panels=0,
+        glass_cost=0,
+        replacement_cost=0,
+        risk_buffer=0,
+        base_cost=0,
+        severity_level="minor",
+        severity_multiplier=1.0,
+        total_cost=0,
+        reasons=[],
+    )
+    listing = pd.Series(
+        {
+            "url": "test://hard-max-basis",
+            "price": "$5,000",
+            "make": "Hyundai",
+            "model": "i30",
+            "variant": "Active",
+            "body_type": "Hatch",
+            "transmission": "Auto",
+            "fuel_type": "Petrol",
+            "location": "Melbourne VIC",
+            "rego_state": "VIC",
+            "general_condition": "",
+        }
+    )
+    captured: dict[str, object] = {}
+
+    monkeypatch.setattr(
+        ai_listing_valuation,
+        "load_cached_results",
+        lambda: pd.DataFrame(columns=ai_listing_valuation.REQUIRED_COLUMNS),
+    )
+    monkeypatch.setattr(ai_listing_valuation, "_save_result_row", lambda row: None)
+    monkeypatch.setattr(ai_listing_valuation, "assess_repairs", lambda condition: repair_assessment)
+    monkeypatch.setattr(ai_listing_valuation, "_solve_max_bid", lambda resale_low, min_profit, listing_data: 5_040.0)
+
+    def _capture_hard_max_label(profit_value):
+        captured["profit_value"] = profit_value
+        return "RECORDED"
+
+    monkeypatch.setattr(ai_listing_valuation, "_hard_max_safety_label", _capture_hard_max_label)
+
+    result = ai_listing_valuation.run_curve_listing_analysis(
+        listing,
+        resale_mid=20_000,
+        comps_count=5,
+        analysis_context="active",
+        force_refresh=True,
+    )
+
+    resale_low = ai_listing_valuation._parse_currency(result["resale_low"])
+    recommended_max_bid = ai_listing_valuation._parse_currency(result["recommended_max_bid"])
+    assert resale_low is not None and recommended_max_bid is not None
+
+    expected_profit_at_max = ai_listing_valuation._net_profit_value(
+        resale_low,
+        recommended_max_bid,
+        listing.to_dict(),
+    )
+
+    assert captured["profit_value"] == expected_profit_at_max
+    assert result["hard_max_safety"] == "RECORDED"
+    assert result["no_edge"] is True
+    assert result["action_label"] == "Avoid"
+
+
 def test_transport_default_matches_local_operating_cost() -> None:
     assert ai_listing_valuation.DEFAULT_TRANSPORT == 200.0
     assert ai_listing_valuation.OPERATING_STATE == "VIC"

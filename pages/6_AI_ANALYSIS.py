@@ -189,7 +189,16 @@ def _expected_finish_display_parts(row: pd.Series) -> tuple[str, str]:
         and bid_basis > raw_expected
     ):
         status_text = f"{status_text}; using current bid"
+    if _truthy(row.get("no_edge")):
+        status_text = f"{status_text}; no edge now"
     return display_text, status_text
+
+
+def _max_bid_safety_text(row: pd.Series) -> str:
+    safety_text = _safe_text(row.get("hard_max_safety"), fallback="Unknown")
+    if safety_text in {"Unknown", "N/A"}:
+        return safety_text
+    return f"{safety_text} at max"
 
 
 def _format_odometer(value: object) -> str:
@@ -1671,7 +1680,7 @@ def _render_bid_logic_tab(
             f"Profit at expected finish (worst): {_format_price_text(row.get('expected_auction_worst_profit'))}",
             f"Profit-if-bought-now label: {_safe_text(row.get('current_profit_label'), 'N/A')}",
             f"Expected-finish profit label: {_safe_text(row.get('expected_auction_profit_label'), 'N/A')}",
-            f"Hard-max safety: {_safe_text(row.get('hard_max_safety'), 'N/A')}",
+            f"Max-bid safety: {_max_bid_safety_text(row)}",
             f"Flip difficulty: {_safe_text(row.get('flip_difficulty'), 'N/A')}",
             f"Difficulty reasons: {_safe_text(row.get('difficulty_reasons'), 'N/A')}",
             f"Bid status: {_safe_text(row.get('bid_status'), 'N/A')}",
@@ -3350,7 +3359,7 @@ def render_listing_card(row: pd.Series) -> None:
     expected_auction_display, expected_finish_status = _expected_finish_display_parts(row)
     expected_profit_display = _format_price_text(row.get("expected_auction_worst_profit") or row.get("expected_auction_profit"))
     expected_profit_label = _safe_text(row.get("expected_auction_profit_label"), fallback="Unknown")
-    hard_max_safety = _safe_text(row.get("hard_max_safety"), fallback="Unknown")
+    hard_max_safety = _max_bid_safety_text(row)
     flip_difficulty = _safe_text(row.get("flip_difficulty"), fallback="Unknown")
     bid_status = _safe_text(row.get("bid_status"), fallback="Unknown")
     score_100 = row.get("score_100_value")
