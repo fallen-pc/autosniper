@@ -11,6 +11,7 @@ from shared.csv_utils import read_csv_or_empty
 from shared.curves import list_curve_tags, load_curves
 from shared.data_loader import dataset_path
 from shared.ops_utils import load_active_df, load_valuations_df, parse_percent
+from shared.valuation_display import conservative_margin_percent
 
 
 STATE_KEY = "global_filter_states"
@@ -110,13 +111,8 @@ def _load_sidebar_filter_source() -> pd.DataFrame:
     else:
         df["_global_vehicle_type"] = ""
 
-    margin_source = None
-    for column in ("profit_margin_value", "profit_margin_percent"):
-        if column in df.columns:
-            margin_source = df[column]
-            break
-    if margin_source is not None:
-        df["_global_margin"] = margin_source.apply(parse_percent)
+    if any(column in df.columns for column in ("profit_margin_value", "profit_margin_percent", "net_profit_worst", "resale_mid")):
+        df["_global_margin"] = df.apply(conservative_margin_percent, axis=1)
     else:
         df["_global_margin"] = None
 
@@ -219,10 +215,8 @@ def apply_global_sidebar_filters(
         vehicle_type_series = pd.Series("", index=filtered.index)
 
     margin_series = None
-    for column in margin_columns:
-        if column in filtered.columns:
-            margin_series = filtered[column].apply(parse_percent)
-            break
+    if any(column in filtered.columns for column in margin_columns):
+        margin_series = filtered.apply(conservative_margin_percent, axis=1)
     if margin_series is None:
         margin_series = pd.Series([None] * len(filtered), index=filtered.index, dtype=object)
 

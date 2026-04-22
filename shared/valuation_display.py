@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from typing import Any
+from typing import Any, Mapping
 
 import pandas as pd
 
@@ -77,6 +77,44 @@ def first_percent_value(*values: Any) -> float | None:
         if parsed is not None:
             return parsed
     return None
+
+
+def conservative_margin_percent(row: Mapping[str, Any]) -> float | None:
+    """Return a conservative profit margin, preferring worst-case profit over stored text."""
+    resale = first_currency_value(
+        row.get("resale_mid"),
+        row.get("resale_mid_ai"),
+        row.get("expected_sale"),
+        row.get("expected_sale_ai"),
+        row.get("resale_value"),
+        row.get("resale_mid_value"),
+    )
+    if resale is not None and resale > 0:
+        worst_profit = first_currency_value(
+            row.get("net_profit_worst"),
+            row.get("net_profit_worst_ai"),
+            row.get("expected_auction_worst_profit"),
+            row.get("expected_auction_worst_profit_ai"),
+            row.get("profit_value"),
+        )
+        if worst_profit is not None:
+            return (worst_profit / resale) * 100.0
+
+        mid_profit = first_currency_value(
+            row.get("net_profit_mid"),
+            row.get("net_profit_mid_ai"),
+            row.get("expected_profit"),
+            row.get("expected_profit_ai"),
+        )
+        if mid_profit is not None:
+            return (mid_profit / resale) * 100.0
+
+    return first_percent_value(
+        row.get("profit_margin_percent"),
+        row.get("profit_margin_percent_ai"),
+        row.get("profit_margin_value"),
+        row.get("margin_value"),
+    )
 
 
 def _first_row_value(row: pd.Series, *columns: str) -> Any:
@@ -170,7 +208,7 @@ def rank_live_opportunities(active_df: pd.DataFrame, valuations_df: pd.DataFrame
         )
         resale = first_currency_value(_first_row_value(row, "resale_mid", "resale_mid_ai"))
         worst_profit = first_currency_value(_first_row_value(row, "net_profit_worst", "net_profit_worst_ai"))
-        margin = first_percent_value(_first_row_value(row, "profit_margin_percent", "profit_margin_percent_ai"))
+        margin = conservative_margin_percent(row)
         confidence_raw = _first_row_value(row, "confidence", "confidence_ai")
         try:
             confidence = float(confidence_raw)

@@ -35,6 +35,7 @@ REQUIRED_COLUMNS = [
     "prep_estimate",
     "repair_estimate",
     "expected_auction_price",
+    "expected_auction_bid_basis",
     "expected_auction_profit",
     "expected_auction_worst_profit",
     "expected_auction_source",
@@ -401,6 +402,24 @@ def _format_currency(value: Optional[float]) -> Optional[str]:
     if value is None:
         return None
     return f"${value:,.0f}"
+
+
+def _profit_margin_percent_text(
+    profit_value: Optional[float],
+    resale_value: Optional[float],
+) -> Optional[str]:
+    if profit_value is None or resale_value is None or resale_value <= 0:
+        return None
+    return f"{(profit_value / resale_value) * 100:.1f}%"
+
+
+def _profit_margin_percent_value(
+    profit_value: Optional[float],
+    resale_value: Optional[float],
+) -> Optional[float]:
+    if profit_value is None or resale_value is None or resale_value <= 0:
+        return None
+    return (profit_value / resale_value) * 100.0
 
 
 def _parse_int(value: Any) -> Optional[int]:
@@ -1391,11 +1410,11 @@ def run_ai_listing_analysis(listing_row: pd.Series, force_refresh: bool = False)
             - repair_cost_val
         )
 
-    profit_margin = data.get("profit_margin_percent")
-    margin_value: Optional[float] = None
-    if expected_profit_val is not None and resale_mid_val:
-        margin_value = (expected_profit_val / resale_mid_val) * 100 if resale_mid_val else 0
-        profit_margin = f"{margin_value:.1f}%"
+    profit_margin = (
+        _profit_margin_percent_text(net_profit_worst_val, resale_mid_val)
+        or _profit_margin_percent_text(expected_profit_val, resale_mid_val)
+        or data.get("profit_margin_percent")
+    )
 
     if recommended_max_bid_val is not None:
         recommended_max_bid_str = _format_currency(recommended_max_bid_val)
@@ -1548,6 +1567,7 @@ def run_ai_listing_analysis(listing_row: pd.Series, force_refresh: bool = False)
         "prep_estimate": _format_currency(costs_map["prep_estimate"]),
         "repair_estimate": _format_currency(repair_cost_val),
         "expected_auction_price": _format_currency(expected_auction_price_val),
+        "expected_auction_bid_basis": _format_currency(expected_auction_purchase_basis),
         "expected_auction_profit": _format_currency(expected_auction_profit_val) if expected_auction_profit_val is not None else None,
         "expected_auction_worst_profit": _format_currency(expected_auction_worst_profit_val) if expected_auction_worst_profit_val is not None else None,
         "expected_auction_source": expected_auction_source,
@@ -1612,6 +1632,10 @@ def run_curve_listing_analysis(
         existing = cached_df[cached_df["url"] == url].iloc[0].to_dict()
         if (
             existing.get("expected_auction_price") is None
+            or (
+                existing.get("expected_auction_bid_basis") is None
+                and existing.get("expected_auction_price") is not None
+            )
             or existing.get("expected_auction_source") is None
             or existing.get("expected_auction_profit") is None
             or existing.get("action_label") is None
@@ -1657,6 +1681,7 @@ def run_curve_listing_analysis(
             "prep_estimate": None,
             "repair_estimate": None,
             "expected_auction_price": None,
+            "expected_auction_bid_basis": None,
             "expected_auction_profit": None,
             "expected_auction_worst_profit": None,
             "expected_auction_source": None,
@@ -1792,9 +1817,14 @@ def run_curve_listing_analysis(
     base_net_profit_mid = None
     if base_max_bid_val is not None and resale_mid_val is not None:
         base_net_profit_mid = resale_mid_val - sum(base_costs_map.values()) - base_max_bid_val - repair_cost_val
+    base_net_profit_worst = None
+    if base_max_bid_val is not None and resale_low_val is not None:
+        base_net_profit_worst = resale_low_val - sum(base_costs_map.values()) - base_max_bid_val - repair_cost_val
     base_margin_value = None
-    if base_net_profit_mid is not None and resale_mid_val:
-        base_margin_value = (base_net_profit_mid / resale_mid_val) * 100
+    if resale_mid_val:
+        base_margin_value = _profit_margin_percent_value(base_net_profit_worst, resale_mid_val)
+        if base_margin_value is None:
+            base_margin_value = _profit_margin_percent_value(base_net_profit_mid, resale_mid_val)
 
     pill_summary = _build_pill_summary(listing_data)
     damage_summary = {
@@ -1920,9 +1950,10 @@ def run_curve_listing_analysis(
     flip_difficulty, difficulty_reasons = _flip_difficulty(listing_data, repair_assessment, risk_flags)
     bid_status = _bid_status_label(current_price_val, expected_auction_price_val, recommended_max_bid_val)
 
-    profit_margin = None
-    if expected_profit_val is not None and resale_mid_val:
-        profit_margin = f"{(expected_profit_val / resale_mid_val) * 100:.1f}%"
+    profit_margin = (
+        _profit_margin_percent_text(net_profit_worst_val, resale_mid_val)
+        or _profit_margin_percent_text(expected_profit_val, resale_mid_val)
+    )
 
     def _derive_verdict() -> str:
         if "INTERSTATE" in risk_flags and not INTERSTATE_BUYING_ALLOWED:
@@ -1988,6 +2019,7 @@ def run_curve_listing_analysis(
         "prep_estimate": _format_currency(costs_map["prep_estimate"]),
         "repair_estimate": _format_currency(repair_cost_val),
         "expected_auction_price": _format_currency(expected_auction_price_val),
+        "expected_auction_bid_basis": _format_currency(expected_auction_purchase_basis),
         "expected_auction_profit": _format_currency(expected_auction_profit_val) if expected_auction_profit_val is not None else None,
         "expected_auction_worst_profit": _format_currency(expected_auction_worst_profit_val) if expected_auction_worst_profit_val is not None else None,
         "expected_auction_source": expected_auction_source,

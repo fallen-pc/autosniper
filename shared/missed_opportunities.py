@@ -15,7 +15,7 @@ from scripts.ai_listing_valuation import (
     _detect_risk_flags,
     _discounted_bid_cap,
     _estimate_costs,
-    _expected_auction_price,
+    _expected_auction_estimate,
     _is_interstate_listing,
     _round_to_10,
     _solve_max_bid,
@@ -53,6 +53,22 @@ def _blank_decision() -> dict[str, object]:
     }
 
 
+def _first_present(row: Mapping[str, Any], *keys: str) -> Any:
+    for key in keys:
+        value = row.get(key)
+        if value is None:
+            continue
+        try:
+            if pd.isna(value):
+                continue
+        except (TypeError, ValueError):
+            pass
+        text = str(value).strip()
+        if text and text.lower() != "nan":
+            return value
+    return None
+
+
 def compute_decision_metrics(
     row: Mapping[str, Any] | pd.Series,
     resale_mid: float | None,
@@ -88,7 +104,23 @@ def compute_decision_metrics(
         MIN_NET_PROFIT_RATIO * (resale_low_val or resale_mid),
     )
     max_bid_val = _solve_max_bid(resale_low_val, min_net_profit, listing_data)
-    expected_auction_price = _expected_auction_price(resale_mid_val)
+    comps_median = _first_present(
+        listing_data,
+        "comps_median",
+        "historical_price_median",
+        "expected_auction_median",
+    )
+    comps_count = _first_present(
+        listing_data,
+        "comps_count",
+        "historical_match_count",
+        "expected_auction_comps_count",
+    )
+    expected_auction_price, _, _ = _expected_auction_estimate(
+        resale_mid_val,
+        comps_median=comps_median,
+        comps_count=comps_count,
+    )
     discounted_bid_cap = _discounted_bid_cap(
         expected_auction_price,
         repair_cost=0.0,

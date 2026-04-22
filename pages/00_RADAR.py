@@ -18,7 +18,7 @@ from shared.ops_utils import (
     time_bucket,
 )
 from shared.styling import clean_html, display_banner, inject_global_styles, page_intro, section_heading
-from shared.valuation_display import is_safe_opportunity_row
+from shared.valuation_display import conservative_margin_percent, is_safe_opportunity_row
 
 
 st.set_page_config(page_title="Radar", layout="wide")
@@ -61,7 +61,7 @@ def _risk_level(row: pd.Series) -> str:
 def _radar_signals(row: pd.Series) -> str:
     signals: list[str] = []
     profit_value = parse_currency(row.get("profit_value"))
-    margin_value = parse_percent(row.get("profit_margin_percent")) or parse_percent(row.get("profit_margin_value"))
+    margin_value = conservative_margin_percent(row)
     time_hours = row.get("time_remaining_hours")
     risk_level = _risk_level(row)
     if (profit_value is not None and profit_value >= 5000) or (margin_value is not None and margin_value >= 20):
@@ -142,7 +142,7 @@ radar_df["time_remaining_hours"] = radar_df["time_remaining_or_date_sold"].apply
 radar_df["time_bucket"] = radar_df["time_remaining_hours"].apply(time_bucket)
 radar_df["confidence_bucket"] = radar_df["confidence"].apply(confidence_bucket)
 radar_df["has_curve"] = radar_df["canonical_tag"].apply(lambda tag: bool(tag) and str(tag).strip() in curve_meta)
-radar_df["profit_margin_value"] = radar_df.get("profit_margin_percent", pd.Series(dtype=float)).apply(parse_percent)
+radar_df["profit_margin_value"] = radar_df.apply(conservative_margin_percent, axis=1)
 radar_df["recommended_max_bid_value"] = radar_df.get("recommended_max_bid", pd.Series(dtype=float)).apply(parse_currency)
 radar_df["resale_mid_value"] = radar_df.get("resale_mid", pd.Series(dtype=float)).apply(parse_currency)
 radar_df["current_bid_value"] = radar_df.get("price", pd.Series(dtype=float)).apply(parse_currency)

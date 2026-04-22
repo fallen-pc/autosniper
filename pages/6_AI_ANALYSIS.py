@@ -36,7 +36,7 @@ from shared.repair_pricing import (
     assess_repairs,
 )
 from shared.styling import clean_html, display_banner, inject_global_styles, page_intro
-from shared.valuation_display import first_currency_value
+from shared.valuation_display import conservative_margin_percent, first_currency_value
 
 
 st.set_page_config(page_title="AI Analysis (Curve)", layout="wide")
@@ -175,6 +175,21 @@ def _format_price_text(value: object) -> str:
     if not text or text.lower() == "nan":
         return "N/A"
     return text
+
+
+def _expected_finish_display_parts(row: pd.Series) -> tuple[str, str]:
+    raw_expected = parse_currency(row.get("expected_auction_price"))
+    bid_basis = parse_currency(row.get("expected_auction_bid_basis"))
+    display_value = row.get("expected_auction_bid_basis") or row.get("expected_auction_price")
+    display_text = _format_price_text(display_value)
+    status_text = _safe_text(row.get("bid_status"), fallback="Unknown")
+    if (
+        bid_basis is not None
+        and raw_expected is not None
+        and bid_basis > raw_expected
+    ):
+        status_text = f"{status_text}; using current bid"
+    return display_text, status_text
 
 
 def _format_odometer(value: object) -> str:
@@ -1616,10 +1631,11 @@ def _render_bid_logic_tab(
     confidence_display = _format_percent(confidence_percent)
     if confidence_display == "N/A":
         confidence_display = _curve_confidence_label(row.get("confidence"))
+    expected_finish_display, expected_finish_status = _expected_finish_display_parts(row)
 
     metric_rows = [
         ("Resale estimate", _format_currency_value(_compute_resale_value(row))),
-        ("Expected auction finish", _format_price_text(row.get("expected_auction_price"))),
+        ("Expected finish basis", expected_finish_display),
         ("Profit at expected finish", _format_price_text(row.get("expected_auction_worst_profit") or row.get("expected_auction_profit"))),
         ("Profit if bought now", _format_price_text(row.get("profit_at_current_bid_worst") or row.get("profit_at_current_bid"))),
         ("Current price", _format_price_text(row.get("price"))),
@@ -1647,6 +1663,8 @@ def _render_bid_logic_tab(
         [
             f"Discount used: {float(row.get('discount_used') or 0):.0%}" if pd.notna(row.get("discount_used")) else "Discount used: N/A",
             f"Expected auction finish: {_format_price_text(row.get('expected_auction_price'))}",
+            f"Expected finish basis used for profit: {expected_finish_display}",
+            f"Expected finish status: {expected_finish_status}",
             f"Expected finish source: {_safe_text(row.get('expected_auction_source'), 'N/A')}",
             f"Expected finish comps: {_safe_text(row.get('expected_auction_comps_count'), 'N/A')}",
             f"Profit at expected finish (mid): {_format_price_text(row.get('expected_auction_profit'))}",
@@ -2974,7 +2992,7 @@ results_df = pd.DataFrame(results)
 output = filtered.merge(results_df, on="url", how="left")
 
 def _compute_profit_margin_value(row: pd.Series) -> Optional[float]:
-    margin_value = _parse_percent(row.get("profit_margin_percent"))
+    margin_value = conservative_margin_percent(row)
     if margin_value is not None:
         return margin_value
     net_profit = first_currency_value(row.get("net_profit_worst"), row.get("net_profit_mid"))
@@ -3329,7 +3347,7 @@ def render_listing_card(row: pd.Series) -> None:
     profit_pct_display = _format_percent(row.get("profit_margin_value"))
     current_profit_display = _format_price_text(row.get("profit_at_current_bid_worst") or row.get("profit_at_current_bid"))
     current_profit_label = _safe_text(row.get("current_profit_label"), fallback="Unknown")
-    expected_auction_display = _format_price_text(row.get("expected_auction_price"))
+    expected_auction_display, expected_finish_status = _expected_finish_display_parts(row)
     expected_profit_display = _format_price_text(row.get("expected_auction_worst_profit") or row.get("expected_auction_profit"))
     expected_profit_label = _safe_text(row.get("expected_auction_profit_label"), fallback="Unknown")
     hard_max_safety = _safe_text(row.get("hard_max_safety"), fallback="Unknown")
@@ -3442,7 +3460,7 @@ def render_listing_card(row: pd.Series) -> None:
             _build_metric_box_with_sub("Price update", price_update_value, price_update_sub, price_update_class),
             _build_metric_box("Time left", time_left_display),
             _build_metric_box_with_sub("Profit if bought now", current_profit_display, current_profit_label),
-            _build_metric_box_with_sub("Expected finish", expected_auction_display, bid_status),
+            _build_metric_box_with_sub("Expected finish", expected_auction_display, expected_finish_status),
             _build_metric_box_with_sub("Profit at expected finish", expected_profit_display, expected_profit_label),
             _build_metric_box_with_sub("Max bid limit", max_bid_display, hard_max_safety),
             _build_metric_box("Difficulty", flip_difficulty),

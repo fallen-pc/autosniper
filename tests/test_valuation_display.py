@@ -2,7 +2,12 @@ from __future__ import annotations
 
 import pandas as pd
 
-from shared.valuation_display import first_currency_value, is_safe_opportunity_row, rank_live_opportunities
+from shared.valuation_display import (
+    conservative_margin_percent,
+    first_currency_value,
+    is_safe_opportunity_row,
+    rank_live_opportunities,
+)
 
 
 def test_first_currency_value_preserves_zero_before_fallback() -> None:
@@ -91,3 +96,16 @@ def test_is_safe_opportunity_row_accepts_radar_profit_value() -> None:
     )
 
     assert is_safe_opportunity_row(row) is True
+
+
+def test_conservative_margin_percent_prefers_worst_profit_over_stored_margin() -> None:
+    row = pd.Series(
+        {
+            "resale_mid": "$20,000",
+            "net_profit_mid": "$6,000",
+            "net_profit_worst": "$1,000",
+            "profit_margin_percent": "30.0%",
+        }
+    )
+
+    assert conservative_margin_percent(row) == 5.0

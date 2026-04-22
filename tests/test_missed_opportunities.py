@@ -102,3 +102,35 @@ def test_missed_decision_metrics_zeroes_interstate_max_bid(monkeypatch) -> None:
     )
 
     assert result["max_bid"] == 0.0
+
+
+def test_missed_decision_metrics_uses_historical_sold_median_when_available(monkeypatch) -> None:
+    row = pd.Series(
+        {
+            "url": "test://missed-historical-cap",
+            "price_numeric": 10_000,
+            "price": "$10,000",
+            "body_type": "Hatch",
+            "location": "Melbourne VIC",
+            "rego_state": "VIC",
+            "general_condition": "",
+            "historical_price_median": 12_300,
+            "historical_match_count": 5,
+        }
+    )
+
+    monkeypatch.setattr(missed_opportunities, "_solve_max_bid", lambda resale_low, min_profit, listing: 20_000)
+    monkeypatch.setattr(
+        missed_opportunities,
+        "assess_repairs",
+        lambda condition: _repair_assessment(total_cost=0, risk_buffer=0),
+    )
+
+    result = missed_opportunities.compute_decision_metrics(
+        row,
+        20_000,
+        include_repairs=True,
+    )
+
+    assert result["expected_auction_price"] == 12_300
+    assert result["max_bid"] == 10_080
