@@ -1,6 +1,7 @@
 # Changelog
 
 ## 2026-04-24
+- Added the Mazda CX-5 Maxx Sport diesel KE-family base curve as `mazda_cx5_maxx-sport_ke_wagon_auto_diesel` with `2012/2014/2016` anchors and the standard `30k/60k/100k/150k/200k` bucket grid, then wired the exact Maxx Sport diesel match tag into the V2 group map and supported curve universe.
 - Added the Camry Altise `ASV50R` petrol sedan base curve as `toyota_camry_asv50r_sedan_auto_petrol` with `2013/2015/2017` anchors and the standard `30k/60k/100k/150k/200k` bucket grid, then wired the exact Altise match tag into the V2 group map and supported curve universe.
 
 ## 2026-04-17
