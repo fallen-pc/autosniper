@@ -1,5 +1,8 @@
 # Changelog
 
+## 2026-04-24
+- Added the Camry Altise `ASV50R` petrol sedan base curve as `toyota_camry_asv50r_sedan_auto_petrol` with `2013/2015/2017` anchors and the standard `30k/60k/100k/150k/200k` bucket grid, then wired the exact Altise match tag into the V2 group map and supported curve universe.
+
 ## 2026-04-17
 - Saved the Camry Ascent ASV70R petrol sedan curve as `toyota_camry_asv70r_sedan_auto_petrol` with `2018/2020/2022` anchors, moved the old matcher-tag rows onto the V2 base tag, and marked the lane `live_now`.
 
