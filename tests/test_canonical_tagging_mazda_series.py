@@ -21,3 +21,22 @@ def test_assign_canonical_tag_rejects_mazda_bm_from_bl_curve():
 
     assert canonical_tag == "UNCLASSIFIED"
     assert canonical_reason in {"[DISALLOWED_VARIANT]", "[OUT_OF_SCOPE_YEAR]"}
+
+
+def test_assign_canonical_tag_accepts_mazda_cx5_maxx_sport_ke_diesel_lane():
+    row = {
+        "url": "https://www.grays.com/lot/0001-10353381/motor-vehicles-motor-cycles/2015-mazda-cx-5-maxx-sport-ke-turbo-diesel-automatic-wagon",
+        "make": "Mazda",
+        "model": "Cx-5",
+        "variant": "Maxx Sport KE",
+        "body_type": "wagon",
+        "transmission": "automatic",
+        "fuel_type": "diesel",
+        "year": "2015",
+        "price": "9",
+    }
+
+    canonical_tag, canonical_reason, _drivetrain = assign_canonical_tag(row, require_price=True)
+
+    assert canonical_tag == "mazda_cx5_maxx-sport_diesel_auto_wagon_ke"
+    assert canonical_reason == "[OK]"

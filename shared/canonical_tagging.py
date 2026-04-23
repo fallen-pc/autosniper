@@ -395,10 +395,13 @@ def _extract_series_code(text: str) -> str:
         # Ignore model-year tokens like MY14 / MY16 / MY17.
         if candidate.startswith("my"):
             continue
+        # Ignore model-like tokens that can look like series codes.
+        if candidate in {"ix35", "cx5", "cx9"}:
+            continue
         return candidate
 
-    # Mazda 3 often appears with short platform codes like BL or BM in variant text.
-    short_match = re.search(r"\b(BL|BM)\b", text, re.IGNORECASE)
+    # Some series/platform codes appear as short alpha tokens in the variant text.
+    short_match = re.search(r"\b(BL|BM|KE|KF|LM|TB)\b", text, re.IGNORECASE)
     if short_match:
         return short_match.group(1).lower()
     return ""
@@ -407,6 +410,9 @@ def _extract_series_code(text: str) -> str:
 def _normalize_series_code(series_code: str) -> str:
     code = (series_code or "").lower()
     if not code:
+        return ""
+    # Ignore model-like tokens that can be mistaken for series codes.
+    if code in {"ix35", "cx5", "cx9"}:
         return ""
     # Map common series codes to canonical v2 series buckets.
     if code in {"zre182r"}:
@@ -711,23 +717,24 @@ def assign_canonical_tag(
     series_code = _extract_series_code(series_text)
     if series_code:
         series_code = _normalize_series_code(series_code)
-        series_matches = [v for v in candidates if v.series and v.series == series_code]
-        unique_series_tags = {v.canonical_tag for v in series_matches}
-        if len(unique_series_tags) == 1:
-            required_reason = _validate_required_fields(
-                {
-                    "year": year,
-                    "fuel_type": fuel,
-                    "transmission": transmission,
-                    "badge": series_matches[0].badge,
-                    "body_type": body_value,
-                }
-            )
-            if required_reason != R.OK:
-                return UNCLASSIFIED, required_reason, ""
-            return series_matches[0].canonical_tag, R.OK, ""
-        if len(series_matches) == 0:
-            return UNCLASSIFIED, DISALLOWED_VARIANT, ""
+        if series_code:
+            series_matches = [v for v in candidates if v.series and v.series == series_code]
+            unique_series_tags = {v.canonical_tag for v in series_matches}
+            if len(unique_series_tags) == 1:
+                required_reason = _validate_required_fields(
+                    {
+                        "year": year,
+                        "fuel_type": fuel,
+                        "transmission": transmission,
+                        "badge": series_matches[0].badge,
+                        "body_type": body_value,
+                    }
+                )
+                if required_reason != R.OK:
+                    return UNCLASSIFIED, required_reason, ""
+                return series_matches[0].canonical_tag, R.OK, ""
+            if len(series_matches) == 0:
+                return UNCLASSIFIED, DISALLOWED_VARIANT, ""
 
     badge_matches = [v for v in candidates if _badge_matches(text_blob, v.badge_aliases)]
     if not badge_matches:

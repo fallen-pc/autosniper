@@ -108,3 +108,24 @@ def test_camry_ascent_sport_hybrid_axvh71r_maps_to_expected_lane():
         "UNCLASSIFIED",
         "[DISALLOWED_VARIANT]",
     )
+
+
+def test_camry_altise_asv50r_maps_to_expected_lane():
+    _load_curve_year_band.cache_clear()
+
+    row = {
+        "make": "Toyota",
+        "model": "Camry",
+        "variant": "Altise ASV50R",
+        "body_type": "Sedan",
+        "transmission": "Automatic",
+        "fuel_type": "Petrol",
+        "year": "2013",
+        "price": "5009",
+        "url": "https://www.example.com/2013-toyota-camry-altise-asv50r-automatic-sedan",
+    }
+
+    assert assign_canonical_tag(row, require_price=True)[0:2] == (
+        "toyota_camry_altise_petrol_auto_sedan_asv50r",
+        "[OK]",
+    )

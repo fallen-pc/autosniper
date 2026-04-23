@@ -9,11 +9,17 @@ toyota_corolla_ascent_petrol_auto_sedan_zre172r,toyota,corolla,sedan,petrol,auto
 toyota_camry_ascent_hybrid_auto_sedan_axvh71r,toyota,camry,sedan,hybrid,auto,ascent,axvh71r,ascent,sedan|saloon,petrol|ascent sport|sx|sl|atara|gr|manual|axio|hybrid ex
 toyota_camry_ascent-sport_hybrid_auto_sedan_axvh71r,toyota,camry,sedan,hybrid,auto,ascent sport,axvh71r,ascent sport|ascent-sport,sedan|saloon,petrol|sx|sl|atara|gr|manual|axio|hybrid ex
 toyota_camry_ascent_petrol_auto_sedan_asv70r,toyota,camry,sedan,petrol,auto,ascent,asv70r,ascent,sedan|saloon,hybrid|ascent sport|sx|sl|atara|gr|manual|axio|hybrid ex
+toyota_camry_altise_petrol_auto_sedan_asv50r,toyota,camry,sedan,petrol,auto,altise,asv50r,altise,sedan|saloon,hybrid|ascent|ascent sport|sx|sl|atara|gr|manual|csi|csx|ateva|vienta
 mazda_3_neo_petrol_auto_hatch_bl,mazda,3,hatch,petrol,auto,neo,bl10f1,neo,hatch|hatchback,manual|diesel|hybrid|sedan|sp25|maxx|touring|neo sport|neo-sport
 mazda_3_neo-sport_petrol_auto_hatch_bl,mazda,3,hatch,petrol,auto,neo sport,bl10f1,neo sport|neo-sport,hatch|hatchback,manual|diesel|hybrid|sedan|sp25|maxx|touring
 mazda_3_maxx_petrol_auto_hatch_bl,mazda,3,hatch,petrol,auto,maxx,bl10f1,maxx,hatch|hatchback,manual|diesel|hybrid|sedan|neo|sp25|touring|maxx sport|maxx-sport
 mazda_3_maxx-sport_petrol_auto_hatch_bl,mazda,3,hatch,petrol,auto,maxx sport,bl10f1,maxx sport|maxx-sport,hatch|hatchback,manual|diesel|hybrid|sedan|neo|sp25|touring
 mazda_3_touring_petrol_auto_hatch_bl,mazda,3,hatch,petrol,auto,touring,bl10f1,touring,hatch|hatchback,manual|diesel|hybrid|sedan|neo|sp25|maxx
+mazda_cx5_maxx-sport_diesel_auto_wagon_ke,mazda,cx5,wagon,diesel,auto,maxx sport,ke,maxx sport|maxx-sport,wagon|suv,manual|petrol|touring|grand touring|akera
 hyundai_i30_active_petrol_auto_hatch_gd,hyundai,i30,hatch,petrol,auto,active,gd,active,hatch|hatchback,manual|diesel|hybrid|sedan|tourer|wagon|active x|elite|premium|trophy|se|sr|sr premium|pd|pd2|pd.v4
 hyundai_i30_active_petrol_auto_hatch_pd,hyundai,i30,hatch,petrol,auto,active,pd,active,hatch|hatchback,manual|diesel|hybrid|sedan|tourer|wagon|active x|elite|premium|trophy|se|sr|sr premium|n line|n-line|gd
+hyundai_ix35_se_petrol_auto_wagon_lm,hyundai,ix35,wagon,petrol,auto,se,lm,se,wagon|suv,manual|diesel|elite|highlander|active
+hyundai_ix35_elite_petrol_auto_wagon_lm,hyundai,ix35,wagon,petrol,auto,elite,lm,elite,wagon|suv,manual|diesel|se|highlander|active
+hyundai_getz_sx_petrol_auto_hatch_tb,hyundai,getz,hatch,petrol,auto,sx,tb,sx,hatch|hatchback,manual|diesel|s
+hyundai_getz_sx_petrol_manual_hatch_tb,hyundai,getz,hatch,petrol,manual,sx,tb,sx,hatch|hatchback,auto|automatic|diesel|s
 toyota_yaris_yr_petrol_auto_hatch_ncp90r,toyota,yaris,hatch,petrol,auto,yr,ncp90r,yr,hatch|hatchback,manual|diesel|hybrid|sedan|yrs|yrx|ascent|sx|zr|cross

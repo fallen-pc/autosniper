@@ -126,3 +126,78 @@ def test_assign_canonical_tag_rejects_hyundai_active_gd_from_pd_curve():
 
     assert canonical_tag == "UNCLASSIFIED"
     assert canonical_reason in {"[DISALLOWED_VARIANT]", "[OUT_OF_SCOPE_YEAR]"}
+
+
+def test_assign_canonical_tag_accepts_hyundai_ix35_se_lm_lane():
+    _load_curve_year_band.cache_clear()
+    row = {
+        "make": "Hyundai",
+        "model": "ix35",
+        "variant": "SE FWD LM",
+        "body_type": "wagon",
+        "transmission": "automatic",
+        "fuel_type": "petrol",
+        "year": "2014",
+        "price": "4300",
+        "url": "https://www.example.com/2014-hyundai-ix35-se-fwd-lm-automatic-wagon",
+    }
+
+    assert assign_canonical_tag(row, require_price=True)[0:2] == (
+        "hyundai_ix35_se_petrol_auto_wagon_lm",
+        "[OK]",
+    )
+
+
+def test_assign_canonical_tag_accepts_hyundai_ix35_elite_lm_lane():
+    _load_curve_year_band.cache_clear()
+    row = {
+        "make": "Hyundai",
+        "model": "ix35",
+        "variant": "Elite FWD LM",
+        "body_type": "wagon",
+        "transmission": "automatic",
+        "fuel_type": "petrol",
+        "year": "2014",
+        "price": "109",
+        "url": "https://www.example.com/2014-hyundai-ix35-elite-fwd-lm-automatic-wagon",
+    }
+
+    assert assign_canonical_tag(row, require_price=True)[0:2] == (
+        "hyundai_ix35_elite_petrol_auto_wagon_lm",
+        "[OK]",
+    )
+
+
+def test_assign_canonical_tag_accepts_hyundai_getz_sx_tb_auto_and_manual_lanes():
+    _load_curve_year_band.cache_clear()
+    auto_row = {
+        "make": "Hyundai",
+        "model": "Getz",
+        "variant": "SX TB",
+        "body_type": "hatchback",
+        "transmission": "automatic",
+        "fuel_type": "petrol",
+        "year": "2009",
+        "price": "1009",
+        "url": "https://www.example.com/2009-hyundai-getz-sx-tb-automatic-hatchback",
+    }
+    manual_row = {
+        "make": "Hyundai",
+        "model": "Getz",
+        "variant": "SX TB",
+        "body_type": "hatchback",
+        "transmission": "manual",
+        "fuel_type": "petrol",
+        "year": "2008",
+        "price": "9",
+        "url": "https://www.example.com/2008-hyundai-getz-sx-tb-manual-hatchback",
+    }
+
+    assert assign_canonical_tag(auto_row, require_price=True)[0:2] == (
+        "hyundai_getz_sx_petrol_auto_hatch_tb",
+        "[OK]",
+    )
+    assert assign_canonical_tag(manual_row, require_price=True)[0:2] == (
+        "hyundai_getz_sx_petrol_manual_hatch_tb",
+        "[OK]",
+    )
