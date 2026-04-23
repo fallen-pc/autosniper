@@ -4,5 +4,6 @@ hyundai_i30_pd_hatch_auto_petrol,2017|2019|2022,"PD Active-only rebuild from rev
 toyota_corolla_zwe211r_hatch_auto_hybrid,2018|2020|2021|2022,"ZWE211R Ascent Sport Hybrid hatch matching range; 2019 should map into the same lane without forcing a price-grid change."
 toyota_corolla_zwe219r_hatch_auto_hybrid,2023|2024|2025,"ZWE219R Ascent Sport Hybrid hatch matching range; 2023 should map into the newer hybrid hatch lane without forcing a price-grid change."
 mazda_cx5_maxx-sport_ke_wagon_auto_diesel,2012|2014|2016,"Maxx Sport diesel CX-5 KE family curve using 2012/2014/2016 anchors to span early KE and KE Series 2 pricing without splitting the lane yet."
+hyundai_ix35_se_lm_wagon_auto_petrol,2013|2014|2015,"ix35 SE LM petrol curve using 2013/2014/2015 anchors from reviewed private Carsales evidence; keep Elite separate for now."
 toyota_camry_asv70r_sedan_auto_petrol,2018|2020|2022,"ASV70R Ascent petrol sedan saved grid from reviewed private Carsales slice plus Autotrader same-lane evidence."
 toyota_camry_asv50r_sedan_auto_petrol,2013|2015|2017,"ASV50R Altise petrol sedan saved grid from reviewed private Carsales slice using standard 30k-200k buckets."

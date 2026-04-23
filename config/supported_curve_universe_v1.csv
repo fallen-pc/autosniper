@@ -12,6 +12,7 @@ toyota_camry_asv50r_sedan_auto_petrol,toyota,camry,sedan,petrol,auto,asv50r,live
 toyota_yaris_ncp90r_hatch_auto_petrol,toyota,yaris,hatch,petrol,auto,ncp90r,live_now,1,Simple stable Yaris segment
 mazda_3_bl_hatch_auto_petrol,mazda,3,hatch,petrol,auto,bl,live_now,1,All BL hatch petrol trims grouped
 mazda_cx5_maxx-sport_ke_wagon_auto_diesel,mazda,cx5,wagon,diesel,auto,ke,live_now,1,Saved Maxx Sport diesel KE-family curve spanning early KE and KE Series 2 without splitting the lane
+hyundai_ix35_se_lm_wagon_auto_petrol,hyundai,ix35,wagon,petrol,auto,lm,live_now,1,Saved ix35 SE LM petrol curve built from reviewed private Carsales evidence; Elite remains a separate future lane
 hyundai_i30_gd_hatch_auto_petrol,hyundai,i30,hatch,petrol,auto,gd,live_now,1,Core i30 GD Active hatch
 hyundai_i30_pd_hatch_auto_petrol,hyundai,i30,hatch,petrol,auto,pd,live_now,1,Core i30 PD Active hatch
 toyota_camry_asv70r_sedan_auto_petrol,toyota,camry,sedan,petrol,auto,asv70r,live_now,1,Saved Ascent ASV70R petrol sedan curve built from private Carsales and Autotrader evidence
