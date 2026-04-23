@@ -193,6 +193,20 @@ def test_ix35_se_lm_saved_curve_resolves_through_v2_base_tag():
     assert matcher_rows.empty
 
 
+def test_getz_sx_tb_auto_saved_curve_resolves_through_v2_base_tag():
+    curves_df = curves.load_curves()
+
+    base_rows = curves_df[
+        curves_df["canonical_tag"].astype(str) == "hyundai_getz_sx_tb_hatch_auto_petrol"
+    ]
+    matcher_rows = curves_df[
+        curves_df["canonical_tag"].astype(str) == "hyundai_getz_sx_petrol_auto_hatch_tb"
+    ]
+
+    assert len(base_rows) == 15
+    assert matcher_rows.empty
+
+
 def test_axvh71r_saved_curve_resolves_through_v2_base_tag():
     curves_df = curves.load_curves()
 

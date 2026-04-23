@@ -1,6 +1,7 @@
 # Changelog
 
 ## 2026-04-24
+- Added the Hyundai Getz SX TB automatic base curve as `hyundai_getz_sx_tb_hatch_auto_petrol` with `2008/2010/2011` anchors and the standard `30k/60k/100k/150k/200k` bucket grid, then wired the exact SX TB automatic match tag into the V2 group map and supported curve universe while leaving manual separate.
 - Added the Hyundai ix35 SE LM petrol base curve as `hyundai_ix35_se_lm_wagon_auto_petrol` with `2013/2014/2015` anchors and the standard `30k/60k/100k/150k/200k` bucket grid, then wired the exact SE LM match tag into the V2 group map and supported curve universe while leaving Elite separate.
 - Added the Mazda CX-5 Maxx Sport diesel KE-family base curve as `mazda_cx5_maxx-sport_ke_wagon_auto_diesel` with `2012/2014/2016` anchors and the standard `30k/60k/100k/150k/200k` bucket grid, then wired the exact Maxx Sport diesel match tag into the V2 group map and supported curve universe.
 - Added the Camry Altise `ASV50R` petrol sedan base curve as `toyota_camry_asv50r_sedan_auto_petrol` with `2013/2015/2017` anchors and the standard `30k/60k/100k/150k/200k` bucket grid, then wired the exact Altise match tag into the V2 group map and supported curve universe.
