@@ -73,6 +73,15 @@ def _daily_schedule_time_local() -> dt_time:
         return dt_time(hour=9, minute=0)
 
 
+def _daily_catchup_grace_minutes() -> int:
+    raw = os.getenv("AUTOSNIPER_DAILY_CATCHUP_GRACE_MINUTES", "30").strip() or "30"
+    try:
+        value = int(raw)
+    except ValueError:
+        return 30
+    return max(value, 0)
+
+
 def _now_local(now: datetime | None = None) -> datetime:
     moment = now or datetime.now(timezone.utc)
     if moment.tzinfo is None:
@@ -185,7 +194,15 @@ def _should_run_missed_daily_catchup(now: datetime | None = None) -> tuple[bool,
     enabled = os.getenv("AUTOSNIPER_ENABLE_MISSED_DAILY_CATCHUP", "1").strip().lower()
     if enabled in {"0", "false", "no", "off"}:
         return False, _latest_due_daily_date_local(now)
-    target_date = _latest_due_daily_date_local(now)
+    local_now = _now_local(now)
+    target_date = _latest_due_daily_date_local(local_now)
+    grace_minutes = _daily_catchup_grace_minutes()
+    if grace_minutes > 0 and local_now.date() == target_date:
+        schedule_local = _daily_schedule_time_local()
+        schedule_dt_local = datetime.combine(target_date, schedule_local, tzinfo=local_now.tzinfo)
+        grace_deadline_local = schedule_dt_local + timedelta(minutes=grace_minutes)
+        if schedule_dt_local <= local_now < grace_deadline_local:
+            return False, target_date
     last_attempted = _last_attempted_daily_date_local()
     if last_attempted is not None and last_attempted >= target_date:
         return False, target_date

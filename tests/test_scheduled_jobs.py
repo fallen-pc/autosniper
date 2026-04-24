@@ -194,6 +194,36 @@ def test_should_not_catch_up_if_metrics_already_cover_today(monkeypatch, tmp_pat
     assert coverage_date == date(2026, 4, 21)
 
 
+def test_should_not_catch_up_inside_daily_grace_window(monkeypatch, tmp_path) -> None:
+    monkeypatch.setattr(scheduled_jobs, "METRICS_PATH", tmp_path / "metrics.json")
+    monkeypatch.setattr(scheduled_jobs, "DAILY_STATE_PATH", tmp_path / "daily_run_state.json")
+    monkeypatch.setenv("AUTOSNIPER_LOCAL_TIMEZONE", "Australia/Sydney")
+    monkeypatch.setenv("AUTOSNIPER_DAILY_SCHEDULE_LOCAL_TIME", "09:00")
+    monkeypatch.setenv("AUTOSNIPER_DAILY_CATCHUP_GRACE_MINUTES", "30")
+
+    should_run, coverage_date = scheduled_jobs._should_run_missed_daily_catchup(
+        now=datetime(2026, 4, 23, 23, 5, tzinfo=timezone.utc)
+    )
+
+    assert should_run is False
+    assert coverage_date == date(2026, 4, 24)
+
+
+def test_should_catch_up_after_daily_grace_window(monkeypatch, tmp_path) -> None:
+    monkeypatch.setattr(scheduled_jobs, "METRICS_PATH", tmp_path / "metrics.json")
+    monkeypatch.setattr(scheduled_jobs, "DAILY_STATE_PATH", tmp_path / "daily_run_state.json")
+    monkeypatch.setenv("AUTOSNIPER_LOCAL_TIMEZONE", "Australia/Sydney")
+    monkeypatch.setenv("AUTOSNIPER_DAILY_SCHEDULE_LOCAL_TIME", "09:00")
+    monkeypatch.setenv("AUTOSNIPER_DAILY_CATCHUP_GRACE_MINUTES", "30")
+
+    should_run, coverage_date = scheduled_jobs._should_run_missed_daily_catchup(
+        now=datetime(2026, 4, 24, 0, 1, tzinfo=timezone.utc)
+    )
+
+    assert should_run is True
+    assert coverage_date == date(2026, 4, 24)
+
+
 def test_main_runs_daily_catchup_before_hourly(monkeypatch) -> None:
     calls: list[tuple[str, object]] = []
 
