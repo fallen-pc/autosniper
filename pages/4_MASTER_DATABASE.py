@@ -1,4 +1,4 @@
-import os
+import subprocess
 import sys
 from pathlib import Path
 from typing import Iterable
@@ -36,6 +36,24 @@ if missing:
 DETAILS_FILE = dataset_path("vehicle_static_details.csv")
 SOLD_FILE = dataset_path("sold_cars.csv")
 REFERRED_FILE = dataset_path("referred_cars.csv")
+ROOT_DIR = Path(__file__).resolve().parent.parent
+
+
+def _run_command(command: list[str]) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        command,
+        cwd=ROOT_DIR,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+
+def _render_command_result(result: subprocess.CompletedProcess[str]) -> None:
+    if result.stdout.strip():
+        st.code(result.stdout, language="text")
+    if result.stderr.strip():
+        st.code(result.stderr, language="text")
 
 
 def _clean_text_series(series: pd.Series) -> pd.Series:
@@ -89,12 +107,13 @@ def render_dataset(title: str, file_path: str, columns: Iterable[str] | None = N
 
 if st.button("Update Master Database"):
     with st.spinner("Updating master database…"):
-        exit_code = os.system(f'"{sys.executable}" scripts/update_master.py')
-        if exit_code == 0:
+        result = _run_command([sys.executable, "scripts/update_master.py"])
+        if result.returncode == 0:
             st.success("Master database updated.")
             st.cache_data.clear()
         else:
             st.error("Update failed. Check the logs for more details.")
+        _render_command_result(result)
 
 
 @st.cache_data(ttl=0)

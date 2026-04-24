@@ -18,6 +18,8 @@ mazda_3_maxx-sport_petrol_auto_hatch_bl,mazda_3_bl_hatch_auto_petrol,active,Merg
 mazda_3_touring_petrol_auto_hatch_bl,mazda_3_bl_hatch_auto_petrol,active,Merge trim into base Mazda 3 BL curve
 mazda_cx5_maxx-sport_diesel_auto_wagon_ke,mazda_cx5_maxx-sport_ke_wagon_auto_diesel,active,Direct Maxx Sport diesel KE-family mapping
 hyundai_ix35_se_petrol_auto_wagon_lm,hyundai_ix35_se_lm_wagon_auto_petrol,active,Direct ix35 SE LM petrol mapping
+hyundai_ix35_elite_petrol_auto_wagon_lm,hyundai_ix35_elite_lm_wagon_auto_petrol,active,Direct ix35 Elite LM petrol family mapping
 hyundai_getz_sx_petrol_auto_hatch_tb,hyundai_getz_sx_tb_hatch_auto_petrol,active,Direct Getz SX TB automatic mapping
+hyundai_getz_sx_petrol_manual_hatch_tb,hyundai_getz_sx_tb_hatch_manual_petrol,active,Direct Getz SX TB manual mapping
 hyundai_i30_active_petrol_auto_hatch_gd,hyundai_i30_gd_hatch_auto_petrol,active,Map exact Active trim into the i30 GD Active-only base curve
 hyundai_i30_active_petrol_auto_hatch_pd,hyundai_i30_pd_hatch_auto_petrol,active,Map exact Active trim into the i30 PD Active-only base curve

@@ -1,5 +1,6 @@
-import os
+import subprocess
 import sys
+from pathlib import Path
 
 import pandas as pd
 import streamlit as st
@@ -26,6 +27,26 @@ run_details_clicked = hero_action_card(
 
 LINKS_FILE = dataset_path("all_vehicle_links.csv")
 OUTPUT_FILE = dataset_path("vehicle_static_details.csv")
+ROOT_DIR = Path(__file__).resolve().parent.parent
+
+
+def _run_command(command: list[str]) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        command,
+        cwd=ROOT_DIR,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+
+def _render_command_result(result: subprocess.CompletedProcess[str]) -> None:
+    if result.stdout.strip():
+        st.code(result.stdout, language="text")
+    if result.stderr.strip():
+        st.code(result.stderr, language="text")
+
+
 detail_batch_size = st.number_input(
     "Detail scraper batch size",
     min_value=0,
@@ -41,14 +62,15 @@ if run_details_clicked:
         st.error("The links CSV is missing. Collect links before running the detail scraper.")
     else:
         with st.spinner("Extracting vehicle details from Grays listings..."):
-            command = f'"{sys.executable}" scripts/extract_vehicle_details.py'
+            command = [sys.executable, "scripts/extract_vehicle_details.py"]
             if detail_batch_size > 0:
-                command += f" --batch-size {int(detail_batch_size)}"
-            exit_code = os.system(command)
-            if exit_code == 0:
+                command.extend(["--batch-size", str(int(detail_batch_size))])
+            result = _run_command(command)
+            if result.returncode == 0:
                 st.success("Vehicle details successfully extracted.")
             else:
                 st.error("Script failed. Check the terminal or logs for more information.")
+            _render_command_result(result)
 
 if OUTPUT_FILE.exists():
     try:

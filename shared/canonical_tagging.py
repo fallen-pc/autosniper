@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 import json
 import re
 from functools import lru_cache
@@ -813,7 +813,7 @@ def tag_dataframe(
     tags: list[str] = []
     reasons: list[str] = []
     log_rows: list[dict[str, object]] = []
-    timestamp = datetime.utcnow().isoformat(timespec="seconds")
+    timestamp = datetime.now(timezone.utc).isoformat(timespec="seconds")
 
     for _, row in df.iterrows():
         row_map = row.to_dict()

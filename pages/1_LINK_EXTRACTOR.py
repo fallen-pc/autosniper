@@ -1,5 +1,5 @@
 import json
-import os
+import subprocess
 import sys
 from pathlib import Path
 
@@ -29,14 +29,33 @@ run_clicked = hero_action_card(
 
 CSV_PATH = dataset_path("all_vehicle_links.csv")
 SUMMARY_PATH = Path("logs") / "link_scrape_summary.json"
+ROOT_DIR = Path(__file__).resolve().parent.parent
+
+
+def _run_command(command: list[str]) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        command,
+        cwd=ROOT_DIR,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+
+def _render_command_result(result: subprocess.CompletedProcess[str]) -> None:
+    if result.stdout.strip():
+        st.code(result.stdout, language="text")
+    if result.stderr.strip():
+        st.code(result.stderr, language="text")
 
 if run_clicked:
     with st.spinner("Scraping vehicle links from Grays..."):
-        exit_code = os.system(f'"{sys.executable}" scripts/extract_links.py')
-        if exit_code == 0:
+        result = _run_command([sys.executable, "scripts/extract_links.py"])
+        if result.returncode == 0:
             st.success("Link scraping completed.")
         else:
             st.error("Script failed. Check the terminal output for details.")
+        _render_command_result(result)
 
 if CSV_PATH.exists():
     df = pd.read_csv(CSV_PATH)

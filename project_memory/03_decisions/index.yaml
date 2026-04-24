@@ -39,3 +39,8 @@ decisions:
     title: Evidence alignment is not repricing
     status: accepted
     date: 2026-04-10
+  - id: DEC-009
+    path: project_memory/03_decisions/DEC-009-audit-for-private-owner-use.md
+    title: Audit for private owner use, not commercial SaaS
+    status: accepted
+    date: 2026-04-24

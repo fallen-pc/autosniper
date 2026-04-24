@@ -193,6 +193,20 @@ def test_ix35_se_lm_saved_curve_resolves_through_v2_base_tag():
     assert matcher_rows.empty
 
 
+def test_ix35_elite_lm_saved_curve_resolves_through_v2_base_tag():
+    curves_df = curves.load_curves()
+
+    base_rows = curves_df[
+        curves_df["canonical_tag"].astype(str) == "hyundai_ix35_elite_lm_wagon_auto_petrol"
+    ]
+    matcher_rows = curves_df[
+        curves_df["canonical_tag"].astype(str) == "hyundai_ix35_elite_petrol_auto_wagon_lm"
+    ]
+
+    assert len(base_rows) == 15
+    assert matcher_rows.empty
+
+
 def test_getz_sx_tb_auto_saved_curve_resolves_through_v2_base_tag():
     curves_df = curves.load_curves()
 
@@ -201,6 +215,20 @@ def test_getz_sx_tb_auto_saved_curve_resolves_through_v2_base_tag():
     ]
     matcher_rows = curves_df[
         curves_df["canonical_tag"].astype(str) == "hyundai_getz_sx_petrol_auto_hatch_tb"
+    ]
+
+    assert len(base_rows) == 15
+    assert matcher_rows.empty
+
+
+def test_getz_sx_tb_manual_saved_curve_resolves_through_v2_base_tag():
+    curves_df = curves.load_curves()
+
+    base_rows = curves_df[
+        curves_df["canonical_tag"].astype(str) == "hyundai_getz_sx_tb_hatch_manual_petrol"
+    ]
+    matcher_rows = curves_df[
+        curves_df["canonical_tag"].astype(str) == "hyundai_getz_sx_petrol_manual_hatch_tb"
     ]
 
     assert len(base_rows) == 15
