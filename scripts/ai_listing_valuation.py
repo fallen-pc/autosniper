@@ -29,6 +29,7 @@ REQUIRED_COLUMNS = [
     "fees_estimate",
     "transport_estimate",
     "rego_estimate",
+    "roadworthy_estimate",
     "prep_estimate",
     "repair_estimate",
     "expected_auction_price",
@@ -85,13 +86,13 @@ INTERSTATE_BUYING_ALLOWED = os.getenv(
     "AUTOSNIPER_ALLOW_INTERSTATE_BUYING", ""
 ).strip().lower() in {"1", "true", "yes", "y"}
 DEFAULT_PREP = 300.0
+ROADWORTHY_ESTIMATE = float(os.getenv("AUTOSNIPER_ROADWORTHY_ESTIMATE", "250").strip() or "250")
 DETAILING_HATCH_SEDAN = 99.0
 DETAILING_SMALL_SUV_WAGON = 115.0
 DETAILING_LARGE_SUV_4WD = 129.0
 DEFAULT_DISCOUNT = 0.75
 MIN_EXPECTED_AUCTION_COMPS = 3
 COST_BUFFER = 1_500.0
-UNREGISTERED_REGO_COST = 1_200.0
 REGISTERED_REGO_COST = 0.0
 MIN_FEES = 500.0
 FEES_RATE = 0.08
@@ -606,7 +607,8 @@ def _estimate_bid_cost_components(purchase_price: float, listing: Mapping[str, A
     else:
         auction_fee = max(MIN_FEES, purchase_price * FEES_RATE)
     transport_cost = _estimate_transport_cost(listing.get("location"))
-    rego_cost = UNREGISTERED_REGO_COST if _is_unregistered(listing) else REGISTERED_REGO_COST
+    rego_cost = REGISTERED_REGO_COST
+    roadworthy_cost = ROADWORTHY_ESTIMATE if _is_unregistered(listing) else 0.0
     detail_cost = _estimate_detailing_cost(listing)
     prep_cost = DEFAULT_PREP + detail_cost
     return {
@@ -614,6 +616,7 @@ def _estimate_bid_cost_components(purchase_price: float, listing: Mapping[str, A
         "transport_cost": transport_cost,
         "detail_cost": detail_cost,
         "rego_cost": rego_cost,
+        "roadworthy_cost": roadworthy_cost,
         "prep_cost": prep_cost,
     }
 
@@ -624,6 +627,7 @@ def _estimate_costs(purchase_price: float, listing: Mapping[str, Any]) -> dict[s
         "fees_estimate": components["auction_fee"],
         "transport_estimate": components["transport_cost"],
         "rego_estimate": components["rego_cost"],
+        "roadworthy_estimate": components["roadworthy_cost"],
         "prep_estimate": components["prep_cost"],
     }
 
@@ -1166,6 +1170,7 @@ def run_curve_listing_analysis(
             "fees_estimate": None,
             "transport_estimate": None,
             "rego_estimate": None,
+            "roadworthy_estimate": None,
             "prep_estimate": None,
             "repair_estimate": None,
             "expected_auction_price": None,
@@ -1276,8 +1281,14 @@ def run_curve_listing_analysis(
         pass
 
     repair_verdict = None
-    if repair_assessment.hard_avoid and "MECHANICAL" not in risk_flags:
-        risk_flags.append("MECHANICAL")
+    if repair_assessment.hard_avoid:
+        hard_avoid_flag = {
+            "mechanical": "MECHANICAL",
+            "structural": "STRUCTURAL",
+            "unknown": "UNKNOWN_CONDITION",
+        }.get(getattr(repair_assessment, "hard_avoid_reason", None), "MECHANICAL")
+        if hard_avoid_flag not in risk_flags:
+            risk_flags.append(hard_avoid_flag)
     if recommended_max_bid_val is not None:
         adjusted_bid, repair_verdict = apply_repairs_to_max_bid(
             int(round(recommended_max_bid_val)),
@@ -1288,7 +1299,7 @@ def run_curve_listing_analysis(
         recommended_max_bid_val = 0.0
     if "INTERSTATE" in risk_flags and not INTERSTATE_BUYING_ALLOWED:
         recommended_max_bid_val = 0.0
-    repair_cost_val = 0.0 if repair_assessment.hard_avoid else float(repair_assessment.total_cost or 0.0)
+    repair_cost_val = float(repair_assessment.total_cost or 0.0)
 
     base_max_bid_val = recommended_max_bid_val
     base_no_edge_at_current_bid = False
@@ -1519,6 +1530,7 @@ def run_curve_listing_analysis(
         "fees_estimate": _format_currency(costs_map["fees_estimate"]),
         "transport_estimate": _format_currency(costs_map["transport_estimate"]),
         "rego_estimate": _format_currency(costs_map["rego_estimate"]),
+        "roadworthy_estimate": _format_currency(costs_map["roadworthy_estimate"]),
         "prep_estimate": _format_currency(costs_map["prep_estimate"]),
         "repair_estimate": _format_currency(repair_cost_val),
         "expected_auction_price": _format_currency(expected_auction_price_val),

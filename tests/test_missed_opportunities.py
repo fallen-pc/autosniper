@@ -48,7 +48,7 @@ def test_missed_decision_metrics_apply_ai_cap_and_repair_cost(monkeypatch) -> No
     assert result["max_bid"] == 11_780
     assert result["repair_cost"] == 700
     assert result["risk_buffer"] == 300
-    assert result["projected_profit_at_sold"] == 6401
+    assert result["projected_profit_at_sold"] == 7351
 
 
 def test_missed_decision_metrics_can_run_no_repair_hypothesis(monkeypatch) -> None:
@@ -76,7 +76,7 @@ def test_missed_decision_metrics_can_run_no_repair_hypothesis(monkeypatch) -> No
     assert result["max_bid"] == 12_780
     assert result["repair_cost"] == 0
     assert result["risk_buffer"] == 0
-    assert result["projected_profit_at_sold"] == 7401
+    assert result["projected_profit_at_sold"] == 8351
 
 
 def test_missed_decision_metrics_zeroes_interstate_max_bid(monkeypatch) -> None:

@@ -3036,6 +3036,7 @@ def _compute_auction_cost_value(row: pd.Series) -> Optional[float]:
         parse_currency(row.get("fees_estimate")),
         parse_currency(row.get("transport_estimate")),
         parse_currency(row.get("rego_estimate")),
+        parse_currency(row.get("roadworthy_estimate")),
         parse_currency(row.get("prep_estimate")),
         parse_currency(row.get("repair_estimate")),
     ]

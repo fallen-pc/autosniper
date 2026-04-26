@@ -110,6 +110,21 @@ def test_curve_analysis_subtracts_repair_cost_from_displayed_profit(monkeypatch)
     assert net_profit_mid == round(expected_profit_without_repair - 1000)
 
 
+def test_estimate_costs_uses_roadworthy_not_full_rego_for_unregistered() -> None:
+    listing = {
+        "body_type": "Hatch",
+        "location": "Melbourne VIC",
+        "rego_expiry": "Unregistered",
+        "rego_no": "",
+    }
+
+    costs = ai_listing_valuation._estimate_costs(5_000.0, listing)
+
+    assert costs["rego_estimate"] == 0.0
+    assert costs["roadworthy_estimate"] == ai_listing_valuation.ROADWORTHY_ESTIMATE
+    assert costs["prep_estimate"] == ai_listing_valuation.DEFAULT_PREP + ai_listing_valuation.DETAILING_HATCH_SEDAN
+
+
 def test_curve_analysis_uses_current_bid_profit_when_no_edge(monkeypatch) -> None:
     repair_assessment = RepairAssessment(
         hard_avoid=False,
@@ -587,6 +602,110 @@ def test_curve_analysis_hard_max_safety_uses_final_max_bid_basis(monkeypatch) ->
     assert result["hard_max_safety"] == "RECORDED"
     assert result["no_edge"] is True
     assert result["action_label"] == "Avoid"
+
+
+def test_curve_analysis_keeps_repair_estimate_visible_for_hard_avoid(monkeypatch) -> None:
+    repair_assessment = RepairAssessment(
+        hard_avoid=True,
+        pills=["MECHANICAL"],
+        cosmetic_panels=0,
+        glass_cost=0,
+        replacement_cost=0,
+        risk_buffer=0,
+        base_cost=10_000,
+        severity_level="major",
+        severity_multiplier=1.0,
+        total_cost=10_000,
+        reasons=["MECHANICAL_REGEX_HIT"],
+    )
+    listing = pd.Series(
+        {
+            "url": "test://hard-avoid-repair-estimate",
+            "price": "$5,000",
+            "make": "Toyota",
+            "model": "Camry",
+            "variant": "Altise",
+            "body_type": "Sedan",
+            "transmission": "Auto",
+            "fuel_type": "Petrol",
+            "location": "Melbourne VIC",
+            "rego_state": "VIC",
+            "general_condition": "engine noise observed.",
+        }
+    )
+
+    monkeypatch.setattr(
+        ai_listing_valuation,
+        "load_cached_results",
+        lambda: pd.DataFrame(columns=ai_listing_valuation.REQUIRED_COLUMNS),
+    )
+    monkeypatch.setattr(ai_listing_valuation, "_save_result_row", lambda row: None)
+    monkeypatch.setattr(ai_listing_valuation, "assess_repairs", lambda condition: repair_assessment)
+
+    result = ai_listing_valuation.run_curve_listing_analysis(
+        listing,
+        resale_mid=20_000,
+        comps_count=5,
+        analysis_context="active",
+        force_refresh=True,
+    )
+
+    assert result["recommended_max_bid"] == "$0"
+    assert result["computed_verdict"] == "Avoid"
+    assert result["repair_estimate"] == "$10,000"
+
+
+def test_curve_analysis_surfaces_structural_hard_avoid_bucket(monkeypatch) -> None:
+    repair_assessment = RepairAssessment(
+        hard_avoid=True,
+        pills=["STRUCTURAL"],
+        cosmetic_panels=0,
+        glass_cost=0,
+        replacement_cost=0,
+        risk_buffer=0,
+        base_cost=8_000,
+        severity_level="major",
+        severity_multiplier=1.0,
+        total_cost=8_000,
+        reasons=["V2_AVOID: structural_damage: structural damage on chassis rail."],
+        hard_avoid_reason="structural",
+    )
+    listing = pd.Series(
+        {
+            "url": "test://structural-hard-avoid",
+            "price": "$5,000",
+            "make": "Toyota",
+            "model": "Corolla",
+            "variant": "Ascent",
+            "body_type": "Sedan",
+            "transmission": "Auto",
+            "fuel_type": "Petrol",
+            "location": "Melbourne VIC",
+            "rego_state": "VIC",
+            "general_condition": "structural damage on chassis rail.",
+        }
+    )
+
+    monkeypatch.setattr(
+        ai_listing_valuation,
+        "load_cached_results",
+        lambda: pd.DataFrame(columns=ai_listing_valuation.REQUIRED_COLUMNS),
+    )
+    monkeypatch.setattr(ai_listing_valuation, "_save_result_row", lambda row: None)
+    monkeypatch.setattr(ai_listing_valuation, "assess_repairs", lambda condition: repair_assessment)
+
+    result = ai_listing_valuation.run_curve_listing_analysis(
+        listing,
+        resale_mid=20_000,
+        comps_count=5,
+        analysis_context="active",
+        force_refresh=True,
+    )
+
+    assert result["recommended_max_bid"] == "$0"
+    assert result["computed_verdict"] == "Avoid"
+    assert result["repair_estimate"] == "$8,000"
+    assert "STRUCTURAL" in result["risk_flags"]
 
 
 def test_transport_default_matches_local_operating_cost() -> None:

@@ -156,6 +156,8 @@ def compute_decision_metrics(
         platform_fees = float(costs_map.get("fees_estimate", 0.0))
         transport = float(costs_map.get("transport_estimate", 0.0))
         admin_costs = float(costs_map.get("rego_estimate", 0.0)) + float(
+            costs_map.get("roadworthy_estimate", 0.0)
+        ) + float(
             costs_map.get("prep_estimate", 0.0)
         )
         total_costs = platform_fees + transport + admin_costs + repair_cost + risk_buffer

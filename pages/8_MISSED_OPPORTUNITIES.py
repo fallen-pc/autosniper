@@ -1080,7 +1080,7 @@ for group in group_order:
                 st.write(money(row.get("platform_fees")))
                 st.markdown("**Transport**")
                 st.write(money(row.get("transport_costs")))
-                st.markdown("**Admin (rego + prep)**")
+                st.markdown("**Admin (roadworthy + prep)**")
                 st.write(money(row.get("admin_costs")))
                 st.markdown("**Risk buffer**")
                 st.write(money(row.get("risk_buffer")))
