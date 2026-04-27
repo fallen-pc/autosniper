@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from shared.repair_pricing import assess_repairs
+from shared.repair_pricing import RepairAssessment, apply_repairs_to_max_bid, assess_repairs
 
 
 def test_assess_repairs_glass_case_is_consistent() -> None:
@@ -57,3 +57,45 @@ def test_assess_repairs_structural_hard_avoid_uses_structural_bucket() -> None:
     assert assessment.pills == ["STRUCTURAL"]
     assert assessment.base_cost == 8000
     assert assessment.total_cost == 8000
+
+
+def test_apply_repairs_to_max_bid_keeps_moderate_repairs_marginal() -> None:
+    assessment = RepairAssessment(
+        hard_avoid=False,
+        pills=["COSMETIC_PANEL", "PANEL_REPLACE"],
+        cosmetic_panels=2,
+        glass_cost=0,
+        replacement_cost=850,
+        risk_buffer=0,
+        base_cost=1500,
+        severity_level="moderate",
+        severity_multiplier=1.5,
+        total_cost=2250,
+        reasons=["test repair"],
+    )
+
+    adjusted_bid, verdict = apply_repairs_to_max_bid(5000, assessment)
+
+    assert adjusted_bid == 2750
+    assert verdict == "Marginal"
+
+
+def test_apply_repairs_to_max_bid_marks_only_heavier_repairs_not_viable() -> None:
+    assessment = RepairAssessment(
+        hard_avoid=False,
+        pills=["PANEL_REPLACE"],
+        cosmetic_panels=3,
+        glass_cost=0,
+        replacement_cost=1500,
+        risk_buffer=300,
+        base_cost=2600,
+        severity_level="moderate",
+        severity_multiplier=1.25,
+        total_cost=3250,
+        reasons=["test repair"],
+    )
+
+    adjusted_bid, verdict = apply_repairs_to_max_bid(6000, assessment)
+
+    assert adjusted_bid == 2750
+    assert verdict == "Not Viable"

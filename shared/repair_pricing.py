@@ -198,6 +198,10 @@ HARD_AVOID_BUCKETS = {
     "unknown": {"pill": "UNKNOWN", "cost": 4_000},
 }
 
+REPAIR_GATE_GOOD_MAX = 600
+REPAIR_GATE_MARGINAL_MAX = 2_500
+REPAIR_GATE_NOT_VIABLE_MAX = 4_000
+
 
 def _hard_avoid_assessment(
     reason: str,
@@ -578,11 +582,11 @@ def apply_repairs_to_max_bid(max_bid: int, assessment: RepairAssessment) -> Tupl
 
     adjusted = max(0, int(max_bid) - int(assessment.total_cost))
 
-    if assessment.total_cost <= 600:
+    if assessment.total_cost <= REPAIR_GATE_GOOD_MAX:
         verdict = "Good"
-    elif assessment.total_cost <= 1000:
+    elif assessment.total_cost <= REPAIR_GATE_MARGINAL_MAX:
         verdict = "Marginal"
-    elif assessment.total_cost <= 1500:
+    elif assessment.total_cost <= REPAIR_GATE_NOT_VIABLE_MAX:
         verdict = "Not Viable"
     else:
         verdict = "Avoid"

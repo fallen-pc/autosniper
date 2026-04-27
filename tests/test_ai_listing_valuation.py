@@ -110,6 +110,61 @@ def test_curve_analysis_subtracts_repair_cost_from_displayed_profit(monkeypatch)
     assert net_profit_mid == round(expected_profit_without_repair - 1000)
 
 
+def test_curve_analysis_keeps_moderate_repairs_as_marginal_not_avoid(monkeypatch) -> None:
+    repair_assessment = RepairAssessment(
+        hard_avoid=False,
+        pills=["COSMETIC_PANEL", "PANEL_REPLACE"],
+        cosmetic_panels=2,
+        glass_cost=0,
+        replacement_cost=850,
+        risk_buffer=0,
+        base_cost=1500,
+        severity_level="moderate",
+        severity_multiplier=1.5,
+        total_cost=2250,
+        reasons=["test repair"],
+    )
+    listing = pd.Series(
+        {
+            "url": "test://marginal-repairs",
+            "price": "$2,400",
+            "make": "Toyota",
+            "model": "Corolla",
+            "variant": "Ascent",
+            "body_type": "Sedan",
+            "transmission": "Auto",
+            "fuel_type": "Petrol",
+            "location": "Melbourne VIC",
+            "rego_state": "VIC",
+            "key": "Yes",
+            "spare_key": "No",
+            "owners_manual": "No",
+            "service_history": "No",
+            "general_condition": "Moderate cosmetic and light replacement work.",
+        }
+    )
+
+    monkeypatch.setattr(
+        ai_listing_valuation,
+        "load_cached_results",
+        lambda: pd.DataFrame(columns=ai_listing_valuation.REQUIRED_COLUMNS),
+    )
+    monkeypatch.setattr(ai_listing_valuation, "_save_result_row", lambda row: None)
+    monkeypatch.setattr(ai_listing_valuation, "assess_repairs", lambda condition: repair_assessment)
+
+    result = ai_listing_valuation.run_curve_listing_analysis(
+        listing,
+        resale_mid=20_000,
+        comps_count=5,
+        analysis_context="active",
+        force_refresh=True,
+    )
+
+    assert result["computed_verdict"] == "Marginal (repairs)"
+    assert result["action_label"] in {"Watch", "Bid carefully", "Review"}
+    assert result["repair_estimate"] == "$2,250"
+
+
 def test_estimate_costs_uses_roadworthy_not_full_rego_for_unregistered() -> None:
     listing = {
         "body_type": "Hatch",

@@ -76,7 +76,20 @@ def evaluate_transition(
     prev_fail_count = max(0, int(previous_fetch_fail_count or 0))
     evidence = str(observation.evidence or "").strip()
 
-    # Terminal states are one-way unless explicitly unlocked in a later phase.
+    # Terminal states are generally one-way, but fresh live-auction evidence
+    # should reopen the listing lifecycle. This handles relisted auctions and
+    # stale terminal snapshots that would otherwise block readiness/materialized
+    # views from matching the current active queue.
+    if prev in TERMINAL_STATES and observation.is_live:
+        return TransitionDecision(
+            state=STATE_ACTIVE,
+            reason_code="EVIDENCE_LIVE_REOPEN",
+            terminal_reason="",
+            fetch_fail_count=0,
+            last_fetch_error="",
+            last_evidence=evidence,
+        )
+
     if prev in TERMINAL_STATES:
         return TransitionDecision(
             state=prev,
