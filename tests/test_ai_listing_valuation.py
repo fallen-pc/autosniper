@@ -1,10 +1,36 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pandas as pd
 
 from scripts import ai_listing_valuation
 from shared.repair_pricing import RepairAssessment
 from shared.top_buy import TopBuyResult
+
+
+def _base_saved_row(**overrides) -> dict[str, object]:
+    row: dict[str, object] = {
+        "url": "https://example.com/lot/decision-1",
+        "year": 2011,
+        "make": "Toyota",
+        "model": "Corolla",
+        "variant": "Ascent",
+        "location": "VIC",
+        "analysis_timestamp": "2026-04-29T00:00:00+00:00",
+        "analysis_context": "active",
+        "computed_verdict": "Conditional Flip",
+        "verdict": "Conditional Flip",
+        "action_label": "Bid carefully",
+        "recommended_max_bid": "$4,500",
+        "current_bid": "$2,500",
+        "current_bid_numeric": 2500,
+        "bid_status": "Cheap",
+        "repair_estimate": "$1,000",
+        "risk_flags": "NO_SERVICE_HISTORY",
+    }
+    row.update(overrides)
+    return row
 
 
 def test_price_change_metadata_records_increase() -> None:
@@ -54,6 +80,80 @@ def test_price_change_metadata_preserves_existing_change_when_price_same() -> No
     assert result["price_change_delta"] == 500
     assert result["price_change_direction"] == "increased"
     assert result["price_changed_at"] == "2026-04-11T09:00:00+00:00"
+
+
+def test_decision_event_payload_captures_meaningful_listing_change() -> None:
+    existing = _base_saved_row()
+    updated = _base_saved_row(
+        analysis_timestamp="2026-04-29T01:00:00+00:00",
+        computed_verdict="Marginal (repairs)",
+        verdict="Marginal (repairs)",
+        action_label="Watch",
+        recommended_max_bid="$4,100",
+        repair_estimate="$2,250",
+        risk_flags="NO_SERVICE_HISTORY|UNREGISTERED",
+    )
+
+    event = ai_listing_valuation._decision_event_payload(updated, existing)
+
+    assert event is not None
+    assert event["direction"] == "worsened"
+    assert event["event_types"] == "verdict_changed|action_changed|max_bid_changed|repair_changed|risk_flags_changed"
+    assert "Verdict changed from Conditional Flip to Marginal (repairs)" in event["change_reason_summary"]
+    assert "Safe max bid decreased by $400" in event["change_reason_summary"]
+    assert "Repair estimate increased by $1,250" in event["change_reason_summary"]
+    assert "added UNREGISTERED" in event["change_reason_summary"]
+
+
+def test_save_result_row_writes_decision_event_only_for_material_change(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    ai_results_path = tmp_path / "ai_listing_valuations.csv"
+    decision_events_path = tmp_path / "listing_decision_events.csv"
+    monkeypatch.setattr(ai_listing_valuation, "AI_RESULTS_PATH", ai_results_path)
+    monkeypatch.setattr(ai_listing_valuation, "DECISION_EVENTS_PATH", decision_events_path)
+    monkeypatch.setattr(ai_listing_valuation, "_maybe_send_listing_alerts", lambda row, existing_row: None)
+
+    ai_listing_valuation._save_result_row(_base_saved_row())
+    assert not decision_events_path.exists()
+
+    ai_listing_valuation._save_result_row(
+        _base_saved_row(
+            analysis_timestamp="2026-04-29T02:00:00+00:00",
+            recommended_max_bid="$4,450",
+            current_bid="$2,540",
+            current_bid_numeric=2540,
+        )
+    )
+    assert not decision_events_path.exists()
+
+    ai_listing_valuation._save_result_row(
+        _base_saved_row(
+            analysis_timestamp="2026-04-29T03:00:00+00:00",
+            computed_verdict="Marginal (repairs)",
+            verdict="Marginal (repairs)",
+            action_label="Watch",
+            recommended_max_bid="$4,100",
+            repair_estimate="$2,250",
+            current_bid="$2,900",
+            current_bid_numeric=2900,
+            bid_status="Near ceiling",
+            risk_flags="NO_SERVICE_HISTORY|UNREGISTERED",
+        )
+    )
+
+    events = pd.read_csv(decision_events_path)
+    assert len(events) == 1
+    event = events.iloc[0]
+    assert event["direction"] == "worsened"
+    assert event["previous_verdict"] == "Conditional Flip"
+    assert event["new_verdict"] == "Marginal (repairs)"
+    assert event["previous_action"] == "Bid carefully"
+    assert event["new_action"] == "Watch"
+    assert event["event_types"] == (
+        "verdict_changed|action_changed|max_bid_changed|repair_changed|risk_flags_changed|bid_status_changed"
+    )
 
 
 def test_curve_analysis_subtracts_repair_cost_from_displayed_profit(monkeypatch) -> None:

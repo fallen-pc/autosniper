@@ -86,6 +86,41 @@ def test_load_ai_analysis_active_df_uses_prepared_scope(monkeypatch) -> None:
     assert result is expected_df
 
 
+def test_exclude_shortlist_ineligible_rows_drops_completed_wovr_and_no_price() -> None:
+    df = pd.DataFrame(
+        [
+            {
+                "url": "https://example.com/lot/good",
+                "variant": "Ascent",
+                "status": "Active",
+                "price": "$5,000",
+            },
+            {
+                "url": "https://example.com/lot/referred",
+                "variant": "Ascent",
+                "status": "Referred",
+                "price": "$5,000",
+            },
+            {
+                "url": "https://example.com/lot/wovr",
+                "variant": "Maxx Sport (WOVR - repairable)",
+                "status": "Active",
+                "price": "$1,500",
+            },
+            {
+                "url": "https://example.com/lot/no-price",
+                "variant": "Ascent",
+                "status": "Active",
+                "price": None,
+            },
+        ]
+    )
+
+    result = active_monitor._exclude_shortlist_ineligible_rows(df)
+
+    assert result["url"].tolist() == ["https://example.com/lot/good"]
+
+
 def test_prepare_active_scope_keeps_sold_rows_after_curve_tag_resolution(monkeypatch) -> None:
     detailed_tag = "hyundai_i30_active_petrol_auto_hatch_gd"
     curve_tag = "hyundai_i30_gd_hatch_auto_petrol"

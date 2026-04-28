@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Mapping, Optional, Tuple
 
 import pandas as pd
 
-from scripts.atomic_csv import write_dataframe_csv_atomic
+from scripts.atomic_csv import append_dict_rows_csv_atomic, write_dataframe_csv_atomic
 from shared.data_loader import dataset_path
 from shared.repair_pricing import assess_repairs, apply_repairs_to_max_bid
 from shared.telegram_alerts import send_on_state_change
@@ -15,8 +15,14 @@ from shared.top_buy import apply_top_buy_behavior, top_buy_gate_check
 
 
 AI_RESULTS_PATH = dataset_path("ai_listing_valuations.csv")
+DECISION_EVENTS_PATH = dataset_path("ai/listing_decision_events.csv")
 REQUIRED_COLUMNS = [
     "url",
+    "year",
+    "make",
+    "model",
+    "variant",
+    "location",
     "analysis_timestamp",
     "analysis_context",
     # Risk-banded resale figures
@@ -78,6 +84,37 @@ REQUIRED_COLUMNS = [
     "bids_observed",
     "time_remaining_observed",
 ]
+DECISION_EVENT_COLUMNS = [
+    "event_at",
+    "url",
+    "year",
+    "make",
+    "model",
+    "variant",
+    "location",
+    "event_types",
+    "direction",
+    "previous_verdict",
+    "new_verdict",
+    "previous_action",
+    "new_action",
+    "previous_max_bid",
+    "new_max_bid",
+    "previous_current_bid",
+    "new_current_bid",
+    "previous_bid_status",
+    "new_bid_status",
+    "previous_repair_estimate",
+    "new_repair_estimate",
+    "previous_risk_flags",
+    "new_risk_flags",
+    "previous_coverage_status",
+    "new_coverage_status",
+    "change_reason_summary",
+]
+DECISION_EVENT_MAX_BID_THRESHOLD = 250.0
+DECISION_EVENT_REPAIR_THRESHOLD = 250.0
+DECISION_EVENT_CURRENT_BID_THRESHOLD = 250.0
 
 # Default cost assumptions (AUD)
 DEFAULT_TRANSPORT = 200.0
@@ -215,6 +252,235 @@ def _with_price_change_metadata(
     return enriched
 
 
+def _risk_flags_set(row: Mapping[str, Any] | None) -> set[str]:
+    if not row:
+        return set()
+    raw = str(row.get("risk_flags") or "").strip()
+    if not raw:
+        return set()
+    return {part.strip() for part in raw.split("|") if part.strip()}
+
+
+def _coverage_status(row: Mapping[str, Any] | None) -> str:
+    if not row:
+        return "missing"
+    verdict = str(row.get("computed_verdict") or row.get("verdict") or "").strip().lower()
+    flags = _risk_flags_set(row)
+    if verdict in {"not covered", "not eligible"}:
+        return "not_covered"
+    if {"NO_CURVE", "KM_OUT_OF_RANGE"} & flags:
+        return "not_covered"
+    return "covered"
+
+
+def _action_rank(value: Any) -> int:
+    text = str(value or "").strip().lower()
+    ranks = {
+        "buy": 3,
+        "bid carefully": 3,
+        "watch": 2,
+        "watch closely": 2,
+        "review": 2,
+        "avoid": 1,
+        "ignore": 1,
+    }
+    return ranks.get(text, 0)
+
+
+def _verdict_rank(value: Any) -> int:
+    text = str(value or "").strip().lower()
+    ranks = {
+        "strong flip": 5,
+        "conditional flip": 4,
+        "good": 4,
+        "marginal (repairs)": 3,
+        "not viable": 2,
+        "trap": 2,
+        "avoid": 1,
+        "not covered": 0,
+        "not eligible": 0,
+    }
+    return ranks.get(text, 0)
+
+
+def _change_direction(
+    existing_row: Mapping[str, Any] | None,
+    row: Mapping[str, Any],
+    event_types: list[str],
+) -> str:
+    improved = False
+    worsened = False
+
+    if "verdict_changed" in event_types:
+        old_rank = _verdict_rank(existing_row.get("computed_verdict") if existing_row else None)
+        new_rank = _verdict_rank(row.get("computed_verdict"))
+        improved |= new_rank > old_rank
+        worsened |= new_rank < old_rank
+    if "action_changed" in event_types:
+        old_rank = _action_rank(existing_row.get("action_label") if existing_row else None)
+        new_rank = _action_rank(row.get("action_label"))
+        improved |= new_rank > old_rank
+        worsened |= new_rank < old_rank
+
+    old_max_bid = _parse_currency(existing_row.get("recommended_max_bid")) if existing_row else None
+    new_max_bid = _parse_currency(row.get("recommended_max_bid"))
+    if "max_bid_changed" in event_types and old_max_bid is not None and new_max_bid is not None:
+        improved |= new_max_bid > old_max_bid
+        worsened |= new_max_bid < old_max_bid
+
+    old_repair = _parse_currency(existing_row.get("repair_estimate")) if existing_row else None
+    new_repair = _parse_currency(row.get("repair_estimate"))
+    if "repair_changed" in event_types and old_repair is not None and new_repair is not None:
+        improved |= new_repair < old_repair
+        worsened |= new_repair > old_repair
+
+    if "coverage_changed" in event_types:
+        old_cov = _coverage_status(existing_row)
+        new_cov = _coverage_status(row)
+        improved |= old_cov != "covered" and new_cov == "covered"
+        worsened |= old_cov == "covered" and new_cov != "covered"
+
+    if "risk_flags_changed" in event_types:
+        old_flags = _risk_flags_set(existing_row)
+        new_flags = _risk_flags_set(row)
+        improved |= bool(old_flags - new_flags)
+        worsened |= bool(new_flags - old_flags)
+
+    if improved and not worsened:
+        return "improved"
+    if worsened and not improved:
+        return "worsened"
+    return "neutral"
+
+
+def _format_event_delta(value: float) -> str:
+    return _format_currency(abs(value)) or "$0"
+
+
+def _decision_event_payload(
+    row: Mapping[str, Any],
+    existing_row: Mapping[str, Any] | None,
+) -> Dict[str, Any] | None:
+    if not existing_row:
+        return None
+
+    event_types: list[str] = []
+    reasons: list[str] = []
+
+    previous_verdict = str(existing_row.get("computed_verdict") or existing_row.get("verdict") or "").strip()
+    new_verdict = str(row.get("computed_verdict") or row.get("verdict") or "").strip()
+    if previous_verdict != new_verdict:
+        event_types.append("verdict_changed")
+        reasons.append(f"Verdict changed from {previous_verdict or 'unknown'} to {new_verdict or 'unknown'}")
+
+    previous_action = str(existing_row.get("action_label") or "").strip()
+    new_action = str(row.get("action_label") or "").strip()
+    if previous_action != new_action:
+        event_types.append("action_changed")
+        reasons.append(f"Action changed from {previous_action or 'unknown'} to {new_action or 'unknown'}")
+
+    previous_max_bid = _parse_currency(existing_row.get("recommended_max_bid"))
+    new_max_bid = _parse_currency(row.get("recommended_max_bid"))
+    if (
+        previous_max_bid is not None
+        and new_max_bid is not None
+        and abs(new_max_bid - previous_max_bid) >= DECISION_EVENT_MAX_BID_THRESHOLD
+    ):
+        event_types.append("max_bid_changed")
+        direction = "increased" if new_max_bid > previous_max_bid else "decreased"
+        reasons.append(
+            f"Safe max bid {direction} by {_format_event_delta(new_max_bid - previous_max_bid)}"
+        )
+
+    previous_repair = _parse_currency(existing_row.get("repair_estimate"))
+    new_repair = _parse_currency(row.get("repair_estimate"))
+    if (
+        previous_repair is not None
+        and new_repair is not None
+        and abs(new_repair - previous_repair) >= DECISION_EVENT_REPAIR_THRESHOLD
+    ):
+        event_types.append("repair_changed")
+        direction = "increased" if new_repair > previous_repair else "decreased"
+        reasons.append(
+            f"Repair estimate {direction} by {_format_event_delta(new_repair - previous_repair)}"
+        )
+
+    previous_risk_flags = _risk_flags_set(existing_row)
+    new_risk_flags = _risk_flags_set(row)
+    if previous_risk_flags != new_risk_flags:
+        event_types.append("risk_flags_changed")
+        added_flags = sorted(new_risk_flags - previous_risk_flags)
+        removed_flags = sorted(previous_risk_flags - new_risk_flags)
+        flag_notes: list[str] = []
+        if added_flags:
+            flag_notes.append(f"added {', '.join(added_flags)}")
+        if removed_flags:
+            flag_notes.append(f"removed {', '.join(removed_flags)}")
+        reasons.append("Risk flags changed: " + "; ".join(flag_notes))
+
+    previous_coverage_status = _coverage_status(existing_row)
+    new_coverage_status = _coverage_status(row)
+    if previous_coverage_status != new_coverage_status:
+        event_types.append("coverage_changed")
+        reasons.append(
+            f"Coverage changed from {previous_coverage_status.replace('_', ' ')} to {new_coverage_status.replace('_', ' ')}"
+        )
+
+    previous_bid_status = str(existing_row.get("bid_status") or "").strip()
+    new_bid_status = str(row.get("bid_status") or "").strip()
+    previous_current_bid = _current_bid_value(existing_row)
+    new_current_bid = _current_bid_value(row)
+    if (
+        previous_bid_status != new_bid_status
+        and previous_current_bid is not None
+        and new_current_bid is not None
+        and abs(new_current_bid - previous_current_bid) >= DECISION_EVENT_CURRENT_BID_THRESHOLD
+    ):
+        event_types.append("bid_status_changed")
+        reasons.append(
+            f"Current bid moved listing from {previous_bid_status or 'unknown'} to {new_bid_status or 'unknown'}"
+        )
+
+    if not event_types:
+        return None
+
+    return {
+        "event_at": str(row.get("analysis_timestamp") or datetime.now(tz=timezone.utc).isoformat()),
+        "url": str(row.get("url") or existing_row.get("url") or "").strip(),
+        "year": row.get("year") or existing_row.get("year"),
+        "make": row.get("make") or existing_row.get("make"),
+        "model": row.get("model") or existing_row.get("model"),
+        "variant": row.get("variant") or existing_row.get("variant"),
+        "location": row.get("location") or existing_row.get("location"),
+        "event_types": "|".join(event_types),
+        "direction": _change_direction(existing_row, row, event_types),
+        "previous_verdict": previous_verdict,
+        "new_verdict": new_verdict,
+        "previous_action": previous_action,
+        "new_action": new_action,
+        "previous_max_bid": existing_row.get("recommended_max_bid"),
+        "new_max_bid": row.get("recommended_max_bid"),
+        "previous_current_bid": existing_row.get("current_bid"),
+        "new_current_bid": row.get("current_bid"),
+        "previous_bid_status": previous_bid_status,
+        "new_bid_status": new_bid_status,
+        "previous_repair_estimate": existing_row.get("repair_estimate"),
+        "new_repair_estimate": row.get("repair_estimate"),
+        "previous_risk_flags": "|".join(sorted(previous_risk_flags)),
+        "new_risk_flags": "|".join(sorted(new_risk_flags)),
+        "previous_coverage_status": previous_coverage_status,
+        "new_coverage_status": new_coverage_status,
+        "change_reason_summary": " | ".join(reasons),
+    }
+
+
+def _append_decision_event(row: Mapping[str, Any], existing_row: Mapping[str, Any] | None) -> None:
+    event = _decision_event_payload(row, existing_row)
+    if not event:
+        return
+    append_dict_rows_csv_atomic(DECISION_EVENTS_PATH, DECISION_EVENT_COLUMNS, [event])
+
+
 def _save_result_row(row: Dict[str, Any]) -> None:
     df = load_cached_results()
     existing_row: Dict[str, Any] | None = None
@@ -234,6 +500,7 @@ def _save_result_row(row: Dict[str, Any]) -> None:
         combined = pd.concat([df, new_row], ignore_index=True)
     combined = combined.drop_duplicates(subset=["url"], keep="last")
     write_dataframe_csv_atomic(combined, AI_RESULTS_PATH, index=False)
+    _append_decision_event(row, existing_row)
     _maybe_send_listing_alerts(row, existing_row)
 
 
@@ -1514,6 +1781,11 @@ def run_curve_listing_analysis(
     notes_value = "; ".join(notes) if notes else None
     result_row = {
         "url": url,
+        "year": listing_row.get("year"),
+        "make": listing_row.get("make"),
+        "model": listing_row.get("model"),
+        "variant": listing_row.get("variant"),
+        "location": listing_row.get("location"),
         "analysis_timestamp": datetime.now(tz=timezone.utc).isoformat(),
         "analysis_context": analysis_context,
         "carsales_price_estimate": _format_currency(resale_mid_val),

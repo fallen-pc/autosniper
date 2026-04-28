@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Iterable, Sequence
+import re
 
 import pandas as pd
 
@@ -19,6 +20,10 @@ GROUP_MAP_PATH = dataset_path("restricted_group_map.csv")
 SOLD_RESTRICTED_PATH = dataset_path("sold_cars_restricted.csv")
 NORMALIZED_CONDITIONS_PATH = Path("CSV_data/reports/normalized_conditions.csv")
 COMPLETED_STATUSES = {"sold", "referred", "canceled", "cancelled", "closed"}
+WOVR_PATTERN = re.compile(
+    r"\bwovr\b|wovr[-\s]*(?:inspected|repairable|statutory)|write[-\s]?off",
+    re.IGNORECASE,
+)
 
 
 def _safe_int(value: object) -> int | None:
@@ -94,6 +99,26 @@ def _attach_normalized_conditions(active_df: pd.DataFrame, sold_df: pd.DataFrame
     return active_df, sold_df
 
 
+def _exclude_shortlist_ineligible_rows(active_df: pd.DataFrame) -> pd.DataFrame:
+    if active_df.empty:
+        return active_df
+    working = active_df.copy()
+    if "status" in working.columns:
+        statuses = working["status"].astype(str).str.lower().str.strip()
+        working = working[~statuses.isin(COMPLETED_STATUSES)].copy()
+
+    if "price" in working.columns:
+        price_numeric = working["price"].apply(parse_currency)
+        working = working[price_numeric.notna()].copy()
+
+    columns = [col for col in ("variant", "url") if col in working.columns]
+    if columns:
+        combined = working[columns].fillna("").astype(str).agg(" ".join, axis=1)
+        working = working[~combined.str.contains(WOVR_PATTERN, na=False)].copy()
+
+    return working
+
+
 def _curve_band_maps(curves_df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     year_band = (
         curves_df.dropna(subset=["canonical_tag", "anchor_year"])
@@ -136,9 +161,7 @@ def _prepare_active_scope() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     sold_df = _attach_group_tags(sold_df, group_map_df, "sold")
     active_df = _merge_live_fields(active_df, live_df)
     active_df, sold_df = _attach_normalized_conditions(active_df, sold_df)
-    if "status" in active_df.columns:
-        statuses = active_df["status"].astype(str).str.lower().str.strip()
-        active_df = active_df[~statuses.isin(COMPLETED_STATUSES)].copy()
+    active_df = _exclude_shortlist_ineligible_rows(active_df)
 
     active_df["odometer_numeric"] = active_df["odometer_reading"].apply(parse_numeric)
     active_df["price_numeric"] = active_df["price"].apply(parse_currency) if "price" in active_df.columns else None
@@ -204,9 +227,7 @@ def _prepare_all_active_rows() -> pd.DataFrame:
         group_map_df["url"] = group_map_df["url"].astype(str).str.strip()
     active_df = _attach_group_tags(active_df, group_map_df, "active")
     active_df = _merge_live_fields(active_df, live_df)
-    if "status" in active_df.columns:
-        statuses = active_df["status"].astype(str).str.lower().str.strip()
-        active_df = active_df[~statuses.isin(COMPLETED_STATUSES)].copy()
+    active_df = _exclude_shortlist_ineligible_rows(active_df)
     return active_df
 
 
