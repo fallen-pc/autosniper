@@ -516,6 +516,26 @@ def _map_verdict_label(verdict: str) -> tuple[str, str]:
     return "Marginal", "verdict-marginal"
 
 
+def _display_action_label(action: object) -> str:
+    action_text = _safe_text(action, fallback="Review").strip()
+    if action_text == "Watch":
+        return "Watch closely"
+    return action_text
+
+
+def _display_profit_label(label: object) -> str:
+    label_text = _safe_text(label, fallback="Unknown").strip()
+    mapping = {
+        "Strong": "High margin",
+        "Good": "Good margin",
+        "Conditional": "Okay margin",
+        "Thin": "Thin margin",
+        "No edge": "No edge",
+        "Unknown": "Unknown",
+    }
+    return mapping.get(label_text, label_text)
+
+
 def _parse_risk_flags(flags_text: object) -> list[str]:
     flags_raw = _safe_text(flags_text, fallback="")
     if not flags_raw:
@@ -1650,7 +1670,7 @@ def _render_bid_logic_tab(
         ("Resale estimate", _format_currency_value(_compute_resale_value(row))),
         ("Expected finish basis", expected_finish_display),
         ("Profit at expected finish", _format_price_text(row.get("expected_auction_worst_profit") or row.get("expected_auction_profit"))),
-        ("Profit if bought now", _format_price_text(row.get("profit_at_current_bid_worst") or row.get("profit_at_current_bid"))),
+        ("Raw margin now", _format_price_text(row.get("profit_at_current_bid_worst") or row.get("profit_at_current_bid"))),
         ("Current price", _format_price_text(row.get("price"))),
         ("Auction cost", _format_currency_value(auction_cost)),
         ("Fees", _format_price_text(row.get("fees_estimate"))),
@@ -1682,13 +1702,13 @@ def _render_bid_logic_tab(
             f"Expected finish comps: {_safe_text(row.get('expected_auction_comps_count'), 'N/A')}",
             f"Profit at expected finish (mid): {_format_price_text(row.get('expected_auction_profit'))}",
             f"Profit at expected finish (worst): {_format_price_text(row.get('expected_auction_worst_profit'))}",
-            f"Profit-if-bought-now label: {_safe_text(row.get('current_profit_label'), 'N/A')}",
-            f"Expected-finish profit label: {_safe_text(row.get('expected_auction_profit_label'), 'N/A')}",
+            f"Raw-margin-now strength: {_display_profit_label(row.get('current_profit_label'))}",
+            f"Expected-finish margin strength: {_display_profit_label(row.get('expected_auction_profit_label'))}",
             f"Max-bid safety: {_max_bid_safety_text(row)}",
             f"Flip difficulty: {_safe_text(row.get('flip_difficulty'), 'N/A')}",
             f"Difficulty reasons: {_safe_text(row.get('difficulty_reasons'), 'N/A')}",
             f"Bid status: {_safe_text(row.get('bid_status'), 'N/A')}",
-            f"Action: {_safe_text(row.get('action_label'), 'N/A')}",
+            f"Action: {_display_action_label(row.get('action_label'))}",
             f"Auction cost total: {_format_currency_value(auction_cost)}",
             f"Repair cost: {_format_currency_value(repair_deduction)}",
             f"Net profit (mid): {_format_price_text(row.get('net_profit_mid'))}",
@@ -2674,6 +2694,11 @@ st.markdown(
             color: #e4f7ff;
             box-shadow: 0 0 12px rgba(39, 182, 255, 0.28);
         }
+        .support-pill {
+            opacity: 0.82;
+            font-size: 0.58rem;
+            padding: 0.25rem 0.55rem;
+        }
         .chip-row {
             margin-top: 0.3rem;
             display: flex;
@@ -3353,17 +3378,17 @@ def render_listing_card(row: pd.Series) -> None:
         if top_buy_badge and top_buy_badge != "N/A"
         else ""
     )
-    action_label = _safe_text(row.get("action_label"), fallback="Review")
+    action_label = _display_action_label(row.get("action_label"))
     action_html = f'<div class="verdict-pill action-pill">{html.escape(action_label)}</div>'
 
     max_bid_display = _format_currency_value(row.get("max_bid_value"))
     resale_display = _format_currency_value(row.get("resale_value"))
     profit_pct_display = _format_percent(row.get("profit_margin_value"))
     current_profit_display = _format_price_text(row.get("profit_at_current_bid_worst") or row.get("profit_at_current_bid"))
-    current_profit_label = _safe_text(row.get("current_profit_label"), fallback="Unknown")
+    current_profit_label = _display_profit_label(row.get("current_profit_label"))
     expected_auction_display, expected_finish_status = _expected_finish_display_parts(row)
     expected_profit_display = _format_price_text(row.get("expected_auction_worst_profit") or row.get("expected_auction_profit"))
-    expected_profit_label = _safe_text(row.get("expected_auction_profit_label"), fallback="Unknown")
+    expected_profit_label = _display_profit_label(row.get("expected_auction_profit_label"))
     hard_max_safety = _max_bid_safety_text(row)
     flip_difficulty = _safe_text(row.get("flip_difficulty"), fallback="Unknown")
     bid_status = _safe_text(row.get("bid_status"), fallback="Unknown")
@@ -3458,9 +3483,9 @@ def render_listing_card(row: pd.Series) -> None:
             f'<div class="card-top-meta">{html.escape(header_meta)}</div>' if header_meta else "",
             "</div>",
             '<div class="card-top-right">',
-            f'<div class="verdict-pill {verdict_pill_class}">{html.escape(verdict_label)}</div>',
             action_html,
             top_buy_html,
+            f'<div class="verdict-pill {verdict_pill_class} support-pill">{html.escape(verdict_label)}</div>',
             '<div class="card-actions">',
             f'<a href="{html.escape(_safe_text(row.get("url"), fallback=""))}" target="_blank">Open</a>'
             if _safe_text(row.get("url"), fallback="") not in ("N/A", "")
@@ -3473,7 +3498,7 @@ def render_listing_card(row: pd.Series) -> None:
             _build_metric_box("Current price", current_price_display),
             _build_metric_box_with_sub("Price update", price_update_value, price_update_sub, price_update_class),
             _build_metric_box("Time left", time_left_display),
-            _build_metric_box_with_sub("Profit if bought now", current_profit_display, current_profit_label),
+            _build_metric_box_with_sub("Raw margin now", current_profit_display, current_profit_label),
             _build_metric_box_with_sub("Expected finish", expected_auction_display, expected_finish_status),
             _build_metric_box_with_sub("Profit at expected finish", expected_profit_display, expected_profit_label),
             _build_metric_box_with_sub("Max bid limit", max_bid_display, hard_max_safety),
