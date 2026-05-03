@@ -95,3 +95,32 @@ def test_interpolate_base_by_year_falls_back_to_legacy_curve_when_v2_base_not_sa
 
     assert estimate == 10000.0
     curve_groups_v2.load_curve_groups_v2.cache_clear()
+
+
+def test_list_curve_tags_includes_grouped_match_tags_when_base_curve_exists(monkeypatch, tmp_path):
+    groups_path = tmp_path / "curve_groups_v2.csv"
+    groups_path.write_text(
+        "match_tag,base_curve_tag,group_status,reason\n"
+        "mazda_3_neo_petrol_auto_hatch_bl,mazda_3_bl_hatch_auto_petrol,active,merge\n",
+        encoding="utf-8",
+    )
+    alias_path = tmp_path / "curve_aliases.csv"
+    alias_path.write_text("canonical_tag,base_curve\n", encoding="utf-8")
+
+    monkeypatch.setattr(curve_groups_v2, "CURVE_GROUPS_V2_PATH", groups_path)
+    monkeypatch.setattr(curves, "CURVE_ALIASES_PATH", alias_path)
+    curve_groups_v2.load_curve_groups_v2.cache_clear()
+    curves.load_curve_aliases.cache_clear()
+
+    df = pd.DataFrame(
+        [
+            {"canonical_tag": "mazda_3_bl_hatch_auto_petrol", "anchor_year": 2010, "km_bucket": 100000, "price_mid": 10000},
+        ]
+    )
+
+    tags = curves.list_curve_tags(df)
+
+    assert "mazda_3_bl_hatch_auto_petrol" in tags
+    assert "mazda_3_neo_petrol_auto_hatch_bl" in tags
+    curve_groups_v2.load_curve_groups_v2.cache_clear()
+    curves.load_curve_aliases.cache_clear()
