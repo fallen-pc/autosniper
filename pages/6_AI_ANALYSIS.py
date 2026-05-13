@@ -517,10 +517,7 @@ def _map_verdict_label(verdict: str) -> tuple[str, str]:
 
 
 def _display_action_label(action: object) -> str:
-    action_text = _safe_text(action, fallback="Review").strip()
-    if action_text == "Watch":
-        return "Watch closely"
-    return action_text
+    return _safe_text(action, fallback="Review").strip()
 
 
 def _display_profit_label(label: object) -> str:

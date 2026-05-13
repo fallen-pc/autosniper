@@ -198,6 +198,15 @@ def confidence_badges_html(curve_status: str, miss_status: str, risk_status: str
 
 
 def sold_action_parts(row: pd.Series) -> tuple[str, str, str]:
+    action_label = safe_text(row.get("action_label"), "").strip()
+    if action_label in {"Buy", "Watch", "Avoid", "Review"}:
+        if action_label == "Buy":
+            return "Buy", "Good historical deal", "verdict-good"
+        if action_label == "Watch":
+            return "Watch", "Positive but constrained", "verdict-marginal"
+        if action_label == "Avoid":
+            return "Avoid", "No buy", "verdict-avoid"
+        return "Review", "Needs manual check", "verdict-marginal"
     missed = bool(row.get("missed"))
     profit = _to_float(row.get("projected_profit_at_sold"))
     sold_price = _to_float(row.get("sold_price"))
@@ -1168,6 +1177,7 @@ for _, row in sold_df.iterrows():
             "admin_costs": admin_costs,
             "risk_buffer": risk_buffer,
             "expected_auction_price": decision.get("expected_auction_price"),
+            "action_label": decision.get("action_label"),
             "missed": missed,
             "date_sold": row.get("date_sold"),
             "location_state": location_state,

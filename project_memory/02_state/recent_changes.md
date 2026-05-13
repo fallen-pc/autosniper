@@ -1,5 +1,6 @@
 # Recent Changes
 
+- 2026-05-13: Started decision-model cleanup by adding a shared action-label policy. Live AI valuation and Missed Opportunities replay now use `Buy` only for currently actionable listings with bid room, expected-finish profit, current worst-case profit, and safe hard-max headroom; `Watch` is viable but constrained; `Avoid` is no-bid; `Review` is missing coverage or incomplete context. AI Analysis no longer rewrites stored `Watch` into `Watch closely`, and the old `Bid carefully` label is no longer emitted for new valuations.
 - 2026-05-04: Aligned Missed Opportunities max-bid replay with AI Analysis by using the same discounted-resale cap basis for bid limits. Historical sold median still appears as expected-auction context, but it no longer silently makes historical max bids stricter than the active AI logic.
 - 2026-05-04: Updated `pages/8_MISSED_OPPORTUNITIES.py` so sold historical opportunities render as AI Analysis-style cards with action/verdict pills, metric boxes, coverage/risk badges, and Overview/Curve/Costs/Condition tabs while keeping the existing sold-listing decision math unchanged.
 - 2026-05-04: Pruned `project_memory/02_state/current_status.md` into a short current-truth summary. Detailed historical rollout notes stay in `recent_changes.md`; `current_status.md` is now reserved for what is true now.

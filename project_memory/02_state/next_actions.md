@@ -1,8 +1,9 @@
 # Next Actions
 
-1. Revisit the repairs section next on the now-cleaner baseline: page launcher cleanup is done, the audit CSV writer is repaired, and current observed curve coverage is complete, so the next meaningful review is repair signals, repair-cost deductions, and hard-avoid/marginal thresholds.
-2. When AI Analysis buying logic changes, check `shared/missed_opportunities.py` in the same work slice so the historical replay stays aligned with the live decision path.
-3. Revisit the new-vehicle expansion workflow and decide whether to formalize this rule: a new vehicle family is not fully live until tag recognition, base-curve valuation, year/km coverage, restricted rebuild, AI revaluation, and AI Analysis/Missed Opportunities verification are all complete.
+1. Continue decision-model cleanup on the visual semantics layer: risk, confidence, margin, bid status, and hard-max safety should read as distinct signals instead of competing verdicts.
+2. Revisit the repairs section next on the now-cleaner baseline: page launcher cleanup is done, the audit CSV writer is repaired, and current observed curve coverage is complete, so the next meaningful review is repair signals, repair-cost deductions, and hard-avoid/marginal thresholds.
+3. When AI Analysis buying logic changes, check `shared/missed_opportunities.py` in the same work slice so the historical replay stays aligned with the live decision path.
+4. Revisit the new-vehicle expansion workflow and decide whether to formalize this rule: a new vehicle family is not fully live until tag recognition, base-curve valuation, year/km coverage, restricted rebuild, AI revaluation, and AI Analysis/Missed Opportunities verification are all complete.
 4. Review the current VIC active opportunity before changing margin/buffer constants: after refreshing valuations under the VIC-local rules, only one current curve-covered active row remains buyable, a VIC Hyundai i30 `Conditional Flip`.
 5. Use the updated AI Analysis page as the daily active-opportunity screen and judge it against real listings. The current UI is now good enough to use, but future tuning should be based on what is confusing during actual auction review, not on more speculative layout work.
 6. Keep Toyota hatch evidence alignment stable across the Autotrader recent-market lane and the repaired sold/Grays lane, without silently turning that work into repricing.

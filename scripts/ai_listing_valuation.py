@@ -9,6 +9,7 @@ import pandas as pd
 
 from scripts.atomic_csv import append_dict_rows_csv_atomic, write_dataframe_csv_atomic
 from shared.data_loader import dataset_path
+from shared.decision_policy import DecisionPolicyInput, derive_action_label
 from shared.repair_pricing import assess_repairs, apply_repairs_to_max_bid
 from shared.telegram_alerts import send_on_state_change
 from shared.top_buy import apply_top_buy_behavior, top_buy_gate_check
@@ -1069,21 +1070,16 @@ def _action_label(
     current_worst_profit: Optional[float],
     hard_max_safety: str,
 ) -> str:
-    if computed_verdict in {"Avoid", "Trap", "Not Viable"}:
-        return "Avoid"
-    if computed_verdict in {"Not Covered", "Not Eligible"}:
-        return "Review"
-    if bid_status in {"Over max", "At ceiling"}:
-        return "Avoid"
-    if hard_max_safety == "No edge":
-        return "Avoid"
-    if bid_status == "Near ceiling":
-        return "Bid carefully"
-    if (expected_auction_worst_profit or 0.0) >= MIN_NET_PROFIT_ABSOLUTE:
-        return "Watch"
-    if (current_worst_profit or 0.0) >= MIN_NET_PROFIT_ABSOLUTE:
-        return "Watch"
-    return "Review"
+    return derive_action_label(
+        DecisionPolicyInput(
+            computed_verdict=computed_verdict,
+            bid_status=bid_status,
+            expected_auction_worst_profit=expected_auction_worst_profit,
+            current_worst_profit=current_worst_profit,
+            hard_max_safety=hard_max_safety,
+            min_profit=MIN_NET_PROFIT_ABSOLUTE,
+        )
+    )
 
 
 def _discounted_bid_cap(

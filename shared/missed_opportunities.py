@@ -22,6 +22,7 @@ from scripts.ai_listing_valuation import (
     _solve_max_bid,
     apply_platform_risk_adjustments,
 )
+from shared.decision_policy import DecisionPolicyInput, derive_action_label
 from shared.repair_pricing import assess_repairs, apply_repairs_to_max_bid
 
 
@@ -51,6 +52,7 @@ def _blank_decision() -> dict[str, object]:
         "risk_buffer": None,
         "repair_cost": None,
         "expected_auction_price": None,
+        "action_label": "Review",
     }
 
 
@@ -152,6 +154,7 @@ def compute_decision_metrics(
     platform_fees = transport = admin_costs = total_costs = None
     projected_profit = None
     profit_margin = None
+    action_label = "Review"
     if sold_price is not None:
         costs_map = _estimate_costs(float(sold_price), listing_data)
         platform_fees = float(costs_map.get("fees_estimate", 0.0))
@@ -165,6 +168,27 @@ def compute_decision_metrics(
         projected_profit = resale_mid - sold_price - total_costs
         if resale_mid:
             profit_margin = (projected_profit / resale_mid) * 100
+        missed_bid = max_bid_val is not None and sold_price <= max_bid_val
+        if max_bid_val == 0.0:
+            action_label = "Avoid"
+        elif missed_bid and projected_profit is not None and projected_profit >= MIN_NET_PROFIT_ABSOLUTE:
+            action_label = "Buy"
+        elif projected_profit is not None and projected_profit > 0:
+            action_label = "Watch"
+        else:
+            action_label = "Avoid"
+
+    if action_label == "Review":
+        action_label = derive_action_label(
+            DecisionPolicyInput(
+                computed_verdict="Conditional Flip" if (profit_margin or 0) > 0 else "Avoid",
+                bid_status="Below expected",
+                expected_auction_worst_profit=projected_profit,
+                current_worst_profit=projected_profit,
+                hard_max_safety="Conditional" if max_bid_val and max_bid_val > 0 else "No edge",
+                min_profit=MIN_NET_PROFIT_ABSOLUTE,
+            )
+        )
 
     return {
         "max_bid": max_bid_val,
@@ -177,4 +201,5 @@ def compute_decision_metrics(
         "risk_buffer": risk_buffer,
         "repair_cost": repair_cost,
         "expected_auction_price": expected_auction_price,
+        "action_label": action_label,
     }

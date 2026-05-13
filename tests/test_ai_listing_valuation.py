@@ -261,7 +261,7 @@ def test_curve_analysis_keeps_moderate_repairs_as_marginal_not_avoid(monkeypatch
     )
 
     assert result["computed_verdict"] == "Marginal (repairs)"
-    assert result["action_label"] in {"Watch", "Bid carefully", "Review"}
+    assert result["action_label"] in {"Watch", "Review"}
     assert result["repair_estimate"] == "$2,250"
 
 
@@ -498,7 +498,7 @@ def test_curve_analysis_uses_historical_sold_median_for_expected_auction(monkeyp
     assert result["expected_auction_profit_label"] in {"Good", "Strong"}
     assert result["hard_max_safety"] in {"Conditional", "Strong"}
     assert result["bid_status"] == "Cheap"
-    assert result["action_label"] == "Watch"
+    assert result["action_label"] == "Buy"
 
 
 def test_curve_analysis_uses_worst_case_margin_for_profit_percent(monkeypatch) -> None:

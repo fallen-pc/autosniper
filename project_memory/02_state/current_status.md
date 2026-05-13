@@ -2,7 +2,7 @@
 
 - AutoSniper is a private owner-operated buying tool. Audit and prioritization should follow safe private-use fitness, not commercial SaaS standards; see [DEC-009](../03_decisions/DEC-009-audit-for-private-owner-use.md).
 
-- The repo is broadly stable for active product work. Latest local validation after the most recent code changes: `python -m pytest -q` passed with `193` tests, `python scripts/readiness_smoke.py` passed, and `python scripts/project_memory.py check` passed.
+- The repo is broadly stable for active product work. Latest local validation after the most recent code changes: `.venv_local\Scripts\python.exe -m pytest -q` passed with `217` tests, and `python scripts/project_memory.py check` passed.
 
 - The valuation path is now curve-first only. The old non-curve LLM pricing path has been removed, and current AI pricing behavior depends on saved curve coverage plus the active buying rules.
 
@@ -24,6 +24,6 @@
 
 - Scheduler logic is in better shape, but unattended operation still has a real Windows-session dependency. The daily/hourly paths have been hardened and overlap handling is better, but reliable Autotrader work still depends on an awake, logged-in session because headless/browser-session stability is not fully solved.
 
-- AI Analysis wording is clearer than before. Cards now lead with the action, verdict text is supporting context, and profit wording is framed as margin strength instead of mixing several equally loud judgment labels.
+- AI Analysis wording is clearer than before. Cards now lead with the action, verdict text is supporting context, and profit wording is framed as margin strength instead of mixing several equally loud judgment labels. Stored action labels now use a shared `Buy` / `Watch` / `Avoid` / `Review` policy instead of mixing `Watch closely` and `Bid carefully` variants.
 
-- The highest-value remaining product work is decision-model cleanup: define exactly what `Buy`, `Watch`, and `Avoid` should mean, make the visual semantics for risk/confidence/margin coherent, and then confirm the new decision ledger against real shortlist movement when live candidates return.
+- The highest-value remaining product work is now the next decision-model layer: make visual semantics for risk/confidence/margin coherent, and then confirm the decision ledger against real shortlist movement when live candidates return.
