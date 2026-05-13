@@ -6,7 +6,7 @@
 
 - The valuation path is now curve-first only. The old non-curve LLM pricing path has been removed, and current AI pricing behavior depends on saved curve coverage plus the active buying rules.
 
-- Repair costing is materially stronger than the earlier baseline. Live valuation now uses the richer V2 repair engine, duplicate charging is blocked, hard-stop reasons are split into `MECHANICAL` and `STRUCTURAL`, and hard-avoid rows show an explicit repair/risk figure instead of fake `$0`.
+- Repair costing is materially stronger than the earlier baseline. Live valuation now uses the richer V2 repair engine, duplicate charging is blocked, punctuation-heavy condition notes are split into repair fragments, mixed cosmetic/replacement damage is costed together, and hard-stop reasons are split into `MECHANICAL` and `STRUCTURAL`. Hard-avoid rows show an explicit repair/risk figure instead of fake `$0`.
 
 - Unregistered-car costing now matches the owner's workflow better. AutoSniper no longer charges full buyer-side rego in valuation. Unregistered rows keep the `UNREGISTERED` risk signal, show `rego_estimate = $0`, and add a separate `roadworthy_estimate` instead.
 

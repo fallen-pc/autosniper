@@ -108,8 +108,12 @@ REPLACEMENT_TARGET_RE = re.compile(
     r"\b(headlight|head light|tail light|taillight|indicator|mirror|bumper|bar)\b",
     re.IGNORECASE,
 )
+CONDITION_FRAGMENT_RE = re.compile(r"[.;\r\n]+")
 
 MECH_AVOID_PATTERNS = [
+    r"\bengine light\b",
+    r"\b(epc|vsa|master warning) light\b",
+    r"\bwarning lights? on dash\b",
     r"\bengine (light|warning) on\b",
     r"\bother warning light on\b",
     r"\babs light on\b",
@@ -117,9 +121,11 @@ MECH_AVOID_PATTERNS = [
     r"\btraction control light on\b",
     r"\bcheck engine\b",
     r"\bengine noise\b",
+    r"\bhead gasket\b",
     r"\btransmission\b.*\b(attention|fault|issue|noise|slip)\b",
     r"\bgearbox\b.*\b(attention|fault|issue|noise|slip)\b",
     r"\boverheating\b",
+    r"\bcooling system\b.*\brequires attention\b",
     r"\bcooling\b.*\b(leak|issue|fault)\b",
     r"\boil leak\b",
     r"\bpower steering\b.*\b(fault|issue|leak)\b",
@@ -138,24 +144,25 @@ MECH_AVOID_RE = [re.compile(pattern, re.IGNORECASE) for pattern in MECH_AVOID_PA
 def normalise_condition_line(line: str) -> str:
     text = (line or "").strip()
     text = re.sub(r"\s+", " ", text)
-    return text.rstrip(" .") + "." if text else ""
+    return text.rstrip(" .;") + "." if text else ""
 
 
 def split_condition_lines(text: str) -> List[str]:
     if not text:
         return []
-    parts = re.split(r"[\r\n]+", str(text))
+    parts = CONDITION_FRAGMENT_RE.split(str(text))
     out: List[str] = []
     for part in parts:
-        part = part.strip()
+        part = part.strip(" -")
         if not part:
             continue
         out.append(normalise_condition_line(part))
     seen = set()
     deduped: List[str] = []
     for line in out:
-        if line not in seen:
-            seen.add(line)
+        key = line.lower()
+        if key not in seen:
+            seen.add(key)
             deduped.append(line)
     return deduped
 
@@ -371,6 +378,7 @@ def assess_repairs(
         risk_buffer = 0
         has_glass = False
         has_replacement = False
+        has_unknown = False
 
         for line, hits in grouped_v2_hits:
             canonicals = {hit.canonical_defect for hit in hits}
@@ -396,7 +404,9 @@ def assess_repairs(
 
             if canonicals.intersection(V2_UNKNOWN_CANONICALS):
                 pills.add("UNKNOWN")
-                risk_buffer += RISK_BUFFERS["unknown_photos"]
+                if not has_unknown:
+                    risk_buffer += RISK_BUFFERS["unknown_photos"]
+                    has_unknown = True
                 reasons.append(f"V2_UNKNOWN: {line}")
 
             if canonicals.intersection(V2_GLASS_CANONICALS) or "glass" in categories:
@@ -436,6 +446,8 @@ def assess_repairs(
 
             interior_hits = [hit for hit in hits if hit.category == "interior"]
             if interior_hits:
+                if any(hit.canonical_defect == "seat_damage" for hit in interior_hits):
+                    interior_hits = [hit for hit in interior_hits if hit.canonical_defect != "seat_issue"]
                 for hit in interior_hits:
                     replacement_cost += int(V2_REPLACEMENT_COSTS.get(hit.canonical_defect, 200))
                     reasons.append(f"V2_INTERIOR:{hit.canonical_defect}: {line}")
@@ -445,7 +457,9 @@ def assess_repairs(
                 for hit in hits
                 if hit.category == "cosmetic" and hit.canonical_defect not in {"body_location_list"}
             ]
-            if cosmetic_hits and not replacement_hits and "glass" not in categories:
+            if replacement_hits or "interior" in categories:
+                cosmetic_hits = [hit for hit in cosmetic_hits if hit.canonical_defect != "generic_damage"]
+            if cosmetic_hits and "glass" not in categories:
                 pills.add("COSMETIC_PANEL")
                 cosmetic_panels += _panel_equivalent_for_line(line)
                 reasons.append(f"V2_COSMETIC: {line}")

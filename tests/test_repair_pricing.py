@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from shared.repair_pricing import RepairAssessment, apply_repairs_to_max_bid, assess_repairs
+from shared.repair_pricing import RepairAssessment, apply_repairs_to_max_bid, assess_repairs, split_condition_lines
 
 
 def test_assess_repairs_glass_case_is_consistent() -> None:
@@ -39,6 +39,59 @@ def test_assess_repairs_detects_replacement_damage_from_v2_patterns() -> None:
     assert assessment.total_cost == 1275
 
 
+def test_split_condition_lines_splits_punctuated_fragments() -> None:
+    lines = split_condition_lines(
+        "interior damage: drivers seat slight tear; exterior damage: dent of front bumper bar. "
+        "slight scratches on passenger side doors and side step"
+    )
+
+    assert lines == [
+        "interior damage: drivers seat slight tear.",
+        "exterior damage: dent of front bumper bar.",
+        "slight scratches on passenger side doors and side step.",
+    ]
+
+
+def test_assess_repairs_counts_mixed_replacement_and_cosmetic_damage() -> None:
+    assessment = assess_repairs("front cracked bumper and scratches and dents visible around vehicle")
+
+    assert assessment.hard_avoid is False
+    assert {"COSMETIC_PANEL", "PANEL_REPLACE"}.issubset(set(assessment.pills))
+    assert assessment.cosmetic_panels == 3
+    assert assessment.replacement_cost == 600
+    assert assessment.base_cost == 1500
+    assert assessment.total_cost == 2250
+
+
+def test_assess_repairs_does_not_add_cosmetic_panel_for_single_replacement_item() -> None:
+    assessment = assess_repairs("damaged driver side headlight")
+
+    assert assessment.hard_avoid is False
+    assert assessment.pills == ["PANEL_REPLACE"]
+    assert assessment.cosmetic_panels == 0
+    assert assessment.replacement_cost == 250
+    assert assessment.base_cost == 250
+
+
+def test_assess_repairs_does_not_treat_interior_damage_as_body_panel() -> None:
+    assessment = assess_repairs("interior damage: drivers seat slight tear.")
+
+    assert assessment.hard_avoid is False
+    assert assessment.pills == []
+    assert assessment.cosmetic_panels == 0
+    assert assessment.replacement_cost == 250
+    assert assessment.base_cost == 250
+
+
+def test_assess_repairs_caps_unknown_photo_risk_after_fragment_split() -> None:
+    assessment = assess_repairs("please refer to the photos; arrange inspection to view vehicle condition.")
+
+    assert assessment.hard_avoid is False
+    assert assessment.pills == ["UNKNOWN"]
+    assert assessment.risk_buffer == 300
+    assert assessment.base_cost == 300
+
+
 def test_assess_repairs_mechanical_hard_avoid_uses_mechanical_bucket() -> None:
     assessment = assess_repairs("engine noise observed.")
 
@@ -46,6 +99,26 @@ def test_assess_repairs_mechanical_hard_avoid_uses_mechanical_bucket() -> None:
     assert assessment.hard_avoid_reason == "mechanical"
     assert assessment.pills == ["MECHANICAL"]
     assert assessment.base_cost == 10000
+    assert assessment.total_cost == 10000
+
+
+def test_assess_repairs_bare_engine_light_is_hard_avoid() -> None:
+    assessment = assess_repairs("scratches and dents visible around vehicle, engine light, door trim missing")
+
+    assert assessment.hard_avoid is True
+    assert assessment.hard_avoid_reason == "mechanical"
+    assert assessment.pills == ["MECHANICAL"]
+    assert assessment.total_cost == 10000
+
+
+def test_assess_repairs_head_gasket_language_is_hard_avoid() -> None:
+    assessment = assess_repairs(
+        "engine cooling system requires attention. suspect head gasket failure causing over pressurization."
+    )
+
+    assert assessment.hard_avoid is True
+    assert assessment.hard_avoid_reason == "mechanical"
+    assert assessment.pills == ["MECHANICAL"]
     assert assessment.total_cost == 10000
 
 
