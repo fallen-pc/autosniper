@@ -122,6 +122,19 @@ def has_complied_flag(payload: dict) -> bool:
     return False
 
 
+def has_verified_sold_date(payload: dict) -> bool:
+    value = payload.get("date_sold") or payload.get("time_remaining_or_date_sold")
+    if value is None:
+        return False
+    text = str(value).strip()
+    if not text:
+        return False
+    lowered = text.lower()
+    if "closes" in lowered or "closing" in lowered or "time remaining" in lowered:
+        return False
+    return bool(DATE_RE.search(text))
+
+
 def scrape_in_batches(urls: List[str], batch_size: int) -> Iterable[Tuple[List[dict], List[str], int]]:
     total = len(urls)
     for index, batch in enumerate(chunked(urls, batch_size), start=1):
@@ -239,6 +252,8 @@ def process_and_append_rows(
             continue
         if has_complied_flag(row):
             continue
+        if not has_verified_sold_date(row):
+            continue
         sanitized_rows.append(row)
 
     if not sanitized_rows:
@@ -288,6 +303,23 @@ def process_and_append_rows(
     return len(scraped_df)
 
 
+def select_rebuild_source_rows(
+    sold_df: pd.DataFrame,
+    *,
+    newest_first: bool = False,
+    offset: int = 0,
+    limit: int = 0,
+) -> pd.DataFrame:
+    selected = sold_df.copy()
+    if newest_first:
+        selected = selected.iloc[::-1].copy()
+    if offset and offset > 0:
+        selected = selected.iloc[offset:].copy()
+    if limit and limit > 0:
+        selected = selected.head(limit).copy()
+    return selected
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Rebuild the sold listings dataset via fresh scraping.")
     parser.add_argument("--source", type=Path, default=DEFAULT_SOURCE, help="Existing sold CSV providing URLs.")
@@ -302,6 +334,17 @@ def main() -> None:
         type=int,
         default=0,
         help="Max number of sold URLs to scrape this run (0 = all).",
+    )
+    parser.add_argument(
+        "--offset",
+        type=int,
+        default=0,
+        help="Number of eligible source URLs to skip before applying --limit.",
+    )
+    parser.add_argument(
+        "--newest-first",
+        action="store_true",
+        help="Process eligible source URLs from the bottom of the source CSV first.",
     )
     parser.add_argument(
         "--batch-size",
@@ -346,8 +389,12 @@ def main() -> None:
             print("No URLs remained after applying slug keyword rules.")
             return
 
-    if args.limit and args.limit > 0:
-        filtered_df = filtered_df.head(args.limit).copy()
+    filtered_df = select_rebuild_source_rows(
+        filtered_df,
+        newest_first=args.newest_first,
+        offset=args.offset,
+        limit=args.limit,
+    )
 
     urls = filtered_df["url"].tolist()
     print(f"Preparing to scrape {len(urls)} sold listings.")

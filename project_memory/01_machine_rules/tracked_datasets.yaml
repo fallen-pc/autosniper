@@ -35,6 +35,7 @@ named_dataset_paths:
   unmatched_canonical_details.csv: scrapers/unmatched_canonical_details.csv
   active_vehicle_details.csv: scrapers/active_vehicle_details.csv
   sold_cars.csv: scrapers/sold_cars.csv
+  sold_price_pending.csv: scrapers/sold_price_pending.csv
   referred_cars.csv: scrapers/referred_cars.csv
   active_snapshots.csv: scrapers/active_snapshots.csv
   bid_history.csv: scrapers/bid_history.csv

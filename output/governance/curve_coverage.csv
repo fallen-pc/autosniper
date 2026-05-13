@@ -1,21 +1,22 @@
 canonical_tag,observed_rows,static_rows,group_map_rows,sources,curve_rows,anchor_year_count,anchor_years,has_curve,status
 mazda_cx5_maxx-sport_diesel_auto_wagon_ke,132,2,130,"active, sold, static",15,3,"2012, 2014, 2016",True,covered
-hyundai_i30_active_petrol_auto_hatch_gd,44,0,44,sold,15,3,"2012, 2014, 2016",True,covered
-toyota_corolla_ascent_petrol_auto_sedan_zre152r,44,1,43,"active, sold, static",15,3,"2009, 2011, 2013",True,covered
+toyota_hilux_sr_diesel_auto_cab_chassis_gun126r,119,0,119,sold,20,4,"2016, 2018, 2020, 2022",True,covered
+hyundai_i30_active_petrol_auto_hatch_gd,45,1,44,"sold, static",15,3,"2012, 2014, 2016",True,covered
+toyota_corolla_ascent_petrol_auto_sedan_zre152r,42,0,42,sold,15,3,"2009, 2011, 2013",True,covered
 hyundai_ix35_se_petrol_auto_wagon_lm,37,0,37,sold,15,3,"2013, 2014, 2015",True,covered
-toyota_camry_altise_petrol_auto_sedan_asv50r,37,3,34,"active, sold, static",15,3,"2013, 2015, 2017",True,covered
-toyota_yaris_yr_petrol_auto_hatch_ncp90r,25,0,25,sold,15,3,"2008, 2010, 2011",True,covered
-hyundai_getz_sx_petrol_auto_hatch_tb,24,1,23,"active, sold, static",15,3,"2008, 2010, 2011",True,covered
+toyota_camry_altise_petrol_auto_sedan_asv50r,33,1,32,"active, sold, static",15,3,"2013, 2015, 2017",True,covered
+toyota_yaris_yr_petrol_auto_hatch_ncp90r,27,1,26,"active, sold, static",15,3,"2008, 2010, 2011",True,covered
+hyundai_getz_sx_petrol_auto_hatch_tb,22,0,22,sold,15,3,"2008, 2010, 2011",True,covered
 hyundai_i30_active_petrol_auto_hatch_pd,21,0,21,sold,15,3,"2017, 2019, 2022",True,covered
-hyundai_ix35_elite_petrol_auto_wagon_lm,15,1,14,"active, sold, static",15,3,"2010, 2012, 2014",True,covered
 mazda_3_neo_petrol_auto_hatch_bl,15,0,15,sold,15,3,"2009, 2011, 2013",True,covered
-hyundai_getz_sx_petrol_manual_hatch_tb,13,2,11,"active, sold, static",15,3,"2007, 2009, 2011",True,covered
+hyundai_ix35_elite_petrol_auto_wagon_lm,13,0,13,sold,15,3,"2010, 2012, 2014",True,covered
 toyota_corolla_ascent-sport_petrol_auto_hatch_zre18x,10,0,10,sold,15,3,"2014, 2016, 2018",True,covered
-mazda_3_maxx-sport_petrol_auto_hatch_bl,9,1,8,"active, sold, static",15,3,"2009, 2011, 2013",True,covered
+hyundai_getz_sx_petrol_manual_hatch_tb,9,0,9,sold,15,3,"2007, 2009, 2011",True,covered
+mazda_3_maxx-sport_petrol_auto_hatch_bl,7,0,7,sold,15,3,"2009, 2011, 2013",True,covered
 toyota_corolla_ascent_petrol_auto_hatch_zre18x,7,0,7,sold,15,3,"2013, 2015, 2018",True,covered
 toyota_camry_ascent-sport_hybrid_auto_sedan_axvh71r,5,0,5,sold,15,3,"2018, 2019, 2020",True,covered
+toyota_corolla_ascent_petrol_auto_sedan_zre172r,5,1,4,"sold, static",15,3,"2015, 2017, 2019",True,covered
 toyota_corolla_ascent-sport_hybrid_auto_hatch_zwe211r,4,0,4,sold,15,3,"2020, 2021, 2022",True,covered
-toyota_corolla_ascent_petrol_auto_sedan_zre172r,4,0,4,sold,15,3,"2015, 2017, 2019",True,covered
 mazda_3_maxx_petrol_auto_hatch_bl,2,0,2,sold,15,3,"2009, 2011, 2013",True,covered
 toyota_camry_ascent_hybrid_auto_sedan_axvh71r,2,0,2,sold,20,4,"2018, 2020, 2022, 2024",True,covered
 toyota_camry_ascent_petrol_auto_sedan_asv70r,1,0,1,sold,15,3,"2018, 2020, 2022",True,covered
@@ -43,4 +44,5 @@ toyota_corolla_zre152r_sedan_auto_petrol,0,0,0,,15,3,"2009, 2011, 2013",True,cov
 toyota_corolla_zre172r_sedan_auto_petrol,0,0,0,,15,3,"2015, 2017, 2019",True,covered
 toyota_corolla_zwe211r_hatch_auto_hybrid,0,0,0,,15,3,"2020, 2021, 2022",True,covered
 toyota_corolla_zwe219r_hatch_auto_hybrid,0,0,0,,10,2,"2024, 2025",True,covered
+toyota_hilux_sr_gun126r_cab_chassis_auto_diesel,0,0,0,,20,4,"2016, 2018, 2020, 2022",True,covered
 toyota_yaris_ncp90r_hatch_auto_petrol,0,0,0,,15,3,"2008, 2010, 2011",True,covered

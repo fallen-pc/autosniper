@@ -103,6 +103,89 @@ def test_sold_rows_missing_sale_price_mask_stays_aligned_when_cleaner_drops_rows
     assert mask.tolist() == [False, False, True]
 
 
+def test_state_sold_current_price_is_not_materialized_as_sale_price() -> None:
+    url = "https://example.com/lot/123"
+    static_df = pd.DataFrame(
+        [
+            {
+                "url": url,
+                "year": 2018,
+                "make": "Toyota",
+                "model": "Camry",
+                "variant": "Ascent",
+                "vin": "JTNBF3HK203123456",
+            }
+        ]
+    )
+    state_df = pd.DataFrame(
+        [
+            {
+                "url": url,
+                "state": "sold",
+                "current_price": "209",
+                "final_sale_price": "",
+                "final_sale_date": "",
+                "bid_count": "7",
+                "time_remaining": "2026-05-01",
+                "last_seen_at": "2026-05-01T00:00:00Z",
+            }
+        ]
+    )
+
+    sold_view = update_master._materialize_state_view(
+        static_df,
+        state_df,
+        target_states={"sold"},
+        status_label="sold",
+        include_date_sold=True,
+    )
+
+    assert sold_view.iloc[0]["price"] == ""
+    assert update_master._sold_rows_missing_sale_price(sold_view).tolist() == [True]
+
+
+def test_state_sold_uses_verified_final_sale_price() -> None:
+    url = "https://example.com/lot/456"
+    static_df = pd.DataFrame(
+        [
+            {
+                "url": url,
+                "year": 2016,
+                "make": "Toyota",
+                "model": "Camry",
+                "variant": "Altise",
+                "vin": "6T1BF3FK10X123456",
+            }
+        ]
+    )
+    state_df = pd.DataFrame(
+        [
+            {
+                "url": url,
+                "state": "sold",
+                "current_price": "409",
+                "final_sale_price": "9350",
+                "final_sale_date": "2026-05-01",
+                "bid_count": "11",
+                "time_remaining": "2026-05-01",
+                "last_seen_at": "2026-05-01T00:00:00Z",
+            }
+        ]
+    )
+
+    sold_view = update_master._materialize_state_view(
+        static_df,
+        state_df,
+        target_states={"sold"},
+        status_label="sold",
+        include_date_sold=True,
+    )
+
+    assert str(sold_view.iloc[0]["price"]) == "9350"
+    assert str(sold_view.iloc[0]["date_sold"]) == "2026-05-01"
+    assert update_master._sold_rows_missing_sale_price(sold_view).tolist() == [False]
+
+
 def test_update_master_keeps_existing_sold_history_when_url_is_active(monkeypatch, tmp_path) -> None:
     static_path = tmp_path / "vehicle_static_details.csv"
     state_path = tmp_path / "vehicle_state.csv"

@@ -39,6 +39,7 @@ MAX_WAIT_HOURS = int(os.getenv("AUTOSNIPER_MAX_WAIT_HOURS", "24"))
 GOVERNANCE_REPORT_DIR = ROOT_DIR / "output" / "governance"
 METRICS_PATH = ROOT_DIR / "status" / "metrics.json"
 DAILY_STATE_PATH = ROOT_DIR / "status" / "daily_run_state.json"
+RUNTIME_BACKUP_SCRIPT = ROOT_DIR / "scripts" / "backup_runtime_data.ps1"
 
 LOCK_PATH = ROOT_DIR / "logs" / "scrape.lock"
 LOCK_TTLS = {
@@ -50,6 +51,32 @@ LOCK_TTLS = {
 }
 
 COMPLETED_STATUSES = {"sold", "referred", "canceled", "cancelled", "closed"}
+
+
+def _env_flag_enabled(name: str) -> bool:
+    return str(os.getenv(name) or "").strip().lower() in {"1", "true", "yes", "y", "on"}
+
+
+def _run_runtime_backup_if_configured() -> None:
+    backup_dir = str(os.getenv("AUTOSNIPER_BACKUP_DIR") or "").strip()
+    if not backup_dir:
+        print("Runtime backup skipped: AUTOSNIPER_BACKUP_DIR is not set.")
+        return
+    if not RUNTIME_BACKUP_SCRIPT.exists():
+        raise FileNotFoundError(f"Missing runtime backup script: {RUNTIME_BACKUP_SCRIPT}")
+
+    command = [
+        "powershell",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        str(RUNTIME_BACKUP_SCRIPT),
+        "-BackupDir",
+        backup_dir,
+    ]
+    if _env_flag_enabled("AUTOSNIPER_BACKUP_INCLUDE_AUTOTRADER_SESSION"):
+        command.append("-IncludeAutotraderSession")
+    subprocess.run(command, check=True)
 
 
 def _local_timezone() -> timezone | ZoneInfo:
@@ -506,6 +533,7 @@ def _run_daily_job(*, trigger: str, coverage_date_local: date) -> None:
     _record_daily_run_start(trigger=trigger, coverage_date_local=coverage_date_local)
     try:
         run_daily_pipeline()
+        _run_runtime_backup_if_configured()
         write_scraper_health_report(job_name="daily" if trigger == "scheduled" else f"daily-{trigger}", job_status="success")
         _record_daily_run_finish(trigger=trigger, coverage_date_local=coverage_date_local, success=True)
         _write_daily_metrics(success=True, duration_sec=time.time() - started)

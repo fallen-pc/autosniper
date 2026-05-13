@@ -37,6 +37,7 @@ REFERRED_FILE = dataset_path("referred_cars.csv")
 ACTIVE_FILE = dataset_path("active_vehicle_details.csv")
 STATIC_FILE = dataset_path("vehicle_static_details.csv")
 STATE_FILE = dataset_path("vehicle_state.csv")
+SOLD_PRICE_PENDING_FILE = dataset_path("sold_price_pending.csv")
 SOLD_DISCARD_LOG = dataset_path("scrapers/sold_discard_log.csv")
 
 DEDUP_KEYS: Sequence[str] = ("url", "vin")
@@ -505,6 +506,9 @@ def _restore_active_columns(active_target: pd.DataFrame, existing_active: pd.Dat
 STATE_DROP_COLUMNS = {
     "state",
     "current_price",
+    "final_sale_price",
+    "final_sale_date",
+    "sale_price_source",
     "bid_count",
     "time_remaining",
     "last_seen_at",
@@ -567,7 +571,14 @@ def _materialize_state_view(
     if merged.empty:
         return merged
     merged["status"] = status_label
-    if "current_price" in merged.columns:
+    if status_label == "sold":
+        if "current_price" in merged.columns:
+            merged["last_observed_price"] = merged["current_price"]
+        if "final_sale_price" in merged.columns:
+            merged["price"] = merged["final_sale_price"]
+        else:
+            merged["price"] = ""
+    elif "current_price" in merged.columns:
         merged["price"] = merged["current_price"]
     else:
         merged["price"] = ""
@@ -580,7 +591,12 @@ def _materialize_state_view(
     else:
         merged["time_remaining_or_date_sold"] = ""
     if include_date_sold:
-        merged["date_sold"] = merged.apply(_derive_date_sold, axis=1)
+        if "final_sale_date" in merged.columns:
+            final_sale_date = merged["final_sale_date"].where(~_blank_mask(merged["final_sale_date"]), None)
+            derived_date = merged.apply(_derive_date_sold, axis=1)
+            merged["date_sold"] = final_sale_date.fillna(derived_date)
+        else:
+            merged["date_sold"] = merged.apply(_derive_date_sold, axis=1)
     if status_label == "referred" and "terminal_reason" in merged.columns:
         merged["referral_reason"] = merged["terminal_reason"]
     drop_cols = [col for col in STATE_DROP_COLUMNS if col in merged.columns]
@@ -694,6 +710,20 @@ def update_master_database() -> None:
             active_df[column] = pd.NA
 
     if not sold_df.empty:
+        blank_sale_mask = _sold_rows_missing_sale_price(sold_df)
+        if blank_sale_mask.any():
+            moved_rows = sold_df.loc[blank_sale_mask].copy()
+            if not moved_rows.empty:
+                moved_rows["status"] = "pending_final_sale_price"
+                _merge_preserving_history(
+                    SOLD_PRICE_PENDING_FILE,
+                    moved_rows,
+                    "pending sold-price verification",
+                    ensure_schema=False,
+                )
+                sold_df = sold_df.loc[~blank_sale_mask].copy()
+                print(f"Moved {len(moved_rows)} sold listing(s) without verified final sale price into pending review.")
+    if not sold_df.empty:
         sold_df = tag_dataframe(
             sold_df,
             source="grays_sold",
@@ -709,17 +739,6 @@ def update_master_database() -> None:
             filter_unclassified=False,
             append_log=True,
         )
-
-    if not sold_df.empty:
-        prepared_snapshot = _prepare_sold_rows(sold_df)
-        blank_sale_mask = _sold_rows_missing_sale_price(sold_df)
-        if blank_sale_mask.any():
-            moved_rows = sold_df.loc[blank_sale_mask].copy()
-            if not moved_rows.empty:
-                moved_rows["status"] = "referred"
-                referred_df = pd.concat([referred_df, moved_rows], ignore_index=True, sort=False)
-                sold_df = sold_df.loc[~blank_sale_mask].copy()
-                print(f"Moved {len(moved_rows)} sold listing(s) without sale price into referred dataset.")
     _merge_preserving_history(
         SOLD_FILE,
         sold_df,

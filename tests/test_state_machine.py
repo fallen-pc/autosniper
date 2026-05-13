@@ -11,6 +11,7 @@ def test_transition_to_sold_requires_positive_evidence() -> None:
         url="https://example.com/lot/1",
         observed_at="2026-03-12T00:00:00+00:00",
         has_sale_price=True,
+        final_sale_price="6200",
         evidence="final_price_present",
     )
     decision = evaluate_transition("active", obs)
@@ -57,6 +58,7 @@ def test_upsert_state_row_updates_existing_url() -> None:
         observed_at="2026-03-12T00:00:00+00:00",
         has_sale_price=True,
         current_price="6200",
+        final_sale_price="6200",
         bid_count="8",
     )
     out, decision = upsert_state_row(base, obs)
@@ -65,6 +67,20 @@ def test_upsert_state_row_updates_existing_url() -> None:
     assert str(out.iloc[0]["current_price"]) == "6200"
     assert str(out.iloc[0]["bid_count"]) == "8"
     assert decision.state == STATE_SOLD
+
+
+def test_current_price_alone_does_not_mark_sold() -> None:
+    obs = ListingObservation(
+        url="https://example.com/lot/1",
+        observed_at="2026-03-12T00:00:00+00:00",
+        has_sale_price=True,
+        current_price="209",
+        bid_count="8",
+        evidence="visible_price_and_bids_not_final_sale",
+    )
+    decision = evaluate_transition("active", obs)
+    assert decision.state == STATE_ACTIVE
+    assert decision.reason_code == "NO_TERMINAL_EVIDENCE"
 
 
 def test_terminal_state_reopens_when_live_evidence_returns() -> None:

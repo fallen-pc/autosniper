@@ -164,6 +164,64 @@ def test_daily_smoke_runs_limited_pipeline(monkeypatch) -> None:
     ]
 
 
+def test_runtime_backup_skips_when_backup_dir_not_configured(monkeypatch) -> None:
+    calls: list[object] = []
+
+    monkeypatch.delenv("AUTOSNIPER_BACKUP_DIR", raising=False)
+    monkeypatch.setattr(scheduled_jobs.subprocess, "run", lambda command, check: calls.append(command))
+
+    scheduled_jobs._run_runtime_backup_if_configured()
+
+    assert calls == []
+
+
+def test_runtime_backup_runs_configured_script(monkeypatch, tmp_path) -> None:
+    calls: list[tuple[list[str], bool]] = []
+    script_path = tmp_path / "backup_runtime_data.ps1"
+    script_path.write_text("Write-Host backup", encoding="utf-8")
+
+    monkeypatch.setenv("AUTOSNIPER_BACKUP_DIR", r"C:\Backups\AutoSniper")
+    monkeypatch.delenv("AUTOSNIPER_BACKUP_INCLUDE_AUTOTRADER_SESSION", raising=False)
+    monkeypatch.setattr(scheduled_jobs, "RUNTIME_BACKUP_SCRIPT", script_path)
+    monkeypatch.setattr(
+        scheduled_jobs.subprocess,
+        "run",
+        lambda command, check: calls.append((command, check)),
+    )
+
+    scheduled_jobs._run_runtime_backup_if_configured()
+
+    assert calls == [
+        (
+            [
+                "powershell",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                str(script_path),
+                "-BackupDir",
+                r"C:\Backups\AutoSniper",
+            ],
+            True,
+        )
+    ]
+
+
+def test_runtime_backup_can_include_autotrader_session(monkeypatch, tmp_path) -> None:
+    calls: list[list[str]] = []
+    script_path = tmp_path / "backup_runtime_data.ps1"
+    script_path.write_text("Write-Host backup", encoding="utf-8")
+
+    monkeypatch.setenv("AUTOSNIPER_BACKUP_DIR", r"C:\Backups\AutoSniper")
+    monkeypatch.setenv("AUTOSNIPER_BACKUP_INCLUDE_AUTOTRADER_SESSION", "1")
+    monkeypatch.setattr(scheduled_jobs, "RUNTIME_BACKUP_SCRIPT", script_path)
+    monkeypatch.setattr(scheduled_jobs.subprocess, "run", lambda command, check: calls.append(command))
+
+    scheduled_jobs._run_runtime_backup_if_configured()
+
+    assert calls[0][-1] == "-IncludeAutotraderSession"
+
+
 def test_explicit_daily_run_counts_today_even_before_schedule(monkeypatch) -> None:
     monkeypatch.setenv("AUTOSNIPER_LOCAL_TIMEZONE", "Australia/Sydney")
     monkeypatch.setenv("AUTOSNIPER_DAILY_SCHEDULE_LOCAL_TIME", "09:00")

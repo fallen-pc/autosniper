@@ -149,6 +149,9 @@ datasets:
     - url
     - state
     - current_price
+    - final_sale_price
+    - final_sale_date
+    - sale_price_source
     - bid_count
     - time_remaining
     - last_seen_at

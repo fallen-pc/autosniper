@@ -129,3 +129,51 @@ def test_camry_altise_asv50r_maps_to_expected_lane():
         "toyota_camry_altise_petrol_auto_sedan_asv50r",
         "[OK]",
     )
+
+
+def test_hilux_sr_gun126r_4x4_dual_cab_chassis_maps_to_expected_lane():
+    _load_curve_year_band.cache_clear()
+
+    row = {
+        "make": "Toyota",
+        "model": "Hilux",
+        "variant": "SR (4X4) GUN126R",
+        "body_type": "Dual Cab Chassis",
+        "transmission": "Automatic",
+        "fuel_type": "Diesel",
+        "year": "2020",
+        "price": "42975",
+        "url": "https://www.example.com/2020-toyota-hilux-sr-4x4-gun126r-turbo-diesel-automatic-dual-cab-chassis",
+    }
+
+    assert assign_canonical_tag(row, require_price=True)[0:2] == (
+        "toyota_hilux_sr_diesel_auto_cab_chassis_gun126r",
+        "[OK]",
+    )
+
+
+def test_hilux_sr_gun126r_rejects_nearby_ute_lanes():
+    _load_curve_year_band.cache_clear()
+
+    base_row = {
+        "make": "Toyota",
+        "model": "Hilux",
+        "variant": "SR (4X4) GUN126R",
+        "body_type": "Dual Cab Chassis",
+        "transmission": "Automatic",
+        "fuel_type": "Diesel",
+        "year": "2020",
+        "price": "42975",
+        "url": "https://www.example.com/2020-toyota-hilux-sr-4x4-gun126r-turbo-diesel-automatic-dual-cab-chassis",
+    }
+    rejected_rows = [
+        {**base_row, "variant": "SR5 (4X4) GUN126R"},
+        {**base_row, "variant": "SR Hi-Rider 4x2 GUN126R"},
+        {**base_row, "body_type": "Dual Cab Pick Up", "url": "https://www.example.com/2020-toyota-hilux-sr-4x4-gun126r-auto-pick-up"},
+        {**base_row, "transmission": "Manual", "url": "https://www.example.com/2020-toyota-hilux-sr-4x4-gun126r-manual-dual-cab-chassis"},
+    ]
+
+    for row in rejected_rows:
+        canonical_tag, canonical_reason, _drivetrain = assign_canonical_tag(row, require_price=True)
+        assert canonical_tag == "UNCLASSIFIED"
+        assert canonical_reason in {"[DISALLOWED_VARIANT]", "[OUT_OF_SCOPE]"}

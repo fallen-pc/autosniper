@@ -1120,7 +1120,9 @@ def seed_active_dataset(static_df: pd.DataFrame) -> None:
             if column not in lookup.columns:
                 continue
             blank_mask = _is_blank(active_df[column])
-            active_df.loc[blank_mask, column] = active_df.loc[blank_mask, "_url_norm"].map(lookup[column])
+            mapped_values = active_df.loc[blank_mask, "_url_norm"].map(lookup[column])
+            mapped_values = mapped_values.where(~mapped_values.isna(), "").astype(str)
+            active_df.loc[blank_mask, column] = mapped_values
         active_df.drop(columns=["_url_norm"], inplace=True, errors="ignore")
 
     dynamic_columns = [

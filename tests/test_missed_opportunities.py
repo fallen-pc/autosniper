@@ -104,7 +104,7 @@ def test_missed_decision_metrics_zeroes_interstate_max_bid(monkeypatch) -> None:
     assert result["max_bid"] == 0.0
 
 
-def test_missed_decision_metrics_uses_historical_sold_median_when_available(monkeypatch) -> None:
+def test_missed_decision_metrics_keeps_historical_median_context_without_capping_max_bid(monkeypatch) -> None:
     row = pd.Series(
         {
             "url": "test://missed-historical-cap",
@@ -133,4 +133,4 @@ def test_missed_decision_metrics_uses_historical_sold_median_when_available(monk
     )
 
     assert result["expected_auction_price"] == 12_300
-    assert result["max_bid"] == 10_080
+    assert result["max_bid"] == 12_780

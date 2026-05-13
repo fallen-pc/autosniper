@@ -134,6 +134,263 @@ def _to_float(value: object) -> float | None:
         return None
 
 
+def build_metric_box(label: str, value: str, subtext: str | None = None, class_name: str | None = None) -> str:
+    class_attr = f"metric-box {class_name}".strip() if class_name else "metric-box"
+    sub_html = f'<div class="metric-sub">{html.escape(subtext)}</div>' if subtext else ""
+    return (
+        f'<div class="{class_attr}">'
+        f'<div class="metric-label">{html.escape(label)}</div>'
+        f'<div class="metric-value">{html.escape(value)}</div>'
+        f"{sub_html}"
+        "</div>"
+    )
+
+
+def profit_tier_class(value: object) -> str:
+    numeric = _to_float(value)
+    if numeric is None:
+        return "profit-tier-low"
+    if numeric >= 25:
+        return "profit-tier-high"
+    if numeric >= 10:
+        return "profit-tier-mid"
+    return "profit-tier-low"
+
+
+def metric_tone_class(value: object) -> str:
+    numeric = _to_float(value)
+    if numeric is None:
+        return "price-flat"
+    if numeric >= 2000:
+        return "price-up"
+    if numeric > 0:
+        return "price-flat"
+    return "price-down"
+
+
+def badge_tone(value: str) -> str:
+    normalized = safe_text(value, "").strip().lower()
+    if normalized == "high":
+        return "badge-high"
+    if normalized == "medium":
+        return "badge-medium"
+    if normalized == "low":
+        return "badge-low"
+    return "badge-neutral"
+
+
+def confidence_badges_html(curve_status: str, miss_status: str, risk_status: str) -> str:
+    badges = []
+    for label, value in [
+        ("Curve Coverage", curve_status),
+        ("Historical Status", miss_status),
+        ("Risk Level", risk_status),
+    ]:
+        badges.append(
+            '<div class="confidence-badge '
+            + badge_tone(value)
+            + '">'
+            + f'<span class="confidence-badge-label">{html.escape(label)}</span>'
+            + f'<span class="confidence-badge-value">{html.escape(value.upper())}</span>'
+            + "</div>"
+        )
+    return f'<div class="confidence-badge-row">{"".join(badges)}</div>'
+
+
+def sold_action_parts(row: pd.Series) -> tuple[str, str, str]:
+    missed = bool(row.get("missed"))
+    profit = _to_float(row.get("projected_profit_at_sold"))
+    sold_price = _to_float(row.get("sold_price"))
+    max_bid = _to_float(row.get("max_bid"))
+    if missed:
+        return "Missed buy", "Good historical deal", "verdict-good"
+    if profit is not None and profit > 0 and sold_price is not None and max_bid is not None and sold_price > max_bid:
+        return "Sold above max", "Watch only", "verdict-marginal"
+    if profit is not None and profit > 0:
+        return "Positive but blocked", "Review", "verdict-marginal"
+    return "No buy", "Avoid", "verdict-avoid"
+
+
+def risk_level(row: pd.Series) -> str:
+    repair_decision = safe_text(row.get("repair_decision"), "").lower()
+    risk_summary = safe_text(row.get("risk_summary"), "").lower()
+    if any(token in repair_decision for token in ["avoid", "hard"]) or any(
+        token in risk_summary for token in ["engine", "structural", "write-off", "wovr"]
+    ):
+        return "High"
+    if any(token in repair_decision for token in ["marginal", "repair"]) or risk_summary:
+        return "Medium"
+    return "Low"
+
+
+def render_detail_value(label: str, value: str) -> None:
+    st.markdown(f"**{label}**")
+    st.write(value)
+
+
+def render_sold_analysis_card(
+    row: pd.Series,
+    *,
+    only_missed: bool,
+    include_repairs: bool,
+    metric_field: str,
+    top_threshold: float | None,
+    low_threshold: float | None,
+) -> None:
+    year = safe_int(row.get("year"))
+    make = safe_text(row.get("make"), "")
+    model = safe_text(row.get("model"), "")
+    variant = safe_text(row.get("variant"), "")
+    title = " ".join([part for part in [str(year) if year else "", make, model, variant] if part]).strip()
+    title = title or "Sold listing"
+    location = safe_text(row.get("location_state"), "")
+    location_badge = f"({location})" if location else ""
+    canonical_tag = safe_text(row.get("canonical_tag"), "")
+    sold_date = safe_text(row.get("date_sold"), "")
+    header_meta = " | ".join(
+        part
+        for part in [
+            f"Tag {canonical_tag}" if canonical_tag else "",
+            f"Sold {sold_date}" if sold_date else "Sold listing",
+        ]
+        if part
+    )
+
+    action_label, verdict_label, verdict_class = sold_action_parts(row)
+    profit_class = profit_tier_class(row.get("profit_margin_pct"))
+    metric_value = row.get(metric_field)
+    metric_label = "Profit at sold price" if only_missed else "Curve delta"
+    metric_sub = "Historical sold result" if only_missed else "Curve estimate minus sold price"
+    top_badge = ""
+    metric_numeric = _to_float(metric_value)
+    if metric_numeric is not None and top_threshold is not None and metric_numeric >= top_threshold:
+        top_badge = '<div class="verdict-pill top-buy-pill">TOP HISTORICAL DEAL</div>'
+    subdued_class = ""
+    if metric_numeric is not None and low_threshold is not None and metric_numeric <= low_threshold:
+        subdued_class = " subdued"
+
+    sold_price = row.get("sold_price")
+    max_bid = row.get("max_bid")
+    curve_est = row.get("curve_estimate")
+    delta = row.get("delta")
+    profit_margin = row.get("profit_margin_pct")
+    expected_auction = row.get("expected_auction_price")
+    url = safe_text(row.get("url"), "")
+    odometer = format_km(row.get("odometer_numeric"), row.get("odometer_reading"))
+    miss_classification = safe_text(row.get("miss_classification"), "unclassified")
+    repair_decision = safe_text(row.get("repair_decision"), "N/A")
+    risk_status = risk_level(row)
+    miss_status = "High" if bool(row.get("missed")) else "Medium" if _to_float(row.get("projected_profit_at_sold")) else "Low"
+    curve_status = "High" if _to_float(curve_est) is not None else "Low"
+
+    card_html = "".join(
+        [
+            f'<div class="vehicle-card {verdict_class} {profit_class}{subdued_class}">',
+            '<div class="card-top">',
+            '<div class="vehicle-title-block">',
+            '<div class="vehicle-title">',
+            f'<span class="vehicle-title-text">{html.escape(title)}</span>',
+            f'<span class="vehicle-location">{html.escape(location_badge)}</span>' if location_badge else "",
+            "</div>",
+            f'<div class="card-top-meta">{html.escape(header_meta)}</div>' if header_meta else "",
+            "</div>",
+            '<div class="card-top-right">',
+            f'<div class="verdict-pill action-pill">{html.escape(action_label)}</div>',
+            top_badge,
+            f'<div class="verdict-pill {verdict_class}-pill support-pill">{html.escape(verdict_label)}</div>',
+            '<div class="card-actions">',
+            f'<a href="{html.escape(url)}" target="_blank">Open</a>'
+            if url and not url.lower().lstrip().startswith("javascript:")
+            else "",
+            "</div>",
+            "</div>",
+            "</div>",
+            '<div class="card-metrics">',
+            build_metric_box("Sold price", money(sold_price)),
+            build_metric_box("Max bid limit", money(max_bid), "Rebuilt from AI rules"),
+            build_metric_box(metric_label, money(metric_value), metric_sub, metric_tone_class(metric_value)),
+            build_metric_box("Profit %", pct(profit_margin)),
+            build_metric_box("Expected resale", money(curve_est), "Curve resale mid"),
+            build_metric_box("Expected auction", money(expected_auction)),
+            build_metric_box("Curve delta", money(delta)),
+            build_metric_box("Underbid %", pct(row.get("underbid_pct"))),
+            build_metric_box("Odometer", f"{odometer} km" if odometer != "N/A" and "km" not in odometer.lower() else odometer),
+            build_metric_box("Classification", miss_classification),
+            "</div>",
+            confidence_badges_html(curve_status, miss_status, risk_status),
+            '<div class="chip-row">',
+            f'<span class="chip">Rego: {html.escape(safe_text(row.get("rego_text"), "N/A"))}</span>',
+            f'<span class="chip">Keys: {html.escape(safe_text(row.get("keys_text"), "N/A"))}</span>',
+            f'<span class="chip {("warn" if risk_status == "Medium" else "danger" if risk_status == "High" else "good")}">Risk: {html.escape(risk_status)}</span>',
+            f'<span class="chip">Repair: {html.escape(repair_decision)}</span>' if include_repairs else "",
+            "</div>",
+            "</div>",
+        ]
+    )
+    st.markdown(clean_html(card_html), unsafe_allow_html=True)
+
+    overview_tab, curve_tab, costs_tab, condition_tab = st.tabs(
+        ["Overview", "Curve", "Costs", "Condition"]
+    )
+    with overview_tab:
+        cols = st.columns(3)
+        with cols[0]:
+            render_detail_value("Sold price", money(sold_price))
+            render_detail_value("Max bid limit", money(max_bid))
+            render_detail_value("Profit at sold", money(row.get("projected_profit_at_sold")))
+        with cols[1]:
+            render_detail_value("Miss classification", miss_classification)
+            render_detail_value("Profit margin", pct(profit_margin))
+            render_detail_value("Underbid", pct(row.get("underbid_pct")))
+        with cols[2]:
+            render_detail_value("Location", safe_text(row.get("location_state"), "N/A"))
+            render_detail_value("Rego", safe_text(row.get("rego_text"), "N/A"))
+            render_detail_value("Keys", safe_text(row.get("keys_text"), "N/A"))
+    with curve_tab:
+        cols = st.columns(3)
+        with cols[0]:
+            render_detail_value("Curve resale mid", money(curve_est))
+            render_detail_value("Curve low", money(row.get("curve_low")))
+            render_detail_value("Curve high", money(row.get("curve_high")))
+        with cols[1]:
+            render_detail_value("Sold price", money(sold_price))
+            render_detail_value("Curve delta", money(delta))
+            render_detail_value("Delta %", pct(row.get("delta_pct")))
+        with cols[2]:
+            render_detail_value("Canonical tag", canonical_tag or "N/A")
+            render_detail_value("Spec reason", safe_text(row.get("spec_reason"), "N/A"))
+            render_detail_value("Expected auction", money(expected_auction))
+    with costs_tab:
+        cols = st.columns(3)
+        with cols[0]:
+            render_detail_value("Total costs", money(row.get("total_costs")))
+            render_detail_value("Platform fees", money(row.get("platform_fees")))
+            render_detail_value("Transport", money(row.get("transport_costs")))
+        with cols[1]:
+            render_detail_value("Admin", money(row.get("admin_costs")))
+            render_detail_value("Risk buffer", money(row.get("risk_buffer")))
+            render_detail_value("Repair estimate", money(row.get("repair_cost_estimate")))
+        with cols[2]:
+            render_detail_value("Projected profit at sold", money(row.get("projected_profit_at_sold")))
+            render_detail_value("Max bid", money(max_bid))
+            render_detail_value("Sold vs max bid", "Sold inside max bid" if bool(row.get("missed")) else "Sold above max bid or no profit")
+    with condition_tab:
+        render_detail_value("Risk / notes", safe_text(row.get("risk_summary"), "N/A"))
+        if include_repairs:
+            render_detail_value("Repair decision", repair_decision)
+            render_detail_value("Repair severity", safe_text(row.get("repair_severity"), "N/A"))
+            render_detail_value("Repair detail", safe_text(row.get("repair_cost_detail"), "N/A"))
+        condition_text = safe_text(row.get("general_condition"), "")
+        if condition_text:
+            st.markdown("**Condition text**")
+            st.write(condition_text)
+        st.markdown("**Listing**")
+        if url:
+            st.markdown(f"[Open listing]({url})")
+        else:
+            st.write("N/A")
+
+
 def interpolate_curve_value(
     curves_df: pd.DataFrame,
     canonical_tag: str,
@@ -478,6 +735,264 @@ st.markdown(
         }
         .action a:hover{ filter: brightness(.96); }
         .small-muted{ font-size: 12px; color: rgba(255,255,255,.62); }
+        .vehicle-card {
+          --card-glow: 0 0 0 rgba(0, 0, 0, 0);
+          --card-hover: 0 0 0 rgba(0, 0, 0, 0);
+          background: linear-gradient(180deg, #08121d 0%, #0b0f14 30%, #0b0f14 100%);
+          border: 1px solid rgba(39, 182, 255, 0.35);
+          border-top: 3px solid var(--cyan);
+          border-radius: 16px;
+          padding: 0.9rem 1rem 0.85rem;
+          margin: 0.8rem 0 0.45rem;
+          box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25), var(--card-glow), var(--card-hover);
+          transition: box-shadow 0.15s ease, transform 0.15s ease;
+        }
+        .vehicle-card:hover {
+          --card-hover: 0 0 12px rgba(39, 182, 255, 0.18);
+          transform: translateY(-1px);
+        }
+        .vehicle-card.profit-tier-high {
+          --card-glow: 0 0 14px rgba(44, 255, 154, 0.28);
+        }
+        .vehicle-card.subdued {
+          opacity: .82;
+        }
+        .card-top {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          justify-content: space-between;
+          gap: 0.6rem;
+          padding-bottom: 0.3rem;
+          border-bottom: 1px solid rgba(39, 182, 255, 0.16);
+        }
+        .vehicle-title-block {
+          display: flex;
+          flex-direction: column;
+          gap: 0.1rem;
+          min-width: 220px;
+        }
+        .vehicle-title {
+          display: flex;
+          align-items: baseline;
+          gap: 0.4rem;
+          font-size: 1.24rem;
+          font-weight: 800;
+          line-height: 1;
+          color: rgba(255,255,255,.92);
+        }
+        .vehicle-title-text {
+          flex: 1 1 auto;
+          min-width: 0;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .vehicle-location {
+          flex: 0 0 auto;
+          font-size: 0.72rem;
+          font-weight: 600;
+          color: rgba(255, 255, 255, 0.6);
+        }
+        .card-top-meta {
+          font-size: 0.56rem;
+          text-transform: uppercase;
+          letter-spacing: 0.12em;
+          color: rgba(255, 255, 255, 0.45);
+        }
+        .card-top-right {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          flex-wrap: wrap;
+          justify-content: flex-end;
+        }
+        .card-actions a {
+          display: inline-flex;
+          align-items: center;
+          padding: 0.2rem 0.55rem;
+          border-radius: 999px;
+          border: 1px solid rgba(39, 182, 255, 0.6);
+          color: rgba(255,255,255,.92) !important;
+          text-decoration: none;
+          font-size: 0.62rem;
+          text-transform: uppercase;
+          letter-spacing: 0.12em;
+          font-weight: 800;
+        }
+        .card-actions a:hover {
+          background: rgba(39, 182, 255, 0.12);
+        }
+        .card-metrics {
+          margin-top: 0.5rem;
+          display: grid;
+          grid-template-columns: repeat(5, minmax(0, 1fr));
+          gap: 0.5rem;
+          align-items: stretch;
+        }
+        .metric-box {
+          background: rgba(8, 12, 18, 0.65);
+          border: 1px solid rgba(39, 182, 255, 0.3);
+          border-radius: 12px;
+          padding: 0.55rem 0.7rem;
+          min-height: 56px;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+        }
+        .metric-label {
+          font-size: 0.58rem;
+          text-transform: uppercase;
+          letter-spacing: 0.12em;
+          color: rgba(255,255,255,.65);
+          margin-bottom: 0.14rem;
+        }
+        .metric-value {
+          font-size: 1.18rem;
+          font-weight: 800;
+          color: rgba(255,255,255,.92);
+          line-height: 1.05;
+        }
+        .metric-sub {
+          font-size: 0.62rem;
+          color: rgba(255, 255, 255, 0.6);
+          margin-top: 0.2rem;
+        }
+        .metric-box.price-up {
+          border-color: rgba(44, 255, 154, 0.8);
+          background: rgba(44, 255, 154, 0.1);
+        }
+        .metric-box.price-up .metric-value {
+          color: #2cff9a;
+        }
+        .metric-box.price-down {
+          border-color: rgba(255, 179, 71, 0.75);
+          background: rgba(255, 179, 71, 0.1);
+        }
+        .metric-box.price-down .metric-value {
+          color: #ffb347;
+        }
+        .metric-box.price-flat {
+          border-color: rgba(255, 255, 255, 0.14);
+          background: rgba(255, 255, 255, 0.04);
+        }
+        .verdict-pill {
+          border-radius: 999px;
+          padding: 0.3rem 0.65rem;
+          font-size: 0.64rem;
+          text-transform: uppercase;
+          letter-spacing: 0.14em;
+          font-weight: 800;
+          text-align: center;
+          border: 1px solid;
+        }
+        .verdict-good-pill {
+          background: rgba(44, 255, 154, 0.12);
+          border-color: rgba(44, 255, 154, 0.85);
+          color: #e9fff5;
+          box-shadow: 0 0 12px rgba(44, 255, 154, 0.35);
+        }
+        .verdict-marginal-pill {
+          background: rgba(255, 179, 71, 0.14);
+          border-color: rgba(255, 179, 71, 0.8);
+          color: #fff3e0;
+          box-shadow: 0 0 12px rgba(255, 179, 71, 0.3);
+        }
+        .verdict-avoid-pill {
+          background: rgba(255, 77, 77, 0.14);
+          border-color: rgba(255, 77, 77, 0.85);
+          color: #ffe9e9;
+          box-shadow: 0 0 12px rgba(255, 77, 77, 0.32);
+        }
+        .top-buy-pill {
+          background: rgba(57, 255, 152, 0.18);
+          border-color: rgba(57, 255, 152, 0.9);
+          color: #ecfff5;
+          box-shadow: 0 0 14px rgba(57, 255, 152, 0.45);
+        }
+        .action-pill {
+          background: rgba(39, 182, 255, 0.14);
+          border-color: rgba(39, 182, 255, 0.85);
+          color: #e4f7ff;
+          box-shadow: 0 0 12px rgba(39, 182, 255, 0.28);
+        }
+        .support-pill {
+          opacity: 0.82;
+          font-size: 0.58rem;
+          padding: 0.25rem 0.55rem;
+        }
+        .chip-row {
+          margin-top: 0.3rem;
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.3rem;
+        }
+        .confidence-badge-row {
+          margin-top: 0.55rem;
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.45rem;
+        }
+        .confidence-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.45rem;
+          padding: 0.32rem 0.58rem;
+          border-radius: 999px;
+          border: 1px solid rgba(39, 182, 255, 0.28);
+          background: rgba(11, 15, 20, 0.72);
+          font-size: 0.62rem;
+        }
+        .confidence-badge-label {
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          color: rgba(255, 255, 255, 0.6);
+        }
+        .confidence-badge-value {
+          font-weight: 800;
+          letter-spacing: 0.08em;
+          color: rgba(255, 255, 255, 0.92);
+        }
+        .confidence-badge.badge-high {
+          border-color: rgba(44, 255, 154, 0.5);
+          background: rgba(44, 255, 154, 0.1);
+        }
+        .confidence-badge.badge-medium {
+          border-color: rgba(255, 179, 71, 0.55);
+          background: rgba(255, 179, 71, 0.1);
+        }
+        .confidence-badge.badge-low {
+          border-color: rgba(255, 77, 77, 0.55);
+          background: rgba(255, 77, 77, 0.1);
+        }
+        .confidence-badge.badge-neutral {
+          border-color: rgba(39, 182, 255, 0.28);
+          background: rgba(39, 182, 255, 0.08);
+        }
+        .chip.good {
+          border-color: rgba(44, 255, 154, 0.65);
+          background: rgba(44, 255, 154, 0.08);
+        }
+        .chip.warn {
+          border-color: rgba(255, 179, 71, 0.7);
+          background: rgba(255, 179, 71, 0.08);
+        }
+        .chip.danger {
+          border-color: rgba(255, 77, 77, 0.6);
+          background: rgba(255, 77, 77, 0.08);
+        }
+        @media (max-width: 900px) {
+          .card-top {
+            flex-direction: column;
+            align-items: flex-start;
+          }
+          .vehicle-title {
+            white-space: normal;
+          }
+          .card-metrics {
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+          }
+        }
         </style>
         """
     ),
@@ -652,6 +1167,7 @@ for _, row in sold_df.iterrows():
             "transport_costs": transport_costs,
             "admin_costs": admin_costs,
             "risk_buffer": risk_buffer,
+            "expected_auction_price": decision.get("expected_auction_price"),
             "missed": missed,
             "date_sold": row.get("date_sold"),
             "location_state": location_state,
@@ -979,143 +1495,23 @@ for group in group_order:
     if group_df.empty:
         continue
     group_avg = group_df[metric_field].mean()
-    if pd.notna(group_avg) and group_avg >= 5000:
-        group_icon = "🚨"
-    elif pd.notna(group_avg) and group_avg >= 2000:
-        group_icon = "⚠️"
-    else:
-        group_icon = "📈"
     avg_label = "avg profit" if only_missed else "avg delta"
-    group_summary = f"{money(group_avg)} {avg_label} • {len(group_df):,} listings"
+    group_summary = f"{money(group_avg)} {avg_label} | {len(group_df):,} listings"
     st.markdown(
-        f'<div class="group-header">{group_icon} {html.escape(group)} <span>{group_summary}</span></div>',
+        f'<div class="group-header">{html.escape(group)} <span>{group_summary}</span></div>',
         unsafe_allow_html=True,
     )
 
     group_df = group_df.sort_values(metric_field, ascending=False, na_position="last")
     for _, row in group_df.iterrows():
-        year = safe_int(row.get("year"))
-        make = safe_text(row.get("make"), "")
-        model = safe_text(row.get("model"), "")
-        variant = safe_text(row.get("variant"), "")
-        sold_price = row.get("sold_price")
-        curve_est = row.get("curve_estimate")
-        delta = row.get("delta")
-        url = safe_text(row.get("url"), "")
-        date_sold = safe_text(row.get("date_sold"), "")
+        render_sold_analysis_card(
+            row,
+            only_missed=only_missed,
+            include_repairs=include_repairs,
+            metric_field=metric_field,
+            top_threshold=top_threshold,
+            low_threshold=low_threshold,
+        )
 
-        metric_value = row.get(metric_field)
-        tier = glow_tier(metric_value)
-        row_classes = [tier]
-        metric_val = None
-        if metric_value is None or (isinstance(metric_value, float) and pd.isna(metric_value)):
-            metric_class = "delta-neutral"
-            metric_text = "N/A"
-        else:
-            metric_val = float(metric_value)
-            if metric_val >= 5000:
-                metric_class = "delta-green"
-            elif metric_val >= 2000:
-                metric_class = "delta-amber"
-            else:
-                metric_class = "delta-neutral"
-            metric_text = money(metric_val)
-            if top_threshold is not None and metric_val >= top_threshold:
-                row_classes.append("top-miss")
-            if low_threshold is not None and metric_val <= low_threshold:
-                row_classes.append("subdued")
-
-        delta_val = _to_float(delta)
-        delta_text = money(delta_val) if delta_val is not None else "N/A"
-        max_bid = row.get("max_bid")
-        profit_at_sold = row.get("projected_profit_at_sold")
-        profit_margin = row.get("profit_margin_pct")
-        miss_classification = safe_text(row.get("miss_classification"), "unclassified")
-
-        title = " ".join([part for part in [str(year) if year else "", make, model] if part]).strip()
-        sub = " • ".join([part for part in [variant, f"Sold: {date_sold}" if date_sold else ""] if part])
-        top_badge = ""
-        if metric_val is not None and top_threshold is not None and metric_val >= top_threshold:
-            top_label = "Top profit" if only_missed else "Top delta"
-            top_badge = f'<span class="top-badge">{top_label}</span>'
-        class_badge = f'<div class="class-badge">{html.escape(miss_classification)}</div>'
-
-        row_html = f"""
-        <div class="miss-row {' '.join(row_classes)}">
-          <div class="miss-top">
-            <div>
-              <div class="miss-title">{html.escape(title)}{top_badge}</div>
-              <div class="miss-sub">{html.escape(sub)}</div>
-              {class_badge}
-            </div>
-            <div class="miss-metrics">
-              <div class="mm"><div class="k">Sold</div><div class="v">{money(sold_price)}</div></div>
-              <div class="mm"><div class="k">Max bid</div><div class="v">{money(max_bid)}</div></div>
-              <div class="mm"><div class="k">{"Profit" if only_missed else "Curve delta"}</div><div class="v delta-big {metric_class}">{metric_text}</div></div>
-              <div class="mm"><div class="k">Profit %</div><div class="v">{pct(profit_margin)}</div></div>
-              <div class="mm"><div class="k">Curve delta</div><div class="v">{delta_text}</div></div>
-            </div>
-          </div>
-        </div>
-        """
-        st.markdown(clean_html(row_html), unsafe_allow_html=True)
-
-        with st.expander("Details", expanded=False):
-            cols = st.columns(3)
-            with cols[0]:
-                st.markdown("**Curve (resale mid)**")
-                st.write(money(curve_est))
-                st.markdown("**Sold price**")
-                st.write(money(sold_price))
-                st.markdown("**Max bid (Stage 6)**")
-                st.write(money(row.get("max_bid")))
-                st.markdown("**Projected profit at sold**")
-                st.write(money(row.get("projected_profit_at_sold")))
-                st.markdown("**Profit margin %**")
-                st.write(pct(row.get("profit_margin_pct")))
-            with cols[1]:
-                st.markdown("**Total costs**")
-                st.write(money(row.get("total_costs")))
-                st.markdown("**Platform fees**")
-                st.write(money(row.get("platform_fees")))
-                st.markdown("**Transport**")
-                st.write(money(row.get("transport_costs")))
-                st.markdown("**Admin (roadworthy + prep)**")
-                st.write(money(row.get("admin_costs")))
-                st.markdown("**Risk buffer**")
-                st.write(money(row.get("risk_buffer")))
-                if include_repairs:
-                    st.markdown("**Repair estimate**")
-                    st.write(money(row.get("repair_cost_estimate")))
-            with cols[2]:
-                st.markdown("**Miss classification**")
-                st.write(miss_classification)
-                st.markdown("**Spec reason**")
-                st.write(safe_text(row.get("spec_reason"), "N/A"))
-                st.markdown("**Curve delta**")
-                st.write(delta_text)
-                st.markdown("**Delta %**")
-                st.write(pct(row.get("delta_pct")))
-                st.markdown("**Underbid %**")
-                st.write(pct(row.get("underbid_pct")))
-                if include_repairs:
-                    st.markdown("**Repair decision**")
-                    st.write(safe_text(row.get("repair_decision"), "N/A"))
-                    st.markdown("**Repair severity**")
-                    st.write(safe_text(row.get("repair_severity"), "N/A"))
-                st.markdown("**Risk / notes**")
-                st.write(safe_text(row.get("risk_summary"), "N/A"))
-                condition_text = safe_text(row.get("general_condition"), "")
-                if condition_text:
-                    st.write(condition_text)
-                st.markdown("**Location / rego / keys**")
-                st.write(safe_text(row.get("location_state"), "N/A"))
-                st.write(safe_text(row.get("rego_text"), "N/A"))
-                st.write(safe_text(row.get("keys_text"), "N/A"))
-                st.markdown("**Listing**")
-                if url:
-                    st.markdown(f"[Open listing]({url})")
-                else:
-                    st.write("N/A")
 
 st.markdown("</div>", unsafe_allow_html=True)

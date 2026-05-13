@@ -1,7 +1,7 @@
 # Curve Coverage Report
 
-- Observed canonical tags: 45
-- Tags with curves: 45
+- Observed canonical tags: 47
+- Tags with curves: 47
 - Tags missing curves: 0
 - Observed rows missing curves: 0
 

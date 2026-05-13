@@ -58,3 +58,26 @@ def test_reconcile_state_active_queue_ignores_empty_queue() -> None:
 
     assert reconciled == 0
     assert out.loc[0, "state"] == "active"
+
+
+def test_state_observation_does_not_treat_visible_price_as_final_sale_price() -> None:
+    row = pd.Series(
+        {
+            "url": "https://example.com/lot/camry",
+            "status": "Sold",
+            "price": "209",
+            "bids": "7",
+            "time_remaining_or_date_sold": "2026-05-01",
+        }
+    )
+
+    obs = update_bids._state_observation_from_row(
+        row,
+        run_id="test-run",
+        observed_at="2026-05-05T00:00:00+00:00",
+        evidence="visible_price_and_bids_not_final_sale",
+    )
+
+    assert obs.current_price == "209"
+    assert obs.final_sale_price == ""
+    assert obs.has_sale_price is False

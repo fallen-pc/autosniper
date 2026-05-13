@@ -14,6 +14,7 @@ from scripts.ai_listing_valuation import (
     _calculate_downside_percent,
     _detect_risk_flags,
     _discounted_bid_cap,
+    _discounted_resale_cap_price,
     _estimate_costs,
     _expected_auction_estimate,
     _is_interstate_listing,
@@ -122,7 +123,7 @@ def compute_decision_metrics(
         comps_count=comps_count,
     )
     discounted_bid_cap = _discounted_bid_cap(
-        expected_auction_price,
+        _discounted_resale_cap_price(resale_mid_val),
         repair_cost=0.0,
         margin=min_net_profit,
     )

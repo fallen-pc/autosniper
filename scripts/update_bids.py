@@ -259,7 +259,8 @@ def _state_observation_from_row(
     time_raw = str(row.get("time_remaining_or_date_sold", "") or "").strip()
     is_active = status == "active"
     is_referred = status in {"referred", "canceled", "cancelled", "closed"}
-    has_sale_price = status == "sold"
+    final_sale_price_raw = str(row.get("final_sale_price", "") or "").strip()
+    has_sale_price = status == "sold" and final_sale_price_raw.lower() not in {"", "n/a", "nan"}
     is_withdrawn = status in {"withdrawn", "no_price"}
     return ListingObservation(
         url=str(row.get("url", "") or ""),
@@ -271,6 +272,9 @@ def _state_observation_from_row(
         is_withdrawn=is_withdrawn,
         fetch_failed=fetch_failed,
         current_price="" if price_raw.lower() in {"", "n/a", "nan"} else price_raw,
+        final_sale_price="" if final_sale_price_raw.lower() in {"", "n/a", "nan"} else final_sale_price_raw,
+        final_sale_date=time_raw if has_sale_price and time_raw.lower() not in {"", "n/a", "nan"} else "",
+        sale_price_source=str(row.get("sale_price_source", "") or "").strip(),
         bid_count="" if bids_raw.lower() in {"", "n/a", "nan"} else bids_raw,
         time_remaining="" if time_raw.lower() in {"", "n/a", "nan"} else time_raw,
         evidence=evidence,
@@ -752,16 +756,16 @@ async def update_bids(
                         df.loc[df["url"] == url, "time_remaining_or_date_sold"] = "N/A"
                         df.loc[df["url"] == url, "status"] = "Referred"
                         evidence = "referred_or_cancelled_indicator"
-                    elif date_sold and int(bids) > 0:  # Prioritize date_sold and bids for Sold
-                        print("  Condition: Date sold and bids found - Set to Sold")
+                    elif date_sold and int(bids) > 0:
+                        print("  Condition: End date and bids found without verified final sale price - Set to Referred")
                         df.loc[df["url"] == url, "time_remaining_or_date_sold"] = date_sold
-                        df.loc[df["url"] == url, "status"] = "Sold"
-                        evidence = "date_sold_and_bids"
+                        df.loc[df["url"] == url, "status"] = "Referred"
+                        evidence = "ended_without_verified_sale_price"
                     elif price != "N/A" and int(bids) > 0:
-                        print("  Condition: Price and bids present, no date sold - Set to Sold with current date")
+                        print("  Condition: Price and bids present without verified final sale price - Set to Referred")
                         df.loc[df["url"] == url, "time_remaining_or_date_sold"] = datetime.now().strftime("%Y-%m-%d")
-                        df.loc[df["url"] == url, "status"] = "Sold"
-                        evidence = "price_and_bids_present"
+                        df.loc[df["url"] == url, "status"] = "Referred"
+                        evidence = "visible_price_and_bids_not_final_sale"
                     else:
                         print("  Condition: No active, referred, or valid sold criteria - Set to Referred")
                         df.loc[df["url"] == url, "time_remaining_or_date_sold"] = "N/A"

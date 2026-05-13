@@ -49,6 +49,9 @@ class ListingObservation:
     is_withdrawn: bool = False
     fetch_failed: bool = False
     current_price: object = ""
+    final_sale_price: object = ""
+    final_sale_date: object = ""
+    sale_price_source: str = ""
     bid_count: object = ""
     time_remaining: object = ""
     evidence: str = ""
@@ -122,7 +125,8 @@ def evaluate_transition(
             last_evidence=evidence,
         )
 
-    if observation.has_sale_price:
+    final_sale_price_present = observation.final_sale_price not in ("", None)
+    if observation.has_sale_price and final_sale_price_present:
         return TransitionDecision(
             state=STATE_SOLD,
             reason_code="EVIDENCE_FINAL_PRICE",
@@ -236,6 +240,12 @@ def upsert_state_row(
         payload["last_seen_at"] = observation.observed_at or _utc_now_iso()
     if observation.current_price not in ("", None):
         payload["current_price"] = observation.current_price
+    if observation.final_sale_price not in ("", None):
+        payload["final_sale_price"] = observation.final_sale_price
+    if observation.final_sale_date not in ("", None):
+        payload["final_sale_date"] = observation.final_sale_date
+    if observation.sale_price_source not in ("", None):
+        payload["sale_price_source"] = observation.sale_price_source
     if observation.bid_count not in ("", None):
         payload["bid_count"] = observation.bid_count
     if observation.time_remaining not in ("", None):
