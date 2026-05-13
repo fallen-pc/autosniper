@@ -82,3 +82,43 @@ def test_propose_curve_from_evidence_trims_extreme_active_outlier():
     row_30k = proposed_df[proposed_df["km_bucket"] == 30000].iloc[0]
     assert metadata.active_rows_trimmed >= 1
     assert row_30k["price_mid"] < 30000
+
+
+def test_propose_curve_from_evidence_derives_default_anchors_and_counts_valid_sold_rows():
+    base_curve_tag = "mazda_3_bl_hatch_auto_petrol"
+    active_df = pd.DataFrame(
+        {
+            "canonical_tag": [base_curve_tag] * 19,
+            "year_numeric": ([2009] * 6) + ([2011] * 6) + ([2013] * 6) + ["bad-year"],
+            "price_numeric": (
+                [16000, 15500, 15000, 14500, 14000, 13500]
+                + [17000, 16500, 16000, 15500, 15000, 14500]
+                + [18000, 17500, 17000, 16500, 16000, 15500]
+                + [99999]
+            ),
+            "odometer_numeric": (
+                [30000, 60000, 100000, 150000, 200000, 100000]
+                + [30000, 60000, 100000, 150000, 200000, 100000]
+                + [30000, 60000, 100000, 150000, 200000, 100000]
+                + ["bad-km"]
+            ),
+        }
+    )
+    sold_df = pd.DataFrame(
+        {
+            "year_numeric": [2010, 2012, "bad-year"],
+            "price_numeric": [12000, 13000, 14000],
+            "odometer_numeric": [80000, 90000, None],
+        }
+    )
+
+    proposed_df, metadata = propose_curve_from_evidence(
+        base_curve_tag=base_curve_tag,
+        active_market_df=active_df,
+        sold_df=sold_df,
+    )
+
+    assert metadata.anchor_years == [2009, 2011, 2013]
+    assert metadata.active_rows_used == 18
+    assert metadata.sold_rows_observed == 2
+    assert len(proposed_df) == 15
