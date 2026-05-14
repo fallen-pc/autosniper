@@ -1,5 +1,8 @@
 # Changelog
 
+## 2026-05-14
+- Added a conservative `2018` anchor for `toyota_corolla_zwe211r_hatch_auto_hybrid` from private Carsales ZWE211R Ascent Sport Hybrid hatch evidence, allowing `2019` rows to interpolate into the existing `2020` curve and removing the current ZWE211R rows from the missed-opportunities no-curve gap.
+
 ## 2026-04-24
 - Added the Hyundai ix35 Elite LM base curve as `hyundai_ix35_elite_lm_wagon_auto_petrol` with `2010/2012/2014` anchors and the standard `30k/60k/100k/150k/200k` bucket grid, then wired the exact Elite LM match tag into the V2 group map and supported curve universe as a conservative family lane.
 - Added the Hyundai Getz SX TB manual base curve as `hyundai_getz_sx_tb_hatch_manual_petrol` with `2007/2009/2011` anchors and the standard `30k/60k/100k/150k/200k` bucket grid, then wired the exact SX TB manual match tag into the V2 group map and supported curve universe as a separate lane below the automatic curve.
