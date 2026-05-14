@@ -2579,6 +2579,66 @@ st.markdown(
             align-items: center;
             gap: 0.5rem;
         }
+        .decision-signal-row {
+            margin-top: 0.55rem;
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 0.5rem;
+        }
+        .decision-signal {
+            min-height: 62px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            background: rgba(255, 255, 255, 0.045);
+            padding: 0.48rem 0.58rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .decision-signal-label {
+            font-size: 0.55rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: rgba(255, 255, 255, 0.52);
+            margin-bottom: 0.16rem;
+        }
+        .decision-signal-value {
+            font-size: 0.98rem;
+            font-weight: 850;
+            line-height: 1.05;
+            color: rgba(255, 255, 255, 0.94);
+        }
+        .decision-signal-sub {
+            margin-top: 0.18rem;
+            font-size: 0.6rem;
+            line-height: 1.2;
+            color: rgba(255, 255, 255, 0.58);
+        }
+        .decision-signal.signal-good {
+            border-color: rgba(44, 255, 154, 0.55);
+            background: rgba(44, 255, 154, 0.1);
+        }
+        .decision-signal.signal-good .decision-signal-value {
+            color: #dcffef;
+        }
+        .decision-signal.signal-watch {
+            border-color: rgba(255, 179, 71, 0.6);
+            background: rgba(255, 179, 71, 0.1);
+        }
+        .decision-signal.signal-watch .decision-signal-value {
+            color: #fff1d8;
+        }
+        .decision-signal.signal-danger {
+            border-color: rgba(255, 77, 77, 0.65);
+            background: rgba(255, 77, 77, 0.11);
+        }
+        .decision-signal.signal-danger .decision-signal-value {
+            color: #ffe3e3;
+        }
+        .decision-signal.signal-neutral {
+            border-color: rgba(39, 182, 255, 0.25);
+            background: rgba(39, 182, 255, 0.06);
+        }
         .card-actions a {
             display: inline-flex;
             align-items: center;
@@ -2695,6 +2755,10 @@ st.markdown(
             opacity: 0.82;
             font-size: 0.58rem;
             padding: 0.25rem 0.55rem;
+        }
+        .support-pill.context-pill {
+            opacity: 0.68;
+            box-shadow: none;
         }
         .chip-row {
             margin-top: 0.3rem;
@@ -2827,6 +2891,9 @@ st.markdown(
                 white-space: normal;
             }
             .card-metrics {
+                grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            }
+            .decision-signal-row {
                 grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
             }
         }
@@ -3025,6 +3092,33 @@ for _, row in filtered.iterrows():
 
 results_df = pd.DataFrame(results)
 output = filtered.merge(results_df, on="url", how="left")
+
+
+def _coalesce_merged_display_column(df: pd.DataFrame, column: str) -> None:
+    left_column = f"{column}_x"
+    right_column = f"{column}_y"
+    if left_column not in df.columns and right_column not in df.columns:
+        return
+
+    if column in df.columns:
+        series = df[column]
+    elif left_column in df.columns:
+        series = df[left_column]
+    else:
+        series = pd.Series([None] * len(df), index=df.index)
+
+    if right_column in df.columns:
+        text_series = series.astype(str).str.strip().str.lower()
+        missing_mask = series.isna() | text_series.isin(["", "nan", "none", "n/a"])
+        series = series.where(~missing_mask, df[right_column])
+
+    df[column] = series
+    df.drop(columns=[col for col in (left_column, right_column) if col in df.columns], inplace=True)
+
+
+for display_column in ("year", "make", "model", "variant", "location"):
+    _coalesce_merged_display_column(output, display_column)
+
 
 def _compute_profit_margin_value(row: pd.Series) -> Optional[float]:
     margin_value = conservative_margin_percent(row)
@@ -3351,6 +3445,52 @@ def _confidence_badges_html(curve_confidence: str, data_completeness: str, risk_
     return f'<div class="confidence-badge-row">{"".join(badges)}</div>'
 
 
+def _signal_tone(value: object) -> str:
+    normalized = _safe_text(value, fallback="").strip().lower()
+    if any(token in normalized for token in ["avoid", "over max", "no edge", "trap", "low", "high risk"]):
+        return "signal-danger"
+    if any(token in normalized for token in ["watch", "review", "marginal", "conditional", "medium", "unknown"]):
+        return "signal-watch"
+    if any(token in normalized for token in ["buy", "cheap", "strong", "good", "high", "safe"]):
+        return "signal-good"
+    return "signal-neutral"
+
+
+def _risk_signal_tone(value: object) -> str:
+    normalized = _safe_text(value, fallback="").strip().lower()
+    if normalized == "high":
+        return "signal-danger"
+    if normalized == "medium":
+        return "signal-watch"
+    if normalized == "low":
+        return "signal-good"
+    return "signal-neutral"
+
+
+def _margin_signal_tone(value: object) -> str:
+    try:
+        numeric = float(value)
+    except (TypeError, ValueError):
+        return "signal-neutral"
+    if numeric >= 25:
+        return "signal-good"
+    if numeric >= 10:
+        return "signal-watch"
+    return "signal-danger"
+
+
+def _build_signal_tile(label: str, value: str, sub: str, tone: str) -> str:
+    return "".join(
+        [
+            f'<div class="decision-signal {html.escape(tone)}">',
+            f'<div class="decision-signal-label">{html.escape(label)}</div>',
+            f'<div class="decision-signal-value">{html.escape(value)}</div>',
+            f'<div class="decision-signal-sub">{html.escape(sub)}</div>' if sub else "",
+            "</div>",
+        ]
+    )
+
+
 def render_listing_card(row: pd.Series) -> None:
     raw_title_parts = [
         _safe_text(row.get("year"), fallback=""),
@@ -3376,7 +3516,6 @@ def render_listing_card(row: pd.Series) -> None:
         else ""
     )
     action_label = _display_action_label(row.get("action_label"))
-    action_html = f'<div class="verdict-pill action-pill">{html.escape(action_label)}</div>'
 
     max_bid_display = _format_currency_value(row.get("max_bid_value"))
     resale_display = _format_currency_value(row.get("resale_value"))
@@ -3462,10 +3601,51 @@ def render_listing_card(row: pd.Series) -> None:
     curve_confidence_label = _curve_confidence_label(row.get("confidence"))
     data_completeness_label = _data_completeness_label(row)
     risk_level_label = _risk_level_label(row, combined_flags, defect_profile)
-    confidence_badges_html = _confidence_badges_html(
-        curve_confidence_label,
-        data_completeness_label,
-        risk_level_label,
+    confidence_value = row.get("confidence")
+    confidence_percent = None
+    if confidence_value is not None and not (isinstance(confidence_value, float) and pd.isna(confidence_value)):
+        try:
+            confidence_percent = float(confidence_value) * 100
+        except (TypeError, ValueError):
+            confidence_percent = None
+    confidence_text = _format_percent(confidence_percent)
+    if confidence_text == "N/A":
+        confidence_text = _format_percent(_parse_percent(row.get("profit_margin_percent")))
+    signal_row_html = "".join(
+        [
+            '<div class="decision-signal-row">',
+            _build_signal_tile(
+                "Action",
+                action_label,
+                f"Verdict context: {verdict_label}",
+                _signal_tone(action_label),
+            ),
+            _build_signal_tile(
+                "Bid status",
+                bid_status,
+                hard_max_safety,
+                _signal_tone(bid_status),
+            ),
+            _build_signal_tile(
+                "Margin",
+                profit_pct_display,
+                current_profit_label,
+                _margin_signal_tone(row.get("profit_margin_value")),
+            ),
+            _build_signal_tile(
+                "Confidence",
+                curve_confidence_label,
+                f"Curve {confidence_text}; data {data_completeness_label.lower()}",
+                _signal_tone(curve_confidence_label),
+            ),
+            _build_signal_tile(
+                "Risk",
+                risk_level_label,
+                risk_summary,
+                _risk_signal_tone(risk_level_label),
+            ),
+            "</div>",
+        ]
     )
 
     card_html = "".join(
@@ -3480,9 +3660,8 @@ def render_listing_card(row: pd.Series) -> None:
             f'<div class="card-top-meta">{html.escape(header_meta)}</div>' if header_meta else "",
             "</div>",
             '<div class="card-top-right">',
-            action_html,
             top_buy_html,
-            f'<div class="verdict-pill {verdict_pill_class} support-pill">{html.escape(verdict_label)}</div>',
+            f'<div class="verdict-pill {verdict_pill_class} support-pill context-pill">{html.escape(verdict_label)}</div>',
             '<div class="card-actions">',
             f'<a href="{html.escape(_safe_text(row.get("url"), fallback=""))}" target="_blank">Open</a>'
             if _safe_text(row.get("url"), fallback="") not in ("N/A", "")
@@ -3491,6 +3670,7 @@ def render_listing_card(row: pd.Series) -> None:
             "</div>",
             "</div>",
             "</div>",
+            signal_row_html,
             '<div class="card-metrics">',
             _build_metric_box("Current price", current_price_display),
             _build_metric_box_with_sub("Price update", price_update_value, price_update_sub, price_update_class),
@@ -3504,7 +3684,6 @@ def render_listing_card(row: pd.Series) -> None:
             _build_metric_box("Profit %", profit_pct_display),
             _build_metric_box("Score /100", score_100_display),
             "</div>",
-            confidence_badges_html,
             '<div class="chip-row">',
             f'<span class="{km_chip_class}">{html.escape(km_label)}</span>',
             f'<span class="{rego_chip_class}">Rego: {html.escape(rego_text)}</span>',
@@ -3525,17 +3704,6 @@ def render_listing_card(row: pd.Series) -> None:
         ]
     )
     st.markdown(card_html, unsafe_allow_html=True)
-
-    confidence_value = row.get("confidence")
-    confidence_percent = None
-    if confidence_value is not None and not (isinstance(confidence_value, float) and pd.isna(confidence_value)):
-        try:
-            confidence_percent = float(confidence_value) * 100
-        except (TypeError, ValueError):
-            confidence_percent = None
-    confidence_text = _format_percent(confidence_percent)
-    if confidence_text == "N/A":
-        confidence_text = _format_percent(_parse_percent(row.get("profit_margin_percent")))
 
     ai_notes = _split_notes(row.get("confidence_notes"))
     expected_note = _safe_text(row.get("expected_sale_note"), fallback="")

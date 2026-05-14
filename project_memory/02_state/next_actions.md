@@ -1,6 +1,6 @@
 # Next Actions
 
-1. Continue decision-model cleanup on the visual semantics layer: risk, confidence, margin, bid status, and hard-max safety should read as distinct signals instead of competing verdicts.
+1. Validate the new AI Analysis signal strip against real active listings during daily auction review; only tune labels, thresholds, or tile ordering where real rows still read ambiguously.
 2. Review repair presentation in AI Analysis/Missed Opportunities against real rows after the parser tightening. The central repair engine now handles punctuation-heavy notes, mixed cosmetic/replacement damage, capped unknown-photo risk, bare engine-light hard stops, and head-gasket/cooling hard stops; the next repair work should be display clarity or a data-backed cost-table review, not another blind parser pass.
 3. When AI Analysis buying logic changes, check `shared/missed_opportunities.py` in the same work slice so the historical replay stays aligned with the live decision path.
 4. Formalize the new-vehicle expansion workflow: a new vehicle family is not fully live until tag recognition, base-curve valuation, year/km coverage, restricted rebuild, AI revaluation, and AI Analysis/Missed Opportunities verification are all complete. The rule is known, but it still needs a durable checklist/docs/governance home.
