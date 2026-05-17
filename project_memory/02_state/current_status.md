@@ -24,6 +24,6 @@
 
 - Scheduler logic is in better shape, but unattended operation still has a real Windows-session dependency. The daily/hourly paths have been hardened and overlap handling is better, but reliable Autotrader work still depends on an awake, logged-in session because headless/browser-session stability is not fully solved.
 
-- AI Analysis wording is clearer than before. Cards now lead with the action, verdict text is supporting context, and profit wording is framed as margin strength instead of mixing several equally loud judgment labels. Stored action labels now use a shared `Buy` / `Watch` / `Avoid` / `Review` policy instead of mixing `Watch closely` and `Bid carefully` variants.
+- AI Analysis wording is clearer than before. Cards now expose action, bid status, margin, confidence, and risk as separate signal tiles, verdict text is supporting context, and profit wording is framed as margin strength instead of mixing several equally loud judgment labels. Stored action labels now use a shared `Buy` / `Watch` / `Avoid` / `Review` policy instead of mixing `Watch closely` and `Bid carefully` variants. The card title path also preserves merged listing identity fields, so cards should show the vehicle title instead of the generic `Listing` fallback.
 
-- The highest-value remaining product work is now the next decision-model layer: make visual semantics for risk/confidence/margin coherent, and then confirm the decision ledger against real shortlist movement when live candidates return.
+- The highest-value remaining product work is to validate the new AI Analysis signal strip against real shortlist movement when live candidates return, then tune only the labels or thresholds that prove confusing in daily auction review.
