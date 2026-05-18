@@ -1,4 +1,0 @@
-snapshot_ts,url,price_text,price_numeric,bids_numeric,time_remaining_text,time_remaining_hours,status,location,location_state,auction_site
-2026-05-11T23:04:36.948787+00:00,https://www.grays.com/lot/0001-50715700/motor-vehicles-motor-cycles/2016-mazda-cx-5-maxx-sport-awd-ke-turbo-diesel-automatic-wagon,509.0,509.0,6,1d 10h 55m39s,34.927,Active,qld,QLD,lot
-2026-05-11T23:07:23.589797+00:00,https://www.grays.com/lot/0001-50715730/motor-vehicles-motor-cycles/2015-mazda-cx-5-maxx-sport-ke-turbo-diesel-automatic-wagon,4500.0,4500.0,44,1d 10h 52m40s,34.878,Active,qld,QLD,lot
-2026-05-11T23:08:04.019717+00:00,https://www.grays.com/lot/0024-23500027/motor-vehicles-motor-cycles/2011-toyota-yaris-yr-petrol,3509.0,3509.0,46,10h 52m9s,10.869,Active,melbourne,MELBOURNE,lot
