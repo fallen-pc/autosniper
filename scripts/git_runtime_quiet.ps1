@@ -1,9 +1,9 @@
-$ErrorActionPreference = "Stop"
-
 param(
     [ValidateSet("quiet", "unquiet", "status")]
     [string]$Mode = "quiet"
 )
+
+$ErrorActionPreference = "Stop"
 
 $patterns = @(
     "CSV_data/scrapers/*.csv",
@@ -20,16 +20,15 @@ $patterns = @(
 )
 
 function Get-TrackedRuntimeFiles {
-    $files = @()
-    foreach ($pattern in $patterns) {
-        $matches = git ls-files -- $pattern
-        foreach ($match in $matches) {
-            if ($match) {
-                $files += $match
+    $tracked = @(git ls-files)
+    foreach ($file in $tracked) {
+        foreach ($pattern in $patterns) {
+            if ($file -like $pattern) {
+                $file
+                break
             }
         }
     }
-    $files | Sort-Object -Unique
 }
 
 $files = @(Get-TrackedRuntimeFiles)
@@ -40,18 +39,16 @@ if ($files.Count -eq 0) {
 }
 
 if ($Mode -eq "status") {
-    $skipped = git ls-files -v -- $files | Where-Object { $_ -match "^S " }
+    $skipped = @(git ls-files -v -- $files | Where-Object { $_ -match "^S " })
     Write-Host ("Tracked runtime files: {0}" -f $files.Count)
-    Write-Host ("Quieted with skip-worktree: {0}" -f @($skipped).Count)
+    Write-Host ("Quieted with skip-worktree: {0}" -f $skipped.Count)
     exit 0
 }
 
-foreach ($file in $files) {
-    if ($Mode -eq "quiet") {
-        git update-index --skip-worktree -- $file
-    } else {
-        git update-index --no-skip-worktree -- $file
-    }
+if ($Mode -eq "quiet") {
+    git update-index --skip-worktree -- $files
+} else {
+    git update-index --no-skip-worktree -- $files
 }
 
 if ($Mode -eq "quiet") {
