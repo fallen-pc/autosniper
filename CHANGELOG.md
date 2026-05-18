@@ -1,5 +1,8 @@
 # Changelog
 
+## 2026-05-18
+- Added a retail-only `225000` km bucket for the `2013` `toyota_corolla_ascent_zre182r_hatch_auto_petrol` curve from private Carsales Corolla Ascent hatch evidence, extending the high-km resale curve without using Grays sold prices for repricing.
+
 ## 2026-04-24
 - Added the Hyundai ix35 Elite LM base curve as `hyundai_ix35_elite_lm_wagon_auto_petrol` with `2010/2012/2014` anchors and the standard `30k/60k/100k/150k/200k` bucket grid, then wired the exact Elite LM match tag into the V2 group map and supported curve universe as a conservative family lane.
 - Added the Hyundai Getz SX TB manual base curve as `hyundai_getz_sx_tb_hatch_manual_petrol` with `2007/2009/2011` anchors and the standard `30k/60k/100k/150k/200k` bucket grid, then wired the exact SX TB manual match tag into the V2 group map and supported curve universe as a separate lane below the automatic curve.
