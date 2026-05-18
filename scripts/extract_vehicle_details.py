@@ -19,7 +19,7 @@ if __package__ in (None, ""):
     sys.path.append(str(Path(__file__).resolve().parent.parent))
     from scripts.atomic_csv import append_dataframe_csv_atomic, write_dataframe_csv_atomic
     from shared.data_loader import dataset_path
-    from shared.schema import SOLD_RAW_SCRAPE_COLUMNS, STATIC_VEHICLE_SCHEMA
+    from shared.schema import ACTIVE_DETAIL_SCHEMA, SOLD_RAW_SCRAPE_COLUMNS, STATIC_VEHICLE_SCHEMA
     from shared.sold_cleaning import (
         drop_invalid_odometer_rows,
         drop_invalid_years,
@@ -34,7 +34,7 @@ if __package__ in (None, ""):
 else:
     from scripts.atomic_csv import append_dataframe_csv_atomic, write_dataframe_csv_atomic
     from shared.data_loader import dataset_path
-    from shared.schema import SOLD_RAW_SCRAPE_COLUMNS, STATIC_VEHICLE_SCHEMA
+    from shared.schema import ACTIVE_DETAIL_SCHEMA, SOLD_RAW_SCRAPE_COLUMNS, STATIC_VEHICLE_SCHEMA
     from shared.sold_cleaning import (
         drop_invalid_odometer_rows,
         drop_invalid_years,
@@ -1098,7 +1098,7 @@ def seed_active_dataset(static_df: pd.DataFrame) -> None:
             if wovr_mask.any():
                 active_df = active_df.loc[~wovr_mask].copy()
     # Ensure required dynamic columns exist.
-    for column in ("time_remaining_or_date_sold", "price", "bids"):
+    for column in ("time_remaining_or_date_sold", "price", "bids", "date_sold"):
         if column not in active_df.columns:
             active_df[column] = ""
     # Preserve scraped status where present; default blanks to active.
@@ -1114,7 +1114,7 @@ def seed_active_dataset(static_df: pd.DataFrame) -> None:
         existing_active["_url_norm"] = _normalize_url(existing_active["url"])
         existing_active = existing_active.drop_duplicates(subset=["_url_norm"], keep="last")
         lookup = existing_active.set_index("_url_norm")
-        for column in ("time_remaining_or_date_sold", "price", "bids"):
+        for column in ("time_remaining_or_date_sold", "price", "bids", "date_sold"):
             if column not in active_df.columns:
                 active_df[column] = ""
             if column not in lookup.columns:
@@ -1127,11 +1127,12 @@ def seed_active_dataset(static_df: pd.DataFrame) -> None:
 
     dynamic_columns = [
         col
-        for col in ("status", "time_remaining_or_date_sold", "price", "bids")
+        for col in ("status", "time_remaining_or_date_sold", "price", "bids", "date_sold")
         if col not in base_columns
     ]
     ordered_columns = base_columns + dynamic_columns
     active_df = active_df.reindex(columns=ordered_columns, fill_value="")
+    active_df = active_df.reindex(columns=ACTIVE_DETAIL_SCHEMA, fill_value="")
     atomic_write(active_df, ACTIVE_OUTPUT_FILE)
 
 
@@ -1183,7 +1184,15 @@ def main(
 
     pending_links = [url for url in all_links if _normalize_url_value(url) not in processed_urls]
 
-    target_links = all_links if force_all else (pending_links or all_links)
+    if force_all:
+        target_links = all_links
+    else:
+        target_links = pending_links
+        if not target_links:
+            print(
+                "No pending vehicle details to extract; existing static and active datasets left unchanged."
+            )
+            return
     if batch_size is not None and batch_size > 0:
         target_links = target_links[:batch_size]
         print(

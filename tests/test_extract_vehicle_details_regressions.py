@@ -99,6 +99,35 @@ def test_seed_active_dataset_handles_duplicate_existing_urls(monkeypatch, tmp_pa
     evd.seed_active_dataset(static_df)
     out_df = pd.read_csv(active_output_path)
     assert len(out_df) == 2
+    assert "date_sold" in out_df.columns
+
+
+def test_extract_details_no_pending_links_leaves_outputs_unchanged(monkeypatch, tmp_path):
+    input_path = tmp_path / "active_vehicle_links.csv"
+    output_path = tmp_path / "vehicle_static_details.csv"
+    active_path = tmp_path / "active_vehicle_details.csv"
+    url = "https://example.com/a"
+
+    pd.DataFrame([{"url": url}]).to_csv(input_path, index=False)
+    pd.DataFrame([{"url": url, "make": "Toyota"}]).to_csv(output_path, index=False)
+    pd.DataFrame([{"url": url, "status": "active"}]).to_csv(active_path, index=False)
+
+    monkeypatch.setattr(evd, "INPUT_FILE", input_path)
+    monkeypatch.setattr(evd, "OUTPUT_FILE", output_path)
+    monkeypatch.setattr(evd, "ACTIVE_OUTPUT_FILE", active_path)
+
+    calls = {"process": 0}
+
+    def _process_links(_links):
+        calls["process"] += 1
+        return [], []
+
+    monkeypatch.setattr(evd, "process_links", _process_links)
+
+    evd.main()
+
+    assert calls["process"] == 0
+    assert pd.read_csv(output_path).to_dict("records") == [{"url": url, "make": "Toyota"}]
 
 
 def test_append_failure_log_dedupes_without_rewriting(monkeypatch, tmp_path):

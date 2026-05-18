@@ -2,7 +2,7 @@
 
 - AutoSniper is a private owner-operated buying tool. Audit and prioritization should follow safe private-use fitness, not commercial SaaS standards; see [DEC-009](../03_decisions/DEC-009-audit-for-private-owner-use.md).
 
-- The repo is broadly stable for active product work. Latest local validation after the most recent code changes: `.venv_local\Scripts\python.exe -m pytest -q` passed with `217` tests, and `python scripts/project_memory.py check` passed.
+- The repo is broadly stable for active product work. Latest local validation for the active-pipeline contract changes: focused pytest for link extraction, detail extraction, and readiness smoke tests passed; `python scripts/readiness_smoke.py`, `python scripts/governance_checks.py check`, and `python scripts/project_memory.py check` passed. The full pytest suite was attempted but timed out at 5 minutes and was stopped before completion.
 
 - The valuation path is now curve-first only. The old non-curve LLM pricing path has been removed, and current AI pricing behavior depends on saved curve coverage plus the active buying rules.
 
@@ -13,6 +13,8 @@
 - The current non-hard-avoid repair gate is intentionally looser than before. Moderate repair totals can still surface as `Marginal (repairs)` if the flip math works; mechanical and structural hard-stops still force `Avoid`.
 
 - Lifecycle handling is more robust. Listings previously marked terminal can reopen to `active` on fresh live evidence, which reduced stale state drift between `vehicle_state.csv` and the materialized active views.
+
+- Pipeline materialization is now queue-first for active listings. `active_vehicle_links.csv` is the unresolved active queue, `vehicle_static_details.csv` supplies static identity, and `vehicle_state.csv` enriches latest bid/lifecycle observations but does not need to say `state=active` for a queued static row to appear in `active_vehicle_details.csv`. Readiness now checks active rows against the active queue/static details and rejects only terminal state conflicts.
 
 - AI shortlist hygiene is stricter in the active-monitor path. Completed rows, rows without a live price, and WOVR/repairable rows are excluded before curve-coverage valuation so the hourly/AI loop stays focused on real shortlist candidates.
 

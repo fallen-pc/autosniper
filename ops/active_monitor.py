@@ -110,6 +110,8 @@ def _exclude_shortlist_ineligible_rows(active_df: pd.DataFrame) -> pd.DataFrame:
     if "price" in working.columns:
         price_numeric = working["price"].apply(parse_currency)
         working = working[price_numeric.notna()].copy()
+        if working.empty:
+            return working
 
     columns = [col for col in ("variant", "url") if col in working.columns]
     if columns:
