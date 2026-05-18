@@ -42,6 +42,13 @@ Classify which files are source-of-truth, which are generated runtime products, 
 4. Treat model binaries/predictions in `artifacts/` as release artifacts only if they are intentionally curated; otherwise untrack them.
 5. Avoid committing backup/copy/tmp/final style files anywhere in source directories.
 
+## Current Local Workflow
+Until the governed runtime dataset is moved to a separate backup/release
+channel, use `scripts/git_runtime_quiet.ps1` to hide normal local CSV churn from
+source-oriented `git status` output. Keep that local quieting separate from
+intentional data commits: unquiet first, stage explicit data paths, run
+governance checks, and commit artifacts separately from source changes.
+
 ## Decision rule for new files
 Before tracking a new data/artifact file, answer:
 1. Is it a source-of-truth input or approved governance history?
