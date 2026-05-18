@@ -4,6 +4,10 @@ This file is now a compatibility summary. The authoritative memory system lives 
 
 ## Start Here
 
+For manual new Codex chats, the shortest instruction is:
+
+> Refer to `AGENTS.md` in the AutoSniper repo and follow it for memory updates, verification, commits, and sync.
+
 Before non-trivial work:
 
 1. Prefer `.\scripts\start_ai_task.ps1 -TaskKind <kind> -Intent <read|write> ...` as the front door
