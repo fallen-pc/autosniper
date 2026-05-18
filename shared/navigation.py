@@ -45,7 +45,7 @@ def build_navigation() -> "OrderedDict[str, list[st.Page]]":
                 [
                     st.Page("pages/6_AI_ANALYSIS.py", title="AI Analysis"),
                     st.Page("pages/8_MODEL_ACCURACY.py", title="Model Accuracy"),
-                    st.Page("pages/8_REAUCTION_MONITOR.py", title="Reaction Monitor"),
+                    st.Page("pages/8_REAUCTION_MONITOR.py", title="Re-Auction Tracker"),
                 ],
             ),
             (

@@ -19,10 +19,10 @@ _BASE_STYLES = textwrap.dedent(
     """
     <style>
     :root {
-        --autosniper-bg: #0f1724;
-        --autosniper-surface: #121724;
-        --autosniper-panel: #1a2130;
-        --autosniper-highlight: #1a2130;
+        --autosniper-bg: #10141c;
+        --autosniper-surface: #151a23;
+        --autosniper-panel: #1b2230;
+        --autosniper-highlight: #202938;
         --autosniper-primary: #e6edf6;
         --autosniper-primary-dark: #b9c8dc;
         --autosniper-accent: #1fa6ff;
@@ -32,13 +32,13 @@ _BASE_STYLES = textwrap.dedent(
         --autosniper-success: #5ee6a7;
         --autosniper-warning: #ffa726;
         --autosniper-danger: #ff5a5f;
-        --autosniper-border: #263243;
-        --autosniper-shadow: rgba(0, 0, 0, 0.35);
+        --autosniper-border: #2d3748;
+        --autosniper-shadow: rgba(0, 0, 0, 0.22);
         --autosniper-banner-navy: #0f1724;
-        --autosniper-radius-sm: 10px;
-        --autosniper-radius-md: 12px;
-        --autosniper-radius-lg: 16px;
-        --autosniper-radius-xl: 20px;
+        --autosniper-radius-sm: 6px;
+        --autosniper-radius-md: 8px;
+        --autosniper-radius-lg: 8px;
+        --autosniper-radius-xl: 10px;
         --autosniper-space-1: 0.35rem;
         --autosniper-space-2: 0.6rem;
         --autosniper-space-3: 0.9rem;
@@ -47,7 +47,7 @@ _BASE_STYLES = textwrap.dedent(
         --autosniper-space-6: 1.5rem;
     }
     [data-testid="stAppViewContainer"] {
-        background: radial-gradient(circle at 20% -10%, rgba(31, 166, 255, 0.08), transparent 42%), radial-gradient(circle at 80% 0%, rgba(12, 139, 235, 0.1), transparent 52%), var(--autosniper-bg);
+        background: var(--autosniper-bg);
         color: var(--autosniper-text);
         font-family: "Segoe UI", Arial, sans-serif;
     }
@@ -55,29 +55,29 @@ _BASE_STYLES = textwrap.dedent(
         color: inherit;
     }
     [data-testid="stSidebar"] {
-        background: linear-gradient(185deg, #0c1f35 0%, #11345a 100%);
+        background: #111722;
         color: #f5f7fb;
         border-right: 1px solid rgba(31, 166, 255, 0.35);
-        box-shadow: 14px 0 26px rgba(0, 0, 0, 0.35);
+        box-shadow: 8px 0 18px rgba(0, 0, 0, 0.18);
     }
     [data-testid="stSidebar"] * {
         color: inherit;
     }
     .block-container {
-        padding-top: 1rem;
+        padding-top: 0.75rem;
         padding-bottom: 2rem;
     }
     h1, h2, h3 {
         color: var(--autosniper-primary);
-        margin-bottom: 1rem;
-        letter-spacing: -0.01em;
+        margin-bottom: 0.6rem;
+        letter-spacing: 0;
     }
     h1 {
-        font-size: clamp(2.4rem, 2.2vw + 1.6rem, 3rem);
+        font-size: 1.75rem;
         font-weight: 800;
     }
     h2 {
-        font-size: clamp(1.7rem, 1.5vw + 1.2rem, 2.2rem);
+        font-size: 1.35rem;
         font-weight: 700;
     }
     h3 {
@@ -94,12 +94,12 @@ _BASE_STYLES = textwrap.dedent(
         line-height: 1.55;
     }
     .autosniper-section {
-        background: linear-gradient(135deg, rgba(26, 33, 48, 0.96) 0%, rgba(18, 23, 36, 0.92) 100%);
+        background: rgba(22, 28, 38, 0.96);
         border-radius: var(--autosniper-radius-lg);
         border: 1px solid var(--autosniper-border);
-        box-shadow: 0 16px 36px rgba(0, 0, 0, 0.28);
-        padding: var(--autosniper-space-5);
-        margin-bottom: var(--autosniper-space-5);
+        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.16);
+        padding: var(--autosniper-space-4);
+        margin-bottom: var(--autosniper-space-4);
     }
     .autosniper-section .section-title {
         font-size: 1.2rem;
@@ -129,14 +129,14 @@ _BASE_STYLES = textwrap.dedent(
         padding: 0.7rem 1.35rem;
         font-weight: 700;
         letter-spacing: 0.04em;
-        box-shadow: 0 12px 28px rgba(12, 139, 235, 0.35);
+        box-shadow: none;
         transition: all 0.2s ease;
         opacity: 1 !important;
     }
     .stButton>button:hover {
         background: linear-gradient(135deg, var(--autosniper-accent-strong) 0%, var(--autosniper-accent) 100%);
         transform: translateY(-1px);
-        box-shadow: 0 16px 34px rgba(12, 139, 235, 0.45);
+        box-shadow: 0 8px 18px rgba(12, 139, 235, 0.24);
         color: #f6f9ff;
     }
     .stButton>button:disabled {
@@ -153,25 +153,28 @@ _BASE_STYLES = textwrap.dedent(
         padding: 0.65rem 1.1rem;
         font-weight: 700;
         letter-spacing: 0.04em;
-        box-shadow: 0 10px 22px rgba(12, 139, 235, 0.28);
+        box-shadow: none;
         opacity: 1 !important;
     }
     [data-testid="stSidebar"] .stButton>button:hover {
         background: linear-gradient(135deg, var(--autosniper-accent-strong) 0%, var(--autosniper-accent) 100%);
-        box-shadow: 0 12px 26px rgba(12, 139, 235, 0.35);
+        box-shadow: 0 8px 18px rgba(12, 139, 235, 0.22);
         color: #f6f9ff;
     }
     .autosniper-banner {
         display: flex;
-        justify-content: center;
-        margin: 0.75rem 0 1.25rem;
+        justify-content: flex-start;
+        margin: 0 0 0.65rem;
     }
     .autosniper-banner img {
-        width: min(100%, 1600px);
+        width: min(100%, 220px);
+        max-height: 96px;
         height: auto;
-        border-radius: 18px;
-        box-shadow: 0 18px 36px rgba(0, 0, 0, 0.32);
-        clip-path: inset(8px round 18px);
+        object-fit: contain;
+        object-position: left center;
+        border-radius: var(--autosniper-radius-md);
+        box-shadow: none;
+        clip-path: none;
     }
     .rail-logo {
         display: flex;
@@ -223,9 +226,9 @@ _BASE_STYLES = textwrap.dedent(
         overflow: hidden;
     }
     .stAlert {
-        border-radius: var(--autosniper-radius-lg);
+        border-radius: var(--autosniper-radius-md);
         border: 1px solid var(--autosniper-border);
-        box-shadow: 0 12px 26px rgba(0, 0, 0, 0.26);
+        box-shadow: none;
         background: rgba(31, 166, 255, 0.08);
         color: var(--autosniper-text);
     }
@@ -233,8 +236,8 @@ _BASE_STYLES = textwrap.dedent(
         border-radius: var(--autosniper-radius-md);
         border: 1px solid var(--autosniper-border);
         background: rgba(26, 33, 48, 0.9);
-        box-shadow: 0 12px 26px rgba(0, 0, 0, 0.22);
-        padding: 1rem;
+        box-shadow: none;
+        padding: 0.75rem;
     }
     [data-testid="stMetric"] > div {
         justify-content: flex-start;
@@ -603,81 +606,74 @@ _BASE_STYLES = textwrap.dedent(
         border: 1px solid var(--autosniper-border);
     }
     .page-intro {
-        background: linear-gradient(180deg, #050608 0%, #0c0f17 70%);
+        background: rgba(18, 23, 32, 0.94);
         border: 1px solid var(--autosniper-border);
-        border-radius: 18px;
-        padding: 1.25rem 1.4rem;
-        box-shadow: 0 18px 32px rgba(0, 0, 0, 0.35);
-        margin-bottom: 1rem;
-        text-align: center;
-        max-width: 960px;
-        margin-left: auto;
-        margin-right: auto;
+        border-radius: var(--autosniper-radius-lg);
+        padding: 0.85rem 1rem;
+        box-shadow: none;
+        margin: 0 0 0.85rem;
+        text-align: left;
+        max-width: none;
     }
     .page-intro h1 {
-        margin: 0 0 0.35rem 0;
-        font-size: clamp(2.1rem, 1.6vw + 1.6rem, 2.6rem);
-        text-align: center;
+        margin: 0 0 0.25rem 0;
+        font-size: 1.55rem;
+        text-align: left;
+        letter-spacing: 0;
+        text-transform: none;
     }
     .page-intro p {
         margin: 0;
         color: var(--autosniper-muted);
-        font-size: 1rem;
-        line-height: 1.55;
+        font-size: 0.95rem;
+        line-height: 1.4;
     }
     .hero-card {
-        background: linear-gradient(145deg, rgba(26, 33, 48, 0.98), rgba(10, 16, 28, 0.98));
+        background: rgba(22, 28, 38, 0.96);
         border: 1px solid rgba(44, 58, 79, 0.9);
-        border-radius: 24px;
-        box-shadow: 0 25px 55px rgba(0, 0, 0, 0.45);
-        padding: clamp(1.5rem, 2vw, 2.35rem) clamp(1.25rem, 2vw, 2.4rem) clamp(1.85rem, 2.2vw, 2.8rem);
-        text-align: center;
-        margin: 0 auto 1.6rem;
-        max-width: 980px;
+        border-radius: var(--autosniper-radius-lg);
+        box-shadow: none;
+        padding: 1rem;
+        text-align: left;
+        margin: 0 0 1rem;
+        max-width: none;
         position: relative;
         overflow: hidden;
     }
     .hero-card::after {
-        content: "";
-        position: absolute;
-        top: -20%;
-        right: -15%;
-        width: 320px;
-        height: 320px;
-        background: radial-gradient(circle, rgba(31, 166, 255, 0.18) 0%, transparent 70%);
-        z-index: 0;
+        content: none;
     }
     .hero-card > * {
         position: relative;
         z-index: 1;
     }
     .hero-card h1 {
-        margin-bottom: 0.9rem;
-        text-transform: uppercase;
+        margin-bottom: 0.45rem;
+        text-transform: none;
         font-weight: 800;
-        letter-spacing: 0.08em;
+        letter-spacing: 0;
     }
     .hero-card .hero-card-description {
         color: var(--autosniper-muted);
         margin: 0;
-        font-size: 1.05rem;
-        line-height: 1.6;
+        font-size: 0.95rem;
+        line-height: 1.45;
     }
     .hero-card .hero-card-actions {
         display: flex;
-        justify-content: center;
-        margin-bottom: 1rem;
+        justify-content: flex-start;
+        margin-bottom: 0.75rem;
     }
     .hero-card .hero-card-actions .stButton>button {
-        min-width: 220px;
-        border-radius: 999px;
+        min-width: 180px;
+        border-radius: var(--autosniper-radius-md);
         border: 1px solid rgba(255, 255, 255, 0.35);
         background: linear-gradient(135deg, #00aaff 0%, #0066cc 100%);
-        box-shadow: 0 18px 36px rgba(0, 0, 0, 0.45);
+        box-shadow: none;
     }
     /* New dark/blue theme overrides */
     .stApp {
-        background-color: #0A0A0C !important;
+        background-color: var(--autosniper-bg) !important;
     }
     .main .block-container {
         padding-top: 1rem;
@@ -685,8 +681,8 @@ _BASE_STYLES = textwrap.dedent(
         max-width: 1280px;
     }
     section[data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #0A0A0C 0%, #1A1A1C 60%, #0A0A0C 100%);
-        border-right: 1px solid #111319;
+        background: #111722;
+        border-right: 1px solid rgba(70, 95, 130, 0.35);
     }
     section[data-testid="stSidebar"] * {
         color: #E5E5E5 !important;
@@ -699,8 +695,9 @@ _BASE_STYLES = textwrap.dedent(
     }
     section[data-testid="stSidebar"] .stSelectbox,
     section[data-testid="stSidebar"] .stCheckbox,
-    section[data-testid="stSidebar"] .stSlider {
-        background-color: #1A1A1C !important;
+    section[data-testid="stSidebar"] .stSlider,
+    section[data-testid="stSidebar"] .stMultiSelect {
+        background-color: rgba(22, 28, 38, 0.72) !important;
         border-radius: var(--autosniper-radius-sm);
         padding: 6px 8px;
     }
@@ -717,6 +714,14 @@ _BASE_STYLES = textwrap.dedent(
         background: rgba(17, 22, 31, 0.92) !important;
         color: #E5E5E5 !important;
         box-shadow: none !important;
+    }
+    @media (max-width: 640px) {
+        .autosniper-banner {
+            display: none;
+        }
+        .page-intro {
+            margin-top: 0.25rem;
+        }
     }
     .stTextArea textarea {
         min-height: 120px;
@@ -1053,17 +1058,46 @@ def render_logo_centered(width: int = 340) -> None:
     )
 
 
-def page_intro(title: str, subtitle: str | None = None, *, show_logo: bool = True) -> None:
+_TITLE_ACRONYMS = {
+    "AI",
+    "CSV",
+    "URL",
+    "VIN",
+    "QA",
+    "V2",
+}
+
+
+def _display_title(title: str) -> str:
+    words = str(title).strip().split()
+    if not words:
+        return ""
+    if not all(word.upper() == word for word in words):
+        return title
+    formatted = []
+    for word in words:
+        cleaned = word.strip()
+        if cleaned in _TITLE_ACRONYMS:
+            formatted.append(cleaned)
+        elif "-" in cleaned:
+            formatted.append("-".join(part.capitalize() if part not in _TITLE_ACRONYMS else part for part in cleaned.split("-")))
+        else:
+            formatted.append(cleaned.capitalize())
+    return " ".join(formatted)
+
+
+def page_intro(title: str, subtitle: str | None = None, *, show_logo: bool = False) -> None:
     """Render a standard page intro panel."""
     inject_global_styles()
     if show_logo:
         render_logo_centered()
+    display_title = _display_title(title)
     subtitle_html = f"<p>{subtitle}</p>" if subtitle else ""
     st.markdown(
         clean_html(
             f"""
             <div class="page-intro">
-                <h1>{title}</h1>
+                <h1>{display_title}</h1>
                 {subtitle_html}
             </div>
             """
@@ -1139,8 +1173,8 @@ def _load_banner_base64(width: int, image_path: Path) -> str | None:
     return encoded
 
 
-def display_banner(width: int = 1600, image_path: Optional[str | Path] = None) -> None:
-    """Render the wide banner if available."""
+def display_banner(width: int = 220, image_path: Optional[str | Path] = None) -> None:
+    """Render a compact brand mark if available."""
     banner_path = Path(image_path) if image_path is not None else Path("shared/banner.png")
     encoded = _load_banner_base64(width, banner_path)
     if not encoded:
@@ -1148,7 +1182,7 @@ def display_banner(width: int = 1600, image_path: Optional[str | Path] = None) -
     inject_global_styles()
     st.markdown(
         f"""
-        <div class="autosniper-banner" style="margin-top:0.75rem;margin-bottom:1.25rem;">
+        <div class="autosniper-banner">
             <img src="data:image/png;base64,{encoded}" alt="AutoSniper Banner"
                  style="width:min(100%, {width}px); height:auto;" />
         </div>

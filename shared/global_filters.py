@@ -130,7 +130,8 @@ def render_global_sidebar_filters() -> None:
     for key, default_value in DEFAULT_FILTERS.items():
         st.session_state.setdefault(key, default_value)
 
-    source_df = _load_sidebar_filter_source()
+    with st.sidebar, st.spinner("Preparing filters..."):
+        source_df = _load_sidebar_filter_source()
     state_options = []
     vehicle_type_options = []
     if not source_df.empty:
@@ -146,30 +147,30 @@ def render_global_sidebar_filters() -> None:
         )
 
     st.sidebar.markdown("---")
-    st.sidebar.markdown("### Global Filters")
-    st.sidebar.caption("Applied across dashboard, AI analysis, missed opportunities, and radar.")
-    st.sidebar.multiselect(
-        "State",
-        options=state_options,
-        key=STATE_KEY,
-    )
-    st.sidebar.multiselect(
-        "Vehicle Type",
-        options=vehicle_type_options,
-        key=VEHICLE_TYPE_KEY,
-    )
-    st.sidebar.slider(
-        "Margin Threshold %",
-        min_value=0.0,
-        max_value=40.0,
-        step=1.0,
-        key=MARGIN_KEY,
-    )
-    st.sidebar.selectbox(
-        "Curve Coverage",
-        options=CURVE_OPTIONS,
-        key=CURVE_KEY,
-    )
+    with st.sidebar.expander("Global Filters", expanded=False):
+        st.caption("Applies to dashboard, radar, AI analysis, and missed opportunities.")
+        st.multiselect(
+            "State",
+            options=state_options,
+            key=STATE_KEY,
+        )
+        st.multiselect(
+            "Vehicle Type",
+            options=vehicle_type_options,
+            key=VEHICLE_TYPE_KEY,
+        )
+        st.slider(
+            "Margin Threshold %",
+            min_value=0.0,
+            max_value=40.0,
+            step=1.0,
+            key=MARGIN_KEY,
+        )
+        st.selectbox(
+            "Curve Coverage",
+            options=CURVE_OPTIONS,
+            key=CURVE_KEY,
+        )
 
 
 def get_global_filter_values() -> dict[str, object]:
