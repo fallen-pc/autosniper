@@ -18,6 +18,25 @@ ACTIONABLE_BID_STATUSES = {"Cheap", "Below expected", "Open"}
 NO_BUY_BID_STATUSES = {"Over max", "At ceiling"}
 ACTIONABLE_HARD_MAX_SAFETY = {"Strong", "Conditional"}
 
+ACTION_DISPLAY_COPY = {
+    ACTION_BUY: (
+        ACTION_BUY,
+        "Bid-ready: profit, bid room, and max-bid safety all clear.",
+    ),
+    ACTION_WATCH: (
+        ACTION_WATCH,
+        "Watch only: positive signal, but not bid-ready yet.",
+    ),
+    ACTION_AVOID: (
+        ACTION_AVOID,
+        "No bid: fails profit, bid status, or safety.",
+    ),
+    ACTION_REVIEW: (
+        ACTION_REVIEW,
+        "Manual check: missing or incomplete valuation context.",
+    ),
+}
+
 
 @dataclass(frozen=True)
 class DecisionPolicyInput:
@@ -69,3 +88,18 @@ def derive_action_label(policy_input: DecisionPolicyInput) -> str:
     ):
         return ACTION_BUY
     return ACTION_WATCH
+
+
+def action_display_parts(action: object) -> tuple[str, str]:
+    """Return the operator-facing label and explanation for an action value."""
+
+    action_text = str(action or "").strip()
+    if not action_text or action_text.lower() in {"nan", "none", "n/a"}:
+        action_text = ACTION_REVIEW
+    return ACTION_DISPLAY_COPY.get(
+        action_text,
+        (
+            action_text,
+            "Manual check: action is not one of the standard policy labels.",
+        ),
+    )

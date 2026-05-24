@@ -15,6 +15,7 @@ from shared.curves import (
     resolve_curve_canonical_tag,
 )
 from shared.data_loader import dataset_path, ensure_datasets_available
+from shared.decision_policy import action_display_parts
 from shared.global_filters import apply_global_sidebar_filters, render_global_sidebar_filters
 from shared.parts_cost import estimate_parts_cost
 from shared.repair_features import build_repair_features, serialize_tags
@@ -200,13 +201,14 @@ def confidence_badges_html(curve_status: str, miss_status: str, risk_status: str
 def sold_action_parts(row: pd.Series) -> tuple[str, str, str]:
     action_label = safe_text(row.get("action_label"), "").strip()
     if action_label in {"Buy", "Watch", "Avoid", "Review"}:
+        action_display, action_detail = action_display_parts(action_label)
         if action_label == "Buy":
-            return "Buy", "Good historical deal", "verdict-good"
+            return action_display, action_detail, "verdict-good"
         if action_label == "Watch":
-            return "Watch", "Positive but constrained", "verdict-marginal"
+            return action_display, action_detail, "verdict-marginal"
         if action_label == "Avoid":
-            return "Avoid", "No buy", "verdict-avoid"
-        return "Review", "Needs manual check", "verdict-marginal"
+            return action_display, action_detail, "verdict-avoid"
+        return action_display, action_detail, "verdict-marginal"
     missed = bool(row.get("missed"))
     profit = _to_float(row.get("projected_profit_at_sold"))
     sold_price = _to_float(row.get("sold_price"))

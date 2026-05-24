@@ -25,6 +25,7 @@ from shared.curves import (
     resolve_curve_canonical_tag,
 )
 from shared.data_loader import dataset_path, ensure_datasets_available
+from shared.decision_policy import action_display_parts
 from shared.global_filters import apply_global_sidebar_filters, render_global_sidebar_filters
 from shared.location_utils import extract_state
 from shared.repair_features import build_repair_features
@@ -517,7 +518,11 @@ def _map_verdict_label(verdict: str) -> tuple[str, str]:
 
 
 def _display_action_label(action: object) -> str:
-    return _safe_text(action, fallback="Review").strip()
+    return action_display_parts(action)[0]
+
+
+def _display_action_detail(action: object) -> str:
+    return action_display_parts(action)[1]
 
 
 def _display_profit_label(label: object) -> str:
@@ -3617,7 +3622,7 @@ def render_listing_card(row: pd.Series) -> None:
             _build_signal_tile(
                 "Action",
                 action_label,
-                f"Verdict context: {verdict_label}",
+                f"{_display_action_detail(row.get('action_label'))} Verdict: {verdict_label}.",
                 _signal_tone(action_label),
             ),
             _build_signal_tile(
