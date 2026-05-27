@@ -378,9 +378,17 @@ def _wait_for_internet(max_wait_hours: int) -> bool:
         time.sleep(CHECK_INTERVAL_SECONDS)
 
 
+def _existing_lock_ttl_hours() -> int:
+    try:
+        payload = json.loads(LOCK_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        return max(max(LOCK_TTLS.values(), default=4), 4)
+    owner_job = str(payload.get("job") or "").strip()
+    return LOCK_TTLS.get(owner_job, max(max(LOCK_TTLS.values(), default=4), 4))
+
+
 def _acquire_lock(job: str) -> bool:
     LOCK_PATH.parent.mkdir(parents=True, exist_ok=True)
-    ttl_hours = LOCK_TTLS.get(job, 4)
     while True:
         try:
             fd = os.open(str(LOCK_PATH), os.O_CREAT | os.O_EXCL | os.O_WRONLY)
@@ -396,6 +404,7 @@ def _acquire_lock(job: str) -> bool:
                 age = time.time() - LOCK_PATH.stat().st_mtime
             except FileNotFoundError:
                 continue
+            ttl_hours = _existing_lock_ttl_hours()
             if age > ttl_hours * 3600:
                 try:
                     LOCK_PATH.unlink()

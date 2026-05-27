@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
+import time
 from datetime import date, datetime, timezone
 
 import pandas as pd
@@ -345,6 +347,18 @@ def test_should_catch_up_after_daily_grace_window(monkeypatch, tmp_path) -> None
 
     assert should_run is True
     assert coverage_date == date(2026, 4, 24)
+
+
+def test_hourly_does_not_expire_active_daily_lock(monkeypatch, tmp_path) -> None:
+    lock_path = tmp_path / "scrape.lock"
+    lock_path.write_text(json.dumps({"job": "daily", "started_at": time.time()}), encoding="utf-8")
+    three_hours_ago = time.time() - (3 * 3600)
+    os.utime(lock_path, (three_hours_ago, three_hours_ago))
+
+    monkeypatch.setattr(scheduled_jobs, "LOCK_PATH", lock_path)
+
+    assert scheduled_jobs._acquire_lock("hourly-monitor") is False
+    assert json.loads(lock_path.read_text(encoding="utf-8"))["job"] == "daily"
 
 
 def test_main_runs_daily_catchup_before_hourly(monkeypatch) -> None:
