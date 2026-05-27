@@ -20,11 +20,22 @@ if (-not (Test-Path $hourlyCmd)) {
 $dailyTaskName = "$TaskPrefix Daily Pipeline"
 $hourlyTaskName = "$TaskPrefix Hourly Active Monitor"
 
-$dailyCommand = "cmd.exe /c `"$dailyCmd`""
-$hourlyCommand = "cmd.exe /c `"$hourlyCmd`""
+$user = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+$dailyTrigger = New-ScheduledTaskTrigger -Daily -At $DailyTime
+$hourlyTrigger = New-ScheduledTaskTrigger -Once -At (Get-Date).Date.AddMinutes(13) -RepetitionInterval (New-TimeSpan -Hours 1)
+$settings = New-ScheduledTaskSettingsSet `
+    -AllowStartIfOnBatteries `
+    -DontStopIfGoingOnBatteries `
+    -ExecutionTimeLimit (New-TimeSpan -Hours 72) `
+    -MultipleInstances IgnoreNew `
+    -StartWhenAvailable
+$principal = New-ScheduledTaskPrincipal -UserId $user -LogonType Interactive
 
-schtasks /Create /TN $dailyTaskName /TR $dailyCommand /SC DAILY /ST $DailyTime /F | Out-Null
-schtasks /Create /TN $hourlyTaskName /TR $hourlyCommand /SC HOURLY /MO 1 /F | Out-Null
+$dailyAction = New-ScheduledTaskAction -Execute "cmd.exe" -Argument "/c `"$dailyCmd`"" -WorkingDirectory $root
+$hourlyAction = New-ScheduledTaskAction -Execute "cmd.exe" -Argument "/c `"$hourlyCmd`"" -WorkingDirectory $root
+
+Register-ScheduledTask -TaskName $dailyTaskName -Action $dailyAction -Trigger $dailyTrigger -Settings $settings -Principal $principal -Force | Out-Null
+Register-ScheduledTask -TaskName $hourlyTaskName -Action $hourlyAction -Trigger $hourlyTrigger -Settings $settings -Principal $principal -Force | Out-Null
 
 Write-Host "Registered scheduled tasks:"
 Write-Host "- $dailyTaskName at $DailyTime daily"
