@@ -2663,9 +2663,63 @@ st.markdown(
         .card-metrics {
             margin-top: 0.5rem;
             display: grid;
-            grid-template-columns: repeat(5, minmax(0, 1fr));
-            gap: 0.5rem;
+            grid-template-columns: minmax(220px, 1fr) minmax(260px, 1.35fr) minmax(220px, 1fr);
+            gap: 0.65rem;
             align-items: stretch;
+        }
+        .metric-group {
+            border-radius: 12px;
+            padding: 0.62rem 0.72rem 0.68rem;
+            background: rgba(8, 12, 18, 0.72);
+            border: 1px solid rgba(39, 182, 255, 0.22);
+            border-left: 3px solid rgba(39, 182, 255, 0.65);
+            min-height: 126px;
+        }
+        .metric-group.money-group {
+            border-left-color: rgba(44, 255, 154, 0.72);
+        }
+        .metric-group.context-group {
+            border-left-color: rgba(255, 179, 71, 0.68);
+        }
+        .metric-group-title {
+            margin-bottom: 0.46rem;
+            font-size: 0.58rem;
+            line-height: 1;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            color: rgba(255, 255, 255, 0.58);
+        }
+        .metric-group-items {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.46rem 0.62rem;
+        }
+        .metric-group.auction-group .metric-group-items,
+        .metric-group.context-group .metric-group-items {
+            grid-template-columns: 1fr;
+        }
+        .metric-item {
+            min-width: 0;
+            padding-top: 0.36rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .metric-item.primary {
+            padding: 0.36rem 0.44rem 0.42rem;
+            border: 1px solid rgba(39, 182, 255, 0.34);
+            border-radius: 8px;
+            background: rgba(39, 182, 255, 0.07);
+        }
+        .metric-item.price-up {
+            border-color: rgba(44, 255, 154, 0.5);
+            background: rgba(44, 255, 154, 0.08);
+        }
+        .metric-item.price-down {
+            border-color: rgba(255, 179, 71, 0.52);
+            background: rgba(255, 179, 71, 0.08);
+        }
+        .metric-item.price-flat {
+            border-color: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.035);
         }
         .metric-box {
             background: rgba(8, 12, 18, 0.65);
@@ -2685,10 +2739,13 @@ st.markdown(
             margin-bottom: 0.14rem;
         }
         .metric-value {
-            font-size: 1.18rem;
+            font-size: 1rem;
             font-weight: 800;
             color: var(--autosniper-primary);
             line-height: 1.05;
+        }
+        .metric-item.primary .metric-value {
+            font-size: 1.16rem;
         }
         .metric-box.primary .metric-value {
             font-size: 1.18rem;
@@ -2896,10 +2953,13 @@ st.markdown(
                 white-space: normal;
             }
             .card-metrics {
-                grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+                grid-template-columns: 1fr;
             }
             .decision-signal-row {
                 grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            }
+            .metric-group.money-group .metric-group-items {
+                grid-template-columns: 1fr;
             }
         }
         </style>
@@ -3334,6 +3394,32 @@ def _build_metric_box_with_sub(
     )
 
 
+def _build_metric_item(label: str, value: str, subtext: Optional[str] = None, class_name: Optional[str] = None) -> str:
+    sub_html = f'<div class="metric-sub">{html.escape(subtext)}</div>' if subtext else ""
+    class_attr = f"metric-item {class_name}".strip() if class_name else "metric-item"
+    return "".join(
+        [
+            f'<div class="{class_attr}">',
+            f'<div class="metric-label">{html.escape(label)}</div>',
+            f'<div class="metric-value">{html.escape(value)}</div>',
+            sub_html,
+            "</div>",
+        ]
+    )
+
+
+def _build_metric_group(title: str, items: list[str], class_name: str) -> str:
+    return "".join(
+        [
+            f'<div class="metric-group {html.escape(class_name)}">',
+            f'<div class="metric-group-title">{html.escape(title)}</div>',
+            '<div class="metric-group-items">',
+            "".join(items),
+            "</div>",
+            "</div>",
+        ]
+    )
+
 def _format_age_minutes(minutes: float) -> str:
     if minutes < 1:
         return "just now"
@@ -3677,17 +3763,35 @@ def render_listing_card(row: pd.Series) -> None:
             "</div>",
             signal_row_html,
             '<div class="card-metrics">',
-            _build_metric_box("Current price", current_price_display),
-            _build_metric_box_with_sub("Price update", price_update_value, price_update_sub, price_update_class),
-            _build_metric_box("Time left", time_left_display),
-            _build_metric_box_with_sub("Raw margin now", current_profit_display, current_profit_label),
-            _build_metric_box_with_sub("Expected finish", expected_auction_display, expected_finish_status),
-            _build_metric_box_with_sub("Profit at expected finish", expected_profit_display, expected_profit_label),
-            _build_metric_box_with_sub("Max bid limit", max_bid_display, hard_max_safety),
-            _build_metric_box("Difficulty", flip_difficulty),
-            _build_metric_box("Expected resale", resale_display),
-            _build_metric_box("Profit %", profit_pct_display),
-            _build_metric_box("Score /100", score_100_display),
+            _build_metric_group(
+                "Live auction",
+                [
+                    _build_metric_item("Current price", current_price_display, class_name="primary"),
+                    _build_metric_item("Price update", price_update_value, price_update_sub, price_update_class),
+                    _build_metric_item("Time left", time_left_display),
+                ],
+                "auction-group",
+            ),
+            _build_metric_group(
+                "Deal maths",
+                [
+                    _build_metric_item("Raw margin now", current_profit_display, current_profit_label, "primary"),
+                    _build_metric_item("Expected finish", expected_auction_display, expected_finish_status),
+                    _build_metric_item("Profit at expected finish", expected_profit_display, expected_profit_label),
+                    _build_metric_item("Max bid limit", max_bid_display, hard_max_safety),
+                ],
+                "money-group",
+            ),
+            _build_metric_group(
+                "Model context",
+                [
+                    _build_metric_item("Difficulty", flip_difficulty),
+                    _build_metric_item("Expected resale", resale_display),
+                    _build_metric_item("Profit %", profit_pct_display),
+                    _build_metric_item("Score /100", score_100_display),
+                ],
+                "context-group",
+            ),
             "</div>",
             '<div class="chip-row">',
             f'<span class="{km_chip_class}">{html.escape(km_label)}</span>',

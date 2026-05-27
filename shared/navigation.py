@@ -5,64 +5,103 @@ from collections import OrderedDict
 import streamlit as st
 
 
-def build_navigation() -> "OrderedDict[str, list[st.Page]]":
-    # Keep the current page scripts intact and define the sidebar explicitly here.
+NavigationSpec = "OrderedDict[str, list[tuple[str, str, bool]]]"
+
+
+def navigation_spec() -> NavigationSpec:
     return OrderedDict(
         [
             (
                 "SYSTEM",
                 [
-                    st.Page("DASHBOARD.py", title="Dashboard", default=True),
-                    st.Page("pages/00_RADAR.py", title="Radar"),
-                    st.Page("pages/3_ACTIVE_LISTINGS.py", title="Active Listings"),
-                    st.Page("pages/01_EXCEPTIONS.py", title="Exceptions"),
+                    ("DASHBOARD.py", "Dashboard", True),
+                    ("pages/00_RADAR.py", "Radar", False),
+                    ("pages/3_ACTIVE_LISTINGS.py", "Active Listings", False),
+                    ("pages/01_EXCEPTIONS.py", "Exceptions", False),
                     # Existing drill-down flow relies on this page being routable.
-                    st.Page("pages/02_DETAIL.py", title="Listing Detail"),
+                    ("pages/02_DETAIL.py", "Listing Detail", False),
                 ],
             ),
             (
                 "PIPELINE",
                 [
-                    st.Page("pages/1_LINK_EXTRACTOR.py", title="Link Extractor"),
-                    st.Page("pages/2_VEHICLE_DETAIL_EXTRACTOR.py", title="Detail Extractor"),
-                    st.Page("pages/12_GRAYS_PIPELINE.py", title="Grays Pipeline"),
-                    st.Page("pages/05_HEALTH.py", title="Health"),
+                    ("pages/1_LINK_EXTRACTOR.py", "Link Extractor", False),
+                    ("pages/2_VEHICLE_DETAIL_EXTRACTOR.py", "Detail Extractor", False),
+                    ("pages/12_GRAYS_PIPELINE.py", "Grays Pipeline", False),
+                    ("pages/05_HEALTH.py", "Health", False),
                 ],
             ),
             (
                 "VALUATION",
                 [
-                    st.Page("pages/03_CURVES.py", title="Curves"),
-                    st.Page("pages/13_CURVE_BUILDER.py", title="Curve Builder"),
-                    st.Page("pages/15_CURVE_BUILDER_V2.py", title="Curve Builder V2"),
-                    st.Page("pages/14_CURVE_PIPELINE.py", title="Curve Pipeline"),
-                    st.Page("pages/04_MAPPINGS.py", title="Mappings"),
-                    st.Page("pages/4_MASTER_DATABASE.py", title="Master Database"),
+                    ("pages/03_CURVES.py", "Curves", False),
+                    ("pages/13_CURVE_BUILDER.py", "Curve Builder", False),
+                    ("pages/15_CURVE_BUILDER_V2.py", "Curve Builder V2", False),
+                    ("pages/14_CURVE_PIPELINE.py", "Curve Pipeline", False),
+                    ("pages/04_MAPPINGS.py", "Mappings", False),
+                    ("pages/4_MASTER_DATABASE.py", "Master Database", False),
                 ],
             ),
             (
                 "AI",
                 [
-                    st.Page("pages/6_AI_ANALYSIS.py", title="AI Analysis"),
-                    st.Page("pages/8_MODEL_ACCURACY.py", title="Model Accuracy"),
-                    st.Page("pages/8_REAUCTION_MONITOR.py", title="Re-Auction Tracker"),
+                    ("pages/6_AI_ANALYSIS.py", "AI Analysis", False),
+                    ("pages/8_MODEL_ACCURACY.py", "Model Accuracy", False),
+                    ("pages/8_REAUCTION_MONITOR.py", "Re-Auction Tracker", False),
                 ],
             ),
             (
                 "INTELLIGENCE",
                 [
-                    st.Page("pages/8_MISSED_OPPORTUNITIES.py", title="Missed Opportunities"),
-                    st.Page("pages/16_VALUATION_CALIBRATION.py", title="Valuation Calibration"),
-                    st.Page("pages/10_BIDDER_INSIGHTS.py", title="Bidder Insights"),
-                    st.Page("pages/9_VEHICLE_REPAIRS.py", title="Vehicle Repairs"),
+                    ("pages/8_MISSED_OPPORTUNITIES.py", "Missed Opportunities", False),
+                    ("pages/16_VALUATION_CALIBRATION.py", "Valuation Calibration", False),
+                    ("pages/10_BIDDER_INSIGHTS.py", "Bidder Insights", False),
+                    ("pages/9_VEHICLE_REPAIRS.py", "Vehicle Repairs", False),
                 ],
             ),
             (
                 "COVERAGE",
                 [
-                    st.Page("pages/11_TOYOTA_COVERAGE.py", title="Toyota Coverage"),
-                    st.Page("pages/7_AUTOTRADER_SCRAPER.py", title="Autotrader Scraper"),
+                    ("pages/11_TOYOTA_COVERAGE.py", "Toyota Coverage", False),
+                    ("pages/7_AUTOTRADER_SCRAPER.py", "Autotrader Scraper", False),
                 ],
             ),
         ]
     )
+
+
+def build_navigation() -> "OrderedDict[str, list[st.Page]]":
+    # Keep the current page scripts intact and define the sidebar explicitly here.
+    pages: "OrderedDict[str, list[st.Page]]" = OrderedDict()
+    for group, entries in navigation_spec().items():
+        pages[group] = [
+            st.Page(path, title=title, default=default)
+            for path, title, default in entries
+        ]
+    return pages
+
+
+def render_sidebar_navigation(pages: "OrderedDict[str, list[st.Page]]") -> None:
+    st.sidebar.markdown(
+        """
+        <style>
+        .autosniper-nav-group {
+            margin: 0.78rem 0 0.18rem;
+            font-size: 0.66rem;
+            font-weight: 800;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: rgba(229, 229, 229, 0.52);
+        }
+        section[data-testid="stSidebar"] [data-testid="stPageLink"] a {
+            padding: 0.32rem 0.52rem;
+            border-radius: 8px;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+    for group, entries in pages.items():
+        st.sidebar.markdown(f"<div class='autosniper-nav-group'>{group}</div>", unsafe_allow_html=True)
+        for page in entries:
+            st.sidebar.page_link(page, label=page.title)

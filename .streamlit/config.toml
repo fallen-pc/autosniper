@@ -7,3 +7,6 @@ font = "sans serif"
 
 [server]
 fileWatcherType = "poll"
+
+[client]
+showSidebarNavigation = false
