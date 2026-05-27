@@ -37,6 +37,12 @@ autotrader/output/
 autotrader_isolated/output/
 output/
 outputs/
+CSV_data/archives/active_snapshots/
+CSV_data/archives/sold_backups/
+CSV_data/model_audit/
+CSV_data/restricted/audit/
+CSV_data/scrapers/*.backup*.csv
+CSV_data/scrapers/active_snapshots.csv
 .pytest_cache/
 __pycache__/
 *.py[cod]

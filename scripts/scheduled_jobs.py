@@ -14,6 +14,7 @@ from zoneinfo import ZoneInfo
 
 import pandas as pd
 import requests
+from playwright.async_api import Error as PlaywrightError, async_playwright
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 if str(ROOT_DIR) not in sys.path:
@@ -40,6 +41,11 @@ GOVERNANCE_REPORT_DIR = ROOT_DIR / "output" / "governance"
 METRICS_PATH = ROOT_DIR / "status" / "metrics.json"
 DAILY_STATE_PATH = ROOT_DIR / "status" / "daily_run_state.json"
 RUNTIME_BACKUP_SCRIPT = ROOT_DIR / "scripts" / "backup_runtime_data.ps1"
+PLAYWRIGHT_MISSING_BROWSER_MARKERS = (
+    "executable doesn't exist",
+    "please run the following command to download new browsers",
+    "playwright install",
+)
 
 LOCK_PATH = ROOT_DIR / "logs" / "scrape.lock"
 LOCK_TTLS = {
@@ -55,6 +61,70 @@ COMPLETED_STATUSES = {"sold", "referred", "canceled", "cancelled", "closed"}
 
 def _env_flag_enabled(name: str) -> bool:
     return str(os.getenv(name) or "").strip().lower() in {"1", "true", "yes", "y", "on"}
+
+
+def _env_flag_disabled(name: str) -> bool:
+    return str(os.getenv(name) or "").strip().lower() in {"0", "false", "no", "n", "off"}
+
+
+async def _probe_playwright_chromium() -> None:
+    async with async_playwright() as playwright:
+        browser = await playwright.chromium.launch(headless=True)
+        await browser.close()
+
+
+def _is_missing_playwright_browser_error(exc: BaseException) -> bool:
+    message = str(exc).lower()
+    return any(marker in message for marker in PLAYWRIGHT_MISSING_BROWSER_MARKERS)
+
+
+def _ensure_playwright_chromium_available() -> None:
+    try:
+        asyncio.run(_probe_playwright_chromium())
+        return
+    except PlaywrightError as exc:
+        if not _is_missing_playwright_browser_error(exc):
+            raise
+        if _env_flag_disabled("AUTOSNIPER_PLAYWRIGHT_AUTO_INSTALL"):
+            raise RuntimeError(
+                "Playwright Chromium is missing. Run "
+                f"`{sys.executable} -m playwright install chromium` or set "
+                "AUTOSNIPER_PLAYWRIGHT_AUTO_INSTALL=1 to allow scheduled jobs to repair it."
+            ) from exc
+
+    command = [sys.executable, "-m", "playwright", "install", "chromium"]
+    print("Playwright Chromium is missing; installing before starting scheduled scrape work.")
+    try:
+        subprocess.run(command, check=True)
+    except subprocess.CalledProcessError as exc:
+        raise RuntimeError(
+            "Playwright Chromium is missing and automatic installation failed. "
+            f"Run `{' '.join(command)}` manually and retry the scheduled job."
+        ) from exc
+
+    try:
+        asyncio.run(_probe_playwright_chromium())
+    except PlaywrightError as exc:
+        raise RuntimeError(
+            "Playwright Chromium installation completed, but the browser still cannot launch."
+        ) from exc
+
+
+def _run_playwright_preflight(job: str) -> None:
+    try:
+        _ensure_playwright_chromium_available()
+    except Exception as exc:
+        error_message = f"{type(exc).__name__}: {exc}"
+        write_scraper_health_report(job_name=job, job_status="failure", error_message=error_message)
+        if job == "daily":
+            _record_daily_run_finish(
+                trigger="scheduled",
+                coverage_date_local=_coverage_date_for_explicit_daily_run(),
+                success=False,
+                error_message=error_message,
+            )
+        _send_job_failure_alert(job, error_message)
+        raise
 
 
 def _run_runtime_backup_if_configured() -> None:
@@ -585,6 +655,8 @@ def main() -> None:
         write_scraper_health_report(job_name=args.job, job_status="failure", error_message=message)
         _send_job_failure_alert(args.job, message)
         return
+
+    _run_playwright_preflight(args.job)
 
     if args.job not in {"daily", "daily-smoke"} and _run_missed_daily_catchup_if_due(args.job):
         return

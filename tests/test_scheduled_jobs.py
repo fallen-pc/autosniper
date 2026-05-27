@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 import sys
 from datetime import date, datetime, timezone
 
@@ -220,6 +221,70 @@ def test_runtime_backup_can_include_autotrader_session(monkeypatch, tmp_path) ->
     scheduled_jobs._run_runtime_backup_if_configured()
 
     assert calls[0][-1] == "-IncludeAutotraderSession"
+
+
+def test_playwright_preflight_installs_missing_chromium(monkeypatch) -> None:
+    calls: list[object] = []
+
+    monkeypatch.setattr(scheduled_jobs, "PlaywrightError", RuntimeError)
+
+    async def probe() -> None:
+        calls.append("probe")
+        if calls.count("probe") == 1:
+            raise RuntimeError("Executable doesn't exist at chromium.exe. Please run playwright install")
+
+    monkeypatch.setattr(scheduled_jobs, "_probe_playwright_chromium", probe)
+    monkeypatch.setattr(
+        scheduled_jobs.subprocess,
+        "run",
+        lambda command, check: calls.append(("install", command, check)),
+    )
+
+    scheduled_jobs._ensure_playwright_chromium_available()
+
+    assert calls == [
+        "probe",
+        ("install", [sys.executable, "-m", "playwright", "install", "chromium"], True),
+        "probe",
+    ]
+
+
+def test_playwright_preflight_can_fail_fast_when_auto_install_disabled(monkeypatch) -> None:
+    monkeypatch.setenv("AUTOSNIPER_PLAYWRIGHT_AUTO_INSTALL", "0")
+    monkeypatch.setattr(scheduled_jobs, "PlaywrightError", RuntimeError)
+
+    async def probe() -> None:
+        raise RuntimeError("Executable doesn't exist at chromium.exe")
+
+    monkeypatch.setattr(scheduled_jobs, "_probe_playwright_chromium", probe)
+
+    try:
+        scheduled_jobs._ensure_playwright_chromium_available()
+    except RuntimeError as exc:
+        assert "Playwright Chromium is missing" in str(exc)
+    else:
+        raise AssertionError("Expected missing Chromium to fail fast when auto-install is disabled")
+
+
+def test_playwright_preflight_reports_install_failure(monkeypatch) -> None:
+    monkeypatch.setattr(scheduled_jobs, "PlaywrightError", RuntimeError)
+
+    async def probe() -> None:
+        raise RuntimeError("Executable doesn't exist at chromium.exe")
+
+    monkeypatch.setattr(scheduled_jobs, "_probe_playwright_chromium", probe)
+
+    def fail_install(command, check):
+        raise subprocess.CalledProcessError(1, command)
+
+    monkeypatch.setattr(scheduled_jobs.subprocess, "run", fail_install)
+
+    try:
+        scheduled_jobs._ensure_playwright_chromium_available()
+    except RuntimeError as exc:
+        assert "automatic installation failed" in str(exc)
+    else:
+        raise AssertionError("Expected install failure to be reported clearly")
 
 
 def test_explicit_daily_run_counts_today_even_before_schedule(monkeypatch) -> None:
