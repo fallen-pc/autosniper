@@ -155,6 +155,115 @@ def recommended_max_bid_value(row: Mapping[str, Any]) -> float | None:
     )
 
 
+def economic_max_bid_value(row: Mapping[str, Any]) -> float | None:
+    """Return the pre-policy economic max bid, falling back to the policy bid."""
+    return first_currency_value(
+        row.get("economic_max_bid"),
+        row.get("economic_max_bid_ai"),
+        row.get("recommended_max_bid"),
+        row.get("recommended_max_bid_ai"),
+        row.get("max_bid"),
+    )
+
+
+def current_bid_value(row: Mapping[str, Any]) -> float | None:
+    """Return the current live bid/price used for bid-room display."""
+    return first_currency_value(
+        row.get("current_bid_numeric"),
+        row.get("current_bid"),
+        row.get("current_bid_numeric_ai"),
+        row.get("current_bid_ai"),
+        row.get("price"),
+        row.get("price_ai"),
+    )
+
+
+def _currency_text(value: float | None) -> str:
+    if value is None:
+        return "N/A"
+    return f"${value:,.0f}"
+
+
+def _clean_display_text(value: Any) -> str:
+    if value is None:
+        return ""
+    try:
+        if pd.isna(value):
+            return ""
+    except (TypeError, ValueError):
+        pass
+    text = str(value).strip()
+    if text.lower() in {"", "nan", "none", "n/a"}:
+        return ""
+    return text
+
+
+def bid_display_parts(row: Mapping[str, Any]) -> dict[str, str]:
+    """Return concise bid wording without hiding pre-policy economics."""
+    policy_bid = recommended_max_bid_value(row)
+    economic_bid = economic_max_bid_value(row)
+    current_bid = current_bid_value(row)
+    policy_gate = _clean_display_text(row.get("bid_policy_gate") or row.get("bid_policy_gate_ai")).upper()
+    raw_status = _clean_display_text(row.get("bid_status") or row.get("bid_status_ai")) or "Unknown"
+
+    no_policy_bid = policy_bid is not None and policy_bid <= 0
+    economics_visible = economic_bid is not None and economic_bid > 0
+    if policy_gate:
+        status = "Policy blocked"
+        if economics_visible:
+            status_detail = f"{policy_gate.title()} policy; economics cap {_currency_text(economic_bid)}"
+        else:
+            status_detail = f"{policy_gate.title()} policy; economics unavailable"
+    elif no_policy_bid and economics_visible:
+        status = "No policy bid"
+        status_detail = f"Economics cap {_currency_text(economic_bid)} still visible"
+    elif no_policy_bid:
+        status = "No bid"
+        status_detail = raw_status
+    else:
+        status = raw_status
+        if policy_bid is not None and current_bid is not None:
+            room = policy_bid - current_bid
+            if room > 0:
+                status_detail = f"Room {_currency_text(room)} to max {_currency_text(policy_bid)}"
+            elif room == 0:
+                status_detail = f"At max {_currency_text(policy_bid)}"
+            else:
+                status_detail = f"Over max by {_currency_text(abs(room))}"
+        elif policy_bid is not None:
+            status_detail = f"Max {_currency_text(policy_bid)}"
+        else:
+            status_detail = "Max bid unavailable"
+
+    if policy_gate:
+        max_label = "No policy bid"
+        max_detail = (
+            f"Economics {_currency_text(economic_bid)} before {policy_gate.title()} gate"
+            if economics_visible
+            else f"Blocked by {policy_gate.title()} gate"
+        )
+    elif policy_bid is None:
+        max_label = "N/A"
+        max_detail = "No max bid available"
+    else:
+        max_label = _currency_text(policy_bid)
+        if economics_visible and abs((economic_bid or 0.0) - policy_bid) > 1:
+            max_detail = f"Policy cap; economics {_currency_text(economic_bid)}"
+        elif current_bid is not None and policy_bid > current_bid:
+            max_detail = f"Economic cap; room {_currency_text(policy_bid - current_bid)}"
+        elif current_bid is not None and policy_bid <= current_bid:
+            max_detail = "No room at current bid"
+        else:
+            max_detail = "Economic cap"
+
+    return {
+        "status": status,
+        "status_detail": status_detail,
+        "max_label": max_label,
+        "max_detail": max_detail,
+    }
+
+
 def _first_row_value(row: pd.Series, *columns: str) -> Any:
     for column in columns:
         if column in row.index:

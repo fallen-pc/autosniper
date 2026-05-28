@@ -4,6 +4,7 @@ from shared.decision_policy import (
     ACTION_REVIEW,
     ACTION_WATCH,
     DecisionPolicyInput,
+    action_display_parts,
     derive_action_label,
 )
 
@@ -40,3 +41,14 @@ def test_avoid_is_reserved_for_no_buy_states() -> None:
 def test_review_is_reserved_for_missing_coverage_or_unknown_verdicts() -> None:
     assert derive_action_label(_policy_input(computed_verdict="Not Covered")) == ACTION_REVIEW
     assert derive_action_label(_policy_input(computed_verdict="Unexpected")) == ACTION_REVIEW
+
+
+def test_action_display_copy_is_short_and_bid_specific() -> None:
+    assert action_display_parts(ACTION_BUY) == (
+        "Buy",
+        "Bid-ready: profit, bid room, and safety clear.",
+    )
+    assert action_display_parts(ACTION_WATCH) == (
+        "Watch",
+        "Watch: useful economics, but not bid-ready yet.",
+    )

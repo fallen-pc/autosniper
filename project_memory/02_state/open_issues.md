@@ -1,6 +1,7 @@
 # Open Issues
 
 - Profit-related terms and calculations may still drift across code and UI surfaces.
+- Revisit valuation wording for hard policy gates only if new edge cases appear. The AI Analysis display now separates policy bid, underlying `economic_*` cap, and current bid room so zero policy bids no longer hide useful economics.
 - Toyota Corolla `zre182r` hatch grouping is resolved at the curve-source level: the old grouped base has no saved rows, and the split Ascent / Ascent Sport base curves each have clean saved 15-cell grids. Future Toyota hatch work should be treated as an explicit repricing or evidence-refresh review, not as unresolved legacy-branch replacement.
 - The governed active CSVs remain Grays-dominated, so Toyota hatch active-market completeness should be judged from the tagged Autotrader evidence lane, not from `CSV_data/scrapers/active_vehicle_details.csv`.
 - Any later Toyota hatch repricing review must stay separate from the tag-alignment task that fixed the evidence lanes.

@@ -4,6 +4,7 @@ import pandas as pd
 
 from shared.valuation_display import (
     active_profit_value,
+    bid_display_parts,
     conservative_margin_percent,
     expected_finish_profit_value,
     first_currency_value,
@@ -146,3 +147,58 @@ def test_recommended_max_bid_value_does_not_fallback_to_current_price() -> None:
     )
 
     assert recommended_max_bid_value(row) is None
+
+
+def test_bid_display_keeps_interstate_economics_visible_when_policy_blocks_bid() -> None:
+    row = pd.Series(
+        {
+            "recommended_max_bid": "$0",
+            "economic_max_bid": "$5,846",
+            "current_bid_numeric": 4200,
+            "bid_status": "Over max",
+            "bid_policy_gate": "INTERSTATE",
+        }
+    )
+
+    display = bid_display_parts(row)
+
+    assert display["status"] == "Policy blocked"
+    assert display["status_detail"] == "Interstate policy; economics cap $5,846"
+    assert display["max_label"] == "No policy bid"
+    assert display["max_detail"] == "Economics $5,846 before Interstate gate"
+
+
+def test_bid_display_shows_room_for_live_economic_bid() -> None:
+    row = pd.Series(
+        {
+            "recommended_max_bid": "$7,682",
+            "economic_max_bid": "$7,682",
+            "current_bid_numeric": 6400,
+            "bid_status": "Above expected",
+        }
+    )
+
+    display = bid_display_parts(row)
+
+    assert display["status"] == "Above expected"
+    assert display["status_detail"] == "Room $1,282 to max $7,682"
+    assert display["max_label"] == "$7,682"
+    assert display["max_detail"] == "Economic cap; room $1,282"
+
+
+def test_bid_display_treats_missing_policy_gate_as_empty() -> None:
+    row = pd.Series(
+        {
+            "recommended_max_bid": "$7,121",
+            "economic_max_bid": "$7,121",
+            "current_bid_numeric": 4810,
+            "bid_status": "Below expected",
+            "bid_policy_gate": float("nan"),
+        }
+    )
+
+    display = bid_display_parts(row)
+
+    assert display["status"] == "Below expected"
+    assert display["status_detail"] == "Room $2,311 to max $7,121"
+    assert display["max_label"] == "$7,121"

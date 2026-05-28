@@ -38,6 +38,7 @@ from shared.repair_pricing import (
 )
 from shared.styling import clean_html, display_banner, inject_global_styles, page_intro
 from shared.valuation_display import (
+    bid_display_parts,
     conservative_margin_percent,
     first_currency_value,
     recommended_max_bid_value,
@@ -3420,6 +3421,7 @@ def _build_metric_group(title: str, items: list[str], class_name: str) -> str:
         ]
     )
 
+
 def _format_age_minutes(minutes: float) -> str:
     if minutes < 1:
         return "just now"
@@ -3538,7 +3540,10 @@ def _confidence_badges_html(curve_confidence: str, data_completeness: str, risk_
 
 def _signal_tone(value: object) -> str:
     normalized = _safe_text(value, fallback="").strip().lower()
-    if any(token in normalized for token in ["avoid", "over max", "no edge", "trap", "low", "high risk"]):
+    if any(
+        token in normalized
+        for token in ["avoid", "over max", "no edge", "trap", "low", "high risk", "policy blocked", "no policy bid"]
+    ):
         return "signal-danger"
     if any(token in normalized for token in ["watch", "review", "marginal", "conditional", "medium", "unknown"]):
         return "signal-watch"
@@ -3608,7 +3613,8 @@ def render_listing_card(row: pd.Series) -> None:
     )
     action_label = _display_action_label(row.get("action_label"))
 
-    max_bid_display = _format_currency_value(row.get("max_bid_value"))
+    bid_display = bid_display_parts(row)
+    max_bid_display = bid_display["max_label"]
     resale_display = _format_currency_value(row.get("resale_value"))
     profit_pct_display = _format_percent(row.get("profit_margin_value"))
     current_profit_display = _format_price_text(row.get("profit_at_current_bid_worst") or row.get("profit_at_current_bid"))
@@ -3618,7 +3624,7 @@ def render_listing_card(row: pd.Series) -> None:
     expected_profit_label = _display_profit_label(row.get("expected_auction_profit_label"))
     hard_max_safety = _max_bid_safety_text(row)
     flip_difficulty = _safe_text(row.get("flip_difficulty"), fallback="Unknown")
-    bid_status = _safe_text(row.get("bid_status"), fallback="Unknown")
+    bid_status = bid_display["status"]
     score_100 = row.get("score_100_value")
     score_100_display = "N/A"
     if score_100 is not None and not (isinstance(score_100, float) and pd.isna(score_100)):
@@ -3714,7 +3720,7 @@ def render_listing_card(row: pd.Series) -> None:
             _build_signal_tile(
                 "Bid status",
                 bid_status,
-                hard_max_safety,
+                bid_display["status_detail"],
                 _signal_tone(bid_status),
             ),
             _build_signal_tile(

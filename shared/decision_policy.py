@@ -21,19 +21,19 @@ ACTIONABLE_HARD_MAX_SAFETY = {"Strong", "Conditional"}
 ACTION_DISPLAY_COPY = {
     ACTION_BUY: (
         ACTION_BUY,
-        "Bid-ready: profit, bid room, and max-bid safety all clear.",
+        "Bid-ready: profit, bid room, and safety clear.",
     ),
     ACTION_WATCH: (
         ACTION_WATCH,
-        "Watch only: positive signal, but not bid-ready yet.",
+        "Watch: useful economics, but not bid-ready yet.",
     ),
     ACTION_AVOID: (
         ACTION_AVOID,
-        "No bid: fails profit, bid status, or safety.",
+        "No bid: price, policy, or safety blocks it.",
     ),
     ACTION_REVIEW: (
         ACTION_REVIEW,
-        "Manual check: missing or incomplete valuation context.",
+        "Review: missing or incomplete valuation context.",
     ),
 }
 
