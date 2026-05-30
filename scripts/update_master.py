@@ -140,11 +140,20 @@ def _normalize_odometer(value: object) -> tuple[int | None, bool]:
     if _is_blank(value):
         return None, False
     parsed = _to_int(value)
+    suspect = False
+    if parsed is None:
+        text = str(value)
+        suspect = True
+        match = re.search(r"\d[\d, ]*", text)
+        if match:
+            parsed = _to_int(match.group(0))
     if parsed is None:
         return None, True
     if parsed == 0 or parsed < 1000 or parsed > 700000:
         return None, True
-    return parsed, False
+    if re.search(r"discrepanc|suspect|unknown|not verified", str(value), re.IGNORECASE):
+        suspect = True
+    return parsed, suspect
 
 
 def _append_sold_discard_log(records: list[dict[str, object]]) -> None:
@@ -338,6 +347,38 @@ def _sold_rows_missing_sale_price(frame: pd.DataFrame) -> pd.Series:
             if not mask.any():
                 break
     return mask.reindex(frame.index, fill_value=False)
+
+
+def _prune_pending_rows_already_verified_sold() -> int:
+    if not SOLD_PRICE_PENDING_FILE.exists() or not SOLD_FILE.exists():
+        return 0
+    pending = _load_dataframe(SOLD_PRICE_PENDING_FILE)
+    sold = _load_dataframe(SOLD_FILE)
+    if pending.empty or sold.empty or "url" not in pending.columns or "url" not in sold.columns:
+        return 0
+
+    verified_sold = sold.loc[~_sold_rows_missing_sale_price(sold)].copy()
+    if verified_sold.empty:
+        return 0
+
+    verified_urls = {
+        url
+        for url in _normalize_url(verified_sold["url"]).tolist()
+        if url
+    }
+    if not verified_urls:
+        return 0
+
+    pending["_url_norm"] = _normalize_url(pending["url"])
+    remove_mask = pending["_url_norm"].isin(verified_urls)
+    removed = int(remove_mask.sum())
+    if removed:
+        pending = pending.loc[~remove_mask].copy()
+    pending.drop(columns=["_url_norm"], inplace=True)
+    _atomic_write(pending, SOLD_PRICE_PENDING_FILE)
+    if removed:
+        print(f"Removed {removed} pending sold-price row(s) already verified in sold history.")
+    return removed
 
 
 def _prepare_referred_rows(frame: pd.DataFrame) -> pd.DataFrame:
@@ -748,6 +789,7 @@ def update_master_database() -> None:
         validator=validate_sold_cars_df,
         prepare_kwargs={"static_df": static_df},
     )
+    _prune_pending_rows_already_verified_sold()
     _merge_preserving_history(
         REFERRED_FILE,
         referred_df,

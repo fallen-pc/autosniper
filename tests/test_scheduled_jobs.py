@@ -319,6 +319,58 @@ def test_should_not_catch_up_if_metrics_already_cover_today(monkeypatch, tmp_pat
     assert coverage_date == date(2026, 4, 21)
 
 
+def test_should_not_catch_up_if_success_state_already_covers_today(monkeypatch, tmp_path) -> None:
+    daily_state_path = tmp_path / "daily_run_state.json"
+    daily_state_path.write_text(
+        json.dumps(
+            {
+                "last_status": "skipped",
+                "last_coverage_date_local": "2026-04-21",
+                "last_success_coverage_date_local": "2026-04-21",
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(scheduled_jobs, "METRICS_PATH", tmp_path / "metrics.json")
+    monkeypatch.setattr(scheduled_jobs, "DAILY_STATE_PATH", daily_state_path)
+    monkeypatch.setenv("AUTOSNIPER_LOCAL_TIMEZONE", "Australia/Sydney")
+    monkeypatch.setenv("AUTOSNIPER_DAILY_SCHEDULE_LOCAL_TIME", "09:00")
+
+    should_run, coverage_date = scheduled_jobs._should_run_missed_daily_catchup(
+        now=datetime(2026, 4, 21, 3, 0, tzinfo=timezone.utc)
+    )
+
+    assert should_run is False
+    assert coverage_date == date(2026, 4, 21)
+
+
+def test_should_catch_up_if_today_only_has_running_attempt(monkeypatch, tmp_path) -> None:
+    daily_state_path = tmp_path / "daily_run_state.json"
+    daily_state_path.write_text(
+        json.dumps(
+            {
+                "last_status": "running",
+                "last_coverage_date_local": "2026-04-21",
+                "last_success_coverage_date_local": "2026-04-20",
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(scheduled_jobs, "METRICS_PATH", tmp_path / "metrics.json")
+    monkeypatch.setattr(scheduled_jobs, "DAILY_STATE_PATH", daily_state_path)
+    monkeypatch.setenv("AUTOSNIPER_LOCAL_TIMEZONE", "Australia/Sydney")
+    monkeypatch.setenv("AUTOSNIPER_DAILY_SCHEDULE_LOCAL_TIME", "09:00")
+
+    should_run, coverage_date = scheduled_jobs._should_run_missed_daily_catchup(
+        now=datetime(2026, 4, 21, 3, 0, tzinfo=timezone.utc)
+    )
+
+    assert should_run is True
+    assert coverage_date == date(2026, 4, 21)
+
+
 def test_should_not_catch_up_inside_daily_grace_window(monkeypatch, tmp_path) -> None:
     monkeypatch.setattr(scheduled_jobs, "METRICS_PATH", tmp_path / "metrics.json")
     monkeypatch.setattr(scheduled_jobs, "DAILY_STATE_PATH", tmp_path / "daily_run_state.json")
@@ -359,6 +411,34 @@ def test_hourly_does_not_expire_active_daily_lock(monkeypatch, tmp_path) -> None
 
     assert scheduled_jobs._acquire_lock("hourly-monitor") is False
     assert json.loads(lock_path.read_text(encoding="utf-8"))["job"] == "daily"
+
+
+def test_lock_busy_daily_records_skip_without_erasing_success(monkeypatch, tmp_path) -> None:
+    daily_state_path = tmp_path / "daily_run_state.json"
+    daily_state_path.write_text(
+        json.dumps(
+            {
+                "last_status": "running",
+                "last_coverage_date_local": "2026-04-21",
+                "last_success_utc": "2026-04-20T01:00:00Z",
+                "last_success_coverage_date_local": "2026-04-20",
+            }
+        ),
+        encoding="utf-8",
+    )
+    lock_path = tmp_path / "scrape.lock"
+    lock_path.write_text(json.dumps({"job": "hourly-monitor", "started_at": time.time()}), encoding="utf-8")
+
+    monkeypatch.setattr(scheduled_jobs, "DAILY_STATE_PATH", daily_state_path)
+    monkeypatch.setattr(scheduled_jobs, "LOCK_PATH", lock_path)
+
+    scheduled_jobs._run_daily_job(trigger="catchup", coverage_date_local=date(2026, 4, 21))
+
+    state = json.loads(daily_state_path.read_text(encoding="utf-8"))
+    assert state["last_status"] == "skipped"
+    assert state["last_error_message"] == "Lock busy; skipped daily run."
+    assert state["last_success_utc"] == "2026-04-20T01:00:00Z"
+    assert state["last_success_coverage_date_local"] == "2026-04-20"
 
 
 def test_main_runs_daily_catchup_before_hourly(monkeypatch) -> None:

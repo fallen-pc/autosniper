@@ -103,6 +103,30 @@ def test_sold_rows_missing_sale_price_mask_stays_aligned_when_cleaner_drops_rows
     assert mask.tolist() == [False, False, True]
 
 
+def test_sold_cleaner_keeps_numeric_odometer_from_discrepancy_text() -> None:
+    sold_df = pd.DataFrame(
+        [
+            {
+                "url": "https://example.com/lot/odometer-discrepancy",
+                "year": 2009,
+                "make": "Peugeot",
+                "model": "308",
+                "price": "2709",
+                "date_sold": "07 April 2026 20:00 AEST",
+                "bids": 30,
+                "odometer_reading": "95435 - Odometer discrepancy detected, see attached history report.",
+                "vin": "VF34B5FTF9S104311",
+            }
+        ]
+    )
+
+    cleaned = update_master._prepare_sold_rows(sold_df)
+
+    assert len(cleaned) == 1
+    assert int(cleaned.iloc[0]["odometer_reading"]) == 95435
+    assert int(cleaned.iloc[0]["odo_suspect"]) == 1
+
+
 def test_state_sold_current_price_is_not_materialized_as_sale_price() -> None:
     url = "https://example.com/lot/123"
     static_df = pd.DataFrame(
@@ -184,6 +208,35 @@ def test_state_sold_uses_verified_final_sale_price() -> None:
     assert str(sold_view.iloc[0]["price"]) == "9350"
     assert str(sold_view.iloc[0]["date_sold"]) == "2026-05-01"
     assert update_master._sold_rows_missing_sale_price(sold_view).tolist() == [False]
+
+
+def test_prunes_pending_rows_already_verified_in_sold_history(monkeypatch, tmp_path) -> None:
+    pending_path = tmp_path / "sold_price_pending.csv"
+    sold_path = tmp_path / "sold_cars.csv"
+    verified_url = "https://example.com/lot/verified"
+    unresolved_url = "https://example.com/lot/unresolved"
+
+    pd.DataFrame(
+        [
+            {"url": verified_url, "status": "pending_final_sale_price", "price": "", "date_sold": "2026-05-01"},
+            {"url": unresolved_url, "status": "pending_final_sale_price", "price": "", "date_sold": "2026-05-02"},
+        ]
+    ).to_csv(pending_path, index=False)
+    pd.DataFrame(
+        [
+            {"url": verified_url, "price": "9300", "date_sold": "2026-05-01"},
+            {"url": "https://example.com/lot/no-price", "price": "", "date_sold": "2026-05-01"},
+        ]
+    ).to_csv(sold_path, index=False)
+
+    monkeypatch.setattr(update_master, "SOLD_PRICE_PENDING_FILE", pending_path)
+    monkeypatch.setattr(update_master, "SOLD_FILE", sold_path)
+
+    removed = update_master._prune_pending_rows_already_verified_sold()
+
+    pending_after = pd.read_csv(pending_path)
+    assert removed == 1
+    assert pending_after["url"].tolist() == [unresolved_url]
 
 
 def test_update_master_keeps_existing_sold_history_when_url_is_active(monkeypatch, tmp_path) -> None:

@@ -234,11 +234,15 @@ def _parse_iso_datetime(value: Any) -> datetime | None:
         return None
 
 
-def _last_attempted_daily_date_local() -> date | None:
+def _last_successful_daily_date_local() -> date | None:
     state = _load_daily_run_state()
-    explicit = _parse_iso_date(state.get("last_coverage_date_local"))
+    explicit = _parse_iso_date(state.get("last_success_coverage_date_local"))
     if explicit is not None:
         return explicit
+    if str(state.get("last_status") or "").strip().lower() == "success":
+        explicit = _parse_iso_date(state.get("last_coverage_date_local"))
+        if explicit is not None:
+            return explicit
     metrics = _load_existing_metrics()
     metrics_time = _parse_iso_datetime(metrics.get("last_run_utc"))
     if metrics_time is None:
@@ -257,6 +261,23 @@ def _record_daily_run_start(*, trigger: str, coverage_date_local: date) -> None:
             "last_error_message": "",
         }
     )
+    _write_daily_run_state(state)
+
+
+def _record_daily_run_skip(*, trigger: str, coverage_date_local: date, reason: str) -> None:
+    state = _load_daily_run_state()
+    completed_utc = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    state.update(
+        {
+            "last_completed_utc": completed_utc,
+            "last_status": "skipped",
+            "last_trigger": trigger,
+            "last_coverage_date_local": coverage_date_local.isoformat(),
+            "last_error_message": reason.strip(),
+        }
+    )
+    state["last_skipped_utc"] = completed_utc
+    state["last_skipped_coverage_date_local"] = coverage_date_local.isoformat()
     _write_daily_run_state(state)
 
 
@@ -300,8 +321,8 @@ def _should_run_missed_daily_catchup(now: datetime | None = None) -> tuple[bool,
         grace_deadline_local = schedule_dt_local + timedelta(minutes=grace_minutes)
         if schedule_dt_local <= local_now < grace_deadline_local:
             return False, target_date
-    last_attempted = _last_attempted_daily_date_local()
-    if last_attempted is not None and last_attempted >= target_date:
+    last_successful = _last_successful_daily_date_local()
+    if last_successful is not None and last_successful >= target_date:
         return False, target_date
     return True, target_date
 
@@ -606,6 +627,11 @@ def run_daily_smoke() -> None:
 
 def _run_daily_job(*, trigger: str, coverage_date_local: date) -> None:
     if not _acquire_lock("daily"):
+        _record_daily_run_skip(
+            trigger=trigger,
+            coverage_date_local=coverage_date_local,
+            reason="Lock busy; skipped daily run.",
+        )
         return
 
     started = time.time()
