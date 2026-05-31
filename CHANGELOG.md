@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-05-22
+- Added the `hyundai_accent_active_rb_hatch_auto_petrol` standard-grid retail resale curve from private Carsales Accent Active RB hatch automatic petrol evidence, plus supported-universe and allowed-variant mapping for Active automatic/CVT hatch rows.
+
+## 2026-05-19
+- Added the `hyundai_iload_tq_van_auto_diesel` retail resale curve from private Carsales iLoad TQ diesel automatic van evidence, plus the supported-universe and allowed-variant mapping needed to classify automatic iLoad vans while keeping manual, Crew, and iMax rows out of the lane.
+- Refined the `hyundai_iload_tq_van_auto_diesel` standard five-bucket grid with additional private Carsales pages, lifting the normal 2012-2016 automatic van midpoints while treating very high asking rows as upper-market outliers rather than midpoint evidence.
+
 ## 2026-05-18
 - Added a retail-only `225000` km bucket for the `2013` `toyota_corolla_ascent_zre182r_hatch_auto_petrol` curve from private Carsales Corolla Ascent hatch evidence, extending the high-km resale curve without using Grays sold prices for repricing.
 

@@ -427,7 +427,13 @@ def test_curve_analysis_avoids_interstate_listings(monkeypatch) -> None:
         force_refresh=True,
     )
 
+    economic_max_bid = ai_listing_valuation._parse_currency(result["economic_max_bid"])
+    economic_current_profit = ai_listing_valuation._parse_currency(result["economic_profit_at_current_bid"])
+
     assert result["recommended_max_bid"] == "$0"
+    assert result["bid_policy_gate"] == "INTERSTATE"
+    assert economic_max_bid is not None and economic_max_bid > 0
+    assert economic_current_profit is not None and economic_current_profit > 0
     assert result["expected_profit"] == "$0"
     assert result["net_profit_mid"] == "$0"
     assert result["net_profit_worst"] == "$0"
@@ -499,6 +505,78 @@ def test_curve_analysis_uses_historical_sold_median_for_expected_auction(monkeyp
     assert result["hard_max_safety"] in {"Conditional", "Strong"}
     assert result["bid_status"] == "Cheap"
     assert result["action_label"] == "Buy"
+
+
+def test_curve_analysis_refreshes_cached_rows_missing_display_fields(monkeypatch) -> None:
+    repair_assessment = RepairAssessment(
+        hard_avoid=False,
+        pills=[],
+        cosmetic_panels=0,
+        glass_cost=0,
+        replacement_cost=0,
+        risk_buffer=0,
+        base_cost=0,
+        severity_level="minor",
+        severity_multiplier=1.0,
+        total_cost=0,
+        reasons=[],
+    )
+    listing = pd.Series(
+        {
+            "url": "test://stale-display-fields",
+            "price": "$2,000",
+            "make": "Hyundai",
+            "model": "i30",
+            "variant": "Active",
+            "body_type": "Hatch",
+            "transmission": "Auto",
+            "fuel_type": "Petrol",
+            "location": "Melbourne VIC",
+            "rego_state": "VIC",
+            "general_condition": "",
+        }
+    )
+    cached_row = {
+        column: None
+        for column in ai_listing_valuation.REQUIRED_COLUMNS
+    }
+    cached_row.update(
+        {
+            "url": "test://stale-display-fields",
+            "analysis_timestamp": "2026-01-14T00:00:00+00:00",
+            "analysis_context": "active",
+            "expected_auction_price": "$6,200",
+            "expected_auction_bid_basis": float("nan"),
+            "expected_auction_source": "historical_sold_median",
+            "expected_auction_profit": "$9,000",
+            "action_label": "Watch",
+            "current_profit_label": "Good",
+            "discount_used": 0.75,
+            "economic_max_bid": float("nan"),
+            "economic_profit_at_current_bid": float("nan"),
+            "economic_profit_at_current_bid_worst": float("nan"),
+            "bid_status": float("nan"),
+        }
+    )
+
+    monkeypatch.setattr(ai_listing_valuation, "load_cached_results", lambda: pd.DataFrame([cached_row]))
+    monkeypatch.setattr(ai_listing_valuation, "_save_result_row", lambda row: None)
+    monkeypatch.setattr(ai_listing_valuation, "assess_repairs", lambda condition: repair_assessment)
+
+    result = ai_listing_valuation.run_curve_listing_analysis(
+        listing,
+        resale_mid=20_000,
+        comps_median=6_200,
+        comps_count=5,
+        analysis_context="active",
+    )
+
+    assert result["cached"] is False
+    assert result["analysis_timestamp"] != "2026-01-14T00:00:00+00:00"
+    assert result["expected_auction_bid_basis"] == "$6,200"
+    assert result["economic_max_bid"]
+    assert result["economic_profit_at_current_bid"]
+    assert result["bid_status"] == "Cheap"
 
 
 def test_curve_analysis_uses_worst_case_margin_for_profit_percent(monkeypatch) -> None:

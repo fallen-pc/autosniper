@@ -45,6 +45,12 @@ REQUIRED_COLUMNS = [
     "expected_auction_worst_profit",
     "expected_auction_source",
     "expected_auction_comps_count",
+    "economic_max_bid",
+    "economic_profit_mid",
+    "economic_profit_worst",
+    "economic_profit_at_current_bid",
+    "economic_profit_at_current_bid_worst",
+    "bid_policy_gate",
     "discount_used",
     "profit_at_current_bid",
     "profit_at_current_bid_worst",
@@ -214,6 +220,24 @@ def _current_bid_value(row: Mapping[str, Any] | None) -> Optional[float]:
         if parsed is not None:
             return parsed
     return None
+
+
+def _cached_result_needs_refresh(existing: Mapping[str, Any]) -> bool:
+    """Return True when a cached row predates current valuation display fields."""
+    required_display_fields = [
+        "expected_auction_price",
+        "expected_auction_bid_basis",
+        "expected_auction_source",
+        "expected_auction_profit",
+        "action_label",
+        "current_profit_label",
+        "discount_used",
+        "economic_max_bid",
+        "economic_profit_at_current_bid",
+        "economic_profit_at_current_bid_worst",
+        "bid_status",
+    ]
+    return any(_is_missing_value(existing.get(field)) for field in required_display_fields)
 
 
 def _with_price_change_metadata(
@@ -1385,18 +1409,7 @@ def run_curve_listing_analysis(
         and url in set(cached_df["url"].dropna().tolist())
     ):
         existing = cached_df[cached_df["url"] == url].iloc[0].to_dict()
-        if (
-            existing.get("expected_auction_price") is None
-            or (
-                existing.get("expected_auction_bid_basis") is None
-                and existing.get("expected_auction_price") is not None
-            )
-            or existing.get("expected_auction_source") is None
-            or existing.get("expected_auction_profit") is None
-            or existing.get("action_label") is None
-            or existing.get("current_profit_label") is None
-            or existing.get("discount_used") is None
-        ):
+        if _cached_result_needs_refresh(existing):
             force_refresh = True
         else:
             if analysis_context and not existing.get("analysis_context"):
@@ -1442,6 +1455,12 @@ def run_curve_listing_analysis(
             "expected_auction_worst_profit": None,
             "expected_auction_source": None,
             "expected_auction_comps_count": None,
+            "economic_max_bid": _format_currency(0),
+            "economic_profit_mid": None,
+            "economic_profit_worst": None,
+            "economic_profit_at_current_bid": None,
+            "economic_profit_at_current_bid_worst": None,
+            "bid_policy_gate": "",
             "discount_used": DEFAULT_DISCOUNT,
             "profit_at_current_bid": None,
             "profit_at_current_bid_worst": None,
@@ -1560,9 +1579,38 @@ def run_curve_listing_analysis(
         recommended_max_bid_val = float(adjusted_bid)
     if repair_assessment.hard_avoid:
         recommended_max_bid_val = 0.0
+    repair_cost_val = float(repair_assessment.total_cost or 0.0)
+    economic_max_bid_val = recommended_max_bid_val
+    economic_cost_basis = economic_max_bid_val
+    if economic_cost_basis is None:
+        economic_cost_basis = current_price_val
+    if economic_cost_basis is None:
+        economic_cost_basis = 0.0
+    economic_costs_map = _estimate_costs(economic_cost_basis, listing_data)
+    economic_profit_mid_val = None
+    if economic_max_bid_val is not None and resale_mid_val is not None and not repair_assessment.hard_avoid:
+        economic_profit_mid_val = (
+            resale_mid_val - sum(economic_costs_map.values()) - economic_max_bid_val - repair_cost_val
+        )
+    economic_profit_worst_val = None
+    if economic_max_bid_val is not None and resale_low_val is not None and not repair_assessment.hard_avoid:
+        economic_profit_worst_val = (
+            resale_low_val - sum(economic_costs_map.values()) - economic_max_bid_val - repair_cost_val
+        )
+    economic_current_profit_val, economic_current_worst_profit_val = _profit_at_purchase_price(
+        resale_mid_val or resale_mid,
+        resale_low_val or resale_mid,
+        current_price_val,
+        listing_data,
+        repair_cost_val,
+    )
+    if repair_assessment.hard_avoid:
+        economic_current_profit_val = 0.0
+        economic_current_worst_profit_val = 0.0
+    bid_policy_gate = ""
     if "INTERSTATE" in risk_flags and not INTERSTATE_BUYING_ALLOWED:
         recommended_max_bid_val = 0.0
-    repair_cost_val = float(repair_assessment.total_cost or 0.0)
+        bid_policy_gate = "INTERSTATE"
 
     base_max_bid_val = recommended_max_bid_val
     base_no_edge_at_current_bid = False
@@ -1791,6 +1839,18 @@ def run_curve_listing_analysis(
             else None
         ),
         "recommended_max_bid": _format_currency(recommended_max_bid_val) if recommended_max_bid_val is not None else None,
+        "economic_max_bid": _format_currency(economic_max_bid_val) if economic_max_bid_val is not None else None,
+        "economic_profit_mid": _format_currency(economic_profit_mid_val) if economic_profit_mid_val is not None else None,
+        "economic_profit_worst": _format_currency(economic_profit_worst_val) if economic_profit_worst_val is not None else None,
+        "economic_profit_at_current_bid": (
+            _format_currency(economic_current_profit_val) if economic_current_profit_val is not None else None
+        ),
+        "economic_profit_at_current_bid_worst": (
+            _format_currency(economic_current_worst_profit_val)
+            if economic_current_worst_profit_val is not None
+            else None
+        ),
+        "bid_policy_gate": bid_policy_gate,
         "expected_profit": expected_profit,
         "profit_margin_percent": profit_margin,
         "score_out_of_10": score_out_of_10,
