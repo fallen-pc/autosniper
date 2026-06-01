@@ -37,7 +37,6 @@ REFERRED_FILE = dataset_path("referred_cars.csv")
 ACTIVE_FILE = dataset_path("active_vehicle_details.csv")
 STATIC_FILE = dataset_path("vehicle_static_details.csv")
 STATE_FILE = dataset_path("vehicle_state.csv")
-SOLD_PRICE_PENDING_FILE = dataset_path("sold_price_pending.csv")
 SOLD_DISCARD_LOG = dataset_path("scrapers/sold_discard_log.csv")
 
 DEDUP_KEYS: Sequence[str] = ("url", "vin")
@@ -347,38 +346,6 @@ def _sold_rows_missing_sale_price(frame: pd.DataFrame) -> pd.Series:
             if not mask.any():
                 break
     return mask.reindex(frame.index, fill_value=False)
-
-
-def _prune_pending_rows_already_verified_sold() -> int:
-    if not SOLD_PRICE_PENDING_FILE.exists() or not SOLD_FILE.exists():
-        return 0
-    pending = _load_dataframe(SOLD_PRICE_PENDING_FILE)
-    sold = _load_dataframe(SOLD_FILE)
-    if pending.empty or sold.empty or "url" not in pending.columns or "url" not in sold.columns:
-        return 0
-
-    verified_sold = sold.loc[~_sold_rows_missing_sale_price(sold)].copy()
-    if verified_sold.empty:
-        return 0
-
-    verified_urls = {
-        url
-        for url in _normalize_url(verified_sold["url"]).tolist()
-        if url
-    }
-    if not verified_urls:
-        return 0
-
-    pending["_url_norm"] = _normalize_url(pending["url"])
-    remove_mask = pending["_url_norm"].isin(verified_urls)
-    removed = int(remove_mask.sum())
-    if removed:
-        pending = pending.loc[~remove_mask].copy()
-    pending.drop(columns=["_url_norm"], inplace=True)
-    _atomic_write(pending, SOLD_PRICE_PENDING_FILE)
-    if removed:
-        print(f"Removed {removed} pending sold-price row(s) already verified in sold history.")
-    return removed
 
 
 def _prepare_referred_rows(frame: pd.DataFrame) -> pd.DataFrame:
@@ -753,17 +720,12 @@ def update_master_database() -> None:
     if not sold_df.empty:
         blank_sale_mask = _sold_rows_missing_sale_price(sold_df)
         if blank_sale_mask.any():
-            moved_rows = sold_df.loc[blank_sale_mask].copy()
-            if not moved_rows.empty:
-                moved_rows["status"] = "pending_final_sale_price"
-                _merge_preserving_history(
-                    SOLD_PRICE_PENDING_FILE,
-                    moved_rows,
-                    "pending sold-price verification",
-                    ensure_schema=False,
-                )
-                sold_df = sold_df.loc[~blank_sale_mask].copy()
-                print(f"Moved {len(moved_rows)} sold listing(s) without verified final sale price into pending review.")
+            skipped = int(blank_sale_mask.sum())
+            sold_df = sold_df.loc[~blank_sale_mask].copy()
+            print(
+                f"Skipped {skipped} sold listing(s) without verified final sale price; "
+                "only explicit Sold for evidence is materialized."
+            )
     if not sold_df.empty:
         sold_df = tag_dataframe(
             sold_df,
@@ -789,7 +751,6 @@ def update_master_database() -> None:
         validator=validate_sold_cars_df,
         prepare_kwargs={"static_df": static_df},
     )
-    _prune_pending_rows_already_verified_sold()
     _merge_preserving_history(
         REFERRED_FILE,
         referred_df,

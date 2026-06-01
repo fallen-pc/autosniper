@@ -210,33 +210,74 @@ def test_state_sold_uses_verified_final_sale_price() -> None:
     assert update_master._sold_rows_missing_sale_price(sold_view).tolist() == [False]
 
 
-def test_prunes_pending_rows_already_verified_in_sold_history(monkeypatch, tmp_path) -> None:
-    pending_path = tmp_path / "sold_price_pending.csv"
+def test_update_master_skips_sold_state_without_verified_final_price(monkeypatch, tmp_path) -> None:
+    static_path = tmp_path / "vehicle_static_details.csv"
+    state_path = tmp_path / "vehicle_state.csv"
     sold_path = tmp_path / "sold_cars.csv"
-    verified_url = "https://example.com/lot/verified"
-    unresolved_url = "https://example.com/lot/unresolved"
+    referred_path = tmp_path / "referred_cars.csv"
+    active_path = tmp_path / "active_vehicle_details.csv"
+    active_links_path = tmp_path / "active_vehicle_links.csv"
+    pending_path = tmp_path / "sold_price_pending.csv"
+    url = "https://example.com/lot/no-final-price"
 
     pd.DataFrame(
         [
-            {"url": verified_url, "status": "pending_final_sale_price", "price": "", "date_sold": "2026-05-01"},
-            {"url": unresolved_url, "status": "pending_final_sale_price", "price": "", "date_sold": "2026-05-02"},
+            {
+                "url": url,
+                "year": 2018,
+                "make": "Toyota",
+                "model": "Camry",
+                "variant": "Ascent",
+                "vin": "6T1BF3FK10X123456",
+                "location": "VIC",
+            }
         ]
-    ).to_csv(pending_path, index=False)
+    ).to_csv(static_path, index=False)
     pd.DataFrame(
         [
-            {"url": verified_url, "price": "9300", "date_sold": "2026-05-01"},
-            {"url": "https://example.com/lot/no-price", "price": "", "date_sold": "2026-05-01"},
+            {
+                "url": url,
+                "state": "sold",
+                "current_price": "209",
+                "final_sale_price": "",
+                "final_sale_date": "",
+                "bid_count": "7",
+                "time_remaining": "2026-05-01",
+                "last_seen_at": "2026-05-01T00:00:00Z",
+                "terminal_reason": "sold_with_final_price",
+                "state_updated_at": "2026-05-01T00:00:00Z",
+                "fetch_fail_count": 0,
+                "last_fetch_error": "",
+                "last_evidence": "legacy_bad_state",
+                "run_id": "run-1",
+            }
         ]
-    ).to_csv(sold_path, index=False)
+    ).to_csv(state_path, index=False)
+    pd.DataFrame(columns=["url"]).to_csv(sold_path, index=False)
+    pd.DataFrame(columns=["url"]).to_csv(referred_path, index=False)
+    pd.DataFrame(columns=["url"]).to_csv(active_path, index=False)
+    pd.DataFrame(columns=["url"]).to_csv(active_links_path, index=False)
 
-    monkeypatch.setattr(update_master, "SOLD_PRICE_PENDING_FILE", pending_path)
+    monkeypatch.setattr(update_master, "STATIC_FILE", static_path)
+    monkeypatch.setattr(update_master, "STATE_FILE", state_path)
     monkeypatch.setattr(update_master, "SOLD_FILE", sold_path)
+    monkeypatch.setattr(update_master, "REFERRED_FILE", referred_path)
+    monkeypatch.setattr(update_master, "ACTIVE_FILE", active_path)
+    monkeypatch.setattr(
+        update_master,
+        "dataset_path",
+        lambda filename: active_links_path if filename == "active_vehicle_links.csv" else tmp_path / filename,
+    )
+    monkeypatch.setattr(update_master, "normalize_listing_fields", lambda df: df.copy())
+    monkeypatch.setattr(update_master, "tag_dataframe", lambda df, **_: df.copy())
+    monkeypatch.setattr(update_master, "validate_sold_cars_df", lambda df: (df, {"rows_dropped": 0}))
+    monkeypatch.setattr(update_master, "build_restricted_datasets", lambda: None)
 
-    removed = update_master._prune_pending_rows_already_verified_sold()
+    update_master.update_master_database()
 
-    pending_after = pd.read_csv(pending_path)
-    assert removed == 1
-    assert pending_after["url"].tolist() == [unresolved_url]
+    sold_after = pd.read_csv(sold_path)
+    assert sold_after.empty
+    assert not pending_path.exists()
 
 
 def test_update_master_keeps_existing_sold_history_when_url_is_active(monkeypatch, tmp_path) -> None:
