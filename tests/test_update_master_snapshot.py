@@ -280,6 +280,64 @@ def test_update_master_skips_sold_state_without_verified_final_price(monkeypatch
     assert not pending_path.exists()
 
 
+def test_referred_merge_is_url_keyed_even_when_vin_is_blank(tmp_path) -> None:
+    referred_path = tmp_path / "referred_cars.csv"
+    url = "https://example.com/lot/referred"
+
+    pd.DataFrame(
+        [
+            {
+                "url": url,
+                "year": 2018,
+                "make": "Toyota",
+                "model": "Camry",
+                "variant": "Ascent",
+                "vin": "6T1BF3FK10X123456",
+                "status": "referred",
+                "referral_reason": "referred",
+            },
+            {
+                "url": url,
+                "year": "",
+                "make": "",
+                "model": "",
+                "variant": "",
+                "vin": "",
+                "status": "referred",
+                "referral_reason": "pre-existing blank duplicate",
+            }
+        ]
+    ).to_csv(referred_path, index=False)
+    incoming = pd.DataFrame(
+        [
+            {
+                "url": url,
+                "year": "",
+                "make": "",
+                "model": "",
+                "variant": "",
+                "vin": "",
+                "status": "referred",
+                "referral_reason": "late blank row",
+            }
+        ]
+    )
+
+    update_master._merge_preserving_history(
+        referred_path,
+        incoming,
+        "referred/canceled/closed",
+        prepare_fn=update_master._prepare_referred_rows,
+        ensure_schema=True,
+        dedup_keys=("url",),
+        dedup_existing=True,
+    )
+
+    referred_after = pd.read_csv(referred_path, dtype=str, keep_default_na=False)
+    assert referred_after["url"].tolist() == [url]
+    assert referred_after.iloc[0]["vin"] == "6T1BF3FK10X123456"
+
+
 def test_update_master_keeps_existing_sold_history_when_url_is_active(monkeypatch, tmp_path) -> None:
     static_path = tmp_path / "vehicle_static_details.csv"
     state_path = tmp_path / "vehicle_state.csv"

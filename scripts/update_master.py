@@ -377,6 +377,8 @@ def _merge_preserving_history(
     ensure_schema: bool = False,
     validator: Callable[[pd.DataFrame], tuple[pd.DataFrame, dict[str, int]]] | None = None,
     *,
+    dedup_keys: Sequence[str] = DEDUP_KEYS,
+    dedup_existing: bool = False,
     prepare_kwargs: dict[str, object] | None = None,
 ) -> None:
     existing_raw = _load_dataframe(path)
@@ -392,6 +394,14 @@ def _merge_preserving_history(
             schema_changed = True
 
     if prepared_new.empty:
+        if dedup_existing:
+            dedup_cols = [
+                col for col in dedup_keys if col in prepared_existing.columns
+            ]
+            if dedup_cols:
+                before = len(prepared_existing)
+                prepared_existing = prepared_existing.drop_duplicates(subset=dedup_cols, keep="first").copy()
+                schema_changed |= len(prepared_existing) != before
         if ensure_schema and schema_changed:
             _atomic_write(prepared_existing, path)
             print(f"{label.title()} listings saved to {path} (schema normalized; +0).")
@@ -404,8 +414,10 @@ def _merge_preserving_history(
         added = len(prepared_new)
     else:
         dedup_cols = [
-            col for col in DEDUP_KEYS if col in prepared_existing.columns and col in prepared_new.columns
+            col for col in dedup_keys if col in prepared_existing.columns and col in prepared_new.columns
         ]
+        if dedup_existing and dedup_cols:
+            prepared_existing = prepared_existing.drop_duplicates(subset=dedup_cols, keep="first").copy()
         filtered_new = prepared_new.copy()
         if dedup_cols:
             existing_keys = set(_build_key(prepared_existing, dedup_cols))
@@ -757,6 +769,8 @@ def update_master_database() -> None:
         "referred/canceled/closed",
         prepare_fn=_prepare_referred_rows,
         ensure_schema=True,
+        dedup_keys=("url",),
+        dedup_existing=True,
     )
 
     if not active_df.empty:
