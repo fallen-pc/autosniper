@@ -41,6 +41,7 @@ GOVERNANCE_REPORT_DIR = ROOT_DIR / "output" / "governance"
 METRICS_PATH = ROOT_DIR / "status" / "metrics.json"
 DAILY_STATE_PATH = ROOT_DIR / "status" / "daily_run_state.json"
 RUNTIME_BACKUP_SCRIPT = ROOT_DIR / "scripts" / "backup_runtime_data.ps1"
+AUTOTRADER_SEED_URLS_PATH = ROOT_DIR / "autotrader_isolated" / "seed_urls.txt"
 PLAYWRIGHT_MISSING_BROWSER_MARKERS = (
     "executable doesn't exist",
     "please run the following command to download new browsers",
@@ -565,6 +566,8 @@ def _run_autotrader_scrape(max_pages: int | None = None) -> None:
     command = [
         sys.executable,
         "autotrader_isolated/scrape_first_page.py",
+        "--urls-file",
+        str(AUTOTRADER_SEED_URLS_PATH),
         "--all-pages",
         "--playwright-headful",
         "--playwright-browser",

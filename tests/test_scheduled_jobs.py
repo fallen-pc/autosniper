@@ -167,6 +167,37 @@ def test_daily_smoke_runs_limited_pipeline(monkeypatch) -> None:
     ]
 
 
+def test_scheduled_autotrader_uses_seed_urls_file(monkeypatch, tmp_path) -> None:
+    calls: list[list[str]] = []
+    storage_state = tmp_path / "autotrader_isolated" / "output" / "storage_state.json"
+    cookie_file = tmp_path / "autotrader_isolated" / "output" / "autotrader_cookie.txt"
+    seed_urls = tmp_path / "autotrader_isolated" / "seed_urls.txt"
+    storage_state.parent.mkdir(parents=True)
+    seed_urls.parent.mkdir(parents=True, exist_ok=True)
+    storage_state.write_text("{}", encoding="utf-8")
+    cookie_file.write_text("cookie=value", encoding="utf-8")
+    seed_urls.write_text(
+        "https://www.autotrader.com.au/for-sale/used/toyota/vic/melbourne\n",
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(scheduled_jobs, "ROOT_DIR", tmp_path)
+    monkeypatch.setattr(scheduled_jobs, "AUTOTRADER_SEED_URLS_PATH", seed_urls)
+    monkeypatch.setattr(
+        scheduled_jobs.subprocess,
+        "run",
+        lambda command, check: calls.append(command),
+    )
+
+    scheduled_jobs._run_autotrader_scrape(max_pages=2)
+
+    command = calls[0]
+    assert "--urls-file" in command
+    assert command[command.index("--urls-file") + 1] == str(seed_urls)
+    assert "--max-pages" in command
+    assert command[command.index("--max-pages") + 1] == "2"
+
+
 def test_runtime_backup_skips_when_backup_dir_not_configured(monkeypatch) -> None:
     calls: list[object] = []
 
