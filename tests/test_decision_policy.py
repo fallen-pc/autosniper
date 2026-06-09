@@ -28,6 +28,7 @@ def test_buy_requires_actionable_profit_bid_room_and_safety() -> None:
 
 def test_watch_is_viable_but_not_currently_actionable() -> None:
     assert derive_action_label(_policy_input(bid_status="Near ceiling")) == ACTION_WATCH
+    assert derive_action_label(_policy_input(bid_status="At ceiling")) == ACTION_WATCH
     assert derive_action_label(_policy_input(computed_verdict="Marginal (repairs)")) == ACTION_WATCH
     assert derive_action_label(_policy_input(expected_auction_worst_profit=500.0)) == ACTION_WATCH
 
@@ -50,5 +51,5 @@ def test_action_display_copy_is_short_and_bid_specific() -> None:
     )
     assert action_display_parts(ACTION_WATCH) == (
         "Watch",
-        "Watch: useful economics, but not bid-ready yet.",
+        "Watch: viable, but needs price room, repair inspection, or more context.",
     )

@@ -15,7 +15,7 @@ REVIEW_VERDICTS = {"Not Covered", "Not Eligible"}
 BUYABLE_VERDICTS = {"Strong Flip", "Conditional Flip", "Good"}
 WATCHABLE_VERDICTS = BUYABLE_VERDICTS | {"Marginal (repairs)"}
 ACTIONABLE_BID_STATUSES = {"Cheap", "Below expected", "Open"}
-NO_BUY_BID_STATUSES = {"Over max", "At ceiling"}
+NO_BUY_BID_STATUSES = {"Over max"}
 ACTIONABLE_HARD_MAX_SAFETY = {"Strong", "Conditional"}
 
 ACTION_DISPLAY_COPY = {
@@ -25,7 +25,7 @@ ACTION_DISPLAY_COPY = {
     ),
     ACTION_WATCH: (
         ACTION_WATCH,
-        "Watch: useful economics, but not bid-ready yet.",
+        "Watch: viable, but needs price room, repair inspection, or more context.",
     ),
     ACTION_AVOID: (
         ACTION_AVOID,

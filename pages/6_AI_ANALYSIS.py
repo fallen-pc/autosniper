@@ -12,7 +12,7 @@ from typing import Any, Dict, Optional
 import pandas as pd
 import streamlit as st
 
-from scripts.ai_listing_valuation import load_cached_results, run_curve_listing_analysis
+from scripts.ai_listing_valuation import MIN_NET_PROFIT_ABSOLUTE, load_cached_results, run_curve_listing_analysis
 from scripts.ai_price_analysis import _extract_hours_remaining
 from shared.comps_engine import parse_currency, parse_numeric
 from shared.canonical_tagging import UNCLASSIFIED, is_canonical_eligible, tag_dataframe
@@ -25,7 +25,7 @@ from shared.curves import (
     resolve_curve_canonical_tag,
 )
 from shared.data_loader import dataset_path, ensure_datasets_available
-from shared.decision_policy import action_display_parts
+from shared.decision_policy import DecisionPolicyInput, action_display_parts, derive_action_label
 from shared.global_filters import apply_global_sidebar_filters, render_global_sidebar_filters
 from shared.location_utils import extract_state
 from shared.repair_features import build_repair_features
@@ -3289,7 +3289,27 @@ def _truthy(value: object) -> bool:
     return False
 
 
+def _resolve_action_label(row: pd.Series) -> str:
+    current_action = _safe_text(row.get("action_label"), fallback="Review")
+    computed_verdict = _safe_text(row.get("computed_verdict") or row.get("verdict"), fallback="")
+    bid_status = _safe_text(row.get("bid_status"), fallback="")
+    hard_max_safety = _safe_text(row.get("hard_max_safety"), fallback="")
+    if not computed_verdict or not bid_status or not hard_max_safety:
+        return current_action
+    return derive_action_label(
+        DecisionPolicyInput(
+            computed_verdict=computed_verdict,
+            bid_status=bid_status,
+            expected_auction_worst_profit=first_currency_value(row.get("expected_auction_worst_profit")),
+            current_worst_profit=first_currency_value(row.get("profit_at_current_bid_worst")),
+            hard_max_safety=hard_max_safety,
+            min_profit=MIN_NET_PROFIT_ABSOLUTE,
+        )
+    )
+
+
 output = output.copy()
+output["action_label"] = output.apply(_resolve_action_label, axis=1)
 output["profit_margin_value"] = output.apply(_compute_profit_margin_value, axis=1)
 output["resale_value"] = output.apply(_compute_resale_value, axis=1)
 output["max_bid_value"] = output.apply(_compute_max_bid_value, axis=1)
