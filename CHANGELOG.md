@@ -1,6 +1,14 @@
 # Changelog
 
+## 2026-06-02
+- Added standard same-lane `225000` and `300000` km high-km extensions across existing curve tags, preserving existing Carsales-led extension rows and using lane-level depreciation from the existing curve shape rather than Grays sold-price repricing.
+
 ## 2026-05-22
+- Added the `mitsubishi_triton_glx_mn_ute_manual_diesel` curve from private Carsales Triton GLX MN manual diesel ute evidence, using the standard grid plus shared `225000` and `300000` extension denominations.
+- Extended the `mitsubishi_pajero_glx_nt-nw_suv_auto_diesel` curve with the shared `300000` km high-km extension denomination so current GLX active rows above 225k remain in valuation range.
+- Extended the `mitsubishi_pajero_glx_nt-nw_suv_auto_diesel` curve with the repo-standard `225000` km extension denomination from private Carsales high-km Pajero GLX evidence.
+- Added the `mitsubishi_pajero_glx_nt-nw_suv_auto_diesel` standard-grid retail resale curve from private Carsales Pajero GLX NT/NW diesel automatic SUV evidence, with NT and NW matcher rows mapped into one conservative base curve.
+- Added the `ford_territory_sz_suv_auto_diesel` standard-grid retail resale curve from private Carsales Territory SZ/SZ MkII TX and TS diesel automatic SUV evidence, plus the first Ford matcher support.
 - Added the `hyundai_accent_active_rb_hatch_auto_petrol` standard-grid retail resale curve from private Carsales Accent Active RB hatch automatic petrol evidence, plus supported-universe and allowed-variant mapping for Active automatic/CVT hatch rows.
 
 ## 2026-05-19
