@@ -25,4 +25,7 @@ hyundai_i30_active_petrol_auto_hatch_gd,hyundai_i30_gd_hatch_auto_petrol,active,
 hyundai_i30_active_petrol_auto_hatch_pd,hyundai_i30_pd_hatch_auto_petrol,active,Map exact Active trim into the i30 PD Active-only base curve
 hyundai_accent_active_petrol_auto_hatch_rb,hyundai_accent_active_rb_hatch_auto_petrol,active,Direct Accent Active RB automatic hatch petrol mapping
 hyundai_iload_tq_van_auto_diesel,hyundai_iload_tq_van_auto_diesel,active,Direct iLoad TQ diesel automatic van mapping
+ford_territory_tx-ts_diesel_auto_suv_sz,ford_territory_sz_suv_auto_diesel,active,Direct Territory SZ TX/TS diesel automatic SUV mapping
+mitsubishi_pajero_glx_diesel_auto_suv_nt-nw,mitsubishi_pajero_glx_nt-nw_suv_auto_diesel,active,Map Pajero GLX NT/NW diesel automatic SUV into combined GLX NT/NW base curve
+mitsubishi_triton_glx_diesel_manual_ute_mn,mitsubishi_triton_glx_mn_ute_manual_diesel,active,Direct Triton GLX MN diesel manual ute mapping
 toyota_hilux_sr_diesel_auto_cab_chassis_gun126r,toyota_hilux_sr_gun126r_cab_chassis_auto_diesel,active,Direct Hilux SR 4x4 dual/crew cab chassis GUN126R diesel-auto mapping

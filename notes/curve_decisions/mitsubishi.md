@@ -1,0 +1,61 @@
+# Mitsubishi Curve Decisions
+
+## Pajero GLX NT/NW Diesel Automatic SUV
+
+Base curve:
+- `mitsubishi_pajero_glx_nt-nw_suv_auto_diesel`
+
+Current working interpretation:
+- body: `suv`, with `wagon` accepted as an equivalent source label
+- transmission: `auto`
+- fuel: `diesel`
+- intended market slice: private-sale Mitsubishi Pajero GLX NT/NW diesel automatic SUVs
+- anchor years: `2010`, `2012`, `2014`
+- buckets use the standard repo grid: `30000`, `60000`, `100000`, `150000`, `200000`
+- high-km extension buckets: `225000`, `300000`, matching the shared extension denominations
+
+Included rows for the current pass:
+- Pajero GLX NT diesel automatic SUV/wagon rows
+- Pajero GLX NW diesel automatic SUV/wagon rows
+
+Excluded rows for the current pass:
+- petrol rows
+- manual rows
+- Exceed rows
+- VRX rows
+- GLS or Platinum rows
+
+Why:
+- The active Grays gaps are GLX diesel automatic Pajeros in the NT/NW period, and the private Carsales evidence is thin but directly aligned to GLX.
+- The first curve is deliberately conservative at high kilometres. The `225000` and `300000` extensions are the shared extension denominations for high-km curve work, and the 300k bucket is needed to cover the current live GLX rows above 225k.
+- This curve is a retail resale curve built from Carsales/private asking evidence only. Grays sold history remains hammer-bid evidence, not repricing evidence.
+
+## Triton GLX MN Diesel Manual Ute
+
+Base curve:
+- `mitsubishi_triton_glx_mn_ute_manual_diesel`
+
+Current working interpretation:
+- body: `ute`, with dual-cab/pickup/cab-chassis source labels accepted
+- transmission: `manual`
+- fuel: `diesel`
+- intended market slice: private-sale Mitsubishi Triton GLX MN diesel manual utes
+- anchor years: `2011`, `2013`, `2015`
+- buckets use the standard repo grid: `30000`, `60000`, `100000`, `150000`, `200000`
+- high-km extension buckets: `225000`, `300000`, matching the shared extension denominations
+
+Included rows for the current pass:
+- Triton GLX MN diesel manual ute / dual cab rows
+
+Excluded rows for the current pass:
+- automatic rows
+- petrol rows
+- GLX-R / GLXR rows
+- GLX+ rows
+- GLS / VR rows
+- MQ, MR, and MV rows
+
+Why:
+- The supplied Carsales evidence is MN GLX manual-only and has enough high-km depth to support the shared extension denominations.
+- The current active Triton rows include MN auto, MN GLX-R manual, and MQ rows, so those are intentionally left for separate curves rather than silently merged.
+- This curve is a retail resale curve built from Carsales/private asking evidence only. Grays sold history remains hammer-bid evidence, not repricing evidence.

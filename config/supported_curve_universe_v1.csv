@@ -20,5 +20,8 @@ hyundai_i30_gd_hatch_auto_petrol,hyundai,i30,hatch,petrol,auto,gd,live_now,1,Cor
 hyundai_i30_pd_hatch_auto_petrol,hyundai,i30,hatch,petrol,auto,pd,live_now,1,Core i30 PD Active hatch
 hyundai_accent_active_rb_hatch_auto_petrol,hyundai,accent,hatch,petrol,auto,rb,live_now,1,Saved Accent Active RB automatic hatch petrol curve built from private Carsales evidence
 hyundai_iload_tq_van_auto_diesel,hyundai,iload,van,diesel,auto,tq,live_now,1,Saved iLoad TQ diesel automatic van curve built from private Carsales evidence; manual crew and iMax lanes remain separate
+ford_territory_sz_suv_auto_diesel,ford,territory,suv,diesel,auto,sz,live_now,1,Saved Territory SZ TX/TS diesel automatic SUV curve built conservatively from private Carsales evidence
+mitsubishi_pajero_glx_nt-nw_suv_auto_diesel,mitsubishi,pajero,suv,diesel,auto,nt-nw,live_now,1,Saved Pajero GLX NT/NW diesel automatic SUV curve built from private Carsales evidence
+mitsubishi_triton_glx_mn_ute_manual_diesel,mitsubishi,triton,ute,diesel,manual,mn,live_now,1,Saved Triton GLX MN diesel manual ute curve built from private Carsales evidence
 toyota_camry_asv70r_sedan_auto_petrol,toyota,camry,sedan,petrol,auto,asv70r,live_now,1,Saved Ascent ASV70R petrol sedan curve built from private Carsales and Autotrader evidence
 toyota_hilux_sr_gun126r_cab_chassis_auto_diesel,toyota,hilux,cab_chassis,diesel,auto,gun126r,live_now,1,Saved Hilux SR 4x4 dual/crew cab chassis GUN126R diesel-auto curve built from Carsales/private retail evidence; Autotrader is point-cloud validation only and repaired Grays sold confirms auction-to-retail spread

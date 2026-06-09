@@ -40,6 +40,8 @@ MAKE_ALIASES = {
     "toyota": "toyota",
     "mazda": "mazda",
     "hyundai": "hyundai",
+    "ford": "ford",
+    "mitsubishi": "mitsubishi",
 }
 
 MODEL_ALIASES = {
@@ -55,6 +57,9 @@ MODEL_ALIASES = {
     "accent": "accent",
     "iload": "iload",
     "i load": "iload",
+    "territory": "territory",
+    "pajero": "pajero",
+    "triton": "triton",
 }
 
 
@@ -404,7 +409,7 @@ def _extract_series_code(text: str) -> str:
         return candidate
 
     # Some series/platform codes appear as short alpha tokens in the variant text.
-    short_match = re.search(r"\b(BL|BM|KE|KF|LM|TB|TQ)\b", text, re.IGNORECASE)
+    short_match = re.search(r"\b(BL|BM|KE|KF|LM|TB|TQ|SZ|NT|NW|MN|MQ)\b", text, re.IGNORECASE)
     if short_match:
         return short_match.group(1).lower()
     return ""
@@ -576,7 +581,7 @@ def load_allowed_variants(path: Path | None = None) -> Tuple[AllowedVariant, ...
     if not sources:
         return ()
     variants: list[AllowedVariant] = []
-    seen_keys: set[tuple[str, str, str, str, str, str, str]] = set()
+    seen_keys: set[tuple[str, str, str, str, str, str, str, str]] = set()
     for source in sources:
         df = pd.read_csv(source)
         for _, row in df.iterrows():
@@ -599,7 +604,7 @@ def load_allowed_variants(path: Path | None = None) -> Tuple[AllowedVariant, ...
             )
             if not canonical_tag:
                 continue
-            row_key = (canonical_tag, make, model, body, fuel, transmission, badge)
+            row_key = (canonical_tag, make, model, body, fuel, transmission, badge, series)
             if row_key in seen_keys:
                 continue
             seen_keys.add(row_key)
