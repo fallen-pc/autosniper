@@ -75,6 +75,7 @@ if missing:
 SPORT_TRIM_PATTERN = re.compile(r"\b(sport|sports|sx|zr|zrx)\b|sportivo|levin", re.IGNORECASE)
 ENGINE_DEFECT_PATTERN = re.compile(r"engine noise observed|engine idling rough", re.IGNORECASE)
 AUTOTRADER_OUTPUT = Path("autotrader_isolated/output/first_page_results.csv")
+AUTOTRADER_RECENT_MARKET = Path("autotrader_isolated/output/autotrader_recent_market_tagged.csv")
 AUTOTRADER_STATE = Path("autotrader_isolated/output/listing_state.csv")
 CURVE_IMAGE_DIR = Path("curves/images")
 STRUCTURAL_KEYWORDS = [
@@ -838,6 +839,22 @@ def _trans_match(left: object, right: object) -> bool:
     return left_key == right_key or left_key in right_key or right_key in left_key
 
 
+def _body_match(left: object, right: object) -> bool:
+    def _norm_body(value: object) -> str:
+        key = _norm_key(value)
+        if key in {"suv", "wagon", "stationwagon", "crossover"}:
+            return "suv_wagon"
+        if key in {"hatch", "hatchback"}:
+            return "hatchback"
+        return key
+
+    left_key = _norm_body(left)
+    right_key = _norm_body(right)
+    if not left_key or not right_key:
+        return True
+    return left_key == right_key or left_key in right_key or right_key in left_key
+
+
 def _score_autotrader_matches(
     listing_row: pd.Series,
     curve_tag: str,
@@ -888,7 +905,7 @@ def _score_autotrader_matches(
             continue
         if not _trans_match(listing_trans, candidate.get("transmission")):
             continue
-        if not _token_match(listing_body, candidate.get("body_type")):
+        if not _body_match(listing_body, candidate.get("body_type")):
             continue
         stats["fuel_trans_body"] += 1
 
@@ -2025,6 +2042,8 @@ def _filter_autotrader_text(
 
 def _autotrader_cache_key() -> float | None:
     mtimes = []
+    if AUTOTRADER_RECENT_MARKET.exists():
+        mtimes.append(AUTOTRADER_RECENT_MARKET.stat().st_mtime)
     if AUTOTRADER_OUTPUT.exists():
         mtimes.append(AUTOTRADER_OUTPUT.stat().st_mtime)
     if AUTOTRADER_STATE.exists():
@@ -2034,7 +2053,7 @@ def _autotrader_cache_key() -> float | None:
 
 @st.cache_data(ttl=300)
 def load_autotrader_data(raw_mtime: float | None = None) -> pd.DataFrame:
-    if not AUTOTRADER_OUTPUT.exists() and not AUTOTRADER_STATE.exists():
+    if not AUTOTRADER_RECENT_MARKET.exists() and not AUTOTRADER_OUTPUT.exists() and not AUTOTRADER_STATE.exists():
         return pd.DataFrame()
     tagged_path = AUTOTRADER_OUTPUT.with_name(
         f"{AUTOTRADER_OUTPUT.stem}_tagged{AUTOTRADER_OUTPUT.suffix}"
@@ -2044,11 +2063,14 @@ def load_autotrader_data(raw_mtime: float | None = None) -> pd.DataFrame:
     use_tagged = tagged_mtime is not None and tagged_mtime >= raw_mtime
 
     live_df = pd.DataFrame()
-    if AUTOTRADER_OUTPUT.exists():
+    if AUTOTRADER_RECENT_MARKET.exists():
+        live_df = pd.read_csv(AUTOTRADER_RECENT_MARKET)
+        live_df["source"] = live_df.get("source", "autotrader_recent_market")
+    elif AUTOTRADER_OUTPUT.exists():
         live_df = pd.read_csv(tagged_path if use_tagged else AUTOTRADER_OUTPUT)
 
     sold_df = pd.DataFrame()
-    if AUTOTRADER_STATE.exists():
+    if live_df.empty and AUTOTRADER_STATE.exists():
         state_df = pd.read_csv(AUTOTRADER_STATE)
         if "status" in state_df.columns:
             sold_df = state_df[state_df["status"].str.lower() == "sold"].copy()
