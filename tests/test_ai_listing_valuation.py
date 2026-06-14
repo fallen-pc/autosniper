@@ -105,6 +105,86 @@ def test_decision_event_payload_captures_meaningful_listing_change() -> None:
     assert "added UNREGISTERED" in event["change_reason_summary"]
 
 
+def test_listing_alert_sends_only_for_bid_ready_buy(monkeypatch) -> None:
+    sent: list[dict[str, object]] = []
+
+    def fake_send_on_state_change(alert_scope, url, state_value, message, verdict=None):
+        sent.append(
+            {
+                "alert_scope": alert_scope,
+                "url": url,
+                "state_value": state_value,
+                "message": message,
+                "verdict": verdict,
+            }
+        )
+        return True
+
+    monkeypatch.setattr(ai_listing_valuation, "send_on_state_change", fake_send_on_state_change)
+
+    ai_listing_valuation._maybe_send_listing_alerts(
+        _base_saved_row(action_label="Buy", bid_status="Cheap"),
+        None,
+    )
+
+    assert len(sent) == 1
+    assert sent[0]["alert_scope"] == "listing_bid_ready"
+    assert sent[0]["state_value"] == "bid_ready"
+    assert "Bid-ready vehicle" in str(sent[0]["message"])
+    assert "Action: Buy" in str(sent[0]["message"])
+
+
+def test_listing_alert_does_not_send_for_watch_only(monkeypatch) -> None:
+    sent: list[object] = []
+    monkeypatch.setattr(
+        ai_listing_valuation,
+        "send_on_state_change",
+        lambda *args, **kwargs: sent.append((args, kwargs)),
+    )
+
+    ai_listing_valuation._maybe_send_listing_alerts(
+        _base_saved_row(
+            computed_verdict="Marginal (repairs)",
+            verdict="Marginal (repairs)",
+            action_label="Watch",
+            bid_status="Below expected",
+        ),
+        None,
+    )
+
+    assert sent == []
+
+
+def test_listing_alert_sends_when_buy_becomes_not_bid_ready(monkeypatch) -> None:
+    sent: list[dict[str, object]] = []
+
+    def fake_send_on_state_change(alert_scope, url, state_value, message, verdict=None):
+        sent.append(
+            {
+                "alert_scope": alert_scope,
+                "url": url,
+                "state_value": state_value,
+                "message": message,
+                "verdict": verdict,
+            }
+        )
+        return True
+
+    monkeypatch.setattr(ai_listing_valuation, "send_on_state_change", fake_send_on_state_change)
+
+    ai_listing_valuation._maybe_send_listing_alerts(
+        _base_saved_row(action_label="Watch", bid_status="Near ceiling"),
+        _base_saved_row(action_label="Buy", bid_status="Cheap"),
+    )
+
+    assert len(sent) == 1
+    assert sent[0]["alert_scope"] == "listing_bid_ready"
+    assert sent[0]["state_value"] == "not_bid_ready"
+    assert "Vehicle no longer bid-ready" in str(sent[0]["message"])
+    assert "Previous action: Buy" in str(sent[0]["message"])
+    assert "Current action: Watch" in str(sent[0]["message"])
+
+
 def test_save_result_row_writes_decision_event_only_for_material_change(
     monkeypatch,
     tmp_path: Path,

@@ -9,6 +9,8 @@ CSV_data/**
 !CSV_data/scrapers/**
 !CSV_data/ai/
 !CSV_data/ai/**
+CSV_data/ai/telegram_alert_log.csv
+CSV_data/ai/telegram_alert_state.csv
 !CSV_data/restricted/
 !CSV_data/restricted/**
 !CSV_data/model_audit/

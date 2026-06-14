@@ -40,8 +40,8 @@ TELEGRAM_CHAT_ID
 ```
 
 The active monitor now sends alerts when:
-- a listing becomes potentially viable
-- a previously viable listing becomes no longer profitable
+- a listing becomes bid-ready (`action_label = Buy`)
+- a previously bid-ready listing is no longer marked `Buy`
 
 Alert state is tracked in:
 

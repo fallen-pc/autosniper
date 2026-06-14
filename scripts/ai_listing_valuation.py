@@ -540,19 +540,10 @@ def _is_good_verdict(verdict: Any) -> bool:
     return "strong" in verdict_text or verdict_text == "good"
 
 
-def _is_viable_listing(row: Mapping[str, Any] | None) -> bool:
+def _is_bid_ready_listing(row: Mapping[str, Any] | None) -> bool:
     if not row:
         return False
-    verdict_text = str(row.get("computed_verdict") or row.get("verdict") or "").strip().lower()
-    if verdict_text in {"avoid", "trap", "not covered"}:
-        return False
-    no_edge_value = str(row.get("no_edge") or row.get("no_edge_at_current_bid") or "").strip().lower()
-    if no_edge_value in {"true", "1", "yes"}:
-        return False
-    expected_profit = _parse_currency(row.get("expected_profit"))
-    if expected_profit is not None and expected_profit <= 0:
-        return False
-    return verdict_text in {"strong flip", "conditional flip", "marginal (repairs)", "good"}
+    return str(row.get("action_label") or "").strip() == "Buy"
 
 
 def _alert_title(row: Mapping[str, Any]) -> str:
@@ -582,30 +573,38 @@ def _maybe_send_listing_alerts(
     if not url:
         return
 
-    current_viable = _is_viable_listing(row)
-    previous_viable = _is_viable_listing(existing_row)
-    if current_viable:
-        state_value = "viable"
+    current_bid_ready = _is_bid_ready_listing(row)
+    previous_bid_ready = _is_bid_ready_listing(existing_row)
+    action_label = str(row.get("action_label") or "N/A").strip() or "N/A"
+    bid_status = str(row.get("bid_status") or "N/A").strip() or "N/A"
+    if current_bid_ready:
+        state_value = "bid_ready"
         message = (
-            "Potentially viable vehicle\n"
+            "Bid-ready vehicle\n"
             f"{title}\n"
+            f"Action: {action_label}\n"
             f"Verdict: {row.get('computed_verdict')}\n"
+            f"Bid status: {bid_status}\n"
             f"Current bid: {current_bid}\n"
             f"Max bid: {max_bid}\n"
             f"Expected profit: {expected_profit}\n"
             f"Profit margin: {margin}\n"
             f"{url}"
         )
-    elif previous_viable:
-        state_value = "not_viable"
+    elif previous_bid_ready:
+        state_value = "not_bid_ready"
         previous_profit = existing_row.get("expected_profit") if existing_row else "N/A"
         previous_verdict = existing_row.get("computed_verdict") if existing_row else "N/A"
-        edge_note = str(row.get("edge_note") or "").strip() or "Listing is no longer profitable at the current bid."
+        previous_action = existing_row.get("action_label") if existing_row else "N/A"
+        edge_note = str(row.get("edge_note") or "").strip() or "Listing is no longer bid-ready at the current bid."
         message = (
-            "Vehicle no longer profitable\n"
+            "Vehicle no longer bid-ready\n"
             f"{title}\n"
+            f"Previous action: {previous_action}\n"
+            f"Current action: {action_label}\n"
             f"Previous verdict: {previous_verdict}\n"
             f"Current verdict: {row.get('computed_verdict')}\n"
+            f"Bid status: {bid_status}\n"
             f"Current bid: {current_bid}\n"
             f"Max bid: {max_bid}\n"
             f"Previous expected profit: {previous_profit}\n"
@@ -619,7 +618,7 @@ def _maybe_send_listing_alerts(
 
     try:
         send_on_state_change(
-            "listing_viability",
+            "listing_bid_ready",
             url,
             state_value,
             message,
