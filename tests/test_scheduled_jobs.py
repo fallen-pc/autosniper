@@ -27,6 +27,7 @@ def test_hourly_monitor_updates_only_ai_analysis_scope(monkeypatch) -> None:
         "_run_update_bids",
         lambda urls, *, skip_master=True: captured_urls.append(list(urls)),
     )
+    monkeypatch.setattr(scheduled_jobs.update_master, "update_master_database", lambda: None)
     monkeypatch.setattr(
         scheduled_jobs,
         "diff_price_changed_listing_urls",
@@ -58,6 +59,7 @@ def test_hourly_monitor_revalues_price_changed_urls(monkeypatch) -> None:
 
     monkeypatch.setattr(scheduled_jobs, "load_ai_analysis_active_df", lambda: ai_scope)
     monkeypatch.setattr(scheduled_jobs, "_run_update_bids", lambda urls, *, skip_master=True: None)
+    monkeypatch.setattr(scheduled_jobs.update_master, "update_master_database", lambda: None)
     monkeypatch.setattr(
         scheduled_jobs,
         "diff_price_changed_listing_urls",
@@ -78,6 +80,41 @@ def test_hourly_monitor_revalues_price_changed_urls(monkeypatch) -> None:
             "force_refresh": True,
         }
     ]
+
+
+def test_hourly_monitor_rematerializes_active_view_after_bid_update(monkeypatch) -> None:
+    ai_scope = pd.DataFrame(
+        [
+            {"url": "https://example.com/lot/current-viable-1", "price": "$10"},
+        ]
+    )
+    calls: list[str] = []
+
+    monkeypatch.setattr(scheduled_jobs, "load_ai_analysis_active_df", lambda: ai_scope)
+    monkeypatch.setattr(
+        scheduled_jobs,
+        "_run_update_bids",
+        lambda urls, *, skip_master=True: calls.append("bids"),
+    )
+    monkeypatch.setattr(
+        scheduled_jobs.update_master,
+        "update_master_database",
+        lambda: calls.append("master"),
+    )
+    monkeypatch.setattr(
+        scheduled_jobs,
+        "diff_price_changed_listing_urls",
+        lambda before_df, after_df: set(),
+    )
+    monkeypatch.setattr(
+        scheduled_jobs,
+        "revalue_active_listings",
+        lambda **kwargs: calls.append("revalue") or {"evaluated": 0},
+    )
+
+    scheduled_jobs.run_hourly_monitor()
+
+    assert calls == ["bids", "master", "revalue"]
 
 
 def test_daily_smoke_runs_limited_pipeline(monkeypatch) -> None:

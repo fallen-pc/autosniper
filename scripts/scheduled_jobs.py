@@ -527,6 +527,7 @@ def run_hourly_monitor() -> None:
     before_df = load_ai_analysis_active_df()
     urls = active_urls_from_frame(before_df)
     _run_update_bids(urls, skip_master=True)
+    update_master.update_master_database()
     after_df = load_ai_analysis_active_df()
     price_changed_urls = diff_price_changed_listing_urls(before_df, after_df)
     summary = revalue_active_listings(target_urls=price_changed_urls, stale_minutes=60, force_refresh=True)
