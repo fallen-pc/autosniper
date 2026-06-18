@@ -417,3 +417,57 @@ def test_update_master_keeps_existing_sold_history_when_url_is_active(monkeypatc
 
     sold_after = pd.read_csv(sold_path)
     assert sold_after["url"].tolist() == [url]
+
+
+def test_prepare_sold_rows_enforces_fixed_sold_schema() -> None:
+    frame = pd.DataFrame(
+        [
+            {
+                "year": 2020,
+                "make": "Toyota",
+                "model": "Corolla",
+                "variant": "Ascent",
+                "body_type": "Sedan",
+                "transmission": "Automatic",
+                "fuel_type": "Petrol",
+                "odometer_reading": 120000,
+                "no_of_seats": 5,
+                "vin": "JTDKB20U793512345",
+                "rego_no": "",
+                "rego_expiry": "",
+                "no_of_cylinders": 4,
+                "engine_capacity": 1.8,
+                "exterior_colour": "",
+                "interior_colour": "",
+                "key": "",
+                "spare_key": "",
+                "owners_manual": "",
+                "service_history": "",
+                "engine_turns_over": "",
+                "location": "VIC",
+                "url": "https://example.com/lot/123",
+                "general_condition": "",
+                "bids": 8,
+                "price": 15000,
+                "date_sold": "2025-01-01",
+                "odo_suspect": 0,
+                "canonical_tag": "toyota_corolla_zre172r_sedan_auto_petrol",
+                "canonical_reason": "[OK]",
+                "price_numeric": 15000,
+                "price_text": "$15,000",
+                "bids_numeric": 8,
+                "odometer_unit": "km",
+                "build_date": "2020-01",
+                "compliance_date": "2020-02",
+                "rego_state": "VIC",
+                "no_of_plates": 2,
+                "last_observed_price": 12000,
+            }
+        ]
+    )
+
+    prepared = update_master._prepare_sold_rows(frame)
+
+    assert list(prepared.columns) == update_master.SOLD_DETAIL_SCHEMA
+    assert "last_observed_price" not in prepared.columns
+    assert "odometer_unit" not in prepared.columns

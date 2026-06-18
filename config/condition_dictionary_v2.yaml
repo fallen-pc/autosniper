@@ -81,12 +81,12 @@ entries:
     category: structural
     severity_hint: high
 
-  - pattern: "\\b(chassis|frame|rail|pillar|structural)\\b"
+  - pattern: "\\b(chassis|frame|structural|chassis rail|frame rail|structural rail|cant rail|[abc][ -]?pillar)\\b"
     canonical_defect: structural_damage
     category: structural
     severity_hint: high
 
-  - pattern: "\\b(engine).*(rattle|knock|smoke|leak|overheat|overheating)"
+  - pattern: "\\b(engine).*(rattle|knock|smoke|leak|overheat|overheating|idling rough|lacks power)"
     canonical_defect: engine_fault
     category: mechanical
     severity_hint: high
@@ -131,8 +131,13 @@ entries:
     category: replacement
     severity_hint: medium
 
-  - pattern: "\\b(mirror|headlight|head light).*(crack|cracked|broken|missing|damaged)"
+  - pattern: "\\b(?:(mirror|headlight|head light).*(crack|cracked|broken|missing|damaged)|(crack|cracked|broken|missing|damaged).*\\b(mirror|headlight|head light))"
     canonical_defect: mirror_light_damage
+    category: replacement
+    severity_hint: medium
+
+  - pattern: "\\bdoor handle\\b.*\\b(not working|broken|missing|damaged)"
+    canonical_defect: door_handle_damage
     category: replacement
     severity_hint: medium
 

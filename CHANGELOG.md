@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-06-16
+- Added separate Holden Commodore VF petrol automatic wagon curves for `Evoke` and `SV6` from private Carsales evidence, excluding gas-only rows and keeping sedan/wagon lanes separate.
+- Added separate Holden Commodore VF petrol automatic sedan curves for `Evoke` and `SV6` from private Carsales evidence, keeping wagons, utes, SS/V8/performance rows, and older VE lanes out of the matcher.
+
 ## 2026-06-02
 - Added standard same-lane `225000` and `300000` km high-km extensions across existing curve tags, preserving existing Carsales-led extension rows and using lane-level depreciation from the existing curve shape rather than Grays sold-price repricing.
 

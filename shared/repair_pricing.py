@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from functools import lru_cache
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
+import json
 import re
 
 import pandas as pd
@@ -75,6 +76,7 @@ V2_REPLACEMENT_COSTS = {
     "mirror_light_damage": 250,
     "bumper_damage": 600,
     "replacement_required": 600,
+    "door_handle_damage": 250,
     "battery_issue": 300,
     "control_damage": 250,
     "seat_damage": 250,
@@ -103,12 +105,15 @@ PANEL_LOCATION_TERMS = (
     "taillight",
 )
 
-DAMAGE_WORD_RE = re.compile(r"\b(crack|cracked|broken|missing|damaged|damage|torn|chip|chipped)\b", re.IGNORECASE)
-REPLACEMENT_TARGET_RE = re.compile(
-    r"\b(headlight|head light|tail light|taillight|indicator|mirror|bumper|bar)\b",
+DAMAGE_WORD_RE = re.compile(
+    r"\b(crack|cracked|broken|missing|damaged|damage|not working|torn|chip|chipped)\b",
     re.IGNORECASE,
 )
-CONDITION_FRAGMENT_RE = re.compile(r"[.;\r\n]+")
+REPLACEMENT_TARGET_RE = re.compile(
+    r"\b(headlight|head light|tail light|taillight|indicator|mirror|bumper|bar|door handle)\b",
+    re.IGNORECASE,
+)
+CONDITION_FRAGMENT_RE = re.compile(r"[.;|\r\n]+")
 
 MECH_AVOID_PATTERNS = [
     r"\bengine light\b",
@@ -121,21 +126,28 @@ MECH_AVOID_PATTERNS = [
     r"\btraction control light on\b",
     r"\bcheck engine\b",
     r"\bengine noise\b",
+    r"\bengine idling rough\b",
+    r"\bengine lacks power\b",
     r"\bhead gasket\b",
     r"\btransmission\b.*\b(attention|fault|issue|noise|slip)\b",
     r"\bgearbox\b.*\b(attention|fault|issue|noise|slip)\b",
+    r"\bdiff\b.*\b(attention|fault|issue|noise|bush(?:es)?|leak)\b",
     r"\boverheating\b",
     r"\bcooling system\b.*\brequires attention\b",
     r"\bcooling\b.*\b(leak|issue|fault)\b",
     r"\boil leak\b",
-    r"\bpower steering\b.*\b(fault|issue|leak)\b",
+    r"\bpower steering\b.*\b(attention|fault|issue|leak)\b",
     r"\bdrivetrain\b.*\b(fault|issue)\b",
-    r"\bsuspension\b.*\b(fault|issue|noise)\b",
+    r"\bsuspension\b.*\b(attention|fault|issue|noise)\b",
     r"\balignment\b.*\b(issue|pull)\b",
-    r"\bbrake\b.*\b(fault|issue)\b",
+    r"\bbrake\b.*\b(attention|fault|issue)\b",
+    r"\bclutch\b.*\b(attention|fault|issue|slip)\b",
     r"\bdoes not start\b",
     r"\bwon't start\b",
     r"\bnot running\b",
+    r"\bcannot be driven off site\b",
+    r"\btilt tray\b.*\brequired\b",
+    r"\btowing required\b",
 ]
 
 MECH_AVOID_RE = [re.compile(pattern, re.IGNORECASE) for pattern in MECH_AVOID_PATTERNS]
@@ -175,12 +187,34 @@ class V2ConditionEntry:
     pattern: re.Pattern[str]
 
 
-def any_mechanical(lines: List[str]) -> bool:
+def _fragment_key(line: str) -> str:
+    cleaned = re.sub(r"[^a-z0-9\s]", " ", str(line or "").lower())
+    return re.sub(r"\s+", " ", cleaned).strip()
+
+
+def _mechanical_trigger_line(lines: List[str]) -> str | None:
     for line in lines:
         for regex in MECH_AVOID_RE:
             if regex.search(line):
-                return True
-    return False
+                return line
+    return None
+
+
+def any_mechanical(lines: List[str]) -> bool:
+    return _mechanical_trigger_line(lines) is not None
+
+
+@dataclass
+class RepairFragment:
+    original_text: str
+    normalized_text: str
+    status: str
+    category: str
+    canonical_defects: List[str] = field(default_factory=list)
+    pills: List[str] = field(default_factory=list)
+    cost_estimate: int = 0
+    hard_avoid_reason: str | None = None
+    reasons: List[str] = field(default_factory=list)
 
 
 @dataclass
@@ -197,6 +231,8 @@ class RepairAssessment:
     total_cost: int
     reasons: List[str]
     hard_avoid_reason: str | None = None
+    original_text: str = ""
+    fragments: List[RepairFragment] = field(default_factory=list)
 
 
 HARD_AVOID_BUCKETS = {
@@ -216,9 +252,27 @@ def _hard_avoid_assessment(
     severity_level: str,
     severity_multiplier: float,
     trigger_reason: str,
+    original_text: str = "",
+    lines: List[str] | None = None,
+    trigger_line: str | None = None,
 ) -> RepairAssessment:
     bucket = HARD_AVOID_BUCKETS.get(reason, HARD_AVOID_BUCKETS["mechanical"])
     hard_cost = int(bucket["cost"])
+    fragments: list[RepairFragment] = []
+    for line in lines or []:
+        is_trigger = line == trigger_line if trigger_line else False
+        fragments.append(
+            RepairFragment(
+                original_text=line,
+                normalized_text=_fragment_key(line),
+                status="hard_avoid" if is_trigger else "not_assessed_after_hard_avoid",
+                category=reason if is_trigger else "not_assessed",
+                pills=[str(bucket["pill"])] if is_trigger else [],
+                cost_estimate=hard_cost if is_trigger else 0,
+                hard_avoid_reason=reason if is_trigger else None,
+                reasons=[trigger_reason] if is_trigger else [],
+            )
+        )
     return RepairAssessment(
         hard_avoid=True,
         hard_avoid_reason=reason,
@@ -232,6 +286,8 @@ def _hard_avoid_assessment(
         severity_multiplier=severity_multiplier,
         total_cost=hard_cost,
         reasons=[trigger_reason],
+        original_text=original_text,
+        fragments=fragments,
     )
 
 
@@ -326,6 +382,22 @@ def _infer_replacement_canonicals(line: str) -> list[str]:
     return inferred
 
 
+def _unclassified_fragments(lines: List[str], matched_lines: set[str]) -> list[RepairFragment]:
+    fragments: list[RepairFragment] = []
+    for line in lines:
+        if line in matched_lines:
+            continue
+        fragments.append(
+            RepairFragment(
+                original_text=line,
+                normalized_text=_fragment_key(line),
+                status="unclassified",
+                category="unclassified",
+            )
+        )
+    return fragments
+
+
 class ConditionDictionary:
     def __init__(self, csv_path: str):
         self.map: Dict[str, Dict[str, object]] = {}
@@ -360,12 +432,16 @@ def assess_repairs(
     severity_multiplier = float(SEVERITY_MULTIPLIERS.get(severity_level, 1.0))
     lines = split_condition_lines(general_condition)
 
-    if any_mechanical(lines):
+    mechanical_trigger = _mechanical_trigger_line(lines)
+    if mechanical_trigger:
         return _hard_avoid_assessment(
             "mechanical",
             severity_level=severity_level,
             severity_multiplier=severity_multiplier,
             trigger_reason="MECHANICAL_REGEX_HIT",
+            original_text=str(general_condition or ""),
+            lines=lines,
+            trigger_line=mechanical_trigger,
         )
 
     grouped_v2_hits = _match_v2_entries(lines)
@@ -379,10 +455,17 @@ def assess_repairs(
         has_glass = False
         has_replacement = False
         has_unknown = False
+        fragments: list[RepairFragment] = []
+        matched_lines: set[str] = set()
 
         for line, hits in grouped_v2_hits:
+            matched_lines.add(line)
             canonicals = {hit.canonical_defect for hit in hits}
             categories = {hit.category for hit in hits}
+            line_pills: set[str] = set()
+            line_reasons: list[str] = []
+            line_cost = 0
+            line_category = "matched"
 
             hard_avoid_hit = sorted(canonicals.intersection(V2_HARD_AVOID_CANONICALS))
             if hard_avoid_hit:
@@ -391,6 +474,9 @@ def assess_repairs(
                     severity_level=severity_level,
                     severity_multiplier=severity_multiplier,
                     trigger_reason=f"V2_AVOID: {hard_avoid_hit[0]}: {line}",
+                    original_text=str(general_condition or ""),
+                    lines=lines,
+                    trigger_line=line,
                 )
 
             structural_hard_avoid_hit = sorted(canonicals.intersection(STRUCTURAL_HARD_AVOID_CANONICALS))
@@ -400,27 +486,60 @@ def assess_repairs(
                     severity_level=severity_level,
                     severity_multiplier=severity_multiplier,
                     trigger_reason=f"V2_AVOID: {structural_hard_avoid_hit[0]}: {line}",
+                    original_text=str(general_condition or ""),
+                    lines=lines,
+                    trigger_line=line,
                 )
 
             if canonicals.intersection(V2_UNKNOWN_CANONICALS):
                 pills.add("UNKNOWN")
+                line_pills.add("UNKNOWN")
+                line_category = "boilerplate"
                 if not has_unknown:
                     risk_buffer += RISK_BUFFERS["unknown_photos"]
+                    line_cost += RISK_BUFFERS["unknown_photos"]
                     has_unknown = True
-                reasons.append(f"V2_UNKNOWN: {line}")
+                reason = f"V2_UNKNOWN: {line}"
+                reasons.append(reason)
+                line_reasons.append(reason)
 
             if canonicals.intersection(V2_GLASS_CANONICALS) or "glass" in categories:
                 pills.add("GLASS")
+                line_pills.add("GLASS")
+                line_category = "glass"
                 has_glass = True
-                glass_cost += WINDSCREEN_ADAS if adas_windscreen else WINDSCREEN_STD
-                reasons.append(f"V2_GLASS: {line}")
+                current_cost = WINDSCREEN_ADAS if adas_windscreen else WINDSCREEN_STD
+                glass_cost += current_cost
+                line_cost += current_cost
+                reason = f"V2_GLASS: {line}"
+                reasons.append(reason)
+                line_reasons.append(reason)
 
             if "structural_damage" in canonicals or "hail_damage" in canonicals or "structural" in categories:
                 pills.add("PANEL_REPLACE")
+                line_pills.add("PANEL_REPLACE")
+                line_category = "structural"
                 has_replacement = True
-                cosmetic_panels += max(2, _panel_equivalent_for_line(line))
+                panel_count = max(2, _panel_equivalent_for_line(line))
+                cosmetic_panels += panel_count
+                current_cost = V2_REPLACEMENT_COSTS.get("structural_damage", 900) + panel_count * PANEL_RATE
                 replacement_cost += V2_REPLACEMENT_COSTS.get("structural_damage", 900)
-                reasons.append(f"V2_STRUCTURAL: {line}")
+                line_cost += current_cost
+                reason = f"V2_STRUCTURAL: {line}"
+                reasons.append(reason)
+                line_reasons.append(reason)
+                fragments.append(
+                    RepairFragment(
+                        original_text=line,
+                        normalized_text=_fragment_key(line),
+                        status="matched",
+                        category=line_category,
+                        canonical_defects=sorted(canonicals),
+                        pills=sorted(line_pills),
+                        cost_estimate=int(round(line_cost * severity_multiplier)),
+                        reasons=line_reasons,
+                    )
+                )
                 continue
 
             replacement_hits = [
@@ -439,18 +558,29 @@ def assess_repairs(
                     )
             if replacement_hits:
                 pills.add("PANEL_REPLACE")
+                line_pills.add("PANEL_REPLACE")
+                line_category = "replacement"
                 has_replacement = True
                 for hit in replacement_hits:
-                    replacement_cost += int(V2_REPLACEMENT_COSTS.get(hit.canonical_defect, 600))
-                    reasons.append(f"V2_REPLACEMENT:{hit.canonical_defect}: {line}")
+                    current_cost = int(V2_REPLACEMENT_COSTS.get(hit.canonical_defect, 600))
+                    replacement_cost += current_cost
+                    line_cost += current_cost
+                    reason = f"V2_REPLACEMENT:{hit.canonical_defect}: {line}"
+                    reasons.append(reason)
+                    line_reasons.append(reason)
 
             interior_hits = [hit for hit in hits if hit.category == "interior"]
             if interior_hits:
+                line_category = "interior"
                 if any(hit.canonical_defect == "seat_damage" for hit in interior_hits):
                     interior_hits = [hit for hit in interior_hits if hit.canonical_defect != "seat_issue"]
                 for hit in interior_hits:
-                    replacement_cost += int(V2_REPLACEMENT_COSTS.get(hit.canonical_defect, 200))
-                    reasons.append(f"V2_INTERIOR:{hit.canonical_defect}: {line}")
+                    current_cost = int(V2_REPLACEMENT_COSTS.get(hit.canonical_defect, 200))
+                    replacement_cost += current_cost
+                    line_cost += current_cost
+                    reason = f"V2_INTERIOR:{hit.canonical_defect}: {line}"
+                    reasons.append(reason)
+                    line_reasons.append(reason)
 
             cosmetic_hits = [
                 hit
@@ -461,8 +591,40 @@ def assess_repairs(
                 cosmetic_hits = [hit for hit in cosmetic_hits if hit.canonical_defect != "generic_damage"]
             if cosmetic_hits and "glass" not in categories:
                 pills.add("COSMETIC_PANEL")
-                cosmetic_panels += _panel_equivalent_for_line(line)
-                reasons.append(f"V2_COSMETIC: {line}")
+                line_pills.add("COSMETIC_PANEL")
+                if line_category == "matched":
+                    line_category = "cosmetic"
+                panel_count = _panel_equivalent_for_line(line)
+                cosmetic_panels += panel_count
+                line_cost += panel_count * PANEL_RATE
+                reason = f"V2_COSMETIC: {line}"
+                reasons.append(reason)
+                line_reasons.append(reason)
+
+            fragments.append(
+                RepairFragment(
+                    original_text=line,
+                    normalized_text=_fragment_key(line),
+                    status=(
+                        "ignored"
+                        if (line_category == "boilerplate" or categories == {"boilerplate"}) and line_cost == 0
+                        else "matched"
+                        if line_reasons
+                        else "unclassified"
+                    ),
+                    category=(
+                        "boilerplate"
+                        if (line_category == "boilerplate" or categories == {"boilerplate"}) and line_cost == 0
+                        else line_category
+                        if line_reasons
+                        else "unclassified"
+                    ),
+                    canonical_defects=sorted(canonicals),
+                    pills=sorted(line_pills),
+                    cost_estimate=int(round(line_cost * severity_multiplier)),
+                    reasons=line_reasons,
+                )
+            )
 
         cosmetic_panels = min(cosmetic_panels, PANEL_CAP)
         cosmetic_cost = cosmetic_panels * PANEL_RATE
@@ -493,6 +655,8 @@ def assess_repairs(
             severity_multiplier=severity_multiplier,
             total_cost=total,
             reasons=reasons,
+            original_text=str(general_condition or ""),
+            fragments=fragments + _unclassified_fragments(lines, matched_lines),
         )
 
     cd = ConditionDictionary(dict_csv_path)
@@ -505,11 +669,14 @@ def assess_repairs(
     risk_buffer = 0
     has_glass = False
     has_replacement = False
+    fragments: list[RepairFragment] = []
+    matched_lines: set[str] = set()
 
     for line in lines:
         hit = cd.lookup(line)
         if not hit:
             continue
+        matched_lines.add(line)
 
         group = str(hit.get("group", "")).strip()
         if hit.get("auto_avoid", 0) == 1 or group == "MECHANICAL":
@@ -518,6 +685,9 @@ def assess_repairs(
                 severity_level=severity_level,
                 severity_multiplier=severity_multiplier,
                 trigger_reason=f"DICT_AVOID: {line}",
+                original_text=str(general_condition or ""),
+                lines=lines,
+                trigger_line=line,
             )
 
         if group:
@@ -540,22 +710,67 @@ def assess_repairs(
 
         if group == "UNKNOWN":
             risk_buffer += RISK_BUFFERS["unknown_photos"]
+        fragments.append(
+            RepairFragment(
+                original_text=line,
+                normalized_text=_fragment_key(line),
+                status="matched",
+                category=group or "matched",
+                canonical_defects=[str(hit.get("canonical_key", "")).strip()] if hit.get("canonical_key") else [],
+                pills=[group] if group else [],
+                cost_estimate=int(hit.get("fixed_cost", 0) or 0),
+                reasons=[f"DICT_{group}: {line}"] if group else [],
+            )
+        )
 
     for line in lines:
         lower = line.lower()
+        fallback_pills: set[str] = set()
+        fallback_reasons: list[str] = []
+        fallback_cost = 0
+        fallback_category = ""
         if "dents or marks on body consistent with age" in lower:
             pills.add("COSMETIC_PANEL")
+            fallback_pills.add("COSMETIC_PANEL")
             cosmetic_panels += 1
-            reasons.append(f"FALLBACK_COSMETIC: {line}")
+            fallback_cost += PANEL_RATE
+            fallback_category = "cosmetic"
+            reason = f"FALLBACK_COSMETIC: {line}"
+            reasons.append(reason)
+            fallback_reasons.append(reason)
         if "windscreen" in lower and ("chipped" in lower or "cracked" in lower):
             pills.add("GLASS")
+            fallback_pills.add("GLASS")
             has_glass = True
-            glass_cost += WINDSCREEN_ADAS if adas_windscreen else WINDSCREEN_STD
-            reasons.append(f"FALLBACK_GLASS: {line}")
+            current_cost = WINDSCREEN_ADAS if adas_windscreen else WINDSCREEN_STD
+            glass_cost += current_cost
+            fallback_cost += current_cost
+            fallback_category = "glass"
+            reason = f"FALLBACK_GLASS: {line}"
+            reasons.append(reason)
+            fallback_reasons.append(reason)
         if "please refer to the photos" in lower or "arrange inspection" in lower:
             pills.add("UNKNOWN")
+            fallback_pills.add("UNKNOWN")
             risk_buffer += RISK_BUFFERS["unknown_photos"]
-            reasons.append(f"FALLBACK_UNKNOWN: {line}")
+            fallback_cost += RISK_BUFFERS["unknown_photos"]
+            fallback_category = fallback_category or "boilerplate"
+            reason = f"FALLBACK_UNKNOWN: {line}"
+            reasons.append(reason)
+            fallback_reasons.append(reason)
+        if fallback_reasons and line not in matched_lines:
+            matched_lines.add(line)
+            fragments.append(
+                RepairFragment(
+                    original_text=line,
+                    normalized_text=_fragment_key(line),
+                    status="matched",
+                    category=fallback_category or "matched",
+                    pills=sorted(fallback_pills),
+                    cost_estimate=int(round(fallback_cost * severity_multiplier)),
+                    reasons=fallback_reasons,
+                )
+            )
 
     cosmetic_panels = min(cosmetic_panels, PANEL_CAP)
     cosmetic_cost = cosmetic_panels * PANEL_RATE
@@ -587,6 +802,8 @@ def assess_repairs(
         severity_multiplier=severity_multiplier,
         total_cost=total,
         reasons=reasons,
+        original_text=str(general_condition or ""),
+        fragments=fragments + _unclassified_fragments(lines, matched_lines),
     )
 
 
@@ -606,3 +823,39 @@ def apply_repairs_to_max_bid(max_bid: int, assessment: RepairAssessment) -> Tupl
         verdict = "Avoid"
 
     return adjusted, verdict
+
+
+def repair_decision_label(assessment: RepairAssessment) -> str:
+    if assessment.hard_avoid:
+        reason = (assessment.hard_avoid_reason or "condition").replace("_", " ")
+        return f"HARD AVOID ({reason})"
+    if assessment.total_cost <= REPAIR_GATE_GOOD_MAX:
+        return "GOOD (repairs)"
+    if assessment.total_cost <= REPAIR_GATE_MARGINAL_MAX:
+        return "MARGINAL (repairs)"
+    if assessment.total_cost <= REPAIR_GATE_NOT_VIABLE_MAX:
+        return "NOT VIABLE (repairs)"
+    return "AVOID (repairs)"
+
+
+def repair_fragments_to_records(assessment: RepairAssessment) -> list[dict[str, object]]:
+    records: list[dict[str, object]] = []
+    for fragment in assessment.fragments:
+        records.append(
+            {
+                "original_text": fragment.original_text,
+                "repair_key": fragment.normalized_text,
+                "status": fragment.status,
+                "category": fragment.category,
+                "canonical_defects": "|".join(fragment.canonical_defects),
+                "pills": "|".join(fragment.pills),
+                "cost_estimate": fragment.cost_estimate,
+                "hard_avoid_reason": fragment.hard_avoid_reason or "",
+                "reasons": " | ".join(fragment.reasons),
+            }
+        )
+    return records
+
+
+def serialize_repair_fragments(assessment: RepairAssessment) -> str:
+    return json.dumps(repair_fragments_to_records(assessment), ensure_ascii=False)

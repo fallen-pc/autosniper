@@ -5,6 +5,7 @@ import pandas as pd
 import streamlit as st
 
 from shared.data_loader import dataset_path, ensure_datasets_available
+from shared.repair_pricing import assess_repairs, repair_decision_label, repair_fragments_to_records
 from shared.styling import clean_html, display_banner, inject_global_styles, page_intro
 
 st.set_page_config(page_title="Vehicle Repairs Library", layout="wide")
@@ -205,6 +206,23 @@ def extract_repairs(entry: object) -> list[tuple[str, str]]:
     return repairs
 
 
+def extract_repair_records(entry: object) -> list[dict[str, object]]:
+    if entry is None or (isinstance(entry, float) and pd.isna(entry)):
+        return []
+    text = str(entry).strip()
+    if not text or text.lower() in {"n/a", "na", "none"}:
+        return []
+    assessment = assess_repairs(text)
+    decision = repair_decision_label(assessment)
+    records = repair_fragments_to_records(assessment)
+    for record in records:
+        record["repair_item"] = record.get("original_text", "")
+        record["repair_decision"] = decision
+        if not record.get("repair_key"):
+            record["repair_key"] = normalize_text(str(record.get("original_text", "")))
+    return records
+
+
 def assemble_vehicle_title(row: pd.Series) -> str:
     parts = [
         str(row.get("year", "")).split(".")[0],
@@ -250,8 +268,13 @@ for _, row in df.iterrows():
     entry_label = f"{vehicle_title}"
     if vehicle_url:
         entry_label = f"{vehicle_title} ({vehicle_url})"
-    for key, label in extract_repairs(row.get("general_condition")):
-        category, subcategory = categorize_repair(key)
+    for record in extract_repair_records(row.get("general_condition")):
+        key = str(record.get("repair_key") or "").strip()
+        label = str(record.get("repair_item") or record.get("original_text") or "").strip()
+        if not key or not label:
+            continue
+        category = str(record.get("category") or "").strip() or categorize_repair(key)[0]
+        subcategory = str(record.get("status") or "").strip() or categorize_repair(key)[1]
         info = repairs_map.setdefault(
             key,
             {
@@ -260,6 +283,11 @@ for _, row in df.iterrows():
                 "occurrences": 0,
                 "category": category,
                 "sub_category": subcategory,
+                "status": record.get("status", ""),
+                "canonical_defects": record.get("canonical_defects", ""),
+                "pills": record.get("pills", ""),
+                "engine_cost_estimate": record.get("cost_estimate", 0),
+                "engine_reason": record.get("reasons", ""),
             },
         )
         info["occurrences"] += 1
@@ -409,19 +437,46 @@ column_config = {
     "repair_item": st.column_config.TextColumn("Repair Item", help="Description extracted from inspection notes."),
     "occurrences": st.column_config.NumberColumn("Occurrences", format="%d"),
     "category": st.column_config.TextColumn("Category"),
-    "sub_category": st.column_config.TextColumn("Sub-category"),
+    "sub_category": st.column_config.TextColumn("Parser Status"),
+    "canonical_defects": st.column_config.TextColumn("Dictionary Match"),
+    "pills": st.column_config.TextColumn("Repair Pills"),
+    "engine_cost_estimate": st.column_config.NumberColumn("Engine Estimate ($)", min_value=0.0, step=25.0),
+    "engine_reason": st.column_config.TextColumn("Match Reason"),
     "example_preview": st.column_config.TextColumn("Sample Vehicles", help="First few vehicles mentioning this repair."),
     "price_estimate": st.column_config.NumberColumn("Price Estimate ($)", min_value=0.0, step=25.0),
 }
 
 editor_df = scoped_df[
-    ["repair_key", "repair_item", "category", "sub_category", "occurrences", "example_preview", "price_estimate"]
+    [
+        "repair_key",
+        "repair_item",
+        "category",
+        "sub_category",
+        "canonical_defects",
+        "pills",
+        "engine_cost_estimate",
+        "engine_reason",
+        "occurrences",
+        "example_preview",
+        "price_estimate",
+    ]
 ]
 edited_df = st.data_editor(
     editor_df,
     hide_index=True,
     column_config=column_config,
-    disabled=["repair_key", "repair_item", "category", "sub_category", "occurrences", "example_preview"],
+    disabled=[
+        "repair_key",
+        "repair_item",
+        "category",
+        "sub_category",
+        "canonical_defects",
+        "pills",
+        "engine_cost_estimate",
+        "engine_reason",
+        "occurrences",
+        "example_preview",
+    ],
     width="stretch",
     num_rows="dynamic",
     key="repairs_editor",

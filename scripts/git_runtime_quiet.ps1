@@ -6,22 +6,44 @@ param(
 $ErrorActionPreference = "Stop"
 
 $patterns = @(
-    "CSV_data/scrapers/*.csv",
     "CSV_data/ai/*.csv",
     "CSV_data/model_audit/*.csv",
     "CSV_data/archives/active_snapshots/*.csv",
     "CSV_data/archives/sold_backups/*.csv",
-    "CSV_data/restricted/active_vehicle_details_restricted.csv",
-    "CSV_data/restricted/sold_cars_restricted.csv",
-    "CSV_data/restricted/restricted_group_map.csv",
     "CSV_data/restricted/audit/*.csv",
+    "CSV_data/scrapers/bid_history*.csv",
+    "CSV_data/scrapers/excluded_listings.csv",
+    "CSV_data/scrapers/pipeline_exclusions.csv",
+    "CSV_data/scrapers/scrape_failures.csv",
+    "CSV_data/scrapers/sold_discard_log.csv",
     "output/governance/*",
     "output/pdf/*"
+)
+
+$alwaysIncluded = @(
+    "CSV_data/restricted/active_vehicle_details_restricted.csv",
+    "CSV_data/restricted/restricted_group_map.csv",
+    "CSV_data/restricted/sold_cars_restricted.csv",
+    "CSV_data/scrapers/active_vehicle_details.csv",
+    "CSV_data/scrapers/active_vehicle_links.csv",
+    "CSV_data/scrapers/all_vehicle_links.csv",
+    "CSV_data/scrapers/matched_canonical_details.csv",
+    "CSV_data/scrapers/normalised_data.csv",
+    "CSV_data/scrapers/raw_vehicle_data.csv",
+    "CSV_data/scrapers/referred_cars.csv",
+    "CSV_data/scrapers/sold_cars.csv",
+    "CSV_data/scrapers/sold_price_pending.csv",
+    "CSV_data/scrapers/unmatched_canonical_details.csv",
+    "CSV_data/scrapers/vehicle_state.csv",
+    "CSV_data/scrapers/vehicle_static_details.csv"
 )
 
 function Get-TrackedRuntimeFiles {
     $tracked = @(git ls-files)
     foreach ($file in $tracked) {
+        if ($alwaysIncluded -contains $file) {
+            continue
+        }
         foreach ($pattern in $patterns) {
             if ($file -like $pattern) {
                 $file

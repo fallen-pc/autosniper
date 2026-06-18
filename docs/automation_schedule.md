@@ -40,8 +40,13 @@ TELEGRAM_CHAT_ID
 ```
 
 The active monitor now sends alerts when:
-- a listing becomes bid-ready (`action_label = Buy`)
-- a previously bid-ready listing is no longer marked `Buy`
+- AI Analysis marks a current active listing as `action_label = Buy`
+- a listing previously marked `Buy` by AI Analysis is no longer marked `Buy`
+
+Telegram does not run a separate buying policy. It reports the saved AI Analysis
+row from `CSV_data/ai/ai_listing_valuations.csv`; the only extra guard is that
+the URL must still be present in current active listings and absent from
+sold/referred data.
 
 Alert state is tracked in:
 

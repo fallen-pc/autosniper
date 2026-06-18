@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pandas as pd
 
 import scripts.active_monitor as active_monitor
@@ -84,6 +86,46 @@ def test_load_ai_analysis_active_df_uses_prepared_scope(monkeypatch) -> None:
     result = active_monitor.load_ai_analysis_active_df()
 
     assert result is expected_df
+
+
+def test_prune_inactive_cached_valuations_removes_stale_active_rows(monkeypatch, tmp_path: Path) -> None:
+    cache_path = tmp_path / "ai_listing_valuations.csv"
+    cached = pd.DataFrame(
+        [
+            {
+                "url": "https://example.com/lot/stale",
+                "analysis_context": "active",
+                "action_label": "Buy",
+                "computed_verdict": "Conditional Flip",
+            },
+            {
+                "url": "https://example.com/lot/current",
+                "analysis_context": "active",
+                "action_label": "Watch",
+                "computed_verdict": "Conditional Flip",
+            },
+            {
+                "url": "https://example.com/lot/old-static",
+                "analysis_context": "static",
+                "action_label": "Buy",
+                "computed_verdict": "Conditional Flip",
+            },
+        ]
+    )
+    cached.to_csv(cache_path, index=False)
+
+    monkeypatch.setattr(active_monitor, "AI_RESULTS_PATH", cache_path)
+    monkeypatch.setattr(active_monitor, "load_cached_results", lambda: pd.read_csv(cache_path))
+
+    count = active_monitor._prune_inactive_cached_valuations(
+        pd.DataFrame({"url": ["https://example.com/lot/current"]})
+    )
+
+    assert count == 1
+    result = pd.read_csv(cache_path)
+    assert "https://example.com/lot/stale" not in set(result["url"])
+    assert "https://example.com/lot/current" in set(result["url"])
+    assert "https://example.com/lot/old-static" in set(result["url"])
 
 
 def test_exclude_shortlist_ineligible_rows_drops_completed_wovr_and_no_price() -> None:

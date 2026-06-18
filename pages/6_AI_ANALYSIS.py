@@ -35,6 +35,7 @@ from shared.repair_pricing import (
     WINDSCREEN_ADAS,
     WINDSCREEN_STD,
     assess_repairs,
+    repair_fragments_to_records,
 )
 from shared.styling import clean_html, display_banner, inject_global_styles, page_intro
 from shared.valuation_display import (
@@ -87,7 +88,9 @@ STRUCTURAL_KEYWORDS = [
     "c-pillar",
     "chassis",
     "frame",
-    "rail",
+    "chassis rail",
+    "frame rail",
+    "cant rail",
     "apron",
 ]
 REPLACEMENT_KEYWORDS = [
@@ -115,7 +118,7 @@ DEFECT_PATTERNS: list[tuple[str, str, int]] = [
     (r"\bnot running\b|\bnon[- ]runner\b", "mechanical", 3),
     # Structural (red)
     (r"\b(a|b|c)[- ]?pillar\b", "structural", 3),
-    (r"\bchassis\b|\bframe\b|\brail\b|\bapron\b", "structural", 3),
+    (r"\bchassis\b|\bframe\b|\b(chassis|frame|cant) rail\b|\b(a|b|c)[- ]?pillar\b|\bapron\b", "structural", 3),
     # Hail = red / avoid
     (r"\bhail\b", "structural", 3),
     # Glass (orange)
@@ -711,7 +714,55 @@ def _rego_ok(row: dict[str, object]) -> bool:
 
 def build_defect_profile(row: dict[str, object]) -> dict[str, object]:
     notes = row.get("normalized_condition_text") or row.get("general_condition", "") or ""
-    severities, bucket_lines, unmatched = _bucket_details_from_notes(notes)
+    adas_windscreen = bool(
+        row.get("adas_windscreen") or row.get("windscreen_adas") or row.get("windshield_adas")
+    )
+    assessment = assess_repairs(notes, adas_windscreen=adas_windscreen)
+    bucket_lines = {
+        "cosmetic": [],
+        "glass": [],
+        "replacement": [],
+        "structural": [],
+        "mechanical": [],
+        "interior": [],
+    }
+    unmatched: list[str] = []
+    matched_pills: set[str] = set()
+    for fragment in assessment.fragments:
+        line = fragment.original_text
+        if not line:
+            continue
+        matched_pills.update(fragment.pills)
+        if fragment.status == "unclassified":
+            unmatched.append(line)
+            continue
+        if fragment.status == "ignored":
+            continue
+        if fragment.hard_avoid_reason == "mechanical" or "MECHANICAL" in fragment.pills:
+            bucket_lines["mechanical"].append(line)
+        elif fragment.hard_avoid_reason == "structural" or "STRUCTURAL" in fragment.pills:
+            bucket_lines["structural"].append(line)
+        elif fragment.category == "glass" or "GLASS" in fragment.pills:
+            bucket_lines["glass"].append(line)
+        elif fragment.category == "replacement" or "PANEL_REPLACE" in fragment.pills:
+            bucket_lines["replacement"].append(line)
+        elif fragment.category == "interior":
+            bucket_lines["interior"].append(line)
+        elif fragment.category == "cosmetic" or "COSMETIC_PANEL" in fragment.pills:
+            bucket_lines["cosmetic"].append(line)
+
+    for key, values in bucket_lines.items():
+        bucket_lines[key] = list(dict.fromkeys(values))
+    unmatched = list(dict.fromkeys(unmatched))
+
+    severities = {
+        "cosmetic": min(3, int(assessment.cosmetic_panels or 0)),
+        "glass": 2 if assessment.glass_cost > 0 or "GLASS" in assessment.pills else 0,
+        "replacement": 2 if assessment.replacement_cost > 0 or "PANEL_REPLACE" in assessment.pills else 0,
+        "structural": 3 if assessment.hard_avoid_reason == "structural" or "STRUCTURAL" in assessment.pills else 0,
+        "mechanical": 3 if assessment.hard_avoid_reason == "mechanical" or "MECHANICAL" in assessment.pills else 0,
+        "interior": min(2, len(bucket_lines["interior"])),
+    }
     profile: dict[str, object] = {
         "rego_ok": _rego_ok(row),
         "spare_key_ok": _truthy(row.get("spare_key")),
@@ -721,6 +772,10 @@ def build_defect_profile(row: dict[str, object]) -> dict[str, object]:
         **severities,
         "bucket_lines": bucket_lines,
         "unmatched_lines": unmatched,
+        "repair_cost": int(assessment.total_cost or 0),
+        "repair_pills": sorted(set(assessment.pills) | matched_pills),
+        "repair_hard_avoid": bool(assessment.hard_avoid),
+        "repair_hard_avoid_reason": assessment.hard_avoid_reason or "",
     }
     return profile
 
@@ -733,6 +788,14 @@ def similarity_score(a: dict[str, object], b: dict[str, object]) -> int:
     score += 20 * abs(int(a["glass"]) - int(b["glass"]))
     score += 8 * abs(int(a["cosmetic"]) - int(b["cosmetic"]))
     score += 6 * abs(int(a["interior"]) - int(b["interior"]))
+    a_cost = int(a.get("repair_cost", 0) or 0)
+    b_cost = int(b.get("repair_cost", 0) or 0)
+    score += min(60, abs(a_cost - b_cost) // 250)
+    a_pills = set(a.get("repair_pills", []) or [])
+    b_pills = set(b.get("repair_pills", []) or [])
+    score += 10 * len(a_pills.symmetric_difference(b_pills))
+    if bool(a.get("repair_hard_avoid")) != bool(b.get("repair_hard_avoid")):
+        score += 80
     for key in (
         "rego_ok",
         "spare_key_ok",
@@ -753,13 +816,17 @@ def match_quality_from_score(score: int) -> str:
 
 
 def _defects_compact(profile: dict[str, object]) -> str:
+    repair_cost = int(profile.get("repair_cost", 0) or 0)
+    hard_reason = _safe_text(profile.get("repair_hard_avoid_reason"), fallback="")
+    hard_text = f" {hard_reason.upper()}" if hard_reason else ""
     return (
         f"C{int(profile['cosmetic'])} "
         f"G{int(profile['glass'])} "
         f"R{int(profile['replacement'])} "
         f"S{int(profile['structural'])} "
         f"M{int(profile['mechanical'])} "
-        f"I{int(profile['interior'])}"
+        f"I{int(profile['interior'])} "
+        f"${repair_cost:,}{hard_text}"
     )
 
 
@@ -1121,8 +1188,35 @@ def _condition_summary_sections(row: pd.Series) -> tuple[list[dict[str, object]]
     return sections, raw_notes
 
 
+def _render_repair_fragment_records(records: list[dict[str, object]]) -> None:
+    for record in records:
+        original = _safe_text(record.get("original_text"), fallback="")
+        status = _safe_text(record.get("status"), fallback="unclassified")
+        category = _safe_text(record.get("category"), fallback="unclassified")
+        defects = _safe_text(record.get("canonical_defects"), fallback="")
+        pills = _safe_text(record.get("pills"), fallback="")
+        cost = parse_currency(record.get("cost_estimate"))
+        reasons = _safe_text(record.get("reasons"), fallback="")
+        meta = [f"status: {status}", f"category: {category}"]
+        if defects:
+            meta.append(f"match: {defects}")
+        if pills:
+            meta.append(f"pills: {pills}")
+        if cost and cost > 0:
+            meta.append(f"cost: {_format_currency_value(cost)}")
+        st.markdown(f"- **{html.escape(original)}**")
+        st.caption(" | ".join(meta))
+        if reasons:
+            st.caption(reasons)
+
+
 def _render_condition_summary(row: pd.Series) -> None:
     sections, raw_notes = _condition_summary_sections(row)
+    display_notes = _safe_text(row.get("normalized_condition_text"), fallback="").strip() or raw_notes
+    adas_windscreen = bool(
+        row.get("adas_windscreen") or row.get("windscreen_adas") or row.get("windshield_adas")
+    )
+    assessment = assess_repairs(display_notes, adas_windscreen=adas_windscreen)
     st.markdown("**Condition summary**")
     for section in sections:
         st.markdown(f"**{section['title']}**")
@@ -1135,6 +1229,10 @@ def _render_condition_summary(row: pd.Series) -> None:
         if impact_line:
             st.write(f"*{impact_line}*")
         st.write("")
+    fragment_records = repair_fragments_to_records(assessment)
+    if fragment_records:
+        st.markdown("**Repair split / dictionary match**")
+        _render_repair_fragment_records(fragment_records)
     with st.expander("Source condition notes (verbatim)", expanded=False):
         if not raw_notes:
             st.write("(none)")
@@ -1516,6 +1614,7 @@ def _render_grays_comparables(row: pd.Series, comps_items: list[str]) -> None:
             "structural",
             "mechanical",
             "interior",
+            "repair_cost",
             "odometer",
             "price",
         ]
@@ -1538,6 +1637,7 @@ def _render_grays_comparables(row: pd.Series, comps_items: list[str]) -> None:
             "structural": "tip_structural",
             "mechanical": "tip_mechanical",
             "interior": "tip_interior",
+            "repair_cost": "tip_repair_cost",
         }
         rows_html = []
         for _, matrix_row in comp_matrix.iterrows():
@@ -1564,6 +1664,8 @@ def _render_grays_comparables(row: pd.Series, comps_items: list[str]) -> None:
                 ):
                     sev = int(val) if str(val).isdigit() else 0
                     cell = _severity_pill_html(sev, tooltip=str(tip_val))
+                elif col == "repair_cost":
+                    cell = html.escape(_format_currency_value(parse_currency(val)))
                 else:
                     text_val = str(val)
                     if col == "odometer":
@@ -1780,6 +1882,14 @@ def _build_grays_comparison_rows(listing_row: pd.Series, comps_df: pd.DataFrame)
             "tip_structural": _bucket_tip("structural"),
             "tip_mechanical": _bucket_tip("mechanical"),
             "tip_interior": _bucket_tip("interior"),
+            "repair_cost": int(profile.get("repair_cost", 0) or 0),
+            "tip_repair_cost": " | ".join(
+                [
+                    f"pills: {', '.join(profile.get('repair_pills', []) or [])}",
+                    f"hard: {_safe_text(profile.get('repair_hard_avoid_reason'), fallback='none')}",
+                    f"unclassified: {len(profile.get('unmatched_lines', []) or [])}",
+                ]
+            ),
         }
 
     listing_year = _safe_text(listing_row.get("year"), fallback="").strip()

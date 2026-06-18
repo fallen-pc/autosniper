@@ -17,6 +17,7 @@ if __package__ in (None, ""):
     sys.path.append(str(Path(__file__).resolve().parent.parent))
     from scripts.atomic_csv import append_dataframe_csv_atomic, write_dataframe_csv_atomic
     from shared.data_loader import dataset_path
+    from shared.governance import SOLD_DETAIL_SCHEMA
     from shared.sold_cleaning import normalize_listing_fields
     from shared.canonical_tagging import tag_dataframe
     from shared.state_machine import ensure_state_schema, normalize_state
@@ -26,6 +27,7 @@ if __package__ in (None, ""):
 else:
     from scripts.atomic_csv import append_dataframe_csv_atomic, write_dataframe_csv_atomic
     from shared.data_loader import dataset_path
+    from shared.governance import SOLD_DETAIL_SCHEMA
     from shared.sold_cleaning import normalize_listing_fields
     from shared.canonical_tagging import tag_dataframe
     from shared.state_machine import ensure_state_schema, normalize_state
@@ -327,7 +329,10 @@ def _prepare_sold_rows(frame: pd.DataFrame, *, static_df: pd.DataFrame | None = 
         print(f"Pruned redundant sold columns: {drop_cols}")
     if "sale_price" in cleaned.columns:
         cleaned = cleaned.drop(columns=["sale_price"])
-    return cleaned
+    for column in SOLD_DETAIL_SCHEMA:
+        if column not in cleaned.columns:
+            cleaned[column] = ""
+    return cleaned.reindex(columns=SOLD_DETAIL_SCHEMA)
 
 
 def _sold_rows_missing_sale_price(frame: pd.DataFrame) -> pd.Series:

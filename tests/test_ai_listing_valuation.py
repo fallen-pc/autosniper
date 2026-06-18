@@ -33,6 +33,19 @@ def _base_saved_row(**overrides) -> dict[str, object]:
     return row
 
 
+def _set_alert_dataset_paths(monkeypatch, tmp_path: Path, *, active: bool = True, sold: bool = False, referred: bool = False) -> None:
+    url = str(_base_saved_row()["url"])
+    active_path = tmp_path / "active_vehicle_details.csv"
+    sold_path = tmp_path / "sold_cars.csv"
+    referred_path = tmp_path / "referred_cars.csv"
+    pd.DataFrame({"url": [url] if active else []}).to_csv(active_path, index=False)
+    pd.DataFrame({"url": [url] if sold else []}).to_csv(sold_path, index=False)
+    pd.DataFrame({"url": [url] if referred else []}).to_csv(referred_path, index=False)
+    monkeypatch.setattr(ai_listing_valuation, "ACTIVE_LISTINGS_PATH", active_path)
+    monkeypatch.setattr(ai_listing_valuation, "SOLD_LISTINGS_PATH", sold_path)
+    monkeypatch.setattr(ai_listing_valuation, "REFERRED_LISTINGS_PATH", referred_path)
+
+
 def test_price_change_metadata_records_increase() -> None:
     row = {
         "url": "https://example.com/lot/1",
@@ -105,7 +118,8 @@ def test_decision_event_payload_captures_meaningful_listing_change() -> None:
     assert "added UNREGISTERED" in event["change_reason_summary"]
 
 
-def test_listing_alert_sends_only_for_bid_ready_buy(monkeypatch) -> None:
+def test_listing_alert_reports_ai_analysis_buy_action(monkeypatch, tmp_path: Path) -> None:
+    _set_alert_dataset_paths(monkeypatch, tmp_path)
     sent: list[dict[str, object]] = []
 
     def fake_send_on_state_change(alert_scope, url, state_value, message, verdict=None):
@@ -129,12 +143,14 @@ def test_listing_alert_sends_only_for_bid_ready_buy(monkeypatch) -> None:
 
     assert len(sent) == 1
     assert sent[0]["alert_scope"] == "listing_bid_ready"
-    assert sent[0]["state_value"] == "bid_ready"
-    assert "Bid-ready vehicle" in str(sent[0]["message"])
+    assert sent[0]["state_value"] == "ai_analysis_buy"
+    assert "AI Analysis alert" in str(sent[0]["message"])
     assert "Action: Buy" in str(sent[0]["message"])
+    assert "Profit at current bid:" in str(sent[0]["message"])
 
 
-def test_listing_alert_does_not_send_for_watch_only(monkeypatch) -> None:
+def test_listing_alert_does_not_send_for_watch_only(monkeypatch, tmp_path: Path) -> None:
+    _set_alert_dataset_paths(monkeypatch, tmp_path)
     sent: list[object] = []
     monkeypatch.setattr(
         ai_listing_valuation,
@@ -155,7 +171,8 @@ def test_listing_alert_does_not_send_for_watch_only(monkeypatch) -> None:
     assert sent == []
 
 
-def test_listing_alert_sends_when_buy_becomes_not_bid_ready(monkeypatch) -> None:
+def test_listing_alert_sends_when_buy_becomes_not_bid_ready(monkeypatch, tmp_path: Path) -> None:
+    _set_alert_dataset_paths(monkeypatch, tmp_path)
     sent: list[dict[str, object]] = []
 
     def fake_send_on_state_change(alert_scope, url, state_value, message, verdict=None):
@@ -179,10 +196,27 @@ def test_listing_alert_sends_when_buy_becomes_not_bid_ready(monkeypatch) -> None
 
     assert len(sent) == 1
     assert sent[0]["alert_scope"] == "listing_bid_ready"
-    assert sent[0]["state_value"] == "not_bid_ready"
-    assert "Vehicle no longer bid-ready" in str(sent[0]["message"])
+    assert sent[0]["state_value"] == "ai_analysis_not_buy"
+    assert "AI Analysis update" in str(sent[0]["message"])
     assert "Previous action: Buy" in str(sent[0]["message"])
     assert "Current action: Watch" in str(sent[0]["message"])
+
+
+def test_listing_alert_suppresses_stale_non_active_buy(monkeypatch, tmp_path: Path) -> None:
+    _set_alert_dataset_paths(monkeypatch, tmp_path, active=False, referred=True)
+    sent: list[object] = []
+    monkeypatch.setattr(
+        ai_listing_valuation,
+        "send_on_state_change",
+        lambda *args, **kwargs: sent.append((args, kwargs)),
+    )
+
+    ai_listing_valuation._maybe_send_listing_alerts(
+        _base_saved_row(action_label="Buy", bid_status="Cheap"),
+        None,
+    )
+
+    assert sent == []
 
 
 def test_save_result_row_writes_decision_event_only_for_material_change(
@@ -579,12 +613,65 @@ def test_curve_analysis_uses_historical_sold_median_for_expected_auction(monkeyp
     assert result["expected_auction_source"] == "historical_sold_median"
     assert result["expected_auction_comps_count"] == 5
     assert ai_listing_valuation._parse_currency(result["expected_auction_profit"]) == round(expected_profit)
-    assert ai_listing_valuation._parse_currency(result["recommended_max_bid"]) > 6_200
+    assert ai_listing_valuation._parse_currency(result["recommended_max_bid"]) == 3_710
     assert result["current_profit_label"] == "Strong"
     assert result["expected_auction_profit_label"] in {"Good", "Strong"}
     assert result["hard_max_safety"] in {"Conditional", "Strong"}
     assert result["bid_status"] == "Cheap"
     assert result["action_label"] == "Buy"
+
+
+def test_curve_analysis_caps_pajero_like_listing_by_historical_auction_comps(monkeypatch) -> None:
+    repair_assessment = RepairAssessment(
+        hard_avoid=False,
+        pills=["GLASS"],
+        cosmetic_panels=0,
+        glass_cost=350,
+        replacement_cost=0,
+        risk_buffer=0,
+        base_cost=350,
+        severity_level="minor",
+        severity_multiplier=1.0,
+        total_cost=350,
+        reasons=["windscreen chip"],
+    )
+    listing = pd.Series(
+        {
+            "url": "test://pajero-regression",
+            "price": "$3,900",
+            "year": 2012,
+            "make": "MITSUBISHI",
+            "model": "Pajero",
+            "variant": "glx",
+            "body_type": "suv",
+            "transmission": "Automatic",
+            "fuel_type": "Diesel",
+            "location": "melbourne",
+            "rego_expiry": "Unregistered",
+            "odometer_reading": 238_943,
+            "general_condition": "windscreen chip",
+        }
+    )
+
+    monkeypatch.setattr(ai_listing_valuation, "load_cached_results", lambda: pd.DataFrame(columns=ai_listing_valuation.REQUIRED_COLUMNS))
+    monkeypatch.setattr(ai_listing_valuation, "_save_result_row", lambda row: None)
+    monkeypatch.setattr(ai_listing_valuation, "assess_repairs", lambda condition: repair_assessment)
+
+    result = ai_listing_valuation.run_curve_listing_analysis(
+        listing,
+        resale_mid=19_500,
+        comps_median=6_200,
+        comps_count=3,
+        analysis_context="active",
+        force_refresh=True,
+    )
+
+    assert result["expected_auction_price"] == "$6,200"
+    assert result["expected_auction_source"] == "historical_sold_median"
+    assert ai_listing_valuation._parse_currency(result["recommended_max_bid"]) < 3_900
+    assert result["bid_status"] == "Over max"
+    assert result["action_label"] == "Avoid"
+    assert result["computed_verdict"] == "Trap"
 
 
 def test_curve_analysis_refreshes_cached_rows_missing_display_fields(monkeypatch) -> None:
@@ -799,6 +886,7 @@ def test_curve_analysis_refreshes_cached_row_when_input_hash_changes(monkeypatch
     assert result["cached"] is False
     assert result["analysis_timestamp"] != "2026-01-14T00:00:00+00:00"
     assert result["valuation_input_hash"] != old_hash
+
 
 def test_curve_analysis_uses_worst_case_margin_for_profit_percent(monkeypatch) -> None:
     repair_assessment = RepairAssessment(

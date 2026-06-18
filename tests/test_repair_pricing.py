@@ -1,6 +1,13 @@
 from __future__ import annotations
 
-from shared.repair_pricing import RepairAssessment, apply_repairs_to_max_bid, assess_repairs, split_condition_lines
+from shared.repair_pricing import (
+    RepairAssessment,
+    apply_repairs_to_max_bid,
+    assess_repairs,
+    repair_decision_label,
+    repair_fragments_to_records,
+    split_condition_lines,
+)
 
 
 def test_assess_repairs_glass_case_is_consistent() -> None:
@@ -42,13 +49,14 @@ def test_assess_repairs_detects_replacement_damage_from_v2_patterns() -> None:
 def test_split_condition_lines_splits_punctuated_fragments() -> None:
     lines = split_condition_lines(
         "interior damage: drivers seat slight tear; exterior damage: dent of front bumper bar. "
-        "slight scratches on passenger side doors and side step"
+        "slight scratches on passenger side doors and side step | door handle not working"
     )
 
     assert lines == [
         "interior damage: drivers seat slight tear.",
         "exterior damage: dent of front bumper bar.",
         "slight scratches on passenger side doors and side step.",
+        "door handle not working.",
     ]
 
 
@@ -130,6 +138,58 @@ def test_assess_repairs_structural_hard_avoid_uses_structural_bucket() -> None:
     assert assessment.pills == ["STRUCTURAL"]
     assert assessment.base_cost == 8000
     assert assessment.total_cost == 8000
+
+
+def test_assess_repairs_does_not_treat_roof_rail_feature_as_structural() -> None:
+    assessment = assess_repairs("air conditioning | roof rail | electric windows")
+
+    assert assessment.hard_avoid is False
+    assert assessment.total_cost == 0
+    assert all(fragment.hard_avoid_reason is None for fragment in assessment.fragments)
+
+
+def test_assess_repairs_engine_idling_rough_is_mechanical_hard_avoid() -> None:
+    assessment = assess_repairs("engine idling rough")
+
+    assert assessment.hard_avoid is True
+    assert assessment.hard_avoid_reason == "mechanical"
+    assert assessment.total_cost == 10000
+    assert repair_decision_label(assessment) == "HARD AVOID (mechanical)"
+
+
+def test_assess_repairs_no_drive_tilt_tray_is_mechanical_hard_avoid() -> None:
+    assessment = assess_repairs("vehicle cannot be driven off site, tilt tray truck pick up is required.")
+
+    assert assessment.hard_avoid is True
+    assert assessment.hard_avoid_reason == "mechanical"
+
+
+def test_assess_repairs_reversed_mirror_damage_is_replacement() -> None:
+    assessment = assess_repairs("service history digital, cracked passenger side mirror")
+
+    assert assessment.hard_avoid is False
+    assert "PANEL_REPLACE" in assessment.pills
+    assert assessment.replacement_cost == 250
+
+
+def test_assess_repairs_door_handle_not_working_is_replacement() -> None:
+    assessment = assess_repairs("door handle not working or broken.")
+
+    assert assessment.hard_avoid is False
+    assert "PANEL_REPLACE" in assessment.pills
+    assert assessment.replacement_cost == 250
+
+
+def test_repair_fragments_preserve_split_items_and_unclassified_status() -> None:
+    assessment = assess_repairs("dents or marks on body consistent with age. bull bar.")
+    records = repair_fragments_to_records(assessment)
+
+    assert [record["original_text"] for record in records] == [
+        "dents or marks on body consistent with age.",
+        "bull bar.",
+    ]
+    assert records[0]["status"] == "matched"
+    assert records[1]["status"] == "unclassified"
 
 
 def test_apply_repairs_to_max_bid_keeps_moderate_repairs_marginal() -> None:

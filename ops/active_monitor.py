@@ -7,7 +7,8 @@ import re
 
 import pandas as pd
 
-from scripts.ai_listing_valuation import load_cached_results, run_curve_listing_analysis, upsert_manual_result_row
+from scripts.ai_listing_valuation import AI_RESULTS_PATH, REQUIRED_COLUMNS, load_cached_results, run_curve_listing_analysis, upsert_manual_result_row
+from scripts.atomic_csv import write_dataframe_csv_atomic
 from shared.canonical_tagging import is_canonical_eligible
 from shared.comps_engine import parse_currency, parse_numeric
 from shared.curves import interpolate_base_by_year, list_curve_tags, load_curves, resolve_curve_canonical_tag
@@ -354,6 +355,31 @@ def _mark_dropped_coverage_urls(
     return count
 
 
+def _prune_inactive_cached_valuations(all_active_df: pd.DataFrame) -> int:
+    cached_df = load_cached_results()
+    if cached_df.empty or "url" not in cached_df.columns or "analysis_context" not in cached_df.columns:
+        return 0
+    active_urls = (
+        set(all_active_df["url"].dropna().astype(str).str.strip().tolist())
+        if not all_active_df.empty and "url" in all_active_df.columns
+        else set()
+    )
+    if not active_urls:
+        return 0
+    url_text = cached_df["url"].astype(str).str.strip()
+    active_context = cached_df["analysis_context"].astype(str).str.strip().str.lower().eq("active")
+    stale_mask = active_context & ~url_text.isin(active_urls)
+    stale_count = int(stale_mask.sum())
+    if stale_count <= 0:
+        return 0
+    pruned = cached_df.loc[~stale_mask].copy()
+    for column in REQUIRED_COLUMNS:
+        if column not in pruned.columns:
+            pruned[column] = None
+    write_dataframe_csv_atomic(pruned, AI_RESULTS_PATH, index=False)
+    return stale_count
+
+
 def revalue_active_listings(
     *,
     target_urls: Iterable[str] | None = None,
@@ -364,6 +390,7 @@ def revalue_active_listings(
     active_df, sold_df, curves_df = _prepare_active_scope()
     if all_active_df.empty and active_df.empty:
         return {"evaluated": 0, "urls": []}
+    pruned_count = _prune_inactive_cached_valuations(all_active_df)
 
     sold_stats_group, sold_stats_year = _build_sold_stats(sold_df)
     if target_urls is None:
@@ -408,6 +435,7 @@ def revalue_active_listings(
         "evaluated": len(evaluated_urls) + dropped_count,
         "urls": evaluated_urls,
         "dropped_coverage": dropped_count,
+        "pruned_inactive": pruned_count,
     }
 
 

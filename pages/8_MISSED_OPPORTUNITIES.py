@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import html
+import json
 
 import pandas as pd
 import streamlit as st
@@ -17,8 +18,11 @@ from shared.curves import (
 from shared.data_loader import dataset_path, ensure_datasets_available
 from shared.decision_policy import action_display_parts
 from shared.global_filters import apply_global_sidebar_filters, render_global_sidebar_filters
-from shared.parts_cost import estimate_parts_cost
-from shared.repair_features import build_repair_features, serialize_tags
+from shared.repair_pricing import (
+    assess_repairs,
+    repair_decision_label,
+    serialize_repair_fragments,
+)
 from shared.styling import clean_html, display_banner, inject_global_styles, page_intro
 from shared.missed_opportunities import compute_decision_metrics
 
@@ -239,6 +243,42 @@ def render_detail_value(label: str, value: str) -> None:
     st.write(value)
 
 
+def render_repair_fragments(detail_json: object) -> None:
+    text = safe_text(detail_json, "")
+    if not text:
+        st.write("N/A")
+        return
+    try:
+        records = json.loads(text)
+    except (TypeError, ValueError, json.JSONDecodeError):
+        st.write(text)
+        return
+    if not isinstance(records, list) or not records:
+        st.write("N/A")
+        return
+    for record in records:
+        if not isinstance(record, dict):
+            continue
+        original = safe_text(record.get("original_text"), "")
+        status = safe_text(record.get("status"), "unclassified")
+        category = safe_text(record.get("category"), "unclassified")
+        defects = safe_text(record.get("canonical_defects"), "")
+        pills = safe_text(record.get("pills"), "")
+        cost = _to_float(record.get("cost_estimate"))
+        reasons = safe_text(record.get("reasons"), "")
+        meta = [f"status: {status}", f"category: {category}"]
+        if defects:
+            meta.append(f"match: {defects}")
+        if pills:
+            meta.append(f"pills: {pills}")
+        if cost and cost > 0:
+            meta.append(f"cost: {money(cost)}")
+        st.markdown(f"- **{html.escape(original)}**")
+        st.caption(" | ".join(meta))
+        if reasons:
+            st.caption(reasons)
+
+
 def render_sold_analysis_card(
     row: pd.Series,
     *,
@@ -390,7 +430,8 @@ def render_sold_analysis_card(
         if include_repairs:
             render_detail_value("Repair decision", repair_decision)
             render_detail_value("Repair severity", safe_text(row.get("repair_severity"), "N/A"))
-            render_detail_value("Repair detail", safe_text(row.get("repair_cost_detail"), "N/A"))
+            st.markdown("**Repair split / dictionary match**")
+            render_repair_fragments(row.get("repair_cost_detail"))
         condition_text = safe_text(row.get("general_condition"), "")
         if condition_text:
             st.markdown("**Condition text**")
@@ -519,18 +560,16 @@ def enrich_repair_estimates(df: pd.DataFrame, include_cost: bool) -> pd.DataFram
         return df
     records = []
     for _, row in df.iterrows():
-        features = build_repair_features(row.get("general_condition"))
-        if include_cost:
-            parts_cost, parts_detail = estimate_parts_cost(features.tags, features.severity)
-        else:
-            parts_cost, parts_detail = None, None
+        assessment = assess_repairs(row.get("general_condition"))
+        repair_cost = float(assessment.total_cost or 0.0) if include_cost else None
+        fragment_detail = serialize_repair_fragments(assessment)
         records.append(
             {
-                "repair_tags": serialize_tags(features.tags),
-                "repair_severity": features.severity,
-                "repair_decision": features.decision_label,
-                "repair_cost_estimate": parts_cost,
-                "repair_cost_detail": parts_detail,
+                "repair_tags": "|".join(assessment.pills),
+                "repair_severity": assessment.severity_level,
+                "repair_decision": repair_decision_label(assessment),
+                "repair_cost_estimate": repair_cost,
+                "repair_cost_detail": fragment_detail,
             }
         )
     enriched = pd.DataFrame(records, index=df.index)
@@ -1068,7 +1107,7 @@ if not allow_repairs:
 if allow_repairs:
     sold_df = enrich_repair_estimates(sold_df, include_cost=include_repairs)
     major_mask = sold_df["repair_tags"].fillna("").str.contains(
-        "engine_mechanical|non_operational", case=False, na=False
+        "MECHANICAL|STRUCTURAL", case=False, na=False
     )
     excluded_count = int(major_mask.sum())
     sold_df = sold_df[~major_mask].copy()

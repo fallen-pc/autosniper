@@ -18,6 +18,9 @@ from shared.top_buy import apply_top_buy_behavior, top_buy_gate_check
 
 AI_RESULTS_PATH = dataset_path("ai_listing_valuations.csv")
 DECISION_EVENTS_PATH = dataset_path("ai/listing_decision_events.csv")
+ACTIVE_LISTINGS_PATH = dataset_path("active_vehicle_details.csv")
+SOLD_LISTINGS_PATH = dataset_path("sold_cars.csv")
+REFERRED_LISTINGS_PATH = dataset_path("referred_cars.csv")
 REQUIRED_COLUMNS = [
     "url",
     "year",
@@ -325,6 +328,7 @@ def _valuation_input_hash(
     encoded = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
     return sha256(encoded.encode("utf-8")).hexdigest()
 
+
 def _with_price_change_metadata(
     row: Dict[str, Any],
     existing_row: Mapping[str, Any] | None,
@@ -625,10 +629,35 @@ def _is_good_verdict(verdict: Any) -> bool:
     return "strong" in verdict_text or verdict_text == "good"
 
 
-def _is_bid_ready_listing(row: Mapping[str, Any] | None) -> bool:
+def _ai_analysis_action(row: Mapping[str, Any] | None) -> str:
     if not row:
+        return ""
+    return str(row.get("action_label") or "").strip()
+
+
+def _dataset_contains_url(path: Path, url: str) -> bool:
+    if not path.exists() or not url:
         return False
-    return str(row.get("action_label") or "").strip() == "Buy"
+    try:
+        df = pd.read_csv(path, usecols=["url"], low_memory=False)
+    except Exception:
+        return False
+    if df.empty or "url" not in df.columns:
+        return False
+    return bool(df["url"].dropna().astype(str).str.strip().eq(url).any())
+
+
+def _is_current_active_listing(row: Mapping[str, Any]) -> bool:
+    url = str(row.get("url") or "").strip()
+    if not url:
+        return False
+    if not _dataset_contains_url(ACTIVE_LISTINGS_PATH, url):
+        return False
+    if _dataset_contains_url(SOLD_LISTINGS_PATH, url):
+        return False
+    if _dataset_contains_url(REFERRED_LISTINGS_PATH, url):
+        return False
+    return True
 
 
 def _alert_title(row: Mapping[str, Any]) -> str:
@@ -642,60 +671,55 @@ def _alert_title(row: Mapping[str, Any]) -> str:
     return title or "Listing"
 
 
+def _ai_analysis_alert_message(row: Mapping[str, Any], *, title: str, url: str) -> str:
+    action_label = _ai_analysis_action(row) or "N/A"
+    bid_status = str(row.get("bid_status") or "N/A").strip() or "N/A"
+    return (
+        "AI Analysis alert\n"
+        f"{title}\n"
+        f"Action: {action_label}\n"
+        f"Verdict: {row.get('computed_verdict') or row.get('verdict') or 'N/A'}\n"
+        f"Bid status: {bid_status}\n"
+        f"Current bid: {row.get('current_bid') or row.get('price') or 'N/A'}\n"
+        f"Max bid: {row.get('recommended_max_bid') or 'N/A'}\n"
+        f"Expected auction profit: {row.get('expected_auction_profit') or 'N/A'}\n"
+        f"Profit at current bid: {row.get('economic_profit_at_current_bid') or 'N/A'}\n"
+        f"Analysed: {row.get('analysis_timestamp') or 'N/A'}\n"
+        f"{url}"
+    )
+
+
 def _maybe_send_listing_alerts(
     row: Mapping[str, Any],
     existing_row: Mapping[str, Any] | None,
 ) -> None:
     if str(row.get("analysis_context") or "").strip().lower() != "active":
         return
+    if not _is_current_active_listing(row):
+        return
 
     title = _alert_title(row)
-    current_bid = row.get("current_bid") or row.get("price") or "N/A"
-    max_bid = row.get("recommended_max_bid") or "N/A"
-    expected_profit = row.get("expected_profit") or "N/A"
-    margin = row.get("profit_margin_percent") or "N/A"
     url = str(row.get("url") or "").strip()
     if not url:
         return
 
-    current_bid_ready = _is_bid_ready_listing(row)
-    previous_bid_ready = _is_bid_ready_listing(existing_row)
-    action_label = str(row.get("action_label") or "N/A").strip() or "N/A"
-    bid_status = str(row.get("bid_status") or "N/A").strip() or "N/A"
-    if current_bid_ready:
-        state_value = "bid_ready"
+    current_action = _ai_analysis_action(row)
+    previous_action = _ai_analysis_action(existing_row)
+    if current_action == "Buy":
+        state_value = "ai_analysis_buy"
+        message = _ai_analysis_alert_message(row, title=title, url=url)
+    elif previous_action == "Buy":
+        state_value = "ai_analysis_not_buy"
         message = (
-            "Bid-ready vehicle\n"
+            "AI Analysis update\n"
             f"{title}\n"
-            f"Action: {action_label}\n"
-            f"Verdict: {row.get('computed_verdict')}\n"
-            f"Bid status: {bid_status}\n"
-            f"Current bid: {current_bid}\n"
-            f"Max bid: {max_bid}\n"
-            f"Expected profit: {expected_profit}\n"
-            f"Profit margin: {margin}\n"
-            f"{url}"
-        )
-    elif previous_bid_ready:
-        state_value = "not_bid_ready"
-        previous_profit = existing_row.get("expected_profit") if existing_row else "N/A"
-        previous_verdict = existing_row.get("computed_verdict") if existing_row else "N/A"
-        previous_action = existing_row.get("action_label") if existing_row else "N/A"
-        edge_note = str(row.get("edge_note") or "").strip() or "Listing is no longer bid-ready at the current bid."
-        message = (
-            "Vehicle no longer bid-ready\n"
-            f"{title}\n"
-            f"Previous action: {previous_action}\n"
-            f"Current action: {action_label}\n"
-            f"Previous verdict: {previous_verdict}\n"
-            f"Current verdict: {row.get('computed_verdict')}\n"
-            f"Bid status: {bid_status}\n"
-            f"Current bid: {current_bid}\n"
-            f"Max bid: {max_bid}\n"
-            f"Previous expected profit: {previous_profit}\n"
-            f"Current expected profit: {expected_profit}\n"
-            f"Profit margin: {margin}\n"
-            f"Note: {edge_note}\n"
+            f"Previous action: {previous_action or 'N/A'}\n"
+            f"Current action: {current_action or 'N/A'}\n"
+            f"Verdict: {row.get('computed_verdict') or row.get('verdict') or 'N/A'}\n"
+            f"Bid status: {row.get('bid_status') or 'N/A'}\n"
+            f"Current bid: {row.get('current_bid') or row.get('price') or 'N/A'}\n"
+            f"Max bid: {row.get('recommended_max_bid') or 'N/A'}\n"
+            f"Analysed: {row.get('analysis_timestamp') or 'N/A'}\n"
             f"{url}"
         )
     else:
@@ -1649,7 +1673,7 @@ def run_curve_listing_analysis(
     min_net_profit = max(MIN_NET_PROFIT_ABSOLUTE, MIN_NET_PROFIT_RATIO * (resale_low_val or resale_mid))
     recommended_max_bid_val = _solve_max_bid(resale_low_val, min_net_profit, listing_data)
     discounted_bid_cap = _discounted_bid_cap(
-        _discounted_resale_cap_price(resale_mid_val),
+        expected_auction_price_val,
         repair_cost=0.0,
         margin=min_net_profit,
     )
