@@ -82,6 +82,8 @@ def first_percent_value(*values: Any) -> float | None:
 def conservative_margin_percent(row: Mapping[str, Any]) -> float | None:
     """Return a conservative profit margin, preferring worst-case profit over stored text."""
     resale = first_currency_value(
+        row.get("resale_mid_value"),
+        row.get("resale_mid_value_ai"),
         row.get("resale_mid"),
         row.get("resale_mid_ai"),
         row.get("expected_sale"),
@@ -91,6 +93,10 @@ def conservative_margin_percent(row: Mapping[str, Any]) -> float | None:
     )
     if resale is not None and resale > 0:
         worst_profit = first_currency_value(
+            row.get("net_profit_worst_value"),
+            row.get("net_profit_worst_value_ai"),
+            row.get("expected_auction_worst_profit_value"),
+            row.get("expected_auction_worst_profit_value_ai"),
             row.get("net_profit_worst"),
             row.get("net_profit_worst_ai"),
             row.get("expected_auction_worst_profit"),
@@ -101,6 +107,10 @@ def conservative_margin_percent(row: Mapping[str, Any]) -> float | None:
             return (worst_profit / resale) * 100.0
 
         mid_profit = first_currency_value(
+            row.get("net_profit_mid_value"),
+            row.get("net_profit_mid_value_ai"),
+            row.get("expected_auction_profit_value"),
+            row.get("expected_auction_profit_value_ai"),
             row.get("net_profit_mid"),
             row.get("net_profit_mid_ai"),
             row.get("expected_profit"),
@@ -110,9 +120,10 @@ def conservative_margin_percent(row: Mapping[str, Any]) -> float | None:
             return (mid_profit / resale) * 100.0
 
     return first_percent_value(
+        row.get("profit_margin_value"),
+        row.get("profit_margin_value_ai"),
         row.get("profit_margin_percent"),
         row.get("profit_margin_percent_ai"),
-        row.get("profit_margin_value"),
         row.get("margin_value"),
     )
 
@@ -120,12 +131,18 @@ def conservative_margin_percent(row: Mapping[str, Any]) -> float | None:
 def active_profit_value(row: Mapping[str, Any]) -> float | None:
     """Return the best available live-opportunity profit, preferring explicit newer fields."""
     return first_currency_value(
+        row.get("net_profit_worst_value"),
+        row.get("net_profit_worst_value_ai"),
+        row.get("expected_auction_worst_profit_value"),
+        row.get("expected_auction_worst_profit_value_ai"),
         row.get("net_profit_worst"),
         row.get("net_profit_worst_ai"),
         row.get("expected_auction_worst_profit"),
         row.get("expected_auction_worst_profit_ai"),
         row.get("net_profit_mid"),
         row.get("net_profit_mid_ai"),
+        row.get("expected_auction_profit_value"),
+        row.get("expected_auction_profit_value_ai"),
         row.get("expected_auction_profit"),
         row.get("expected_auction_profit_ai"),
         row.get("expected_profit"),
@@ -139,6 +156,8 @@ def active_profit_value(row: Mapping[str, Any]) -> float | None:
 def expected_finish_profit_value(row: Mapping[str, Any]) -> float | None:
     """Return the best available expected-finish profit for calibration/tracking."""
     return first_currency_value(
+        row.get("expected_auction_profit_value"),
+        row.get("expected_auction_profit_value_ai"),
         row.get("expected_auction_profit"),
         row.get("expected_auction_profit_ai"),
         row.get("expected_profit"),
@@ -149,6 +168,8 @@ def expected_finish_profit_value(row: Mapping[str, Any]) -> float | None:
 def recommended_max_bid_value(row: Mapping[str, Any]) -> float | None:
     """Return only a real recommended max bid; do not fall back to current price."""
     return first_currency_value(
+        row.get("recommended_max_bid_value"),
+        row.get("recommended_max_bid_value_ai"),
         row.get("recommended_max_bid"),
         row.get("recommended_max_bid_ai"),
         row.get("max_bid"),
@@ -158,8 +179,12 @@ def recommended_max_bid_value(row: Mapping[str, Any]) -> float | None:
 def economic_max_bid_value(row: Mapping[str, Any]) -> float | None:
     """Return the pre-policy economic max bid, falling back to the policy bid."""
     return first_currency_value(
+        row.get("economic_max_bid_value"),
+        row.get("economic_max_bid_value_ai"),
         row.get("economic_max_bid"),
         row.get("economic_max_bid_ai"),
+        row.get("recommended_max_bid_value"),
+        row.get("recommended_max_bid_value_ai"),
         row.get("recommended_max_bid"),
         row.get("recommended_max_bid_ai"),
         row.get("max_bid"),
@@ -295,10 +320,13 @@ def is_safe_opportunity_row(row: pd.Series, *, edge_buffer_default: float = 50.0
         _first_row_value(row, "current_bid_numeric_ai", "current_bid_ai", "price_ai"),
     )
     max_bid = first_currency_value(
-        _first_row_value(row, "recommended_max_bid", "recommended_max_bid_ai", "max_bid")
+        _first_row_value(row, "recommended_max_bid_value", "recommended_max_bid_value_ai"),
+        _first_row_value(row, "recommended_max_bid", "recommended_max_bid_ai", "max_bid"),
     )
     worst_profit = first_currency_value(
-        _first_row_value(row, "net_profit_worst", "net_profit_worst_ai", "profit_value")
+        _first_row_value(row, "net_profit_worst_value", "net_profit_worst_value_ai"),
+        _first_row_value(row, "expected_auction_worst_profit_value", "expected_auction_worst_profit_value_ai"),
+        _first_row_value(row, "net_profit_worst", "net_profit_worst_ai", "profit_value"),
     )
     verdict = _first_row_value(row, "computed_verdict", "computed_verdict_ai", "verdict", "verdict_ai")
     no_edge = truthy_flag(
@@ -351,10 +379,18 @@ def rank_live_opportunities(active_df: pd.DataFrame, valuations_df: pd.DataFrame
             _first_row_value(row, "current_bid_numeric_ai", "current_bid_ai", "price_ai"),
         )
         max_bid = first_currency_value(
-            _first_row_value(row, "recommended_max_bid", "recommended_max_bid_ai")
+            _first_row_value(row, "recommended_max_bid_value", "recommended_max_bid_value_ai"),
+            _first_row_value(row, "recommended_max_bid", "recommended_max_bid_ai"),
         )
-        resale = first_currency_value(_first_row_value(row, "resale_mid", "resale_mid_ai"))
-        worst_profit = first_currency_value(_first_row_value(row, "net_profit_worst", "net_profit_worst_ai"))
+        resale = first_currency_value(
+            _first_row_value(row, "resale_mid_value", "resale_mid_value_ai"),
+            _first_row_value(row, "resale_mid", "resale_mid_ai"),
+        )
+        worst_profit = first_currency_value(
+            _first_row_value(row, "net_profit_worst_value", "net_profit_worst_value_ai"),
+            _first_row_value(row, "expected_auction_worst_profit_value", "expected_auction_worst_profit_value_ai"),
+            _first_row_value(row, "net_profit_worst", "net_profit_worst_ai"),
+        )
         margin = conservative_margin_percent(row)
         confidence_raw = _first_row_value(row, "confidence", "confidence_ai")
         try:

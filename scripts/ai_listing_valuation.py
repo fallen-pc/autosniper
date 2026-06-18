@@ -3,6 +3,7 @@ import os
 import re
 import warnings
 from datetime import datetime, timezone
+from hashlib import sha256
 from typing import Any, Dict, List, Mapping, Optional, Tuple
 
 import pandas as pd
@@ -90,6 +91,21 @@ REQUIRED_COLUMNS = [
     "price_changed_at",
     "bids_observed",
     "time_remaining_observed",
+    "valuation_input_hash",
+    "resale_low_value",
+    "resale_mid_value",
+    "resale_high_value",
+    "recommended_max_bid_value",
+    "economic_max_bid_value",
+    "net_profit_mid_value",
+    "net_profit_worst_value",
+    "expected_auction_price_value",
+    "expected_auction_bid_basis_value",
+    "expected_auction_profit_value",
+    "expected_auction_worst_profit_value",
+    "profit_at_current_bid_value",
+    "profit_at_current_bid_worst_value",
+    "profit_margin_value",
 ]
 DECISION_EVENT_COLUMNS = [
     "event_at",
@@ -239,6 +255,75 @@ def _cached_result_needs_refresh(existing: Mapping[str, Any]) -> bool:
     ]
     return any(_is_missing_value(existing.get(field)) for field in required_display_fields)
 
+
+VALUATION_INPUT_FIELDS = (
+    "url",
+    "price",
+    "bids",
+    "time_remaining_or_date_sold",
+    "general_condition",
+    "odometer_reading",
+    "year",
+    "make",
+    "model",
+    "variant",
+    "body_type",
+    "transmission",
+    "fuel_type",
+    "location",
+    "rego_expiry",
+    "rego_state",
+    "canonical_tag",
+    "canonical_reason",
+    "service_history",
+    "key",
+    "spare_key",
+    "owners_manual",
+    "engine_turns_over",
+)
+
+
+def _hashable_value(value: Any) -> Any:
+    if value is None:
+        return None
+    try:
+        if pd.isna(value):
+            return None
+    except (TypeError, ValueError):
+        pass
+    if isinstance(value, (int, float, bool)):
+        return value
+    return str(value).strip()
+
+
+def _valuation_input_hash(
+    listing_row: Mapping[str, Any],
+    *,
+    resale_mid: float | None,
+    comps_median: float | None,
+    comps_count: int | None,
+    analysis_context: str | None,
+    km_percentile: float | None,
+    autotrader_median: float | None,
+    carsales_estimate: float | None,
+    listings_cluster_ok: bool | None,
+) -> str:
+    payload = {
+        "fields": {
+            field: _hashable_value(listing_row.get(field))
+            for field in VALUATION_INPUT_FIELDS
+        },
+        "resale_mid": _hashable_value(resale_mid),
+        "comps_median": _hashable_value(comps_median),
+        "comps_count": _hashable_value(comps_count),
+        "analysis_context": _hashable_value(analysis_context),
+        "km_percentile": _hashable_value(km_percentile),
+        "autotrader_median": _hashable_value(autotrader_median),
+        "carsales_estimate": _hashable_value(carsales_estimate),
+        "listings_cluster_ok": _hashable_value(listings_cluster_ok),
+    }
+    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+    return sha256(encoded.encode("utf-8")).hexdigest()
 
 def _with_price_change_metadata(
     row: Dict[str, Any],
@@ -1401,6 +1486,17 @@ def run_curve_listing_analysis(
 ) -> Dict[str, Any]:
     cached_df = load_cached_results()
     url = listing_row.get("url")
+    input_hash = _valuation_input_hash(
+        listing_row,
+        resale_mid=resale_mid,
+        comps_median=comps_median,
+        comps_count=comps_count,
+        analysis_context=analysis_context,
+        km_percentile=km_percentile,
+        autotrader_median=autotrader_median,
+        carsales_estimate=carsales_estimate,
+        listings_cluster_ok=listings_cluster_ok,
+    )
 
     if (
         not force_refresh
@@ -1408,7 +1504,7 @@ def run_curve_listing_analysis(
         and url in set(cached_df["url"].dropna().tolist())
     ):
         existing = cached_df[cached_df["url"] == url].iloc[0].to_dict()
-        if _cached_result_needs_refresh(existing):
+        if _cached_result_needs_refresh(existing) or existing.get("valuation_input_hash") != input_hash:
             force_refresh = True
         else:
             if analysis_context and not existing.get("analysis_context"):
@@ -1492,6 +1588,21 @@ def run_curve_listing_analysis(
             "current_bid_numeric": _parse_currency(listing_row.get("price")),
             "bids_observed": listing_row.get("bids"),
             "time_remaining_observed": listing_row.get("time_remaining_or_date_sold"),
+            "valuation_input_hash": input_hash,
+            "resale_low_value": None,
+            "resale_mid_value": None,
+            "resale_high_value": None,
+            "recommended_max_bid_value": 0.0,
+            "economic_max_bid_value": 0.0,
+            "net_profit_mid_value": None,
+            "net_profit_worst_value": None,
+            "expected_auction_price_value": None,
+            "expected_auction_bid_basis_value": None,
+            "expected_auction_profit_value": None,
+            "expected_auction_worst_profit_value": None,
+            "profit_at_current_bid_value": None,
+            "profit_at_current_bid_worst_value": None,
+            "profit_margin_value": None,
         }
         _save_result_row(result_row)
         result_row["cached"] = False
@@ -1778,6 +1889,10 @@ def run_curve_listing_analysis(
         _profit_margin_percent_text(net_profit_worst_val, resale_mid_val)
         or _profit_margin_percent_text(expected_profit_val, resale_mid_val)
     )
+    margin_pct_value = (
+        _profit_margin_percent_value(net_profit_worst_val, resale_mid_val)
+        or _profit_margin_percent_value(expected_profit_val, resale_mid_val)
+    )
 
     def _derive_verdict() -> str:
         if "INTERSTATE" in risk_flags and not INTERSTATE_BUYING_ALLOWED:
@@ -1898,6 +2013,21 @@ def run_curve_listing_analysis(
         "current_bid_numeric": current_price_val,
         "bids_observed": listing_row.get("bids"),
         "time_remaining_observed": listing_row.get("time_remaining_or_date_sold"),
+        "valuation_input_hash": input_hash,
+        "resale_low_value": resale_low_val,
+        "resale_mid_value": resale_mid_val,
+        "resale_high_value": resale_high_val,
+        "recommended_max_bid_value": recommended_max_bid_val,
+        "economic_max_bid_value": economic_max_bid_val,
+        "net_profit_mid_value": net_profit_mid_val,
+        "net_profit_worst_value": net_profit_worst_val,
+        "expected_auction_price_value": expected_auction_price_val,
+        "expected_auction_bid_basis_value": expected_auction_purchase_basis,
+        "expected_auction_profit_value": expected_auction_profit_val,
+        "expected_auction_worst_profit_value": expected_auction_worst_profit_val,
+        "profit_at_current_bid_value": current_profit_val,
+        "profit_at_current_bid_worst_value": current_worst_profit_val,
+        "profit_margin_value": margin_pct_value,
     }
 
     _save_result_row(result_row)

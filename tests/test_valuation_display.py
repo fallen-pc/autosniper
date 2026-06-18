@@ -87,6 +87,41 @@ def test_rank_live_opportunities_filters_unsafe_rows_and_uses_worst_profit() -> 
     assert ranked.iloc[0]["max_bid_value"] == 13000.0
 
 
+def test_rank_live_opportunities_prefers_typed_numeric_fields_over_display_text() -> None:
+    active_df = pd.DataFrame(
+        [
+            {"url": "typed", "price": "$10,000", "make": "Toyota", "model": "Corolla"},
+        ]
+    )
+    valuations_df = pd.DataFrame(
+        [
+            {
+                "url": "typed",
+                "recommended_max_bid": "$9,000",
+                "recommended_max_bid_value": 13_000,
+                "resale_mid": "$1",
+                "resale_mid_value": 20_000,
+                "net_profit_worst": "-$5",
+                "net_profit_worst_value": 2_500,
+                "profit_margin_percent": "-1.0%",
+                "profit_margin_value": 12.5,
+                "confidence": 0.7,
+                "computed_verdict": "Conditional Flip",
+                "no_edge": False,
+                "edge_buffer": 50,
+            },
+        ]
+    )
+
+    ranked = rank_live_opportunities(active_df, valuations_df)
+
+    assert ranked["url"].tolist() == ["typed"]
+    assert ranked.iloc[0]["max_bid_value"] == 13_000
+    assert ranked.iloc[0]["resale_mid_value"] == 20_000
+    assert ranked.iloc[0]["profit_value"] == 2_500
+    assert ranked.iloc[0]["margin_value"] == 12.5
+
+
 def test_is_safe_opportunity_row_accepts_radar_profit_value() -> None:
     row = pd.Series(
         {
