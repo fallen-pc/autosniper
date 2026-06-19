@@ -70,3 +70,34 @@ Why:
 - The Apify Carsales scrape provided direct private listing evidence for VE Omega and SV6 sedan/wagon lanes.
 - VE Series II has enough signal to review separately, but it is not folded into the plain VE curves.
 - These curves are retail resale curves built from Carsales/private asking evidence only. Grays sold history remains hammer-bid evidence, not repricing evidence.
+
+## Commodore VE Series II Omega Petrol Automatic Wagon
+
+Base curve:
+- `holden_commodore_omega_ve-series-ii_wagon_auto_petrol`
+
+Current working interpretation:
+- body: `wagon`
+- transmission: `auto`
+- fuel: `petrol`
+- series: `VE Series II`
+- badge: `Omega`
+- anchor years: `2010`, `2011`, `2012`, `2013`
+- buckets use the extended Holden grid: `30000`, `60000`, `100000`, `150000`, `200000`, `225000`, `300000`
+
+Included rows for the current pass:
+- Commodore VE Series II Omega petrol automatic wagons
+
+Excluded rows for the current pass:
+- plain VE rows
+- VF, VZ, VY, VX, and VT rows
+- sedans and utes
+- manual rows
+- diesel, LPG, dual-fuel, gas, gas-only, and hybrid rows
+- SV6, SS, SS V, Redline, Storm, HSV, Calais, Berlina, Executive, International, Lumina, Evoke, and other materially different badge rows
+
+Why:
+- The Apify Carsales scrape provided 16 private Omega wagon rows for VE Series II, mostly in the high-km range.
+- VE Series II is kept separate from plain VE because it has its own direct evidence and year band.
+- The 2013 anchor is conservative because it has only one direct row, but it keeps 2013 Omega wagons inside the supported year band.
+- This curve is a retail resale curve built from Carsales/private asking evidence only. Grays sold history remains hammer-bid evidence, not repricing evidence.
