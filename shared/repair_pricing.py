@@ -113,7 +113,11 @@ REPLACEMENT_TARGET_RE = re.compile(
     r"\b(headlight|head light|tail light|taillight|indicator|mirror|bumper|bar|door handle)\b",
     re.IGNORECASE,
 )
-CONDITION_FRAGMENT_RE = re.compile(r"[.;|\r\n]+")
+CONDITION_FRAGMENT_RE = re.compile(r"[.;|,\r\n]+")
+CONDITION_SECTION_BOUNDARY_RE = re.compile(
+    r"(?<=[a-z0-9])(?=(?:interior|exterior|mechanical|engine|transmission|body|paint|glass|windscreen):)",
+    re.IGNORECASE,
+)
 
 MECH_AVOID_PATTERNS = [
     r"\bengine light\b",
@@ -128,6 +132,7 @@ MECH_AVOID_PATTERNS = [
     r"\bengine noise\b",
     r"\bengine idling rough\b",
     r"\bengine lacks power\b",
+    r"\b(vehicle\s+)?stall(?:s|ing|ed)?\b",
     r"\bhead gasket\b",
     r"\btransmission\b.*\b(attention|fault|issue|noise|slip)\b",
     r"\bgearbox\b.*\b(attention|fault|issue|noise|slip)\b",
@@ -140,13 +145,13 @@ MECH_AVOID_PATTERNS = [
     r"\bdrivetrain\b.*\b(fault|issue)\b",
     r"\bsuspension\b.*\b(attention|fault|issue|noise)\b",
     r"\balignment\b.*\b(issue|pull)\b",
-    r"\bbrake\b.*\b(attention|fault|issue)\b",
+    r"\bbrakes?\b.*\b(attention|fault|issue|require|requires)\b",
     r"\bclutch\b.*\b(attention|fault|issue|slip)\b",
     r"\bdoes not start\b",
     r"\bwon't start\b",
     r"\bnot running\b",
     r"\bcannot be driven off site\b",
-    r"\btilt tray\b.*\brequired\b",
+    r"\btilt tray\b.*\b(required|recommended)\b",
     r"\btowing required\b",
 ]
 
@@ -162,7 +167,8 @@ def normalise_condition_line(line: str) -> str:
 def split_condition_lines(text: str) -> List[str]:
     if not text:
         return []
-    parts = CONDITION_FRAGMENT_RE.split(str(text))
+    normalized_text = CONDITION_SECTION_BOUNDARY_RE.sub(". ", str(text))
+    parts = CONDITION_FRAGMENT_RE.split(normalized_text)
     out: List[str] = []
     for part in parts:
         part = part.strip(" -")

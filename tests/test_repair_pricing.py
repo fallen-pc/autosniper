@@ -60,6 +60,21 @@ def test_split_condition_lines_splits_punctuated_fragments() -> None:
     ]
 
 
+def test_split_condition_lines_repairs_glued_grays_section_labels() -> None:
+    lines = split_condition_lines(
+        "interior: tachometer failing to register intermittently, steering wheel wornexterior: "
+        "vehicle stalling at times, brakes require attention, tilt tray recommended for pickup"
+    )
+
+    assert lines == [
+        "interior: tachometer failing to register intermittently.",
+        "steering wheel worn.",
+        "exterior: vehicle stalling at times.",
+        "brakes require attention.",
+        "tilt tray recommended for pickup.",
+    ]
+
+
 def test_assess_repairs_counts_mixed_replacement_and_cosmetic_damage() -> None:
     assessment = assess_repairs("front cracked bumper and scratches and dents visible around vehicle")
 
@@ -162,6 +177,19 @@ def test_assess_repairs_no_drive_tilt_tray_is_mechanical_hard_avoid() -> None:
 
     assert assessment.hard_avoid is True
     assert assessment.hard_avoid_reason == "mechanical"
+
+
+def test_assess_repairs_stalling_brakes_tilt_tray_recommended_is_mechanical_hard_avoid() -> None:
+    assessment = assess_repairs(
+        "interior: tachometer failing to register intermittently, steering wheel wornexterior: "
+        "vehicle stalling at times, brakes require attention, tilt tray recommended for pickup"
+    )
+
+    assert assessment.hard_avoid is True
+    assert assessment.hard_avoid_reason == "mechanical"
+    assert assessment.total_cost == 10000
+    hard_fragments = [fragment for fragment in assessment.fragments if fragment.status == "hard_avoid"]
+    assert [fragment.original_text for fragment in hard_fragments] == ["exterior: vehicle stalling at times."]
 
 
 def test_assess_repairs_reversed_mirror_damage_is_replacement() -> None:
