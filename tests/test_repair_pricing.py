@@ -75,6 +75,14 @@ def test_split_condition_lines_repairs_glued_grays_section_labels() -> None:
     ]
 
 
+def test_split_condition_lines_decodes_nested_html_entities_before_splitting() -> None:
+    lines = split_condition_lines(
+        "medium scratch on passenger side front &amp;amp;amp;amp;amp; rear guard panels."
+    )
+
+    assert lines == ["medium scratch on passenger side front & rear guard panels."]
+
+
 def test_assess_repairs_counts_mixed_replacement_and_cosmetic_damage() -> None:
     assessment = assess_repairs("front cracked bumper and scratches and dents visible around vehicle")
 
@@ -206,6 +214,26 @@ def test_assess_repairs_door_handle_not_working_is_replacement() -> None:
     assert assessment.hard_avoid is False
     assert "PANEL_REPLACE" in assessment.pills
     assert assessment.replacement_cost == 250
+
+
+def test_assess_repairs_classifies_worn_door_card_carpet_and_headlining() -> None:
+    assessment = assess_repairs("door card worn. carpet worn in places. hood lining sagging.")
+    records = repair_fragments_to_records(assessment)
+
+    assert assessment.hard_avoid is False
+    assert assessment.total_cost == 750
+    assert [record["status"] for record in records] == ["matched", "matched", "matched"]
+    assert all(record["category"] == "interior" for record in records)
+
+
+def test_assess_repairs_classifies_visible_corrosion_as_body_condition_cost() -> None:
+    assessment = assess_repairs("corrosion visible back left panel below light.")
+    records = repair_fragments_to_records(assessment)
+
+    assert assessment.hard_avoid is False
+    assert "COSMETIC_PANEL" in assessment.pills
+    assert assessment.total_cost == 300
+    assert records[0]["canonical_defects"] == "body_location_list|corrosion_damage"
 
 
 def test_repair_fragments_preserve_split_items_and_unclassified_status() -> None:

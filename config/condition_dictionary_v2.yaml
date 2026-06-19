@@ -126,6 +126,11 @@ entries:
     category: interior
     severity_hint: low
 
+  - pattern: "\\b(door card|carpet|hood lining|headlining).*(worn|sagging|marks|stain|stained|requires attention)"
+    canonical_defect: interior_trim_damage
+    category: interior
+    severity_hint: low
+
   - pattern: "\\b(tail light|taillight|indicator).*(crack|cracked|broken|missing|damaged)"
     canonical_defect: lighting_damage
     category: replacement
@@ -155,6 +160,11 @@ entries:
     canonical_defect: paint_damage
     category: cosmetic
     severity_hint: low
+
+  - pattern: "\\b(corrosion|rust).*(visible|panel|panels|tub|bonnet|area|areas)|\\bvisible.*\\b(corrosion|rust)"
+    canonical_defect: corrosion_damage
+    category: cosmetic
+    severity_hint: high
 
   - pattern: "\\b(bubbling|peeling all over|peeling various panels)\\b"
     canonical_defect: paint_surface_issue

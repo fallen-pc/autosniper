@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 from functools import lru_cache
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
+import html
 import json
 import re
 
@@ -164,10 +165,21 @@ def normalise_condition_line(line: str) -> str:
     return text.rstrip(" .;") + "." if text else ""
 
 
+def _decode_condition_entities(text: str) -> str:
+    decoded = str(text or "")
+    for _ in range(5):
+        next_value = html.unescape(decoded)
+        if next_value == decoded:
+            break
+        decoded = next_value
+    return decoded
+
+
 def split_condition_lines(text: str) -> List[str]:
     if not text:
         return []
-    normalized_text = CONDITION_SECTION_BOUNDARY_RE.sub(". ", str(text))
+    decoded_text = _decode_condition_entities(str(text))
+    normalized_text = CONDITION_SECTION_BOUNDARY_RE.sub(". ", decoded_text)
     parts = CONDITION_FRAGMENT_RE.split(normalized_text)
     out: List[str] = []
     for part in parts:
