@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import html
 import json
+import re
 
 import pandas as pd
 import streamlit as st
@@ -51,6 +52,8 @@ if missing:
     )
     st.stop()
 
+WOVR_PATTERN = re.compile(r"\bwovr\b|write[-\s]?off", re.IGNORECASE)
+
 
 def money(value: object) -> str:
     try:
@@ -86,6 +89,15 @@ def safe_text(value: object, default: str = "") -> str:
     if not text or text.lower() == "nan":
         return default
     return text
+
+
+def flag_wovr_rows(df: pd.DataFrame) -> pd.Series:
+    """Identify written-off/WOVR sold rows that should not count as missed buys."""
+    columns = [col for col in ("variant", "general_condition", "url") if col in df.columns]
+    if not columns:
+        return pd.Series(False, index=df.index)
+    text = df[columns].fillna("").astype(str).agg(" ".join, axis=1)
+    return text.str.contains(WOVR_PATTERN, na=False)
 
 
 def first_text(row: pd.Series, keys: list[str]) -> str:
@@ -147,6 +159,51 @@ def build_metric_box(label: str, value: str, subtext: str | None = None, class_n
         f'<div class="metric-label">{html.escape(label)}</div>'
         f'<div class="metric-value">{html.escape(value)}</div>'
         f"{sub_html}"
+        "</div>"
+    )
+
+
+def build_metric_item(label: str, value: str, subtext: str | None = None, class_name: str | None = None) -> str:
+    classes = ["metric-item"]
+    if class_name:
+        classes.append(class_name)
+    sub_html = f'<div class="metric-item-sub">{html.escape(subtext)}</div>' if subtext else ""
+    return (
+        f'<div class="{" ".join(classes)}">'
+        f'<div class="metric-label">{html.escape(label)}</div>'
+        f'<div class="metric-value">{html.escape(value)}</div>'
+        f"{sub_html}"
+        "</div>"
+    )
+
+
+def build_metric_group(title: str, items: list[str], class_name: str) -> str:
+    return (
+        f'<div class="metric-group {html.escape(class_name)}">'
+        f'<div class="metric-group-title">{html.escape(title)}</div>'
+        '<div class="metric-group-items">'
+        + "".join(items)
+        + "</div></div>"
+    )
+
+
+def signal_tone(value: object) -> str:
+    normalized = safe_text(value, "").lower()
+    if any(token in normalized for token in ["buy", "good", "strong", "cheap", "high"]):
+        return "signal-good"
+    if any(token in normalized for token in ["avoid", "trap", "over max", "high risk"]):
+        return "signal-bad"
+    if any(token in normalized for token in ["watch", "review", "marginal", "medium"]):
+        return "signal-warn"
+    return "signal-neutral"
+
+
+def build_signal_tile(label: str, value: str, detail: str, tone: str) -> str:
+    return (
+        f'<div class="signal-tile {html.escape(tone)}">'
+        f'<div class="signal-label">{html.escape(label)}</div>'
+        f'<div class="signal-value">{html.escape(value)}</div>'
+        f'<div class="signal-detail">{html.escape(detail)}</div>'
         "</div>"
     )
 
@@ -333,6 +390,23 @@ def render_sold_analysis_card(
     risk_status = risk_level(row)
     miss_status = "High" if bool(row.get("missed")) else "Medium" if _to_float(row.get("projected_profit_at_sold")) else "Low"
     curve_status = "High" if _to_float(curve_est) is not None else "Low"
+    bid_status = safe_text(row.get("bid_status"), "N/A")
+    hard_max_safety = safe_text(row.get("hard_max_safety"), "N/A")
+    computed_verdict = safe_text(row.get("computed_verdict"), verdict_label)
+    projected_profit = row.get("projected_profit_at_sold")
+    total_costs = row.get("total_costs")
+    risk_summary = safe_text(row.get("risk_summary"), "None")
+    signal_row_html = "".join(
+        [
+            '<div class="decision-signal-row">',
+            build_signal_tile("Action", action_label, verdict_label, signal_tone(action_label)),
+            build_signal_tile("Bid status", bid_status, hard_max_safety, signal_tone(bid_status)),
+            build_signal_tile("Margin", pct(profit_margin), money(projected_profit), signal_tone(miss_status)),
+            build_signal_tile("Confidence", curve_status, f"Historical status {miss_status.lower()}", signal_tone(curve_status)),
+            build_signal_tile("Risk", risk_status, risk_summary, signal_tone(risk_status)),
+            "</div>",
+        ]
+    )
 
     card_html = "".join(
         [
@@ -356,23 +430,43 @@ def render_sold_analysis_card(
             "</div>",
             "</div>",
             "</div>",
+            signal_row_html,
             '<div class="card-metrics">',
-            build_metric_box("Sold price", money(sold_price)),
-            build_metric_box("Max bid limit", money(max_bid), "Rebuilt from AI rules"),
-            build_metric_box(metric_label, money(metric_value), metric_sub, metric_tone_class(metric_value)),
-            build_metric_box("Profit %", pct(profit_margin)),
-            build_metric_box("Expected resale", money(curve_est), "Curve resale mid"),
-            build_metric_box("Expected auction", money(expected_auction)),
-            build_metric_box("Curve delta", money(delta)),
-            build_metric_box("Underbid %", pct(row.get("underbid_pct"))),
-            build_metric_box("Odometer", f"{odometer} km" if odometer != "N/A" and "km" not in odometer.lower() else odometer),
-            build_metric_box("Classification", miss_classification),
+            build_metric_group(
+                "Sold auction",
+                [
+                    build_metric_item("Sold price", money(sold_price), class_name="primary"),
+                    build_metric_item("Sold date", sold_date or "N/A"),
+                    build_metric_item("Odometer", f"{odometer} km" if odometer != "N/A" and "km" not in odometer.lower() else odometer),
+                ],
+                "auction-group",
+            ),
+            build_metric_group(
+                "Deal maths",
+                [
+                    build_metric_item(metric_label, money(metric_value), metric_sub, "primary"),
+                    build_metric_item("Max bid limit", money(max_bid), hard_max_safety),
+                    build_metric_item("Profit at sold", money(projected_profit)),
+                    build_metric_item("Total costs", money(total_costs)),
+                ],
+                "money-group",
+            ),
+            build_metric_group(
+                "Model context",
+                [
+                    build_metric_item("Expected resale", money(curve_est)),
+                    build_metric_item("Expected auction", money(expected_auction)),
+                    build_metric_item("Profit %", pct(profit_margin)),
+                    build_metric_item("Classification", miss_classification),
+                ],
+                "context-group",
+            ),
             "</div>",
-            confidence_badges_html(curve_status, miss_status, risk_status),
             '<div class="chip-row">',
             f'<span class="chip">Rego: {html.escape(safe_text(row.get("rego_text"), "N/A"))}</span>',
             f'<span class="chip">Keys: {html.escape(safe_text(row.get("keys_text"), "N/A"))}</span>',
             f'<span class="chip {("warn" if risk_status == "Medium" else "danger" if risk_status == "High" else "good")}">Risk: {html.escape(risk_status)}</span>',
+            f'<span class="chip">Verdict: {html.escape(computed_verdict)}</span>',
             f'<span class="chip">Repair: {html.escape(repair_decision)}</span>' if include_repairs else "",
             "</div>",
             "</div>",
@@ -380,8 +474,8 @@ def render_sold_analysis_card(
     )
     st.markdown(clean_html(card_html), unsafe_allow_html=True)
 
-    overview_tab, curve_tab, costs_tab, condition_tab = st.tabs(
-        ["Overview", "Curve", "Costs", "Condition"]
+    overview_tab, curve_tab, comparables_tab, condition_tab, bid_logic_tab = st.tabs(
+        ["Overview", "Curve", "Comparables", "Condition", "Bid Logic"]
     )
     with overview_tab:
         cols = st.columns(3)
@@ -411,20 +505,20 @@ def render_sold_analysis_card(
             render_detail_value("Canonical tag", canonical_tag or "N/A")
             render_detail_value("Spec reason", safe_text(row.get("spec_reason"), "N/A"))
             render_detail_value("Expected auction", money(expected_auction))
-    with costs_tab:
+    with comparables_tab:
         cols = st.columns(3)
         with cols[0]:
-            render_detail_value("Total costs", money(row.get("total_costs")))
-            render_detail_value("Platform fees", money(row.get("platform_fees")))
-            render_detail_value("Transport", money(row.get("transport_costs")))
+            render_detail_value("Sold price", money(sold_price))
+            render_detail_value("Curve resale mid", money(curve_est))
+            render_detail_value("Curve delta", money(delta))
         with cols[1]:
-            render_detail_value("Admin", money(row.get("admin_costs")))
-            render_detail_value("Risk buffer", money(row.get("risk_buffer")))
-            render_detail_value("Repair estimate", money(row.get("repair_cost_estimate")))
+            render_detail_value("Expected auction", money(expected_auction))
+            render_detail_value("Underbid", pct(row.get("underbid_pct")))
+            render_detail_value("Delta %", pct(row.get("delta_pct")))
         with cols[2]:
-            render_detail_value("Projected profit at sold", money(row.get("projected_profit_at_sold")))
-            render_detail_value("Max bid", money(max_bid))
+            render_detail_value("Historical status", miss_status)
             render_detail_value("Sold vs max bid", "Sold inside max bid" if bool(row.get("missed")) else "Sold above max bid or no profit")
+            render_detail_value("Metric basis", metric_sub)
     with condition_tab:
         render_detail_value("Risk / notes", safe_text(row.get("risk_summary"), "N/A"))
         if include_repairs:
@@ -441,6 +535,27 @@ def render_sold_analysis_card(
             st.markdown(f"[Open listing]({url})")
         else:
             st.write("N/A")
+    with bid_logic_tab:
+        cols = st.columns(3)
+        with cols[0]:
+            render_detail_value("Action", action_label)
+            render_detail_value("Verdict", computed_verdict)
+            render_detail_value("Bid status", bid_status)
+        with cols[1]:
+            render_detail_value("Max bid limit", money(max_bid))
+            render_detail_value("Hard max safety", hard_max_safety)
+            render_detail_value("Expected auction", money(expected_auction))
+        with cols[2]:
+            render_detail_value("Platform fees", money(row.get("platform_fees")))
+            render_detail_value("Transport", money(row.get("transport_costs")))
+            render_detail_value("Admin", money(row.get("admin_costs")))
+        cols = st.columns(3)
+        with cols[0]:
+            render_detail_value("Risk buffer", money(row.get("risk_buffer")))
+        with cols[1]:
+            render_detail_value("Repair estimate", money(row.get("repair_cost_estimate")))
+        with cols[2]:
+            render_detail_value("Projected profit at sold", money(projected_profit))
 
 
 def interpolate_curve_value(
@@ -873,12 +988,89 @@ st.markdown(
         .card-actions a:hover {
           background: rgba(39, 182, 255, 0.12);
         }
-        .card-metrics {
-          margin-top: 0.5rem;
+        .decision-signal-row {
+          margin-top: 0.55rem;
           display: grid;
           grid-template-columns: repeat(5, minmax(0, 1fr));
           gap: 0.5rem;
+        }
+        .signal-tile {
+          min-height: 76px;
+          border-radius: 10px;
+          padding: 0.58rem 0.68rem;
+          border: 1px solid rgba(39, 182, 255, 0.28);
+          background: rgba(8, 12, 18, 0.68);
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+        }
+        .signal-label {
+          font-size: 0.56rem;
+          text-transform: uppercase;
+          letter-spacing: 0.13em;
+          color: rgba(255, 255, 255, 0.6);
+          margin-bottom: 0.18rem;
+        }
+        .signal-value {
+          font-size: 1.05rem;
+          font-weight: 850;
+          color: rgba(255, 255, 255, 0.94);
+          line-height: 1.05;
+        }
+        .signal-detail {
+          margin-top: 0.18rem;
+          font-size: 0.62rem;
+          color: rgba(255, 255, 255, 0.62);
+          line-height: 1.25;
+        }
+        .signal-good {
+          border-color: rgba(44, 255, 154, 0.58);
+          background: rgba(44, 255, 154, 0.08);
+        }
+        .signal-warn {
+          border-color: rgba(255, 179, 71, 0.58);
+          background: rgba(255, 179, 71, 0.08);
+        }
+        .signal-bad {
+          border-color: rgba(255, 77, 77, 0.58);
+          background: rgba(255, 77, 77, 0.08);
+        }
+        .card-metrics {
+          margin-top: 0.55rem;
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) minmax(0, 1.28fr) minmax(0, 1fr);
+          gap: 0.55rem;
           align-items: stretch;
+        }
+        .metric-group {
+          background: rgba(8, 12, 18, 0.62);
+          border: 1px solid rgba(39, 182, 255, 0.24);
+          border-radius: 10px;
+          padding: 0.58rem;
+        }
+        .metric-group.money-group {
+          border-color: rgba(44, 255, 154, 0.28);
+        }
+        .metric-group.context-group {
+          border-color: rgba(255, 179, 71, 0.28);
+        }
+        .metric-group-title {
+          font-size: 0.58rem;
+          text-transform: uppercase;
+          letter-spacing: 0.13em;
+          color: rgba(255, 255, 255, 0.62);
+          margin-bottom: 0.42rem;
+          padding-bottom: 0.28rem;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .metric-group-items {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 0.42rem;
+        }
+        .metric-group.auction-group .metric-group-items,
+        .metric-group.context-group .metric-group-items {
+          grid-template-columns: 1fr;
         }
         .metric-box {
           background: rgba(8, 12, 18, 0.65);
@@ -889,6 +1081,26 @@ st.markdown(
           display: flex;
           flex-direction: column;
           justify-content: center;
+        }
+        .metric-item {
+          min-height: 54px;
+          border-radius: 8px;
+          padding: 0.45rem 0.52rem;
+          background: rgba(255, 255, 255, 0.035);
+          border: 1px solid rgba(255, 255, 255, 0.07);
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+        }
+        .metric-item.primary {
+          border-color: rgba(39, 182, 255, 0.46);
+          background: rgba(39, 182, 255, 0.08);
+        }
+        .metric-item-sub {
+          font-size: 0.62rem;
+          color: rgba(255, 255, 255, 0.58);
+          margin-top: 0.16rem;
+          line-height: 1.25;
         }
         .metric-label {
           font-size: 0.58rem;
@@ -1040,7 +1252,13 @@ st.markdown(
             white-space: normal;
           }
           .card-metrics {
-            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            grid-template-columns: 1fr;
+          }
+          .decision-signal-row {
+            grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+          }
+          .metric-group.money-group .metric-group-items {
+            grid-template-columns: 1fr;
           }
         }
         </style>
@@ -1068,8 +1286,8 @@ else:
     tag_options.extend([value for value in tag_values if value])
 
 st.markdown('<div class="section-card">', unsafe_allow_html=True)
-st.subheader("Missed Opportunities")
-st.caption("Compare sold results against curve-based estimates for the restricted universe.")
+st.subheader("Controls")
+st.caption("Choose the historical universe and miss hypothesis.")
 
 left, right = st.columns([1.2, 1], gap="large")
 with left:
@@ -1081,7 +1299,7 @@ with left:
     )
 with right:
     only_missed = st.checkbox(
-        "Only show true misses (sold <= max bid)",
+        "Only show shared-policy Buy misses",
         value=True,
     )
     min_metric = st.slider(
@@ -1113,6 +1331,11 @@ if allow_repairs:
     sold_df = sold_df[~major_mask].copy()
 else:
     excluded_count = 0
+
+wovr_mask = flag_wovr_rows(sold_df)
+wovr_excluded_count = int(wovr_mask.sum())
+if wovr_excluded_count:
+    sold_df = sold_df[~wovr_mask].copy()
 
 results: list[dict[str, object]] = []
 for _, row in sold_df.iterrows():
@@ -1167,18 +1390,13 @@ for _, row in sold_df.iterrows():
     admin_costs = decision.get("admin_costs")
     risk_buffer = decision.get("risk_buffer")
     repair_cost = decision.get("repair_cost")
+    action_label = decision.get("action_label")
     net_delta = None
     if delta is not None:
         net_delta = delta - (repair_cost or 0)
     underbid_pct = compute_underbid_pct(sold_price, max_bid)
 
-    missed = False
-    if (
-        sold_price is not None
-        and max_bid is not None
-        and projected_profit_at_sold is not None
-    ):
-        missed = sold_price <= max_bid and projected_profit_at_sold > 0
+    missed = action_label == "Buy"
 
     location_state = first_text(row, ["location_state", "state", "location", "yard"])
     rego_text = first_text(row, ["rego_expiry", "rego_no", "rego"])
@@ -1192,6 +1410,8 @@ for _, row in sold_df.iterrows():
             "make": row.get("make"),
             "model": row.get("model"),
             "variant": row.get("variant"),
+            "body_type": row.get("body_type"),
+            "body": row.get("body"),
             "odometer_reading": row.get("odometer_reading"),
             "odometer_numeric": row.get("odometer_numeric"),
             "sold_price": sold_price,
@@ -1218,7 +1438,10 @@ for _, row in sold_df.iterrows():
             "admin_costs": admin_costs,
             "risk_buffer": risk_buffer,
             "expected_auction_price": decision.get("expected_auction_price"),
-            "action_label": decision.get("action_label"),
+            "computed_verdict": decision.get("computed_verdict"),
+            "bid_status": decision.get("bid_status"),
+            "hard_max_safety": decision.get("hard_max_safety"),
+            "action_label": action_label,
             "missed": missed,
             "date_sold": row.get("date_sold"),
             "location_state": location_state,
@@ -1231,9 +1454,15 @@ for _, row in sold_df.iterrows():
     )
 
 results_df = pd.DataFrame(results)
+future_sold_count = 0
 if not results_df.empty:
     results_df["miss_classification"] = results_df.apply(classify_miss_reason, axis=1)
     results_df["date_sold_parsed"] = pd.to_datetime(results_df["date_sold"], errors="coerce")
+    today = pd.Timestamp.now(tz="Australia/Sydney").tz_localize(None).normalize()
+    future_sold_mask = results_df["date_sold_parsed"].notna() & (results_df["date_sold_parsed"] > today)
+    future_sold_count = int(future_sold_mask.sum())
+    if future_sold_count:
+        results_df = results_df[~future_sold_mask].copy()
     results_df["sold_month"] = results_df["date_sold_parsed"].dt.to_period("M").dt.to_timestamp()
     results_df = apply_global_sidebar_filters(
         results_df,
@@ -1309,6 +1538,16 @@ st.markdown(f'<div class="notice">{summary_line}</div>', unsafe_allow_html=True)
 if excluded_count:
     st.markdown(
         f'<div class="notice">Excluded {excluded_count:,} listings with major engine defects.</div>',
+        unsafe_allow_html=True,
+    )
+if wovr_excluded_count:
+    st.markdown(
+        f'<div class="notice">Excluded {wovr_excluded_count:,} WOVR/write-off listings.</div>',
+        unsafe_allow_html=True,
+    )
+if future_sold_count:
+    st.markdown(
+        f'<div class="notice">Excluded {future_sold_count:,} future-dated sold rows pending date repair.</div>',
         unsafe_allow_html=True,
     )
 

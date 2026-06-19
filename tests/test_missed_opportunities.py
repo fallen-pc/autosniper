@@ -134,3 +134,66 @@ def test_missed_decision_metrics_keeps_historical_median_context_without_capping
 
     assert result["expected_auction_price"] == 12_300
     assert result["max_bid"] == 12_780
+
+
+def test_missed_decision_metrics_uses_shared_buy_policy(monkeypatch) -> None:
+    row = pd.Series(
+        {
+            "url": "test://missed-shared-buy",
+            "price_numeric": 10_000,
+            "price": "$10,000",
+            "body_type": "Hatch",
+            "location": "Melbourne VIC",
+            "rego_state": "VIC",
+            "general_condition": "",
+        }
+    )
+
+    monkeypatch.setattr(missed_opportunities, "_solve_max_bid", lambda resale_low, min_profit, listing: 20_000)
+    monkeypatch.setattr(
+        missed_opportunities,
+        "assess_repairs",
+        lambda condition: _repair_assessment(total_cost=0, risk_buffer=0),
+    )
+
+    result = missed_opportunities.compute_decision_metrics(
+        row,
+        20_000,
+        include_repairs=True,
+    )
+
+    assert result["computed_verdict"] == "Strong Flip"
+    assert result["bid_status"] == "Cheap"
+    assert result["hard_max_safety"] == "Strong"
+    assert result["action_label"] == "Buy"
+
+
+def test_missed_decision_metrics_uses_shared_over_max_avoid_policy(monkeypatch) -> None:
+    row = pd.Series(
+        {
+            "url": "test://missed-over-max",
+            "price_numeric": 13_000,
+            "price": "$13,000",
+            "body_type": "Hatch",
+            "location": "Melbourne VIC",
+            "rego_state": "VIC",
+            "general_condition": "",
+        }
+    )
+
+    monkeypatch.setattr(missed_opportunities, "_solve_max_bid", lambda resale_low, min_profit, listing: 20_000)
+    monkeypatch.setattr(
+        missed_opportunities,
+        "assess_repairs",
+        lambda condition: _repair_assessment(total_cost=0, risk_buffer=0),
+    )
+
+    result = missed_opportunities.compute_decision_metrics(
+        row,
+        20_000,
+        include_repairs=True,
+    )
+
+    assert result["max_bid"] == 12_780
+    assert result["bid_status"] == "Over max"
+    assert result["action_label"] == "Avoid"

@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import re
+from typing import Any, Mapping
 
 
 ACTION_BUY = "Buy"
@@ -88,6 +90,89 @@ def derive_action_label(policy_input: DecisionPolicyInput) -> str:
     ):
         return ACTION_BUY
     return ACTION_WATCH
+
+
+def _clean_text(value: Any) -> str:
+    if value is None:
+        return ""
+    text = str(value).strip()
+    if text.lower() in {"", "nan", "none", "n/a"}:
+        return ""
+    return text
+
+
+def first_numeric_value(*values: Any) -> float | None:
+    """Return the first usable numeric/currency value from a row-like source."""
+
+    for value in values:
+        if value is None:
+            continue
+        if isinstance(value, (int, float)):
+            try:
+                if value != value:
+                    continue
+            except TypeError:
+                pass
+            return float(value)
+        text = str(value).strip()
+        if not text or text.lower() in {"nan", "none", "n/a"}:
+            continue
+        cleaned = text.replace("$", "").replace(",", "").replace("AUD", "")
+        numbers = re.findall(r"-?\d+(?:\.\d+)?", cleaned)
+        if not numbers:
+            continue
+        try:
+            return float(numbers[0])
+        except ValueError:
+            continue
+    return None
+
+
+def derive_action_label_from_row(
+    row: Mapping[str, Any],
+    *,
+    min_profit: float,
+    fallback: str = ACTION_REVIEW,
+) -> str:
+    """Resolve a stored/display row through the shared action policy.
+
+    This is the common boundary for AI Analysis, Missed Opportunities replay,
+    and Telegram alerting. If the row lacks the policy inputs needed to safely
+    recalculate the action, return the supplied fallback.
+    """
+
+    computed_verdict = _clean_text(row.get("computed_verdict") or row.get("verdict"))
+    bid_status = _clean_text(row.get("bid_status"))
+    hard_max_safety = _clean_text(row.get("hard_max_safety"))
+    if not computed_verdict or not bid_status or not hard_max_safety:
+        return _clean_text(fallback) or ACTION_REVIEW
+
+    expected_profit = first_numeric_value(
+        row.get("expected_auction_worst_profit_value"),
+        row.get("expected_auction_worst_profit_value_ai"),
+        row.get("expected_auction_worst_profit"),
+        row.get("expected_auction_worst_profit_ai"),
+        row.get("projected_profit_at_sold"),
+    )
+    current_profit = first_numeric_value(
+        row.get("profit_at_current_bid_worst_value"),
+        row.get("profit_at_current_bid_worst_value_ai"),
+        row.get("profit_at_current_bid_worst"),
+        row.get("profit_at_current_bid_worst_ai"),
+        row.get("current_worst_profit"),
+        row.get("projected_profit_at_sold"),
+    )
+
+    return derive_action_label(
+        DecisionPolicyInput(
+            computed_verdict=computed_verdict,
+            bid_status=bid_status,
+            expected_auction_worst_profit=expected_profit,
+            current_worst_profit=current_profit,
+            hard_max_safety=hard_max_safety,
+            min_profit=min_profit,
+        )
+    )
 
 
 def action_display_parts(action: object) -> tuple[str, str]:

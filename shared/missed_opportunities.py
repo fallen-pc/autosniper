@@ -22,7 +22,7 @@ from scripts.ai_listing_valuation import (
     _solve_max_bid,
     apply_platform_risk_adjustments,
 )
-from shared.decision_policy import DecisionPolicyInput, derive_action_label
+from shared.decision_policy import derive_action_label_from_row
 from shared.repair_pricing import assess_repairs, apply_repairs_to_max_bid
 
 
@@ -70,6 +70,43 @@ def _first_present(row: Mapping[str, Any], *keys: str) -> Any:
         if text and text.lower() != "nan":
             return value
     return None
+
+
+def _bid_status_for_replay(
+    sold_price: float | None,
+    expected_auction_price: float | None,
+    max_bid: float | None,
+) -> str:
+    if sold_price is None:
+        return ""
+    if max_bid is not None and sold_price > max_bid:
+        return "Over max"
+    if expected_auction_price is not None and expected_auction_price > 0:
+        if sold_price <= expected_auction_price * 0.80:
+            return "Cheap"
+        if sold_price <= expected_auction_price:
+            return "Below expected"
+    return "Open"
+
+
+def _hard_max_safety_for_replay(max_bid: float | None, projected_profit: float | None) -> str:
+    if max_bid is None or max_bid <= 0:
+        return "No edge"
+    if projected_profit is not None and projected_profit >= 3000:
+        return "Strong"
+    return "Conditional"
+
+
+def _computed_verdict_for_replay(projected_profit: float | None, *, forced_avoid: bool) -> str:
+    if forced_avoid:
+        return "Avoid"
+    if projected_profit is None:
+        return "Review"
+    if projected_profit <= 0:
+        return "Avoid"
+    if projected_profit >= 3000:
+        return "Strong Flip"
+    return "Conditional Flip"
 
 
 def compute_decision_metrics(
@@ -154,6 +191,9 @@ def compute_decision_metrics(
     platform_fees = transport = admin_costs = total_costs = None
     projected_profit = None
     profit_margin = None
+    bid_status = ""
+    hard_max_safety = "No edge" if max_bid_val == 0.0 else ""
+    computed_verdict = "Review"
     action_label = "Review"
     if sold_price is not None:
         costs_map = _estimate_costs(float(sold_price), listing_data)
@@ -168,26 +208,22 @@ def compute_decision_metrics(
         projected_profit = resale_mid - sold_price - total_costs
         if resale_mid:
             profit_margin = (projected_profit / resale_mid) * 100
-        missed_bid = max_bid_val is not None and sold_price <= max_bid_val
-        if max_bid_val == 0.0:
-            action_label = "Avoid"
-        elif missed_bid and projected_profit is not None and projected_profit >= MIN_NET_PROFIT_ABSOLUTE:
-            action_label = "Buy"
-        elif projected_profit is not None and projected_profit > 0:
-            action_label = "Watch"
-        else:
-            action_label = "Avoid"
-
-    if action_label == "Review":
-        action_label = derive_action_label(
-            DecisionPolicyInput(
-                computed_verdict="Conditional Flip" if (profit_margin or 0) > 0 else "Avoid",
-                bid_status="Below expected",
-                expected_auction_worst_profit=projected_profit,
-                current_worst_profit=projected_profit,
-                hard_max_safety="Conditional" if max_bid_val and max_bid_val > 0 else "No edge",
-                min_profit=MIN_NET_PROFIT_ABSOLUTE,
-            )
+        bid_status = _bid_status_for_replay(sold_price, expected_auction_price, max_bid_val)
+        hard_max_safety = _hard_max_safety_for_replay(max_bid_val, projected_profit)
+        computed_verdict = _computed_verdict_for_replay(
+            projected_profit,
+            forced_avoid=bool(max_bid_val == 0.0),
+        )
+        action_label = derive_action_label_from_row(
+            {
+                "computed_verdict": computed_verdict,
+                "bid_status": bid_status,
+                "expected_auction_worst_profit_value": projected_profit,
+                "profit_at_current_bid_worst_value": projected_profit,
+                "hard_max_safety": hard_max_safety,
+            },
+            min_profit=MIN_NET_PROFIT_ABSOLUTE,
+            fallback="Review",
         )
 
     return {
@@ -201,5 +237,8 @@ def compute_decision_metrics(
         "risk_buffer": risk_buffer,
         "repair_cost": repair_cost,
         "expected_auction_price": expected_auction_price,
+        "bid_status": bid_status,
+        "hard_max_safety": hard_max_safety,
+        "computed_verdict": computed_verdict,
         "action_label": action_label,
     }

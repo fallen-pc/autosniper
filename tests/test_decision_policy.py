@@ -6,6 +6,7 @@ from shared.decision_policy import (
     DecisionPolicyInput,
     action_display_parts,
     derive_action_label,
+    derive_action_label_from_row,
 )
 
 
@@ -53,3 +54,22 @@ def test_action_display_copy_is_short_and_bid_specific() -> None:
         "Watch",
         "Watch: viable, but needs price room, repair inspection, or more context.",
     )
+
+
+def test_row_action_resolver_prefers_typed_policy_fields() -> None:
+    row = {
+        "action_label": "Avoid",
+        "computed_verdict": "Conditional Flip",
+        "bid_status": "Cheap",
+        "expected_auction_worst_profit": "$0",
+        "expected_auction_worst_profit_value": 2500.0,
+        "profit_at_current_bid_worst": "$0",
+        "profit_at_current_bid_worst_value": 2400.0,
+        "hard_max_safety": "Conditional",
+    }
+
+    assert derive_action_label_from_row(row, min_profit=1500.0, fallback="Avoid") == ACTION_BUY
+
+
+def test_row_action_resolver_falls_back_when_policy_inputs_are_missing() -> None:
+    assert derive_action_label_from_row({"action_label": "Watch"}, min_profit=1500.0, fallback="Watch") == ACTION_WATCH
