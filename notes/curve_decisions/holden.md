@@ -34,3 +34,39 @@ Why:
 - Combining the badges would overprice the cheaper Evoke lane, so the VF pass keeps them as separate curves.
 - Sedan and wagon are also kept separate because wagon pricing had enough direct evidence and a different buyer lane.
 - This curve is a retail resale curve built from Carsales/private asking evidence only. Grays sold history remains hammer-bid evidence, not repricing evidence.
+
+## Commodore VE Petrol Automatic Sedan/Wagon
+
+Base curves:
+- `holden_commodore_omega_ve_sedan_auto_petrol`
+- `holden_commodore_sv6_ve_sedan_auto_petrol`
+- `holden_commodore_omega_ve_wagon_auto_petrol`
+- `holden_commodore_sv6_ve_wagon_auto_petrol`
+
+Current working interpretation:
+- body: `sedan` or `wagon`, saved as separate curves
+- transmission: `auto`
+- fuel: `petrol`
+- series: `VE`
+- Omega sedan anchor years: `2007`, `2009`, `2010`
+- SV6 sedan anchor years: `2007`, `2008`, `2009`
+- Omega wagon anchor years: `2008`, `2009`, `2010`
+- SV6 wagon anchor years: `2008`, `2009`, `2010`
+- buckets use the extended Holden grid: `30000`, `60000`, `100000`, `150000`, `200000`, `225000`, `300000`
+
+Included rows for the current pass:
+- Commodore VE Omega petrol automatic sedans and wagons
+- Commodore VE SV6 petrol automatic sedans and wagons
+
+Excluded rows for the current pass:
+- VE Series II rows
+- VF, VZ, VY, VX, and VT rows
+- utes
+- manual rows
+- diesel, LPG, dual-fuel, gas, gas-only, and hybrid rows
+- SS, SS V, Redline, Storm, HSV, Calais, Berlina, Executive, International, Lumina, Evoke, and other materially different badge rows
+
+Why:
+- The Apify Carsales scrape provided direct private listing evidence for VE Omega and SV6 sedan/wagon lanes.
+- VE Series II has enough signal to review separately, but it is not folded into the plain VE curves.
+- These curves are retail resale curves built from Carsales/private asking evidence only. Grays sold history remains hammer-bid evidence, not repricing evidence.

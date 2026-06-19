@@ -1,0 +1,235 @@
+"""Start a Carsales Apify scrape run and optionally import the results."""
+
+from __future__ import annotations
+
+import argparse
+import os
+import sys
+from pathlib import Path
+from typing import Any
+from urllib.parse import quote
+
+import requests
+
+if __package__ in (None, ""):
+    sys.path.append(str(Path(__file__).resolve().parent.parent))
+    from scripts.import_carsales_apify_run import (
+        APIFY_API_BASE,
+        DEFAULT_OUTPUT_PATH,
+        fetch_dataset_items,
+        merge_output,
+        normalize_items,
+    )
+    from scripts.atomic_csv import write_dataframe_csv_atomic
+else:  # pragma: no cover
+    from scripts.import_carsales_apify_run import (
+        APIFY_API_BASE,
+        DEFAULT_OUTPUT_PATH,
+        fetch_dataset_items,
+        merge_output,
+        normalize_items,
+    )
+    from scripts.atomic_csv import write_dataframe_csv_atomic
+
+
+DEFAULT_ACTOR_ID = "memo23~carsales-cheerio"
+TERMINAL_STATUSES = {"SUCCEEDED", "FAILED", "ABORTED", "TIMED-OUT"}
+
+
+def require_token(token: str | None = None) -> str:
+    token_value = (token or os.getenv("APIFY_TOKEN") or "").strip()
+    if not token_value:
+        raise RuntimeError("Set APIFY_TOKEN or pass --token before starting an Apify run.")
+    return token_value
+
+
+def _headers(token: str) -> dict[str, str]:
+    return {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+
+
+def build_actor_input(
+    *,
+    make: str = "",
+    model: str = "",
+    body_type: str = "",
+    condition: str = "used",
+    seller_type: str = "private",
+    transmission: str = "",
+    fuel_type: str = "",
+    state: str = "",
+    sort_by: str = "featured",
+    start_url: str = "",
+    flatten: bool = False,
+    residential_proxy: bool = True,
+) -> dict[str, Any]:
+    actor_input: dict[str, Any] = {
+        "mode": "search",
+        "condition": condition,
+        "sellerType": seller_type,
+        "sortBy": sort_by,
+        "flatten": flatten,
+        "skipPriceSplitting": False,
+        "monitoringMode": False,
+        "monitoringWindow": "since-last-run",
+        "maxConcurrency": 5,
+        "minConcurrency": 1,
+        "maxRequestRetries": 5,
+    }
+    for key, value in {
+        "make": make,
+        "model": model,
+        "bodyType": body_type,
+        "transmission": transmission,
+        "fuelType": fuel_type,
+        "state": state,
+    }.items():
+        actor_input[key] = str(value or "").strip().lower()
+    if start_url:
+        actor_input["startUrls"] = [{"url": start_url.strip()}]
+    if residential_proxy:
+        actor_input["proxy"] = {"useApifyProxy": True, "apifyProxyGroups": ["RESIDENTIAL"]}
+    else:
+        actor_input["proxy"] = {"useApifyProxy": True}
+    return actor_input
+
+
+def start_actor_run(
+    actor_input: dict[str, Any],
+    *,
+    actor_id: str = DEFAULT_ACTOR_ID,
+    token: str | None = None,
+    max_items: int = 50,
+    max_total_charge_usd: float = 2.0,
+    wait_seconds: int = 0,
+    memory_mbytes: int | None = None,
+) -> dict[str, Any]:
+    token_value = require_token(token)
+    encoded_actor_id = quote(actor_id, safe="~")
+    params: dict[str, Any] = {
+        "maxItems": max_items,
+        "maxTotalChargeUsd": max_total_charge_usd,
+    }
+    if wait_seconds > 0:
+        params["waitForFinish"] = wait_seconds
+    if memory_mbytes:
+        params["memory"] = memory_mbytes
+
+    response = requests.post(
+        f"{APIFY_API_BASE}/acts/{encoded_actor_id}/runs",
+        headers=_headers(token_value),
+        params=params,
+        json=actor_input,
+        timeout=max(60, wait_seconds + 10),
+    )
+    response.raise_for_status()
+    payload = response.json()
+    data = payload.get("data") if isinstance(payload, dict) else None
+    if not isinstance(data, dict):
+        raise ValueError("Apify run response did not contain a data object.")
+    return data
+
+
+def import_completed_run(
+    run: dict[str, Any],
+    *,
+    token: str | None = None,
+    output_path: Path = DEFAULT_OUTPUT_PATH,
+    overwrite: bool = False,
+    allow_partial: bool = False,
+) -> int:
+    run_id = str(run.get("id") or "").strip()
+    dataset_id = str(run.get("defaultDatasetId") or "").strip()
+    status = str(run.get("status") or "").strip().upper()
+    importable_statuses = {"SUCCEEDED"}
+    if allow_partial:
+        importable_statuses.update({"ABORTED", "TIMED-OUT"})
+    if status not in importable_statuses:
+        raise RuntimeError(f"Run {run_id or '<unknown>'} is not importable yet: status={status or '<blank>'}")
+    if not dataset_id:
+        raise RuntimeError(f"Run {run_id} did not expose defaultDatasetId.")
+    items = fetch_dataset_items(dataset_id, token=token)
+    imported = normalize_items(items, run_id=run_id, dataset_id=dataset_id)
+    output = imported if overwrite else merge_output(output_path, imported)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    write_dataframe_csv_atomic(output, output_path, index=False)
+    return len(imported)
+
+
+def _print_run_summary(run: dict[str, Any]) -> None:
+    print(f"run_id={run.get('id', '')}")
+    print(f"status={run.get('status', '')}")
+    print(f"dataset_id={run.get('defaultDatasetId', '')}")
+    if run.get("usageTotalUsd") is not None:
+        print(f"usage_total_usd={run.get('usageTotalUsd')}")
+    if run.get("consoleUrl"):
+        print(f"console_url={run.get('consoleUrl')}")
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--actor-id", default=DEFAULT_ACTOR_ID)
+    parser.add_argument("--token", default="", help="Optional Apify token. Defaults to APIFY_TOKEN.")
+    parser.add_argument("--make", default="", help="Carsales make filter, e.g. holden.")
+    parser.add_argument("--model", default="", help="Carsales model filter, e.g. commodore.")
+    parser.add_argument("--body-type", default="", help="Carsales body type filter, e.g. sedan.")
+    parser.add_argument("--condition", default="used")
+    parser.add_argument("--seller-type", default="private")
+    parser.add_argument("--transmission", default="")
+    parser.add_argument("--fuel-type", default="")
+    parser.add_argument("--state", default="")
+    parser.add_argument("--sort-by", default="featured")
+    parser.add_argument("--start-url", default="", help="Optional exact Carsales search URL.")
+    parser.add_argument("--max-items", type=int, default=50)
+    parser.add_argument("--max-total-charge-usd", type=float, default=2.0)
+    parser.add_argument("--wait-seconds", type=int, default=0)
+    parser.add_argument("--memory-mbytes", type=int, default=0)
+    parser.add_argument("--no-residential-proxy", action="store_true")
+    parser.add_argument("--flatten", action="store_true")
+    parser.add_argument("--import-results", action="store_true")
+    parser.add_argument(
+        "--import-partial",
+        action="store_true",
+        help="Allow importing persisted rows from ABORTED or TIMED-OUT runs, useful when a cost cap stops the actor.",
+    )
+    parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT_PATH)
+    parser.add_argument("--overwrite", action="store_true")
+    args = parser.parse_args(argv)
+
+    actor_input = build_actor_input(
+        make=args.make,
+        model=args.model,
+        body_type=args.body_type,
+        condition=args.condition,
+        seller_type=args.seller_type,
+        transmission=args.transmission,
+        fuel_type=args.fuel_type,
+        state=args.state,
+        sort_by=args.sort_by,
+        start_url=args.start_url,
+        flatten=args.flatten,
+        residential_proxy=not args.no_residential_proxy,
+    )
+    run = start_actor_run(
+        actor_input,
+        actor_id=args.actor_id,
+        token=args.token,
+        max_items=args.max_items,
+        max_total_charge_usd=args.max_total_charge_usd,
+        wait_seconds=args.wait_seconds,
+        memory_mbytes=args.memory_mbytes or None,
+    )
+    _print_run_summary(run)
+    if args.import_results:
+        imported_count = import_completed_run(
+            run,
+            token=args.token,
+            output_path=args.output,
+            overwrite=args.overwrite,
+            allow_partial=args.import_partial,
+        )
+        print(f"imported_rows={imported_count}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

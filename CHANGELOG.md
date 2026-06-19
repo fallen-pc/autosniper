@@ -1,5 +1,8 @@
 # Changelog
 
+## 2026-06-19
+- Added separate Holden Commodore VE petrol automatic sedan/wagon curves for `Omega` and `SV6` from private Carsales/Apify evidence, keeping VE Series II, VF, gas/dual-fuel, and materially different badges out of the matcher.
+
 ## 2026-06-16
 - Added separate Holden Commodore VF petrol automatic wagon curves for `Evoke` and `SV6` from private Carsales evidence, excluding gas-only rows and keeping sedan/wagon lanes separate.
 - Added separate Holden Commodore VF petrol automatic sedan curves for `Evoke` and `SV6` from private Carsales evidence, keeping wagons, utes, SS/V8/performance rows, and older VE lanes out of the matcher.
