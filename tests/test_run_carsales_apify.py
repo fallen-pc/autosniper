@@ -4,7 +4,13 @@ from pathlib import Path
 
 import pytest
 
-from scripts.run_carsales_apify import build_actor_input, import_completed_run, require_token, start_actor_run
+from scripts.run_carsales_apify import (
+    build_actor_input,
+    import_completed_run,
+    poll_run_until_terminal,
+    require_token,
+    start_actor_run,
+)
 
 
 def test_build_actor_input_uses_targeted_private_used_filters():
@@ -149,3 +155,30 @@ def test_import_completed_run_can_import_cost_cap_aborted_rows(monkeypatch, tmp_
     )
 
     assert imported_count == 1
+
+
+def test_poll_run_until_terminal_fetches_until_succeeded(monkeypatch):
+    calls = []
+    statuses = iter(
+        [
+            {"id": "run1", "status": "RUNNING", "defaultDatasetId": "dataset1"},
+            {"id": "run1", "status": "SUCCEEDED", "defaultDatasetId": "dataset1"},
+        ]
+    )
+
+    def fake_fetch(run_id, token=None):
+        calls.append((run_id, token))
+        return next(statuses)
+
+    monkeypatch.setattr("scripts.run_carsales_apify.fetch_run_metadata", fake_fetch)
+    monkeypatch.setattr("scripts.run_carsales_apify.time.sleep", lambda seconds: None)
+
+    final = poll_run_until_terminal(
+        {"id": "run1", "status": "READY"},
+        token="token1",
+        poll_interval_seconds=1,
+        max_wait_seconds=10,
+    )
+
+    assert final["status"] == "SUCCEEDED"
+    assert calls == [("run1", "token1"), ("run1", "token1")]

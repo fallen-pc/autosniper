@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import os
 import sys
+import time
 from pathlib import Path
 from typing import Any
 from urllib.parse import quote
@@ -16,6 +17,7 @@ if __package__ in (None, ""):
     from scripts.import_carsales_apify_run import (
         APIFY_API_BASE,
         DEFAULT_OUTPUT_PATH,
+        fetch_run_metadata,
         fetch_dataset_items,
         merge_output,
         normalize_items,
@@ -25,6 +27,7 @@ else:  # pragma: no cover
     from scripts.import_carsales_apify_run import (
         APIFY_API_BASE,
         DEFAULT_OUTPUT_PATH,
+        fetch_run_metadata,
         fetch_dataset_items,
         merge_output,
         normalize_items,
@@ -155,6 +158,26 @@ def import_completed_run(
     return len(imported)
 
 
+def poll_run_until_terminal(
+    run: dict[str, Any],
+    *,
+    token: str | None = None,
+    poll_interval_seconds: int = 20,
+    max_wait_seconds: int = 600,
+) -> dict[str, Any]:
+    run_id = str(run.get("id") or "").strip()
+    if not run_id:
+        raise RuntimeError("Cannot poll Apify run without an id.")
+    deadline = time.monotonic() + max(0, max_wait_seconds)
+    current = dict(run)
+    while str(current.get("status") or "").strip().upper() not in TERMINAL_STATUSES:
+        if time.monotonic() >= deadline:
+            return current
+        time.sleep(max(1, poll_interval_seconds))
+        current = fetch_run_metadata(run_id, token=token)
+    return current
+
+
 def _print_run_summary(run: dict[str, Any]) -> None:
     print(f"run_id={run.get('id', '')}")
     print(f"status={run.get('status', '')}")
@@ -182,6 +205,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--max-items", type=int, default=50)
     parser.add_argument("--max-total-charge-usd", type=float, default=2.0)
     parser.add_argument("--wait-seconds", type=int, default=0)
+    parser.add_argument("--poll-until-finished", action="store_true")
+    parser.add_argument("--poll-interval-seconds", type=int, default=20)
+    parser.add_argument("--poll-max-wait-seconds", type=int, default=600)
     parser.add_argument("--memory-mbytes", type=int, default=0)
     parser.add_argument("--no-residential-proxy", action="store_true")
     parser.add_argument("--flatten", action="store_true")
@@ -219,6 +245,15 @@ def main(argv: list[str] | None = None) -> int:
         memory_mbytes=args.memory_mbytes or None,
     )
     _print_run_summary(run)
+    if args.poll_until_finished or args.import_results:
+        run = poll_run_until_terminal(
+            run,
+            token=args.token,
+            poll_interval_seconds=args.poll_interval_seconds,
+            max_wait_seconds=args.poll_max_wait_seconds,
+        )
+        print("final_run:")
+        _print_run_summary(run)
     if args.import_results:
         imported_count = import_completed_run(
             run,
