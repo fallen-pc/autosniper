@@ -1,5 +1,7 @@
 # Recent Changes
 
+- 2026-06-19: Added a Holden Commodore VE Series II Omega petrol automatic sedan retail curve from private Carsales/Apify evidence. The lane uses the Holden extended 30k/60k/100k/150k/200k/225k/300k grid, spans 2011-2013, and stays separate from the Series II Omega wagon lane as well as plain VE, VF, SV6, gas-only/dual-fuel, utes, and materially different badges.
+
 - 2026-06-19: Added a Holden Commodore VE Series II Omega petrol automatic wagon retail curve from private Carsales/Apify evidence. The lane uses the Holden extended 30k/60k/100k/150k/200k/225k/300k grid, spans 2010-2013, and keeps plain VE, VF, SV6, gas-only/dual-fuel, sedans, utes, and materially different badges separate through allowed variants, V2 group mapping, supported universe, anchor overrides, and canonical-tagging regression tests.
 
 - 2026-06-19: Added four Holden Commodore VE petrol automatic retail curves from private Carsales/Apify evidence: Omega sedan, SV6 sedan, Omega wagon, and SV6 wagon. The lanes use the Holden extended 30k/60k/100k/150k/200k/225k/300k grid, keep VE Series II/VF/gas/dual-fuel and materially different badges separate, and wire the match tags through allowed variants, V2 group mapping, supported universe, anchor overrides, and canonical-tagging regression tests.

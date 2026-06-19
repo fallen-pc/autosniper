@@ -173,3 +173,33 @@ def test_assign_canonical_tag_accepts_holden_commodore_ve_series_ii_omega_wagon_
     )
     assert assign_canonical_tag(sv6_wagon, require_price=True)[0] == "UNCLASSIFIED"
     assert assign_canonical_tag(gas_wagon, require_price=True)[0] == "UNCLASSIFIED"
+
+
+def test_assign_canonical_tag_accepts_holden_commodore_ve_series_ii_omega_sedan_only():
+    _load_curve_year_band.cache_clear()
+    omega_sedan = {
+        "make": "Holden",
+        "model": "Commodore",
+        "variant": "Omega VE Series II Auto MY12 petrol automatic sedan",
+        "body_type": "Sedan",
+        "transmission": "Automatic",
+        "fuel_type": "Petrol - Unleaded ULP",
+        "year": "2012",
+        "price": "6000",
+        "url": "https://www.example.com/2012-holden-commodore-omega-ve-series-ii-auto-my12-sedan",
+    }
+    wagon = {
+        **omega_sedan,
+        "body_type": "Wagon",
+        "variant": "Omega VE Series II Auto MY12 petrol automatic sportwagon",
+        "url": "https://www.example.com/2012-holden-commodore-omega-ve-series-ii-auto-my12-wagon",
+    }
+
+    assert assign_canonical_tag(omega_sedan, require_price=True)[0:2] == (
+        "holden_commodore_omega_petrol_auto_sedan_ve-series-ii",
+        "[OK]",
+    )
+    assert assign_canonical_tag(wagon, require_price=True)[0:2] == (
+        "holden_commodore_omega_petrol_auto_wagon_ve-series-ii",
+        "[OK]",
+    )
