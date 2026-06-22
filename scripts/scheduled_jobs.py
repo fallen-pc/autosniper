@@ -251,6 +251,34 @@ def _last_successful_daily_date_local() -> date | None:
     return metrics_time.astimezone(_local_timezone()).date()
 
 
+def _read_lock_payload() -> Dict[str, Any] | None:
+    try:
+        return json.loads(LOCK_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+
+
+def _active_daily_run_covers_date(coverage_date_local: date) -> bool:
+    state = _load_daily_run_state()
+    lock_state_running = (
+        str(state.get("last_status") or "").strip().lower() == "running"
+        and _parse_iso_date(state.get("last_coverage_date_local")) == coverage_date_local
+    )
+    payload = _read_lock_payload()
+    if payload is None:
+        return False
+    if str(payload.get("job") or "").strip() != "daily":
+        return False
+    try:
+        age = time.time() - LOCK_PATH.stat().st_mtime
+    except FileNotFoundError:
+        return False
+    if age > _existing_lock_ttl_hours() * 3600:
+        return False
+    lock_date = datetime.fromtimestamp(LOCK_PATH.stat().st_mtime, tz=_local_timezone()).date()
+    return lock_state_running or lock_date == coverage_date_local
+
+
 def _record_daily_run_start(*, trigger: str, coverage_date_local: date) -> None:
     state = _load_daily_run_state()
     state.update(
@@ -324,6 +352,8 @@ def _should_run_missed_daily_catchup(now: datetime | None = None) -> tuple[bool,
             return False, target_date
     last_successful = _last_successful_daily_date_local()
     if last_successful is not None and last_successful >= target_date:
+        return False, target_date
+    if _active_daily_run_covers_date(target_date):
         return False, target_date
     return True, target_date
 
@@ -631,6 +661,8 @@ def run_daily_smoke() -> None:
 
 def _run_daily_job(*, trigger: str, coverage_date_local: date) -> None:
     if not _acquire_lock("daily"):
+        if _active_daily_run_covers_date(coverage_date_local):
+            return
         _record_daily_run_skip(
             trigger=trigger,
             coverage_date_local=coverage_date_local,
