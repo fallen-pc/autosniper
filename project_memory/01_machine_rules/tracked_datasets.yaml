@@ -53,6 +53,7 @@ named_dataset_paths:
   curves.csv: restricted/curves.csv
   scored_listings.csv: model_audit/scored_listings.csv
   scored_listings_enriched.csv: model_audit/scored_listings_enriched.csv
+  simulated_sold_outcomes.csv: model_audit/simulated_sold_outcomes.csv
   model_accuracy_weekly.csv: model_audit/model_accuracy_weekly.csv
   model_accuracy_by_tier.csv: model_audit/model_accuracy_by_tier.csv
   sold_cars_historical.csv: archives/sold_cars_historical.csv

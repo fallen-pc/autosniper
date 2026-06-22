@@ -67,6 +67,7 @@ DATASET_PATHS: dict[str, Path] = {
     "curves.csv": Path("restricted") / "curves.csv",
     "scored_listings.csv": Path("model_audit") / "scored_listings.csv",
     "scored_listings_enriched.csv": Path("model_audit") / "scored_listings_enriched.csv",
+    "simulated_sold_outcomes.csv": Path("model_audit") / "simulated_sold_outcomes.csv",
     "model_accuracy_weekly.csv": Path("model_audit") / "model_accuracy_weekly.csv",
     "model_accuracy_by_tier.csv": Path("model_audit") / "model_accuracy_by_tier.csv",
     "sold_cars_historical.csv": Path("archives") / "sold_cars_historical.csv",

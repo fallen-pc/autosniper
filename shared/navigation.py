@@ -46,6 +46,7 @@ def navigation_spec() -> NavigationSpec:
                 "AI",
                 [
                     ("pages/6_AI_ANALYSIS.py", "AI Analysis", False),
+                    ("pages/17_MODEL_PROOF.py", "Model Proof", False),
                     ("pages/8_MODEL_ACCURACY.py", "Model Accuracy", False),
                     ("pages/8_REAUCTION_MONITOR.py", "Re-Auction Tracker", False),
                 ],

@@ -1,0 +1,207 @@
+from __future__ import annotations
+
+from pathlib import Path
+
+import pandas as pd
+import streamlit as st
+
+from shared.data_loader import dataset_path
+from shared.styling import display_banner, inject_global_styles, page_intro, section_heading
+
+
+st.set_page_config(page_title="Model Proof", layout="wide")
+inject_global_styles()
+display_banner()
+page_intro(
+    "MODEL PROOF",
+    "Current evidence for profit selection, separated by real and simulated outcomes.",
+    show_logo=False,
+)
+
+SIMULATED_METRICS_PATH = Path("output") / "eval" / "simulated_verdict_proxy" / "buy_selection_classification.csv"
+SIMULATED_JOIN_PATH = Path("output") / "eval" / "simulated_verdict_proxy" / "buy_selection_join.csv"
+SIMULATED_OUTCOMES_PATH = dataset_path("simulated_sold_outcomes.csv")
+REAL_OUTCOMES_PATH = dataset_path("scored_listings_enriched.csv")
+
+
+@st.cache_data(ttl=300)
+def load_csv(path: Path) -> pd.DataFrame:
+    if not path.exists():
+        return pd.DataFrame()
+    try:
+        return pd.read_csv(path, low_memory=False)
+    except Exception as exc:  # noqa: BLE001
+        st.warning(f"Could not read {path}: {exc}")
+        return pd.DataFrame()
+
+
+def format_ratio(value: object) -> str:
+    if value is None or pd.isna(value):
+        return "N/A"
+    return f"{float(value) * 100:.1f}%"
+
+
+def format_int(value: object) -> str:
+    if value is None or pd.isna(value):
+        return "N/A"
+    return f"{int(float(value)):,}"
+
+
+def format_money(value: object) -> str:
+    if value is None or pd.isna(value):
+        return "N/A"
+    return f"${float(value):,.0f}"
+
+
+def metric_value(metrics: pd.Series, column: str) -> object:
+    return metrics[column] if column in metrics.index else pd.NA
+
+
+def numeric_series(frame: pd.DataFrame, column: str) -> pd.Series:
+    if column not in frame.columns:
+        return pd.Series(dtype="float64")
+    return pd.to_numeric(frame[column], errors="coerce")
+
+
+def render_status_badge(label: str, tone: str) -> None:
+    palette = {
+        "ok": ("#0f5132", "#d1e7dd"),
+        "warn": ("#664d03", "#fff3cd"),
+        "info": ("#084298", "#cfe2ff"),
+    }
+    text_color, bg_color = palette.get(tone, palette["info"])
+    st.markdown(
+        f"""
+        <div style="
+            display:inline-block;
+            padding:0.34rem 0.58rem;
+            border-radius:8px;
+            background:{bg_color};
+            color:{text_color};
+            font-weight:700;
+            font-size:0.86rem;
+        ">{label}</div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+sim_metrics_df = load_csv(SIMULATED_METRICS_PATH)
+sim_join_df = load_csv(SIMULATED_JOIN_PATH)
+sim_outcomes_df = load_csv(SIMULATED_OUTCOMES_PATH)
+real_df = load_csv(REAL_OUTCOMES_PATH)
+
+real_profit = numeric_series(real_df, "actual_profit")
+real_rows = int(real_profit.notna().sum())
+
+section_heading("Proof Level", "Real outcomes and proxy outcomes are intentionally separate.")
+status_cols = st.columns(2)
+with status_cols[0]:
+    st.subheader("Real settled-profit benchmark")
+    if real_rows:
+        render_status_badge("Available", "ok")
+        st.metric("Rows with actual profit", format_int(real_rows))
+    else:
+        render_status_badge("Unavailable", "warn")
+        st.metric("Rows with actual profit", "0")
+        st.caption("No real post-purchase resale outcomes exist yet, so this page does not claim real settled-profit proof.")
+
+with status_cols[1]:
+    st.subheader("Simulated profit benchmark")
+    if sim_metrics_df.empty:
+        render_status_badge("Not generated", "warn")
+        st.caption(
+            "Run `scripts/generate_simulated_sold_outcomes.py`, then `scripts/evaluate_buy_selection.py "
+            "--benchmark-type simulated --profit-column simulated_actual_profit --prediction-source computed_verdict`."
+        )
+    else:
+        render_status_badge("Available", "ok")
+        st.caption("Proxy evidence only: simulated sale prices come from resale estimate fields, not real sales.")
+
+if sim_metrics_df.empty:
+    st.stop()
+
+metrics = sim_metrics_df.iloc[0]
+
+section_heading("Simulated Verdict-Proxy Result", "Buyable verdicts tested against simulated profit.")
+metric_cols = st.columns(6)
+metric_cols[0].metric("Rows tested", format_int(metric_value(metrics, "rows")))
+metric_cols[1].metric("Buyable verdicts", format_int(metric_value(metrics, "buy_predictions")))
+metric_cols[2].metric("Simulated profitable", format_int(metric_value(metrics, "profitable_actuals")))
+metric_cols[3].metric("Precision", format_ratio(metric_value(metrics, "precision")))
+metric_cols[4].metric("Recall", format_ratio(metric_value(metrics, "recall")))
+metric_cols[5].metric("F1", format_ratio(metric_value(metrics, "f1")))
+
+st.info(
+    "Interpretation: under simulated resale assumptions, every buyable-verdict pick was profitable "
+    "in the current dataset, but the system caught only a small share of all simulated-profitable rows."
+)
+
+with st.expander("What these metrics mean", expanded=True):
+    st.markdown(
+        """
+        - **Precision**: of the rows the system marked buyable, how many were profitable under the simulation.
+        - **Recall**: of all rows that were profitable under the simulation, how many the system caught.
+        - **F1**: one combined score balancing precision and recall.
+        - **Current shape**: high precision and low recall means the system is conservative.
+        """
+    )
+
+section_heading("Benchmark Contract", "The labels on this page are part of the evidence.")
+contract_cols = st.columns(3)
+contract_cols[0].metric("Benchmark type", str(metric_value(metrics, "benchmark_type")))
+contract_cols[1].metric("Prediction source", str(metric_value(metrics, "prediction_source")))
+contract_cols[2].metric("Profit column", str(metric_value(metrics, "profit_column")))
+st.caption(f"Positive labels: {metric_value(metrics, 'positive_labels')}")
+
+if not sim_outcomes_df.empty:
+    profit = numeric_series(sim_outcomes_df, "simulated_actual_profit")
+    source_counts = (
+        sim_outcomes_df.get("simulated_source", pd.Series(dtype=object))
+        .fillna("")
+        .astype(str)
+        .str.strip()
+        .replace("", "missing")
+        .value_counts()
+        .rename_axis("simulated_source")
+        .reset_index(name="rows")
+    )
+    section_heading("Simulated Outcome Inputs", "Where the proxy sale prices came from.")
+    input_cols = st.columns(4)
+    input_cols[0].metric("Outcome rows", format_int(len(sim_outcomes_df)))
+    input_cols[1].metric("Rows with simulated profit", format_int(profit.notna().sum()))
+    input_cols[2].metric("Profitable rows", format_int((profit > 0).sum()))
+    input_cols[3].metric("Average simulated profit", format_money(profit.mean()))
+    st.dataframe(source_counts, width="stretch", hide_index=True)
+
+section_heading("Rows Behind The Result", "Inspect the joined proof data.")
+if sim_join_df.empty:
+    st.info("No joined simulated benchmark rows were written.")
+else:
+    view_df = sim_join_df.copy()
+    verdicts = sorted(
+        value
+        for value in view_df.get("computed_verdict", pd.Series(dtype=object)).dropna().astype(str).unique()
+        if value.strip()
+    )
+    selected_verdict = st.selectbox("Computed verdict", ["All"] + verdicts, index=0)
+    if selected_verdict != "All":
+        view_df = view_df[view_df["computed_verdict"].astype(str) == selected_verdict]
+
+    only_selected = st.checkbox("Only buyable-verdict predictions", value=False)
+    if only_selected and "y_pred_buy" in view_df.columns:
+        view_df = view_df[view_df["y_pred_buy"].astype(bool)]
+
+    display_columns = [
+        "computed_verdict",
+        "prediction_label",
+        "simulated_sale_price",
+        "simulated_actual_profit",
+        "simulated_source",
+        "purchase_price",
+        "y_pred_buy",
+        "y_true_profitable",
+        "url",
+    ]
+    display_columns = [column for column in display_columns if column in view_df.columns]
+    st.dataframe(view_df[display_columns].head(250), width="stretch", hide_index=True)
