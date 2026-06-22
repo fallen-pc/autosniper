@@ -197,3 +197,55 @@ def test_missed_decision_metrics_uses_shared_over_max_avoid_policy(monkeypatch) 
     assert result["max_bid"] == 12_780
     assert result["bid_status"] == "Over max"
     assert result["action_label"] == "Avoid"
+
+
+def test_classify_miss_reason_splits_buy_miss_headroom() -> None:
+    row = pd.Series(
+        {
+            "sold_price": 8_000,
+            "max_bid": 12_000,
+            "curve_estimate": 18_000,
+            "projected_profit_at_sold": 8_500,
+            "underbid_pct": 33.3,
+            "action_label": "Buy",
+            "bid_status": "Cheap",
+            "hard_max_safety": "Strong",
+            "computed_verdict": "Strong Flip",
+        }
+    )
+
+    assert missed_opportunities.classify_miss_reason(row) == "wide max-bid headroom"
+
+
+def test_classify_miss_reason_flags_large_margin_before_headroom() -> None:
+    row = pd.Series(
+        {
+            "sold_price": 8_000,
+            "max_bid": 12_000,
+            "curve_estimate": 23_000,
+            "projected_profit_at_sold": 12_500,
+            "underbid_pct": 33.3,
+            "action_label": "Buy",
+            "bid_status": "Cheap",
+            "hard_max_safety": "Strong",
+            "computed_verdict": "Strong Flip",
+        }
+    )
+
+    assert missed_opportunities.classify_miss_reason(row) == "large-margin buy miss"
+
+
+def test_classify_miss_reason_splits_over_max_from_price_spike() -> None:
+    row = pd.Series(
+        {
+            "sold_price": 13_000,
+            "max_bid": 12_000,
+            "curve_estimate": 18_000,
+            "curve_high": 19_000,
+            "projected_profit_at_sold": 2_000,
+            "action_label": "Avoid",
+            "bid_status": "Over max",
+        }
+    )
+
+    assert missed_opportunities.classify_miss_reason(row) == "sold above max bid"

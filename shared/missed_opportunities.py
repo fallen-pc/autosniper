@@ -40,6 +40,20 @@ def _to_float(value: Any) -> float | None:
         return None
 
 
+def _clean_text(value: Any) -> str:
+    if value is None:
+        return ""
+    try:
+        if pd.isna(value):
+            return ""
+    except (TypeError, ValueError):
+        pass
+    text = str(value).strip()
+    if not text or text.lower() == "nan":
+        return ""
+    return text
+
+
 def _blank_decision() -> dict[str, object]:
     return {
         "max_bid": None,
@@ -107,6 +121,66 @@ def _computed_verdict_for_replay(projected_profit: float | None, *, forced_avoid
     if projected_profit >= 3000:
         return "Strong Flip"
     return "Conditional Flip"
+
+
+def classify_miss_reason(row: Mapping[str, Any] | pd.Series) -> str:
+    """Bucket a historical replay row into a useful missed-opportunity signal."""
+    spec_reason = _clean_text(row.get("spec_reason"))
+    if spec_reason:
+        return "not covered"
+
+    sold_price = _to_float(row.get("sold_price"))
+    max_bid = _to_float(row.get("max_bid"))
+    curve_estimate = _to_float(row.get("curve_estimate"))
+    curve_high = _to_float(row.get("curve_high"))
+    projected_profit = _to_float(row.get("projected_profit_at_sold"))
+    delta_pct = _to_float(row.get("delta_pct"))
+    risk_buffer = max(_to_float(row.get("risk_buffer")) or 0.0, 0.0)
+    repair_cost = max(_to_float(row.get("repair_cost_estimate")) or 0.0, 0.0)
+    underbid_pct = _to_float(row.get("underbid_pct"))
+    bid_status = _clean_text(row.get("bid_status"))
+    hard_max_safety = _clean_text(row.get("hard_max_safety"))
+    computed_verdict = _clean_text(row.get("computed_verdict"))
+    action_label = _clean_text(row.get("action_label"))
+    cost_drag = risk_buffer + repair_cost
+
+    if sold_price is None or curve_estimate is None:
+        return "unclassified"
+
+    if max_bid is not None and sold_price > max_bid:
+        bid_gap_pct = ((sold_price - max_bid) / max_bid * 100.0) if max_bid > 0 else None
+        if bid_gap_pct is not None and bid_gap_pct <= 5.0:
+            return "just above max bid"
+        if curve_high is not None and sold_price > (curve_high * 1.05):
+            return "auction price spike"
+        if cost_drag > 0 and (curve_estimate - sold_price) > 0 and cost_drag >= (curve_estimate - sold_price) * 0.35:
+            return "risk/cost blocked"
+        return "sold above max bid"
+
+    is_buy_miss = action_label == "Buy" or (projected_profit is not None and projected_profit > 0)
+    if is_buy_miss:
+        if projected_profit is not None and projected_profit >= 10_000:
+            return "large-margin buy miss"
+        if underbid_pct is not None:
+            if underbid_pct >= 20.0:
+                return "wide max-bid headroom"
+            if underbid_pct >= 10.0:
+                return "clear max-bid headroom"
+            if underbid_pct <= 5.0:
+                return "tight bid window"
+        if bid_status == "Cheap":
+            return "cheap vs expected auction"
+        if bid_status == "Below expected":
+            return "below expected auction"
+        if computed_verdict == "Strong Flip" or hard_max_safety == "Strong":
+            return "strong flip miss"
+        return "buy-policy miss"
+
+    if cost_drag > 0:
+        return "risk/cost blocked"
+    if delta_pct is not None and delta_pct <= 8.0:
+        return "thin curve edge"
+    return "curve too conservative"
 
 
 def compute_decision_metrics(

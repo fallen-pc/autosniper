@@ -10,9 +10,9 @@ import pandas as pd
 
 from scripts.atomic_csv import append_dict_rows_csv_atomic, write_dataframe_csv_atomic
 from shared.data_loader import dataset_path
-from shared.decision_policy import DecisionPolicyInput, derive_action_label
+from shared.decision_policy import DecisionPolicyInput, derive_action_label, derive_action_label_from_row
 from shared.repair_pricing import assess_repairs, apply_repairs_to_max_bid
-from shared.telegram_alerts import send_on_state_change
+from shared.telegram_alerts import get_alert_state, send_on_state_change
 from shared.top_buy import apply_top_buy_behavior, top_buy_gate_check
 
 
@@ -632,7 +632,12 @@ def _is_good_verdict(verdict: Any) -> bool:
 def _ai_analysis_action(row: Mapping[str, Any] | None) -> str:
     if not row:
         return ""
-    return str(row.get("action_label") or "").strip()
+    fallback = str(row.get("action_label") or "").strip()
+    return derive_action_label_from_row(
+        row,
+        min_profit=MIN_NET_PROFIT_ABSOLUTE,
+        fallback=fallback,
+    )
 
 
 def _dataset_contains_url(path: Path, url: str) -> bool:
@@ -705,10 +710,12 @@ def _maybe_send_listing_alerts(
 
     current_action = _ai_analysis_action(row)
     previous_action = _ai_analysis_action(existing_row)
+    alert_scope = "listing_bid_ready"
+    previous_alert_state = get_alert_state(alert_scope, url)
     if current_action == "Buy":
         state_value = "ai_analysis_buy"
         message = _ai_analysis_alert_message(row, title=title, url=url)
-    elif previous_action == "Buy":
+    elif previous_action == "Buy" or previous_alert_state == "ai_analysis_buy":
         state_value = "ai_analysis_not_buy"
         message = (
             "AI Analysis update\n"
@@ -727,7 +734,7 @@ def _maybe_send_listing_alerts(
 
     try:
         send_on_state_change(
-            "listing_bid_ready",
+            alert_scope,
             url,
             state_value,
             message,

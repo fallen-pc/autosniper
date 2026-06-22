@@ -26,7 +26,7 @@ from shared.curves import (
     resolve_curve_canonical_tag,
 )
 from shared.data_loader import dataset_path, ensure_datasets_available
-from shared.decision_policy import DecisionPolicyInput, action_display_parts, derive_action_label
+from shared.decision_policy import action_display_parts, derive_action_label_from_row
 from shared.global_filters import apply_global_sidebar_filters, render_global_sidebar_filters
 from shared.location_utils import extract_state
 from shared.repair_features import build_repair_features
@@ -966,6 +966,7 @@ def _score_autotrader_matches(
         candidate_tag = _safe_text(candidate.get("canonical_tag"), fallback="").strip()
         if candidate_tag == UNCLASSIFIED:
             candidate_tag = ""
+        candidate_tag = resolve_curve_canonical_tag(candidate_tag) if candidate_tag else ""
         if not candidate_tag or candidate_tag != curve_tag:
             continue
         stats["group_match"] += 1
@@ -1788,45 +1789,53 @@ def _render_bid_logic_tab(
     if confidence_display == "N/A":
         confidence_display = _curve_confidence_label(row.get("confidence"))
     expected_finish_display, expected_finish_status = _expected_finish_display_parts(row)
+    bid_display = bid_display_parts(row)
+    cap_profit_display = _format_price_text(row.get("net_profit_worst") or row.get("net_profit_mid"))
+    expected_profit_display = _format_price_text(row.get("expected_auction_worst_profit") or row.get("expected_auction_profit"))
+    expected_profit_label = _display_profit_label(row.get("expected_auction_profit_label"))
+    expected_finish_detail = f"Scenario profit {expected_profit_display}"
+    if expected_profit_label not in ("Unknown", "N/A"):
+        expected_finish_detail = f"{expected_finish_detail}; {expected_profit_label.lower()}"
 
     metric_rows = [
         ("Resale estimate", _format_currency_value(_compute_resale_value(row))),
-        ("Expected finish basis", expected_finish_display),
-        ("Profit at expected finish", _format_price_text(row.get("expected_auction_worst_profit") or row.get("expected_auction_profit"))),
-        ("Raw margin now", _format_price_text(row.get("profit_at_current_bid_worst") or row.get("profit_at_current_bid"))),
+        ("Max bid cap", bid_display["max_label"]),
+        ("Profit at cap", cap_profit_display),
+        ("Current vs cap", bid_display["status"]),
+        ("Expected finish guide", expected_finish_display),
+        ("Scenario profit at expected finish", expected_profit_display),
         ("Current price", _format_price_text(row.get("price"))),
         ("Auction cost", _format_currency_value(auction_cost)),
         ("Fees", _format_price_text(row.get("fees_estimate"))),
         ("Transport", _format_price_text(row.get("transport_estimate"))),
         ("Repair cost", _format_currency_value(repair_deduction)),
         ("Confidence", confidence_display),
-        ("Net profit", _format_price_text(row.get("net_profit_worst") or row.get("net_profit_mid"))),
-        ("Max bid limit", _format_currency_value(row.get("max_bid_value"))),
     ]
 
-    first_row = st.columns(5)
-    second_row = st.columns(5)
-    third_row = st.columns(max(1, len(metric_rows) - 10))
-    for column, (label, value) in zip(first_row, metric_rows[:5]):
+    first_row = st.columns(4)
+    second_row = st.columns(4)
+    third_row = st.columns(max(1, len(metric_rows) - 8))
+    for column, (label, value) in zip(first_row, metric_rows[:4]):
         column.metric(label, value)
-    for column, (label, value) in zip(second_row, metric_rows[5:10]):
+    for column, (label, value) in zip(second_row, metric_rows[4:8]):
         column.metric(label, value)
-    for column, (label, value) in zip(third_row, metric_rows[10:]):
+    for column, (label, value) in zip(third_row, metric_rows[8:]):
         column.metric(label, value)
 
     _render_bullets(
         "Profit notes",
         [
+            f"Max bid cap: {bid_display['max_label']} ({bid_display['max_detail']})",
+            f"Profit at cap: {cap_profit_display}",
+            f"Current vs cap: {bid_display['status']} - {bid_display['status_detail']}",
             f"Discount used: {float(row.get('discount_used') or 0):.0%}" if pd.notna(row.get("discount_used")) else "Discount used: N/A",
-            f"Expected auction finish: {_format_price_text(row.get('expected_auction_price'))}",
-            f"Expected finish basis used for profit: {expected_finish_display}",
+            f"Expected auction finish guide: {_format_price_text(row.get('expected_auction_price'))}",
+            f"Expected finish scenario: {expected_finish_display} ({expected_finish_detail})",
             f"Expected finish status: {expected_finish_status}",
             f"Expected finish source: {_safe_text(row.get('expected_auction_source'), 'N/A')}",
             f"Expected finish comps: {_safe_text(row.get('expected_auction_comps_count'), 'N/A')}",
-            f"Profit at expected finish (mid): {_format_price_text(row.get('expected_auction_profit'))}",
-            f"Profit at expected finish (worst): {_format_price_text(row.get('expected_auction_worst_profit'))}",
-            f"Raw-margin-now strength: {_display_profit_label(row.get('current_profit_label'))}",
-            f"Expected-finish margin strength: {_display_profit_label(row.get('expected_auction_profit_label'))}",
+            f"Scenario profit at expected finish (mid): {_format_price_text(row.get('expected_auction_profit'))}",
+            f"Scenario profit at expected finish (worst): {_format_price_text(row.get('expected_auction_worst_profit'))}",
             f"Max-bid safety: {_max_bid_safety_text(row)}",
             f"Flip difficulty: {_safe_text(row.get('flip_difficulty'), 'N/A')}",
             f"Difficulty reasons: {_safe_text(row.get('difficulty_reasons'), 'N/A')}",
@@ -3425,20 +3434,10 @@ def _truthy(value: object) -> bool:
 
 def _resolve_action_label(row: pd.Series) -> str:
     current_action = _safe_text(row.get("action_label"), fallback="Review")
-    computed_verdict = _safe_text(row.get("computed_verdict") or row.get("verdict"), fallback="")
-    bid_status = _safe_text(row.get("bid_status"), fallback="")
-    hard_max_safety = _safe_text(row.get("hard_max_safety"), fallback="")
-    if not computed_verdict or not bid_status or not hard_max_safety:
-        return current_action
-    return derive_action_label(
-        DecisionPolicyInput(
-            computed_verdict=computed_verdict,
-            bid_status=bid_status,
-            expected_auction_worst_profit=first_currency_value(row.get("expected_auction_worst_profit")),
-            current_worst_profit=first_currency_value(row.get("profit_at_current_bid_worst")),
-            hard_max_safety=hard_max_safety,
-            min_profit=MIN_NET_PROFIT_ABSOLUTE,
-        )
+    return derive_action_label_from_row(
+        row,
+        min_profit=MIN_NET_PROFIT_ABSOLUTE,
+        fallback=current_action,
     )
 
 
@@ -3771,12 +3770,14 @@ def render_listing_card(row: pd.Series) -> None:
     max_bid_display = bid_display["max_label"]
     resale_display = _format_currency_value(row.get("resale_value"))
     profit_pct_display = _format_percent(row.get("profit_margin_value"))
-    current_profit_display = _format_price_text(row.get("profit_at_current_bid_worst") or row.get("profit_at_current_bid"))
-    current_profit_label = _display_profit_label(row.get("current_profit_label"))
-    expected_auction_display, expected_finish_status = _expected_finish_display_parts(row)
+    expected_auction_display, _ = _expected_finish_display_parts(row)
     expected_profit_display = _format_price_text(row.get("expected_auction_worst_profit") or row.get("expected_auction_profit"))
     expected_profit_label = _display_profit_label(row.get("expected_auction_profit_label"))
     hard_max_safety = _max_bid_safety_text(row)
+    cap_profit_display = _format_price_text(row.get("net_profit_worst") or row.get("net_profit_mid"))
+    expected_finish_sub = f"Scenario profit {expected_profit_display}"
+    if expected_profit_label not in ("Unknown", "N/A"):
+        expected_finish_sub = f"{expected_finish_sub}; {expected_profit_label.lower()}"
     flip_difficulty = _safe_text(row.get("flip_difficulty"), fallback="Unknown")
     bid_status = bid_display["status"]
     score_100 = row.get("score_100_value")
@@ -3880,7 +3881,7 @@ def render_listing_card(row: pd.Series) -> None:
             _build_signal_tile(
                 "Margin",
                 profit_pct_display,
-                current_profit_label,
+                hard_max_safety,
                 _margin_signal_tone(row.get("profit_margin_value")),
             ),
             _build_signal_tile(
@@ -3935,10 +3936,10 @@ def render_listing_card(row: pd.Series) -> None:
             _build_metric_group(
                 "Deal maths",
                 [
-                    _build_metric_item("Raw margin now", current_profit_display, current_profit_label, "primary"),
-                    _build_metric_item("Expected finish", expected_auction_display, expected_finish_status),
-                    _build_metric_item("Profit at expected finish", expected_profit_display, expected_profit_label),
-                    _build_metric_item("Max bid limit", max_bid_display, hard_max_safety),
+                    _build_metric_item("Max bid cap", max_bid_display, bid_display["max_detail"], "primary"),
+                    _build_metric_item("Profit at cap", cap_profit_display, hard_max_safety),
+                    _build_metric_item("Current vs cap", bid_status, bid_display["status_detail"]),
+                    _build_metric_item("Expected finish", expected_auction_display, expected_finish_sub),
                 ],
                 "money-group",
             ),

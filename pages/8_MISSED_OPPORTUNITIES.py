@@ -25,7 +25,7 @@ from shared.repair_pricing import (
     serialize_repair_fragments,
 )
 from shared.styling import clean_html, display_banner, inject_global_styles, page_intro
-from shared.missed_opportunities import compute_decision_metrics
+from shared.missed_opportunities import classify_miss_reason, compute_decision_metrics
 
 
 st.set_page_config(page_title="MISSED OPPORTUNITIES", layout="wide")
@@ -296,8 +296,46 @@ def risk_level(row: pd.Series) -> str:
 
 
 def render_detail_value(label: str, value: str) -> None:
-    st.markdown(f"**{label}**")
-    st.write(value)
+    st.markdown(
+        clean_html(
+            f"""
+            <div class="detail-item">
+              <div class="detail-label">{html.escape(label)}</div>
+              <div class="detail-value">{html.escape(value)}</div>
+            </div>
+            """
+        ),
+        unsafe_allow_html=True,
+    )
+
+
+def render_detail_grid(items: list[tuple[str, str]], *, columns: int = 3) -> None:
+    if not items:
+        return
+    grid_columns = max(1, min(columns, 4))
+    cells = "".join(
+        clean_html(
+            f"""
+            <div class="detail-item">
+              <div class="detail-label">{html.escape(label)}</div>
+              <div class="detail-value">{html.escape(value)}</div>
+            </div>
+            """
+        )
+        for label, value in items
+    )
+    st.markdown(
+        f'<div class="detail-grid cols-{grid_columns}">{cells}</div>',
+        unsafe_allow_html=True,
+    )
+
+
+def render_bullet_block(title: str, items: list[str]) -> None:
+    cleaned = [safe_text(item, "") for item in items if safe_text(item, "")]
+    if not cleaned:
+        return
+    st.markdown(f'<div class="details-section"><h4>{html.escape(title)}</h4></div>', unsafe_allow_html=True)
+    st.markdown("\n".join(f"- {item}" for item in cleaned))
 
 
 def render_repair_fragments(detail_json: object) -> None:
@@ -334,6 +372,160 @@ def render_repair_fragments(detail_json: object) -> None:
         st.caption(" | ".join(meta))
         if reasons:
             st.caption(reasons)
+
+
+def render_missed_overview_tab(
+    row: pd.Series,
+    *,
+    action_label: str,
+    computed_verdict: str,
+    miss_classification: str,
+    miss_status: str,
+    risk_status: str,
+    risk_summary: str,
+    projected_profit: object,
+    profit_margin: object,
+    metric_sub: str,
+) -> None:
+    metric_cols = st.columns(3)
+    metric_cols[0].metric("Historical action", action_label)
+    metric_cols[1].metric("Projected profit", money(projected_profit))
+    metric_cols[2].metric("Risk level", risk_status)
+
+    render_bullet_block(
+        "Historical profile",
+        [
+            f"Vehicle tag: {safe_text(row.get('canonical_tag'), 'N/A')}",
+            f"Miss classification: {miss_classification}",
+            f"Policy verdict replay: {computed_verdict}",
+        ],
+    )
+    render_bullet_block(
+        "Miss reasoning",
+        [
+            f"Metric basis: {metric_sub}",
+            f"Historical status: {miss_status}",
+            f"Profit margin at sold price: {pct(profit_margin)}",
+            f"Risk / notes: {risk_summary}",
+        ],
+    )
+    render_bullet_block(
+        "Sold listing",
+        [
+            f"Sold price: {money(row.get('sold_price'))}",
+            f"Sold date: {safe_text(row.get('date_sold'), 'N/A')}",
+            f"Odometer: {format_km(row.get('odometer_numeric'), row.get('odometer_reading'))} km",
+        ],
+    )
+
+
+def render_missed_curve_tab(
+    row: pd.Series,
+    *,
+    curve_est: object,
+    delta: object,
+    expected_auction: object,
+    canonical_tag: str,
+) -> None:
+    metric_cols = st.columns(3)
+    metric_cols[0].metric("Curve resale mid", money(curve_est))
+    metric_cols[1].metric("Curve delta", money(delta))
+    metric_cols[2].metric("Delta %", pct(row.get("delta_pct")))
+    render_detail_grid(
+        [
+            ("Curve low", money(row.get("curve_low"))),
+            ("Curve high", money(row.get("curve_high"))),
+            ("Sold price", money(row.get("sold_price"))),
+            ("Expected auction", money(expected_auction)),
+            ("Canonical tag", canonical_tag or "N/A"),
+            ("Spec reason", safe_text(row.get("spec_reason"), "N/A")),
+        ],
+        columns=3,
+    )
+
+
+def render_missed_comparables_tab(
+    row: pd.Series,
+    *,
+    curve_est: object,
+    delta: object,
+    expected_auction: object,
+    miss_status: str,
+    metric_sub: str,
+) -> None:
+    metric_cols = st.columns(3)
+    metric_cols[0].metric("Sold price", money(row.get("sold_price")))
+    metric_cols[1].metric("Curve resale mid", money(curve_est))
+    metric_cols[2].metric("Curve delta", money(delta))
+    render_detail_grid(
+        [
+            ("Expected auction", money(expected_auction)),
+            ("Underbid", pct(row.get("underbid_pct"))),
+            ("Delta %", pct(row.get("delta_pct"))),
+            ("Historical status", miss_status),
+            (
+                "Sold vs max bid",
+                "Sold inside max bid" if bool(row.get("missed")) else "Sold above max bid or no profit",
+            ),
+            ("Metric basis", metric_sub),
+        ],
+        columns=3,
+    )
+
+
+def render_missed_condition_tab(
+    row: pd.Series,
+    *,
+    include_repairs: bool,
+    repair_decision: str,
+    risk_summary: str,
+    url: str,
+) -> None:
+    metric_cols = st.columns(4)
+    metric_cols[0].metric("Risk / notes", risk_summary)
+    metric_cols[1].metric("Repair decision", repair_decision if include_repairs else "Not applied")
+    metric_cols[2].metric("Repair severity", safe_text(row.get("repair_severity"), "N/A"))
+    metric_cols[3].metric("Repair estimate", money(row.get("repair_cost_estimate")))
+    if include_repairs:
+        st.markdown('<div class="details-section"><h4>Repair split / dictionary match</h4></div>', unsafe_allow_html=True)
+        render_repair_fragments(row.get("repair_cost_detail"))
+    condition_text = safe_text(row.get("general_condition"), "")
+    if condition_text:
+        st.markdown('<div class="details-section"><h4>Condition text</h4></div>', unsafe_allow_html=True)
+        st.write(condition_text)
+    render_detail_grid([("Listing", f"[Open listing]({url})" if url else "N/A")], columns=1)
+
+
+def render_missed_bid_logic_tab(
+    row: pd.Series,
+    *,
+    action_label: str,
+    computed_verdict: str,
+    bid_status: str,
+    hard_max_safety: str,
+    expected_auction: object,
+    max_bid: object,
+    projected_profit: object,
+) -> None:
+    metric_cols = st.columns(4)
+    metric_cols[0].metric("Action", action_label)
+    metric_cols[1].metric("Max bid limit", money(max_bid))
+    metric_cols[2].metric("Expected auction", money(expected_auction))
+    metric_cols[3].metric("Projected profit", money(projected_profit))
+    render_detail_grid(
+        [
+            ("Verdict", computed_verdict),
+            ("Bid status", bid_status),
+            ("Hard max safety", hard_max_safety),
+            ("Platform fees", money(row.get("platform_fees"))),
+            ("Transport", money(row.get("transport_costs"))),
+            ("Admin", money(row.get("admin_costs"))),
+            ("Risk buffer", money(row.get("risk_buffer"))),
+            ("Repair estimate", money(row.get("repair_cost_estimate"))),
+            ("Total costs", money(row.get("total_costs"))),
+        ],
+        columns=3,
+    )
 
 
 def render_sold_analysis_card(
@@ -478,84 +670,54 @@ def render_sold_analysis_card(
         ["Overview", "Curve", "Comparables", "Condition", "Bid Logic"]
     )
     with overview_tab:
-        cols = st.columns(3)
-        with cols[0]:
-            render_detail_value("Sold price", money(sold_price))
-            render_detail_value("Max bid limit", money(max_bid))
-            render_detail_value("Profit at sold", money(row.get("projected_profit_at_sold")))
-        with cols[1]:
-            render_detail_value("Miss classification", miss_classification)
-            render_detail_value("Profit margin", pct(profit_margin))
-            render_detail_value("Underbid", pct(row.get("underbid_pct")))
-        with cols[2]:
-            render_detail_value("Location", safe_text(row.get("location_state"), "N/A"))
-            render_detail_value("Rego", safe_text(row.get("rego_text"), "N/A"))
-            render_detail_value("Keys", safe_text(row.get("keys_text"), "N/A"))
+        render_missed_overview_tab(
+            row,
+            action_label=action_label,
+            computed_verdict=computed_verdict,
+            miss_classification=miss_classification,
+            miss_status=miss_status,
+            risk_status=risk_status,
+            risk_summary=risk_summary,
+            projected_profit=projected_profit,
+            profit_margin=profit_margin,
+            metric_sub=metric_sub,
+        )
     with curve_tab:
-        cols = st.columns(3)
-        with cols[0]:
-            render_detail_value("Curve resale mid", money(curve_est))
-            render_detail_value("Curve low", money(row.get("curve_low")))
-            render_detail_value("Curve high", money(row.get("curve_high")))
-        with cols[1]:
-            render_detail_value("Sold price", money(sold_price))
-            render_detail_value("Curve delta", money(delta))
-            render_detail_value("Delta %", pct(row.get("delta_pct")))
-        with cols[2]:
-            render_detail_value("Canonical tag", canonical_tag or "N/A")
-            render_detail_value("Spec reason", safe_text(row.get("spec_reason"), "N/A"))
-            render_detail_value("Expected auction", money(expected_auction))
+        render_missed_curve_tab(
+            row,
+            curve_est=curve_est,
+            delta=delta,
+            expected_auction=expected_auction,
+            canonical_tag=canonical_tag,
+        )
     with comparables_tab:
-        cols = st.columns(3)
-        with cols[0]:
-            render_detail_value("Sold price", money(sold_price))
-            render_detail_value("Curve resale mid", money(curve_est))
-            render_detail_value("Curve delta", money(delta))
-        with cols[1]:
-            render_detail_value("Expected auction", money(expected_auction))
-            render_detail_value("Underbid", pct(row.get("underbid_pct")))
-            render_detail_value("Delta %", pct(row.get("delta_pct")))
-        with cols[2]:
-            render_detail_value("Historical status", miss_status)
-            render_detail_value("Sold vs max bid", "Sold inside max bid" if bool(row.get("missed")) else "Sold above max bid or no profit")
-            render_detail_value("Metric basis", metric_sub)
+        render_missed_comparables_tab(
+            row,
+            curve_est=curve_est,
+            delta=delta,
+            expected_auction=expected_auction,
+            miss_status=miss_status,
+            metric_sub=metric_sub,
+        )
     with condition_tab:
-        render_detail_value("Risk / notes", safe_text(row.get("risk_summary"), "N/A"))
-        if include_repairs:
-            render_detail_value("Repair decision", repair_decision)
-            render_detail_value("Repair severity", safe_text(row.get("repair_severity"), "N/A"))
-            st.markdown("**Repair split / dictionary match**")
-            render_repair_fragments(row.get("repair_cost_detail"))
-        condition_text = safe_text(row.get("general_condition"), "")
-        if condition_text:
-            st.markdown("**Condition text**")
-            st.write(condition_text)
-        st.markdown("**Listing**")
-        if url:
-            st.markdown(f"[Open listing]({url})")
-        else:
-            st.write("N/A")
+        render_missed_condition_tab(
+            row,
+            include_repairs=include_repairs,
+            repair_decision=repair_decision,
+            risk_summary=risk_summary,
+            url=url,
+        )
     with bid_logic_tab:
-        cols = st.columns(3)
-        with cols[0]:
-            render_detail_value("Action", action_label)
-            render_detail_value("Verdict", computed_verdict)
-            render_detail_value("Bid status", bid_status)
-        with cols[1]:
-            render_detail_value("Max bid limit", money(max_bid))
-            render_detail_value("Hard max safety", hard_max_safety)
-            render_detail_value("Expected auction", money(expected_auction))
-        with cols[2]:
-            render_detail_value("Platform fees", money(row.get("platform_fees")))
-            render_detail_value("Transport", money(row.get("transport_costs")))
-            render_detail_value("Admin", money(row.get("admin_costs")))
-        cols = st.columns(3)
-        with cols[0]:
-            render_detail_value("Risk buffer", money(row.get("risk_buffer")))
-        with cols[1]:
-            render_detail_value("Repair estimate", money(row.get("repair_cost_estimate")))
-        with cols[2]:
-            render_detail_value("Projected profit at sold", money(projected_profit))
+        render_missed_bid_logic_tab(
+            row,
+            action_label=action_label,
+            computed_verdict=computed_verdict,
+            bid_status=bid_status,
+            hard_max_safety=hard_max_safety,
+            expected_auction=expected_auction,
+            max_bid=max_bid,
+            projected_profit=projected_profit,
+        )
 
 
 def interpolate_curve_value(
@@ -621,52 +783,6 @@ def compute_underbid_pct(sold_price: object, max_bid: object) -> float | None:
     if sold_val is None or max_bid_val is None or max_bid_val <= 0:
         return None
     return ((max_bid_val - sold_val) / max_bid_val) * 100.0
-
-
-def classify_miss_reason(row: pd.Series) -> str:
-    spec_reason = safe_text(row.get("spec_reason"), "")
-    if spec_reason:
-        return "not covered"
-
-    sold_price = _to_float(row.get("sold_price"))
-    max_bid = _to_float(row.get("max_bid"))
-    curve_estimate = _to_float(row.get("curve_estimate"))
-    curve_high = _to_float(row.get("curve_high"))
-    projected_profit = _to_float(row.get("projected_profit_at_sold"))
-    delta_pct = _to_float(row.get("delta_pct"))
-    risk_buffer = max(_to_float(row.get("risk_buffer")) or 0.0, 0.0)
-    repair_cost = max(_to_float(row.get("repair_cost_estimate")) or 0.0, 0.0)
-    underbid_pct = _to_float(row.get("underbid_pct"))
-    cost_drag = risk_buffer + repair_cost
-
-    if sold_price is None or curve_estimate is None:
-        return "unclassified"
-
-    if curve_high is not None and sold_price > (curve_high * 1.05):
-        return "auction price spike"
-
-    if max_bid is not None and sold_price > max_bid:
-        bid_gap_pct = ((sold_price - max_bid) / max_bid * 100.0) if max_bid > 0 else None
-        if bid_gap_pct is not None and bid_gap_pct <= 5.0:
-            return "bidding delay"
-        if cost_drag > 0 and (curve_estimate - sold_price) > 0 and cost_drag >= (curve_estimate - sold_price) * 0.35:
-            return "risk deduction too large"
-        if delta_pct is not None and delta_pct >= 12.0:
-            return "curve too conservative"
-        return "auction price spike"
-
-    if projected_profit is not None and projected_profit > 0:
-        if underbid_pct is not None and underbid_pct <= 5.0:
-            return "bidding delay"
-        if cost_drag > 0 and (curve_estimate - sold_price) > 0 and cost_drag >= (curve_estimate - sold_price) * 0.35:
-            return "risk deduction too large"
-        if delta_pct is not None and delta_pct <= 8.0:
-            return "curve too conservative"
-        return "bidding delay"
-
-    if cost_drag > 0:
-        return "risk deduction too large"
-    return "curve too conservative"
 
 
 @st.cache_data(ttl=300)
@@ -1120,6 +1236,50 @@ st.markdown(
           color: rgba(255, 255, 255, 0.6);
           margin-top: 0.2rem;
         }
+        .detail-grid {
+          margin-top: 0.7rem;
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 0.5rem;
+        }
+        .detail-grid.cols-1 {
+          grid-template-columns: 1fr;
+        }
+        .detail-grid.cols-2 {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .detail-grid.cols-4 {
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+        .detail-item {
+          min-height: 58px;
+          border-radius: 8px;
+          padding: 0.5rem 0.6rem;
+          background: rgba(255, 255, 255, 0.035);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .detail-label {
+          font-size: 0.58rem;
+          text-transform: uppercase;
+          letter-spacing: 0.13em;
+          color: rgba(255, 255, 255, 0.58);
+          margin-bottom: 0.25rem;
+        }
+        .detail-value {
+          font-size: 1rem;
+          font-weight: 760;
+          color: rgba(255, 255, 255, 0.92);
+          line-height: 1.2;
+          overflow-wrap: anywhere;
+        }
+        .details-section {
+          margin-top: 0.9rem;
+        }
+        .details-section h4 {
+          margin: 0 0 0.35rem;
+          font-size: 0.95rem;
+          color: var(--autosniper-primary);
+        }
         .metric-box.price-up {
           border-color: rgba(44, 255, 154, 0.8);
           background: rgba(44, 255, 154, 0.1);
@@ -1258,6 +1418,12 @@ st.markdown(
             grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
           }
           .metric-group.money-group .metric-group-items {
+            grid-template-columns: 1fr;
+          }
+          .detail-grid,
+          .detail-grid.cols-2,
+          .detail-grid.cols-3,
+          .detail-grid.cols-4 {
             grid-template-columns: 1fr;
           }
         }

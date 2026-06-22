@@ -171,6 +171,31 @@ def test_listing_alert_does_not_send_for_watch_only(monkeypatch, tmp_path: Path)
     assert sent == []
 
 
+def test_listing_alert_resolves_stale_buy_label_through_policy(monkeypatch, tmp_path: Path) -> None:
+    _set_alert_dataset_paths(monkeypatch, tmp_path)
+    sent: list[object] = []
+    monkeypatch.setattr(
+        ai_listing_valuation,
+        "send_on_state_change",
+        lambda *args, **kwargs: sent.append((args, kwargs)),
+    )
+
+    ai_listing_valuation._maybe_send_listing_alerts(
+        _base_saved_row(
+            action_label="Buy",
+            computed_verdict="Conditional Flip",
+            verdict="Conditional Flip",
+            bid_status="At ceiling",
+            hard_max_safety="Conditional",
+            expected_auction_worst_profit_value=2500.0,
+            profit_at_current_bid_worst_value=2500.0,
+        ),
+        None,
+    )
+
+    assert sent == []
+
+
 def test_listing_alert_sends_when_buy_becomes_not_bid_ready(monkeypatch, tmp_path: Path) -> None:
     _set_alert_dataset_paths(monkeypatch, tmp_path)
     sent: list[dict[str, object]] = []
@@ -200,6 +225,41 @@ def test_listing_alert_sends_when_buy_becomes_not_bid_ready(monkeypatch, tmp_pat
     assert "AI Analysis update" in str(sent[0]["message"])
     assert "Previous action: Buy" in str(sent[0]["message"])
     assert "Current action: Watch" in str(sent[0]["message"])
+
+
+def test_listing_alert_sends_not_buy_update_from_alert_state(monkeypatch, tmp_path: Path) -> None:
+    _set_alert_dataset_paths(monkeypatch, tmp_path)
+    sent: list[dict[str, object]] = []
+
+    monkeypatch.setattr(
+        ai_listing_valuation,
+        "get_alert_state",
+        lambda alert_scope, url: "ai_analysis_buy",
+    )
+
+    def fake_send_on_state_change(alert_scope, url, state_value, message, verdict=None):
+        sent.append(
+            {
+                "alert_scope": alert_scope,
+                "url": url,
+                "state_value": state_value,
+                "message": message,
+                "verdict": verdict,
+            }
+        )
+        return True
+
+    monkeypatch.setattr(ai_listing_valuation, "send_on_state_change", fake_send_on_state_change)
+
+    ai_listing_valuation._maybe_send_listing_alerts(
+        _base_saved_row(action_label="Avoid", bid_status="Over max", computed_verdict="Avoid"),
+        _base_saved_row(action_label="Avoid", bid_status="Over max", computed_verdict="Avoid"),
+    )
+
+    assert len(sent) == 1
+    assert sent[0]["state_value"] == "ai_analysis_not_buy"
+    assert "AI Analysis update" in str(sent[0]["message"])
+    assert "Current action: Avoid" in str(sent[0]["message"])
 
 
 def test_listing_alert_suppresses_stale_non_active_buy(monkeypatch, tmp_path: Path) -> None:
