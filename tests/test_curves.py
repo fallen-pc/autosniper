@@ -46,6 +46,10 @@ class CurveTests(unittest.TestCase):
         estimate = interpolate_base_by_year(df, "demo", 2019, 100000)
         self.assertAlmostEqual(estimate, 22000.0)
 
+    def test_km_within_curve_coverage_allows_small_high_km_overage(self) -> None:
+        self.assertTrue(curves.km_within_curve_coverage(309209, 30000, 300000))
+        self.assertFalse(curves.km_within_curve_coverage(325000, 30000, 300000))
+
 
 if __name__ == "__main__":
     unittest.main()

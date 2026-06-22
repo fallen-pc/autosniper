@@ -20,6 +20,7 @@ from shared.curves import (
     get_curve_points,
     interpolate_base_by_year,
     interpolate_price_by_km,
+    km_within_curve_coverage,
     list_curve_tags,
     load_curves,
     resolve_curve_canonical_tag,
@@ -2472,12 +2473,13 @@ else:
         active_df = active_df.merge(km_band, left_on="curve_tag", right_index=True, how="left")
         if "odometer_numeric" not in active_df.columns:
             active_df["odometer_numeric"] = active_df["odometer_reading"].apply(parse_numeric)
-        active_df["km_in_range"] = (
-            active_df["odometer_numeric"].notna()
-            & active_df["min_km"].notna()
-            & active_df["max_km"].notna()
-            & (active_df["odometer_numeric"] >= active_df["min_km"])
-            & (active_df["odometer_numeric"] <= active_df["max_km"])
+        active_df["km_in_range"] = active_df.apply(
+            lambda row: km_within_curve_coverage(
+                row.get("odometer_numeric"),
+                row.get("min_km"),
+                row.get("max_km"),
+            ),
+            axis=1,
         )
     else:
         active_df["km_in_range"] = False

@@ -23,6 +23,7 @@ CURVE_COLUMNS: Sequence[str] = (
     "price_mid",
     "price_high",
 )
+HIGH_KM_COVERAGE_BUFFER = 10_000
 
 LEGACY_COLUMNS = {"group_id", "series", "km_anchor", "price_median"}
 CONFIG_DIR = Path(__file__).resolve().parent.parent / "config"
@@ -269,6 +270,18 @@ def interpolate_price_by_km(
             ratio = (km_value - km_a) / float(km_b - km_a)
             return float(price_a) + ratio * float(price_b - price_a)
     return None
+
+
+def km_within_curve_coverage(
+    km: float | int | None,
+    min_km: float | int | None,
+    max_km: float | int | None,
+    *,
+    high_km_buffer: float | int = HIGH_KM_COVERAGE_BUFFER,
+) -> bool:
+    if km is None or min_km is None or max_km is None:
+        return False
+    return float(min_km) <= float(km) <= float(max_km) + float(high_km_buffer)
 
 
 def interpolate_base_by_year(
