@@ -177,3 +177,52 @@ def test_hilux_sr_gun126r_rejects_nearby_ute_lanes():
         canonical_tag, canonical_reason, _drivetrain = assign_canonical_tag(row, require_price=True)
         assert canonical_tag == "UNCLASSIFIED"
         assert canonical_reason in {"[DISALLOWED_VARIANT]", "[OUT_OF_SCOPE]"}
+
+
+def test_yaris_ascent_ncp130r_maps_to_expected_lane():
+    _load_curve_year_band.cache_clear()
+
+    row = {
+        "make": "Toyota",
+        "model": "Yaris",
+        "variant": "Ascent NCP130R",
+        "body_type": "Hatch",
+        "transmission": "Automatic",
+        "fuel_type": "Petrol",
+        "year": "2018",
+        "price": "17500",
+        "url": "https://www.example.com/2018-toyota-yaris-ascent-ncp130r-auto-hatch",
+    }
+
+    assert assign_canonical_tag(row, require_price=True)[0:2] == (
+        "toyota_yaris_ascent_petrol_auto_hatch_ncp130r",
+        "[OK]",
+    )
+
+
+def test_yaris_ascent_ncp130r_rejects_other_yaris_lanes():
+    _load_curve_year_band.cache_clear()
+
+    base_row = {
+        "make": "Toyota",
+        "model": "Yaris",
+        "variant": "Ascent NCP130R",
+        "body_type": "Hatch",
+        "transmission": "Automatic",
+        "fuel_type": "Petrol",
+        "year": "2018",
+        "price": "17500",
+        "url": "https://www.example.com/2018-toyota-yaris-ascent-ncp130r-auto-hatch",
+    }
+    rejected_rows = [
+        {**base_row, "variant": "YR NCP130R"},
+        {**base_row, "variant": "YRS NCP130R"},
+        {**base_row, "variant": "Ascent NCP130R", "transmission": "Manual"},
+        {**base_row, "variant": "SX NCP131R"},
+        {**base_row, "variant": "Yaris Cross Ascent"},
+    ]
+
+    for row in rejected_rows:
+        canonical_tag, canonical_reason, _drivetrain = assign_canonical_tag(row, require_price=True)
+        assert canonical_tag == "UNCLASSIFIED"
+        assert canonical_reason in {"[DISALLOWED_VARIANT]", "[OUT_OF_SCOPE]"}

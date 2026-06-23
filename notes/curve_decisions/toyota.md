@@ -21,6 +21,15 @@ Implementation note:
 - Removed stale duplicate matcher-tag curve rows for `toyota_corolla_ascent_petrol_auto_hatch_zre18x`, `toyota_corolla_ascent-sport_petrol_auto_hatch_zre18x`, and `toyota_yaris_yr_petrol_auto_hatch_ncp90r`.
 - The Toyota hatch split still resolves through `toyota_corolla_ascent_zre182r_hatch_auto_petrol` and `toyota_corolla_ascent-sport_zre182r_hatch_auto_petrol`.
 - The Yaris matcher still resolves through `toyota_yaris_ncp90r_hatch_auto_petrol`.
+
+## Yaris Ascent NCP130R Hatch Auto Petrol
+
+- `toyota_yaris_ascent_ncp130r_hatch_auto_petrol` is the saved V2 base curve for Yaris Ascent NCP130R hatch/auto/petrol evidence.
+- `toyota_yaris_ascent_petrol_auto_hatch_ncp130r` is the matcher tag that feeds that base curve through the V2 group map.
+- YR, YRS, SX, ZR, GR, manual, hybrid, sedan, and Yaris Cross rows must not be folded into this curve.
+- A 2026-06-23 Carsales/Apify private-market scrape supplied `48` same-lane Ascent NCP130R hatch/auto/petrol asking-price rows from `2014` through `2020`.
+- The saved grid uses anchors `2014`, `2016`, `2018`, and `2020` with the extended high-km buckets `225000` and `300000`; the `2020` anchor is conservative because the direct evidence is thin.
+- This is a retail resale curve built from Carsales/private asking evidence only. Grays sold history remains hammer-bid evidence, not repricing evidence.
 - The MZEA12R petrol hatch now resolves through the V2 base curve `toyota_corolla_mzea12r_hatch_auto_petrol`; the detailed matcher tag `toyota_corolla_ascent-sport_petrol_auto_hatch_mzea12r` no longer carries separate saved curve rows.
 - The Camry AXVH71R Ascent Hybrid lane now resolves through the V2 base curve `toyota_camry_axvh71r_sedan_auto_hybrid`; the detailed matcher tag `toyota_camry_ascent_hybrid_auto_sedan_axvh71r` no longer carries separate saved curve rows.
 - The ZWE211R hybrid hatch now resolves through the V2 base curve `toyota_corolla_zwe211r_hatch_auto_hybrid`; the detailed matcher tag `toyota_corolla_ascent-sport_hybrid_auto_hatch_zwe211r` no longer carries separate saved curve rows.
