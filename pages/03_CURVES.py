@@ -98,7 +98,7 @@ with left:
             st.info("Select one row to view details in the side panel.")
 
 with right:
-    section_heading("Curve Detail", "Quick link to the curve builder.")
+    section_heading("Curve Detail", "Quick link to the V2 curve builder.")
     selected_tag = st.session_state.get("ops_selected_tag")
     if not selected_tag:
         st.info("Select a row to view curve details.")
@@ -117,9 +117,9 @@ with right:
                     "last_updated": row.get("last_updated"),
                 }
             )
-            if st.button("Open curve builder", key="curves_open_builder"):
-                st.session_state["curve_builder_tag"] = resolve_curve_canonical_tag(row.get("canonical_tag"))
+            if st.button("Open Curve Builder V2", key="curves_open_builder_v2"):
+                st.session_state["curve_builder_v2_tag"] = resolve_curve_canonical_tag(row.get("canonical_tag"))
                 try:
-                    st.switch_page("pages/13_CURVE_BUILDER.py")
+                    st.switch_page("pages/15_CURVE_BUILDER_V2.py")
                 except Exception:
-                    st.info("Open the Curve Builder page from the sidebar to edit curves.")
+                    st.info("Open the Curve Builder V2 page from the sidebar to edit curves.")

@@ -25,8 +25,6 @@ def navigation_spec() -> NavigationSpec:
             (
                 "PIPELINE",
                 [
-                    ("pages/1_LINK_EXTRACTOR.py", "Link Extractor", False),
-                    ("pages/2_VEHICLE_DETAIL_EXTRACTOR.py", "Detail Extractor", False),
                     ("pages/12_GRAYS_PIPELINE.py", "Grays Pipeline", False),
                     ("pages/05_HEALTH.py", "Health", False),
                 ],
@@ -35,7 +33,6 @@ def navigation_spec() -> NavigationSpec:
                 "VALUATION",
                 [
                     ("pages/03_CURVES.py", "Curves", False),
-                    ("pages/13_CURVE_BUILDER.py", "Curve Builder", False),
                     ("pages/15_CURVE_BUILDER_V2.py", "Curve Builder V2", False),
                     ("pages/14_CURVE_PIPELINE.py", "Curve Pipeline", False),
                     ("pages/04_MAPPINGS.py", "Mappings", False),
@@ -58,6 +55,7 @@ def navigation_spec() -> NavigationSpec:
                     ("pages/16_VALUATION_CALIBRATION.py", "Valuation Calibration", False),
                     ("pages/10_BIDDER_INSIGHTS.py", "Bidder Insights", False),
                     ("pages/9_VEHICLE_REPAIRS.py", "Vehicle Repairs", False),
+                    ("pages/18_REPAIR_REVIEW.py", "Repair Review", False),
                 ],
             ),
             (

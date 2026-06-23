@@ -737,7 +737,7 @@ if not scored_df.empty and "hit" in scored_df.columns:
         accuracy = valid_hits.astype(float).mean()
         accuracy_display = f"{accuracy * 100:,.1f}%"
 
-section_heading("Investor Transparency", "Expose coverage, confidence, and profit-shape health for the current filtered universe.")
+section_heading("Decision Health", "Coverage, confidence, and profit-shape health for the current filtered universe.")
 transparency_cols = st.columns(3)
 transparency_cols[0].metric(
     "Curve Coverage %",
@@ -769,7 +769,7 @@ with transparency_left:
         profit_chart = transparency_profit_df.set_index("Profit Band")
         st.bar_chart(profit_chart)
 with transparency_right:
-    st.markdown("**Transparency Notes**")
+    st.markdown("**Decision Notes**")
     st.markdown(
         "\n".join(
             [
