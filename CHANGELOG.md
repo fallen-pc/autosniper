@@ -1,5 +1,8 @@
 # Changelog
 
+## 2026-06-23
+- Added the `toyota_yaris_ascent_ncp130r_hatch_auto_petrol` curve from private Carsales/Apify Yaris Ascent NCP130R automatic hatch evidence, keeping YR/YRS/SX/ZR/GR/manual/hybrid/Cross rows out of the matcher.
+
 ## 2026-06-19
 - Added a separate Holden Commodore VE Series II Omega petrol automatic sedan curve from private Carsales/Apify evidence, keeping the sedan and wagon Series II Omega lanes separate.
 - Added a separate Holden Commodore VE Series II Omega petrol automatic wagon curve from private Carsales/Apify evidence, keeping plain VE, SV6, VF, and gas-only rows out of the matcher.
