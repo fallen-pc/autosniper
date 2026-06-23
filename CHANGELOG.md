@@ -1,6 +1,7 @@
 # Changelog
 
 ## 2026-06-23
+- Added a Carsales/Apify batch of 20 new retail curve lanes across Toyota, Hyundai, Ford, Mitsubishi, and Mazda, and extended the Hyundai iLoad automatic diesel curve with newer private-market anchors.
 - Added the `toyota_yaris_ascent_ncp130r_hatch_auto_petrol` curve from private Carsales/Apify Yaris Ascent NCP130R automatic hatch evidence, keeping YR/YRS/SX/ZR/GR/manual/hybrid/Cross rows out of the matcher.
 
 ## 2026-06-19
