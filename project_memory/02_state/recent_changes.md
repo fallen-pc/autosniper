@@ -1,5 +1,7 @@
 # Recent Changes
 
+- 2026-06-23: Used the new Carsales/Apify coverage preflight before spending on missing active-gap targets. A tight Holden Captiva filtered run returned no rows at about $0.01, a broader Captiva run imported 120 rows at about $0.90, an Isuzu MU-X run imported 120 rows at about $0.79, and a broad Volkswagen Golf run imported 120 rows at about $0.85. Added governed Isuzu MU-X LS-M/LS-U/LS-T automatic diesel SUV curves plus Volkswagen Golf VI Comfortline automatic petrol/diesel hatch curves from those scrapes, with 225k/300k high-km buckets where current active rows need extended coverage.
+
 - 2026-06-23: Added a Carsales/Apify paid-scrape preflight gate. `scripts/carsales_scrape_preflight.py` compares a proposed target against governed curve tags, local Carsales staging evidence, and active uncovered rows; `scripts/run_carsales_apify.py` runs it by default and blocks/warns before spending when the target mostly duplicates existing curve coverage. Use `--allow-covered-refresh` only for explicit refresh, extension, or validation runs.
 
 - 2026-06-23: Tightened the Carsales/Apify batch Camry ACV40R Altise matcher so Grande and Sportivo ACV40R rows are explicitly excluded from the Altise retail curve; added a regression test and verified zero non-Altise ACV40R staging rows map to the Altise tag.

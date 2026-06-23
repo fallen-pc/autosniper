@@ -39,3 +39,8 @@ mazda_cx5_akera_ke_wagon_auto_diesel,2013|2014,"CX-5 Akera KE automatic diesel S
 mitsubishi_pajero_glx_nx_suv_auto_diesel,2015|2018|2020,"Pajero GLX NX automatic diesel SUV anchors from private Carsales/Apify evidence; nearby trims, transmissions, fuels, and body lanes stay separate."
 mitsubishi_pajero_gls_nx_suv_auto_diesel,2015|2018|2020,"Pajero GLS NX automatic diesel SUV anchors from private Carsales/Apify evidence; nearby trims, transmissions, fuels, and body lanes stay separate."
 mitsubishi_pajero_exceed_nx_suv_auto_diesel,2015|2018|2020,"Pajero Exceed NX automatic diesel SUV anchors from private Carsales/Apify evidence; nearby trims, transmissions, fuels, and body lanes stay separate."
+isuzu_mux_lsm_suv_auto_diesel,2015|2018|2020,"Isuzu MU-X LS-M automatic diesel SUV anchors from private Carsales/Apify evidence; LS-U, LS-T, petrol, manual, and body lanes stay separate."
+isuzu_mux_lsu_suv_auto_diesel,2015|2018|2020,"Isuzu MU-X LS-U automatic diesel SUV anchors from private Carsales/Apify evidence; LS-M, LS-T, petrol, manual, and body lanes stay separate."
+isuzu_mux_lst_suv_auto_diesel,2015|2018|2020,"Isuzu MU-X LS-T automatic diesel SUV anchors from private Carsales/Apify evidence; LS-M, LS-U, petrol, manual, and body lanes stay separate."
+volkswagen_golf_comfortline_vi_hatch_auto_petrol,2009|2011|2012,"Volkswagen Golf VI Comfortline automatic petrol hatch anchors from private Carsales/Apify evidence; GTI, R, Trendline, Highline, wagon, manual, and diesel lanes stay separate."
+volkswagen_golf_comfortline_vi_hatch_auto_diesel,2009|2010|2011,"Volkswagen Golf VI Comfortline automatic diesel hatch anchors from private Carsales/Apify evidence; GTI, R, Trendline, Highline, wagon, manual, and petrol lanes stay separate."

@@ -1,6 +1,8 @@
 # Changelog
 
 ## 2026-06-23
+- Added Volkswagen Golf VI Comfortline automatic petrol and diesel hatch curves from a gated private Carsales/Apify scrape, keeping GTI, Golf R, Trendline, Highline, wagon, and manual lanes separate.
+- Added Isuzu MU-X LS-M, LS-U, and LS-T automatic diesel SUV curves from a gated private Carsales/Apify scrape, including high-km buckets for current active MU-X coverage.
 - Added a Carsales/Apify batch of 20 new retail curve lanes across Toyota, Hyundai, Ford, Mitsubishi, and Mazda, and extended the Hyundai iLoad automatic diesel curve with newer private-market anchors.
 - Added the `toyota_yaris_ascent_ncp130r_hatch_auto_petrol` curve from private Carsales/Apify Yaris Ascent NCP130R automatic hatch evidence, keeping YR/YRS/SX/ZR/GR/manual/hybrid/Cross rows out of the matcher.
 

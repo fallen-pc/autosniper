@@ -42,6 +42,9 @@ MAKE_ALIASES = {
     "hyundai": "hyundai",
     "ford": "ford",
     "mitsubishi": "mitsubishi",
+    "isuzu": "isuzu",
+    "volkswagen": "volkswagen",
+    "vw": "volkswagen",
 }
 
 MODEL_ALIASES = {
@@ -60,6 +63,10 @@ MODEL_ALIASES = {
     "territory": "territory",
     "pajero": "pajero",
     "triton": "triton",
+    "mux": "mux",
+    "mu x": "mux",
+    "mu-x": "mux",
+    "golf": "golf",
 }
 
 
@@ -409,7 +416,7 @@ def _extract_series_code(text: str) -> str:
         return candidate
 
     # Some series/platform codes appear as short alpha tokens in the variant text.
-    short_match = re.search(r"\b(BL|BM|KE|KF|LM|TB|TQ|SZ|NT|NW|NX|MN|MQ)\b", text, re.IGNORECASE)
+    short_match = re.search(r"\b(BL|BM|KE|KF|LM|TB|TQ|SZ|NT|NW|NX|MN|MQ|VI)\b", text, re.IGNORECASE)
     if short_match:
         return short_match.group(1).lower()
     return ""
@@ -727,6 +734,7 @@ def assign_canonical_tag(
         series_code = _normalize_series_code(series_code)
         if series_code:
             series_matches = [v for v in candidates if v.series and v.series == series_code]
+            series_matches = [v for v in series_matches if _badge_matches(text_blob, v.badge_aliases)]
             unique_series_tags = {v.canonical_tag for v in series_matches}
             if len(unique_series_tags) == 1:
                 required_reason = _validate_required_fields(

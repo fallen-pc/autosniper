@@ -61,3 +61,8 @@ mazda_cx5_akera_diesel_auto_wagon_ke,mazda,cx5,wagon,diesel,auto,akera,ke,akera,
 mitsubishi_pajero_glx_diesel_auto_suv_nx,mitsubishi,pajero,suv,diesel,auto,glx,nx,glx,suv|wagon,petrol|manual|exceed|vrx|vr-x|gls|platinum|nt|nw
 mitsubishi_pajero_gls_diesel_auto_suv_nx,mitsubishi,pajero,suv,diesel,auto,gls,nx,gls,suv|wagon,petrol|manual|exceed|vrx|vr-x|glx|platinum|nt|nw
 mitsubishi_pajero_exceed_diesel_auto_suv_nx,mitsubishi,pajero,suv,diesel,auto,exceed,nx,exceed,suv|wagon,petrol|manual|vrx|vr-x|glx|gls|platinum|nt|nw
+isuzu_mux_lsm_diesel_auto_suv_mux,isuzu,mux,suv,diesel,auto,ls-m,mux,ls-m|lsm,suv|wagon,petrol|manual|ls-u|lsu|ls-t|lst
+isuzu_mux_lsu_diesel_auto_suv_mux,isuzu,mux,suv,diesel,auto,ls-u,mux,ls-u|lsu,suv|wagon,petrol|manual|ls-m|lsm|ls-t|lst
+isuzu_mux_lst_diesel_auto_suv_mux,isuzu,mux,suv,diesel,auto,ls-t,mux,ls-t|lst,suv|wagon,petrol|manual|ls-m|lsm|ls-u|lsu
+volkswagen_golf_comfortline_petrol_auto_hatch_vi,volkswagen,golf,hatch,petrol,auto,comfortline,vi,comfortline,hatch|hatchback,manual|diesel|wagon|gti|golf r|wolfsburg|r32|trendline|highline|pacific|sport|generation|7|4th gen|v
+volkswagen_golf_comfortline_diesel_auto_hatch_vi,volkswagen,golf,hatch,diesel,auto,comfortline,vi,comfortline,hatch|hatchback,manual|petrol|wagon|gti|golf r|wolfsburg|r32|trendline|highline|pacific|sport|generation|7|4th gen|v
