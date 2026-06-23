@@ -28,3 +28,7 @@ Why:
 - Current active Grays rows are mixed TX/TS Territory diesel automatic stock, and the provided private Carsales evidence was gathered with TX and TS together.
 - TS and lower-km rows show some upper-market asks, so the first curve is deliberately conservative and combined rather than using high asking outliers as midpoint evidence.
 - This curve is a retail resale curve built from Carsales/private asking evidence only. Grays sold history remains hammer-bid evidence, not repricing evidence.
+
+## Carsales/Apify Batch Curves - 2026-06-23
+
+- `ford_territory_titanium_sz_suv_auto_diesel` was built or extended from `38` clean private Carsales/Apify same-lane rows spanning `2011`-`2014`. Nearby trim, body, transmission, fuel, and generation lanes remain separate; Grays sold evidence is not used to reprice this retail curve.

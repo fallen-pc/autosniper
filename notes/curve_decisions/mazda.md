@@ -31,3 +31,10 @@ Why these anchors were chosen:
 Implementation note:
 - Current V2 curve was manually seeded from pasted Carsales listings and should be treated as a provisional Carsales-led curve until a proper Carsales evidence layer exists.
 - The stale duplicate `mazda_3_neo_petrol_auto_hatch_bl` curve rows have been removed. Neo still maps to `mazda_3_bl_hatch_auto_petrol` through the V2 group map, so the base curve is the only saved source of truth.
+
+## Carsales/Apify Batch Curves - 2026-06-23
+
+- `mazda_cx5_maxx-sport_ke_wagon_auto_petrol` was built or extended from `35` clean private Carsales/Apify same-lane rows spanning `2012`-`2016`. Nearby trim, body, transmission, fuel, and generation lanes remain separate; Grays sold evidence is not used to reprice this retail curve.
+- `mazda_cx5_maxx_ke_wagon_auto_petrol` was built or extended from `26` clean private Carsales/Apify same-lane rows spanning `2012`-`2016`. Nearby trim, body, transmission, fuel, and generation lanes remain separate; Grays sold evidence is not used to reprice this retail curve.
+- `mazda_cx5_grand-touring_ke_wagon_auto_diesel` was built or extended from `29` clean private Carsales/Apify same-lane rows spanning `2012`-`2016`. Nearby trim, body, transmission, fuel, and generation lanes remain separate; Grays sold evidence is not used to reprice this retail curve.
+- `mazda_cx5_akera_ke_wagon_auto_diesel` was built or extended from `10` clean private Carsales/Apify same-lane rows spanning `2013`-`2014`. Nearby trim, body, transmission, fuel, and generation lanes remain separate; Grays sold evidence is not used to reprice this retail curve.

@@ -128,3 +128,13 @@ Evidence snapshot:
 - No matched Grays sold ZWE219R rows are currently present in the sold export.
 - The current `2024/2025` price grid was retained while moving the saved rows onto the V2 base tag. The `2025` Autotrader sample sits below the saved grid, so any 2025 adjustment should be a separate repricing review.
 - The Autotrader matching range now includes `2023-2025` for ZWE219R; this maps `2023` Ascent Sport Hybrid hatch rows into the newer hybrid hatch evidence lane without adding price anchors.
+
+## Carsales/Apify Batch Curves - 2026-06-23
+
+- `toyota_camry_altise_acv40r_sedan_auto_petrol` was built or extended from `50` clean private Carsales/Apify same-lane rows spanning `2006`-`2011`. Nearby trim, body, transmission, fuel, and generation lanes remain separate; Grays sold evidence is not used to reprice this retail curve.
+- `toyota_corolla_ascent_zre152r_hatch_auto_petrol` was built or extended from `34` clean private Carsales/Apify same-lane rows spanning `2007`-`2012`. Nearby trim, body, transmission, fuel, and generation lanes remain separate; Grays sold evidence is not used to reprice this retail curve.
+- `toyota_yaris_yr_ncp90r_hatch_manual_petrol` was built or extended from `20` clean private Carsales/Apify same-lane rows spanning `2006`-`2011`. Nearby trim, body, transmission, fuel, and generation lanes remain separate; Grays sold evidence is not used to reprice this retail curve.
+- `toyota_yaris_yr_ncp130r_hatch_auto_petrol` was built or extended from `11` clean private Carsales/Apify same-lane rows spanning `2011`-`2014`. Nearby trim, body, transmission, fuel, and generation lanes remain separate; Grays sold evidence is not used to reprice this retail curve.
+- `toyota_yaris_yrs_ncp91r_hatch_auto_petrol` was built or extended from `10` clean private Carsales/Apify same-lane rows spanning `2005`-`2011`. Nearby trim, body, transmission, fuel, and generation lanes remain separate; Grays sold evidence is not used to reprice this retail curve.
+- `toyota_yaris_ascent_ncp130r_hatch_manual_petrol` was built or extended from `15` clean private Carsales/Apify same-lane rows spanning `2014`-`2019`. Nearby trim, body, transmission, fuel, and generation lanes remain separate; Grays sold evidence is not used to reprice this retail curve.
+- `toyota_corolla_ascent-sport_zre182r_hatch_manual_petrol` was built or extended from `19` clean private Carsales/Apify same-lane rows spanning `2012`-`2016`. Nearby trim, body, transmission, fuel, and generation lanes remain separate; Grays sold evidence is not used to reprice this retail curve.

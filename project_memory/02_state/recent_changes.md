@@ -1,5 +1,7 @@
 # Recent Changes
 
+- 2026-06-23: Built a Carsales/Apify batch of 20 new retail curve lanes from clean same-lane private asking evidence: Camry ACV40R Altise, Corolla ZRE152R hatch Ascent, several Yaris manual/YR/YRS splits, Accent Sport RB, iLoad manual diesel, Territory Titanium SZ diesel, Triton GLX/GLX-R MN diesel splits, CX-5 KE petrol/diesel trim lanes, and Pajero NX GLX/GLS/Exceed. Also extended the existing iLoad automatic diesel curve with 2018/2020 anchors from TQ3/TQ4 evidence. Standard new curves use the 30k/60k/100k/150k/200k grid; the iLoad extension preserves the existing high-km 225k/300k grid.
+
 - 2026-06-23: Added a Toyota Yaris Ascent NCP130R hatch automatic petrol retail curve from private Carsales/Apify evidence. The lane uses anchors `2014`, `2016`, `2018`, and `2020` with the extended 30k/60k/100k/150k/200k/225k/300k grid, and keeps YR, YRS, SX, ZR, GR, manual, hybrid, sedan, and Yaris Cross rows separate through allowed variants, V2 group mapping, supported universe, anchor overrides, and canonical-tagging tests.
 
 - 2026-06-22: Added a dedicated Model Proof page under the AI navigation group. `pages/17_MODEL_PROOF.py` separates unavailable real settled-profit evidence from the simulated verdict-proxy benchmark, shows the current simulated metrics (`157` tested rows, `28` buyable verdicts, `100.0%` precision, `18.5%` recall, `31.3%` F1), explains precision/recall/F1 in plain language, and keeps the proxy warning visible so simulated resale evidence is not presented as real settled profit.

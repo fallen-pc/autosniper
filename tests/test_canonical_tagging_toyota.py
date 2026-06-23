@@ -215,14 +215,16 @@ def test_yaris_ascent_ncp130r_rejects_other_yaris_lanes():
         "url": "https://www.example.com/2018-toyota-yaris-ascent-ncp130r-auto-hatch",
     }
     rejected_rows = [
-        {**base_row, "variant": "YR NCP130R"},
-        {**base_row, "variant": "YRS NCP130R"},
-        {**base_row, "variant": "Ascent NCP130R", "transmission": "Manual"},
-        {**base_row, "variant": "SX NCP131R"},
-        {**base_row, "variant": "Yaris Cross Ascent"},
+        ({**base_row, "variant": "YR NCP130R", "year": "2014"}, "toyota_yaris_yr_petrol_auto_hatch_ncp130r"),
+        ({**base_row, "variant": "Ascent NCP130R", "transmission": "Manual"}, "toyota_yaris_ascent_petrol_manual_hatch_ncp130r"),
+        ({**base_row, "variant": "SX NCP131R"}, "UNCLASSIFIED"),
+        ({**base_row, "variant": "Yaris Cross Ascent"}, "UNCLASSIFIED"),
     ]
 
-    for row in rejected_rows:
+    for row, expected_tag in rejected_rows:
         canonical_tag, canonical_reason, _drivetrain = assign_canonical_tag(row, require_price=True)
-        assert canonical_tag == "UNCLASSIFIED"
-        assert canonical_reason in {"[DISALLOWED_VARIANT]", "[OUT_OF_SCOPE]"}
+        assert canonical_tag == expected_tag
+        if expected_tag == "UNCLASSIFIED":
+            assert canonical_reason in {"[DISALLOWED_VARIANT]", "[OUT_OF_SCOPE]"}
+        else:
+            assert canonical_reason == "[OK]"

@@ -133,3 +133,9 @@ Excluded trims for the current PD pass:
 Why these exclusions exist:
 - This curve is for exact Active hatch rows only. Higher trim, sport, or Active X rows should not be used as fallback evidence even if they share the same PD generation.
 - Later high-km PD evidence is thinner than the 2017-2019 evidence, so 2020-2021 should interpolate until stronger evidence supports separate anchors.
+
+## Carsales/Apify Batch Curves - 2026-06-23
+
+- `hyundai_accent_sport_rb_hatch_auto_petrol` was built or extended from `35` clean private Carsales/Apify same-lane rows spanning `2017`-`2019`. Nearby trim, body, transmission, fuel, and generation lanes remain separate; Grays sold evidence is not used to reprice this retail curve.
+- `hyundai_iload_tq_van_manual_diesel` was built or extended from `35` clean private Carsales/Apify same-lane rows spanning `2008`-`2015`. Nearby trim, body, transmission, fuel, and generation lanes remain separate; Grays sold evidence is not used to reprice this retail curve.
+- `hyundai_iload_tq_van_auto_diesel` was built or extended from `79` clean private Carsales/Apify same-lane rows spanning `2015`-`2021`. Nearby trim, body, transmission, fuel, and generation lanes remain separate; Grays sold evidence is not used to reprice this retail curve.

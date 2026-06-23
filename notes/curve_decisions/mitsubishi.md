@@ -59,3 +59,12 @@ Why:
 - The supplied Carsales evidence is MN GLX manual-only and has enough high-km depth to support the shared extension denominations.
 - The current active Triton rows include MN auto, MN GLX-R manual, and MQ rows, so those are intentionally left for separate curves rather than silently merged.
 - This curve is a retail resale curve built from Carsales/private asking evidence only. Grays sold history remains hammer-bid evidence, not repricing evidence.
+
+## Carsales/Apify Batch Curves - 2026-06-23
+
+- `mitsubishi_triton_glx_mn_ute_auto_diesel` was built or extended from `25` clean private Carsales/Apify same-lane rows spanning `2009`-`2015`. Nearby trim, body, transmission, fuel, and generation lanes remain separate; Grays sold evidence is not used to reprice this retail curve.
+- `mitsubishi_triton_glxr_mn_ute_manual_diesel` was built or extended from `24` clean private Carsales/Apify same-lane rows spanning `2009`-`2015`. Nearby trim, body, transmission, fuel, and generation lanes remain separate; Grays sold evidence is not used to reprice this retail curve.
+- `mitsubishi_triton_glxr_mn_ute_auto_diesel` was built or extended from `19` clean private Carsales/Apify same-lane rows spanning `2009`-`2015`. Nearby trim, body, transmission, fuel, and generation lanes remain separate; Grays sold evidence is not used to reprice this retail curve.
+- `mitsubishi_pajero_glx_nx_suv_auto_diesel` was built or extended from `21` clean private Carsales/Apify same-lane rows spanning `2015`-`2021`. Nearby trim, body, transmission, fuel, and generation lanes remain separate; Grays sold evidence is not used to reprice this retail curve.
+- `mitsubishi_pajero_gls_nx_suv_auto_diesel` was built or extended from `13` clean private Carsales/Apify same-lane rows spanning `2014`-`2020`. Nearby trim, body, transmission, fuel, and generation lanes remain separate; Grays sold evidence is not used to reprice this retail curve.
+- `mitsubishi_pajero_exceed_nx_suv_auto_diesel` was built or extended from `11` clean private Carsales/Apify same-lane rows spanning `2014`-`2020`. Nearby trim, body, transmission, fuel, and generation lanes remain separate; Grays sold evidence is not used to reprice this retail curve.

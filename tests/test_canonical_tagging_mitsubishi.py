@@ -65,6 +65,7 @@ def test_assign_canonical_tag_accepts_mitsubishi_triton_glx_mn_manual_only():
     }
     auto_row = {
         **glx_manual,
+        "variant": "GLX MN turbo diesel automatic dual cab",
         "transmission": "Automatic",
         "url": "https://www.example.com/2014-mitsubishi-triton-glx-mn-turbo-diesel-automatic-dual-cab",
     }
@@ -78,6 +79,12 @@ def test_assign_canonical_tag_accepts_mitsubishi_triton_glx_mn_manual_only():
         "mitsubishi_triton_glx_diesel_manual_ute_mn",
         "[OK]",
     )
-    assert assign_canonical_tag(glxr_manual, require_price=True)[0] == "UNCLASSIFIED"
-    assert assign_canonical_tag(auto_row, require_price=True)[0] == "UNCLASSIFIED"
+    assert assign_canonical_tag(glxr_manual, require_price=True)[0:2] == (
+        "mitsubishi_triton_glxr_diesel_manual_ute_mn",
+        "[OK]",
+    )
+    assert assign_canonical_tag(auto_row, require_price=True)[0:2] == (
+        "mitsubishi_triton_glx_diesel_auto_ute_mn",
+        "[OK]",
+    )
     assert assign_canonical_tag(mq_row, require_price=True)[0] == "UNCLASSIFIED"

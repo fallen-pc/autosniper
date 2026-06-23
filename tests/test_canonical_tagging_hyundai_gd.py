@@ -268,6 +268,9 @@ def test_assign_canonical_tag_accepts_hyundai_iload_tq_auto_diesel_van_only():
         "hyundai_iload_tq_van_auto_diesel",
         "[OK]",
     )
-    assert assign_canonical_tag(manual_van, require_price=True)[0] == "UNCLASSIFIED"
+    assert assign_canonical_tag(manual_van, require_price=True)[0:2] == (
+        "hyundai_iload_tq_van_manual_diesel",
+        "[OK]",
+    )
     assert assign_canonical_tag(crew_van, require_price=True)[0] == "UNCLASSIFIED"
     assert assign_canonical_tag(imax, require_price=True)[0] == "UNCLASSIFIED"
