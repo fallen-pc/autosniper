@@ -7,6 +7,7 @@ import pytest
 from scripts.run_carsales_apify import (
     build_actor_input,
     import_completed_run,
+    main,
     poll_run_until_terminal,
     require_token,
     start_actor_run,
@@ -182,3 +183,54 @@ def test_poll_run_until_terminal_fetches_until_succeeded(monkeypatch):
 
     assert final["status"] == "SUCCEEDED"
     assert calls == [("run1", "token1"), ("run1", "token1")]
+
+
+def test_main_blocks_paid_run_when_preflight_blocks(monkeypatch):
+    class Result:
+        status = "block"
+        target_label = "toyota / camry"
+        staging_rows = 50
+        already_covered_rows = 50
+        newly_supported_rows = 0
+        still_unclassified_rows = 0
+        already_covered_share = 1.0
+        active_uncovered_rows = 0
+        buildable_uncovered_groups = 0
+        recommendation = "Blocked."
+
+    monkeypatch.setattr(
+        "scripts.run_carsales_apify.run_preflight",
+        lambda **kwargs: (Result(), __import__("pandas").DataFrame()),
+    )
+
+    with pytest.raises(RuntimeError, match="Preflight blocked"):
+        main(["--token", "token1", "--make", "toyota", "--model", "camry"])
+
+
+def test_main_can_override_covered_refresh_preflight(monkeypatch):
+    calls = []
+
+    class Result:
+        status = "block"
+        target_label = "toyota / camry"
+        staging_rows = 50
+        already_covered_rows = 50
+        newly_supported_rows = 0
+        still_unclassified_rows = 0
+        already_covered_share = 1.0
+        active_uncovered_rows = 0
+        buildable_uncovered_groups = 0
+        recommendation = "Blocked."
+
+    monkeypatch.setattr(
+        "scripts.run_carsales_apify.run_preflight",
+        lambda **kwargs: (Result(), __import__("pandas").DataFrame()),
+    )
+    monkeypatch.setattr(
+        "scripts.run_carsales_apify.start_actor_run",
+        lambda actor_input, **kwargs: calls.append((actor_input, kwargs))
+        or {"id": "run1", "status": "RUNNING", "defaultDatasetId": "dataset1"},
+    )
+
+    assert main(["--token", "token1", "--make", "toyota", "--model", "camry", "--allow-covered-refresh"]) == 0
+    assert calls

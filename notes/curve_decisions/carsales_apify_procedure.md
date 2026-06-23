@@ -6,6 +6,22 @@ Carsales private listing evidence is the preferred retail asking-price source fo
 
 ## Known-good Apify workflow
 
+Run the local coverage preflight before any paid scrape. The runner now does
+this by default and blocks/warns when a target mostly duplicates existing
+governed curves.
+
+```powershell
+.\.venv_local\Scripts\python.exe scripts\carsales_scrape_preflight.py `
+  --make isuzu `
+  --model mu-x `
+  --body-type wagon `
+  --seller-type private `
+  --fuel-type diesel
+```
+
+Only use `--allow-covered-refresh` for a deliberate refresh, extension, or
+validation run where duplicate coverage is expected and accepted.
+
 Use `scripts/run_carsales_apify.py` with broad, reliable filters and then filter locally from the normalized CSV.
 
 Recommended command shape:

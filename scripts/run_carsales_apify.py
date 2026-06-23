@@ -23,6 +23,7 @@ if __package__ in (None, ""):
         normalize_items,
     )
     from scripts.atomic_csv import write_dataframe_csv_atomic
+    from scripts.carsales_scrape_preflight import run_preflight
 else:  # pragma: no cover
     from scripts.import_carsales_apify_run import (
         APIFY_API_BASE,
@@ -33,6 +34,7 @@ else:  # pragma: no cover
         normalize_items,
     )
     from scripts.atomic_csv import write_dataframe_csv_atomic
+    from scripts.carsales_scrape_preflight import run_preflight
 
 
 DEFAULT_ACTOR_ID = "memo23~carsales-cheerio"
@@ -188,6 +190,43 @@ def _print_run_summary(run: dict[str, Any]) -> None:
         print(f"console_url={run.get('consoleUrl')}")
 
 
+def _run_paid_scrape_preflight(args: argparse.Namespace) -> None:
+    result, summary = run_preflight(
+        make=args.make,
+        model=args.model,
+        body_type=args.body_type,
+        transmission=args.transmission,
+        fuel_type=args.fuel_type,
+        state=args.state,
+        seller_type=args.seller_type,
+        min_new_lane_rows=args.preflight_min_new_lane_rows,
+        max_already_covered_share=args.preflight_max_already_covered_share,
+    )
+    print(f"preflight_status={result.status}")
+    print(f"preflight_target={result.target_label}")
+    print(f"preflight_staging_rows={result.staging_rows}")
+    print(f"preflight_already_covered_rows={result.already_covered_rows}")
+    print(f"preflight_newly_supported_rows={result.newly_supported_rows}")
+    print(f"preflight_still_unclassified_rows={result.still_unclassified_rows}")
+    print(f"preflight_already_covered_share={result.already_covered_share}")
+    print(f"preflight_active_uncovered_rows={result.active_uncovered_rows}")
+    print(f"preflight_buildable_uncovered_groups={result.buildable_uncovered_groups}")
+    print(f"preflight_recommendation={result.recommendation}")
+    if not summary.empty:
+        print("preflight_top_local_groups:")
+        print(summary.to_string(index=False))
+    if result.status == "block" and not args.allow_covered_refresh:
+        raise RuntimeError(
+            "Preflight blocked this paid scrape because it appears to duplicate existing curve coverage. "
+            "Pass --allow-covered-refresh only for an intentional refresh, extension, or validation run."
+        )
+    if result.status == "warn" and not args.allow_preflight_warning and not args.allow_covered_refresh:
+        raise RuntimeError(
+            "Preflight warned on this paid scrape. Narrow the target or pass --allow-preflight-warning "
+            "after confirming the expected curve-coverage yield."
+        )
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--actor-id", default=DEFAULT_ACTOR_ID)
@@ -219,7 +258,27 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT_PATH)
     parser.add_argument("--overwrite", action="store_true")
+    parser.add_argument(
+        "--skip-preflight",
+        action="store_true",
+        help="Skip the local coverage preflight. Avoid this for paid runs.",
+    )
+    parser.add_argument(
+        "--allow-preflight-warning",
+        action="store_true",
+        help="Allow a paid run when preflight returns warn after manual review.",
+    )
+    parser.add_argument(
+        "--allow-covered-refresh",
+        action="store_true",
+        help="Allow a paid run that mostly refreshes or extends already covered lanes.",
+    )
+    parser.add_argument("--preflight-min-new-lane-rows", type=int, default=10)
+    parser.add_argument("--preflight-max-already-covered-share", type=float, default=0.35)
     args = parser.parse_args(argv)
+
+    if not args.skip_preflight:
+        _run_paid_scrape_preflight(args)
 
     actor_input = build_actor_input(
         make=args.make,
