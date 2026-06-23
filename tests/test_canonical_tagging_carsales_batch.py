@@ -182,3 +182,25 @@ def test_pajero_nx_trim_lanes_do_not_fall_into_glx(row):
     assert tag != "mitsubishi_pajero_glx_diesel_auto_suv_nx"
     assert tag != "UNCLASSIFIED"
     assert reason == "[OK]"
+
+
+@pytest.mark.parametrize("variant", ["Grande ACV40R", "Sportivo ACV40R"])
+def test_camry_acv40r_altise_does_not_absorb_other_trims(variant):
+    _load_curve_year_band.cache_clear()
+
+    row = {
+        "make": "Toyota",
+        "model": "Camry",
+        "variant": variant,
+        "body_type": "Sedan",
+        "transmission": "Automatic",
+        "fuel_type": "Petrol",
+        "year": "2008",
+        "price": "9000",
+        "url": f"https://www.example.com/2008-toyota-camry-{variant.lower().replace(' ', '-')}-auto-sedan",
+    }
+
+    tag, reason, _drivetrain = assign_canonical_tag(row, require_price=True)
+
+    assert tag == "UNCLASSIFIED"
+    assert reason == "[DISALLOWED_VARIANT]"

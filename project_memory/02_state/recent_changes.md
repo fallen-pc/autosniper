@@ -1,5 +1,7 @@
 # Recent Changes
 
+- 2026-06-23: Tightened the Carsales/Apify batch Camry ACV40R Altise matcher so Grande and Sportivo ACV40R rows are explicitly excluded from the Altise retail curve; added a regression test and verified zero non-Altise ACV40R staging rows map to the Altise tag.
+
 - 2026-06-23: Built a Carsales/Apify batch of 20 new retail curve lanes from clean same-lane private asking evidence: Camry ACV40R Altise, Corolla ZRE152R hatch Ascent, several Yaris manual/YR/YRS splits, Accent Sport RB, iLoad manual diesel, Territory Titanium SZ diesel, Triton GLX/GLX-R MN diesel splits, CX-5 KE petrol/diesel trim lanes, and Pajero NX GLX/GLS/Exceed. Also extended the existing iLoad automatic diesel curve with 2018/2020 anchors from TQ3/TQ4 evidence. Standard new curves use the 30k/60k/100k/150k/200k grid; the iLoad extension preserves the existing high-km 225k/300k grid.
 
 - 2026-06-23: Added a Toyota Yaris Ascent NCP130R hatch automatic petrol retail curve from private Carsales/Apify evidence. The lane uses anchors `2014`, `2016`, `2018`, and `2020` with the extended 30k/60k/100k/150k/200k/225k/300k grid, and keeps YR, YRS, SX, ZR, GR, manual, hybrid, sedan, and Yaris Cross rows separate through allowed variants, V2 group mapping, supported universe, anchor overrides, and canonical-tagging tests.
