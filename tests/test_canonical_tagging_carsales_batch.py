@@ -92,6 +92,20 @@ from shared.canonical_tagging import _load_curve_year_band, assign_canonical_tag
             },
             "mazda_cx5_maxx-sport_petrol_auto_wagon_ke",
         ),
+        (
+            {
+                "make": "Mazda",
+                "model": "CX-5",
+                "variant": "Grand Touring KE",
+                "body_type": "Wagon",
+                "transmission": "Automatic",
+                "fuel_type": "Diesel",
+                "year": "2014",
+                "price": "15000",
+                "url": "https://www.example.com/2014-mazda-cx-5-grand-touring-ke-auto-diesel-wagon",
+            },
+            "mazda_cx5_grand-touring_diesel_auto_wagon_ke",
+        ),
     ],
 )
 def test_carsales_batch_lanes_map_to_expected_tags(row, expected_tag):

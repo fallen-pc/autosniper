@@ -168,6 +168,39 @@ def test_camry_altise_xv30_series_map_to_expected_lanes():
     assert assign_canonical_tag(sportivo_row, require_price=True)[0] == "UNCLASSIFIED"
 
 
+def test_camry_atara_s_asv50r_maps_without_absorbing_sx_or_sl():
+    _load_curve_year_band.cache_clear()
+
+    row = {
+        "make": "Toyota",
+        "model": "Camry",
+        "variant": "Atara S ASV50R",
+        "body_type": "Sedan",
+        "transmission": "Automatic",
+        "fuel_type": "Petrol",
+        "year": "2013",
+        "price": "14900",
+        "url": "https://www.example.com/2013-toyota-camry-atara-s-asv50r-auto-sedan",
+    }
+    sx_row = {
+        **row,
+        "variant": "Atara SX ASV50R",
+        "url": "https://www.example.com/2013-toyota-camry-atara-sx-asv50r-auto-sedan",
+    }
+    sl_row = {
+        **row,
+        "variant": "Atara SL ASV50R",
+        "url": "https://www.example.com/2013-toyota-camry-atara-sl-asv50r-auto-sedan",
+    }
+
+    assert assign_canonical_tag(row, require_price=True)[0:2] == (
+        "toyota_camry_atara-s_petrol_auto_sedan_asv50r",
+        "[OK]",
+    )
+    assert assign_canonical_tag(sx_row, require_price=True)[0] == "UNCLASSIFIED"
+    assert assign_canonical_tag(sl_row, require_price=True)[0] == "UNCLASSIFIED"
+
+
 def test_hilux_sr_gun126r_4x4_dual_cab_chassis_maps_to_expected_lane():
     _load_curve_year_band.cache_clear()
 

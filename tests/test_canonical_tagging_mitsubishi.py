@@ -88,3 +88,34 @@ def test_assign_canonical_tag_accepts_mitsubishi_triton_glx_mn_manual_only():
         "[OK]",
     )
     assert assign_canonical_tag(mq_row, require_price=True)[0] == "UNCLASSIFIED"
+
+
+def test_assign_canonical_tag_accepts_mitsubishi_triton_gl_r_aliases_as_glxr():
+    _load_curve_year_band.cache_clear()
+
+    manual_row = {
+        "make": "Mitsubishi",
+        "model": "Triton",
+        "variant": "GL-R MN Manual 4x4 MY12 Double Cab",
+        "body_type": "Ute",
+        "transmission": "Manual",
+        "fuel_type": "Diesel",
+        "year": "2012",
+        "price": "12000",
+        "url": "https://www.example.com/2012-mitsubishi-triton-gl-r-mn-manual-diesel-ute",
+    }
+    auto_row = {
+        **manual_row,
+        "variant": "GL-R MN Auto 4x4 MY12 Double Cab",
+        "transmission": "Automatic",
+        "url": "https://www.example.com/2012-mitsubishi-triton-gl-r-mn-auto-diesel-ute",
+    }
+
+    assert assign_canonical_tag(manual_row, require_price=True)[0:2] == (
+        "mitsubishi_triton_glxr_diesel_manual_ute_mn",
+        "[OK]",
+    )
+    assert assign_canonical_tag(auto_row, require_price=True)[0:2] == (
+        "mitsubishi_triton_glxr_diesel_auto_ute_mn",
+        "[OK]",
+    )

@@ -114,8 +114,41 @@ def test_volkswagen_golf_v_comfortline_and_vi_trendline_map_to_expected_tags():
         "volkswagen_golf_trendline_petrol_auto_hatch_vi",
         "[OK]",
     )
-    assert assign_canonical_tag(gti, require_price=True)[0] == "UNCLASSIFIED"
+    assert assign_canonical_tag(gti, require_price=True)[0:2] == (
+        "volkswagen_golf_gti_petrol_auto_hatch_v",
+        "[OK]",
+    )
     assert assign_canonical_tag(wrong_generation, require_price=True)[0:2] == (
         "volkswagen_golf_comfortline_petrol_auto_hatch_vi",
         "[OK]",
     )
+
+
+def test_volkswagen_golf_v_gti_maps_without_absorbing_vi_gti():
+    _load_curve_year_band.cache_clear()
+
+    golf_v_gti = {
+        "make": "Volkswagen",
+        "model": "Golf",
+        "variant": "GTI V Auto MY08",
+        "series": "V",
+        "body_type": "Hatch",
+        "transmission": "Automatic",
+        "fuel_type": "Petrol - Premium ULP",
+        "year": "2008",
+        "price": "6900",
+        "url": "https://www.example.com/2008-volkswagen-golf-gti-v-auto-hatch",
+    }
+    golf_vi_gti = {
+        **golf_v_gti,
+        "variant": "GTI VI Auto MY10",
+        "series": "VI",
+        "year": "2010",
+        "url": "https://www.example.com/2010-volkswagen-golf-gti-vi-auto-hatch",
+    }
+
+    assert assign_canonical_tag(golf_v_gti, require_price=True)[0:2] == (
+        "volkswagen_golf_gti_petrol_auto_hatch_v",
+        "[OK]",
+    )
+    assert assign_canonical_tag(golf_vi_gti, require_price=True)[0] == "UNCLASSIFIED"

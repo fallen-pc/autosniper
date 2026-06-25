@@ -10,6 +10,7 @@ toyota_camry_ascent_hybrid_auto_sedan_axvh71r,toyota,camry,sedan,hybrid,auto,asc
 toyota_camry_ascent-sport_hybrid_auto_sedan_axvh71r,toyota,camry,sedan,hybrid,auto,ascent sport,axvh71r,ascent sport|ascent-sport,sedan|saloon,petrol|sx|sl|atara|gr|manual|axio|hybrid ex
 toyota_camry_ascent_petrol_auto_sedan_asv70r,toyota,camry,sedan,petrol,auto,ascent,asv70r,ascent,sedan|saloon,hybrid|ascent sport|sx|sl|atara|gr|manual|axio|hybrid ex
 toyota_camry_altise_petrol_auto_sedan_asv50r,toyota,camry,sedan,petrol,auto,altise,asv50r,altise,sedan|saloon,hybrid|ascent|ascent sport|sx|sl|atara|gr|manual|csi|csx|ateva|vienta
+toyota_camry_atara-s_petrol_auto_sedan_asv50r,toyota,camry,sedan,petrol,auto,atara s,asv50r,atara s|atara-s,sedan|saloon,hybrid|altise|ascent|ascent sport|atara sx|atara sl|sx|sl|gr|manual|csi|csx|ateva|vienta|acv40r|asv70r
 mazda_3_neo_petrol_auto_hatch_bl,mazda,3,hatch,petrol,auto,neo,bl10f1,neo,hatch|hatchback,manual|diesel|hybrid|sedan|sp25|maxx|touring|neo sport|neo-sport
 mazda_3_neo-sport_petrol_auto_hatch_bl,mazda,3,hatch,petrol,auto,neo sport,bl10f1,neo sport|neo-sport,hatch|hatchback,manual|diesel|hybrid|sedan|sp25|maxx|touring
 mazda_3_maxx_petrol_auto_hatch_bl,mazda,3,hatch,petrol,auto,maxx,bl10f1,maxx,hatch|hatchback,manual|diesel|hybrid|sedan|neo|sp25|touring|maxx sport|maxx-sport
@@ -58,11 +59,11 @@ ford_territory_tx-ts_petrol_auto_suv_sz,ford,territory,suv,petrol,auto,tx-ts,sz,
 holden_captiva_petrol_auto_suv_cg,holden,captiva,suv,petrol,auto,captiva,cg,5|7|ls|lt|lx|sx|cx|ltz|active|captiva,suv|wagon,diesel|manual|lpg|gas
 holden_captiva_diesel_auto_suv_cg,holden,captiva,suv,diesel,auto,captiva,cg,5|7|ls|lt|lx|sx|cx|ltz|active|captiva,suv|wagon,petrol|manual|lpg|gas
 mitsubishi_triton_glx_diesel_auto_ute_mn,mitsubishi,triton,ute,diesel,auto,glx,mn,glx,ute|dual cab|pick up|pickup|cab chassis,petrol|manual|glx-r|glxr|glx+|gls|vr|mq|mr|mv
-mitsubishi_triton_glxr_diesel_manual_ute_mn,mitsubishi,triton,ute,diesel,manual,glx-r,mn,glx-r|glxr,ute|dual cab|pick up|pickup|cab chassis,petrol|auto|automatic|glx+|gls|vr|mq|mr|mv
-mitsubishi_triton_glxr_diesel_auto_ute_mn,mitsubishi,triton,ute,diesel,auto,glx-r,mn,glx-r|glxr,ute|dual cab|pick up|pickup|cab chassis,petrol|manual|glx+|gls|vr|mq|mr|mv
+mitsubishi_triton_glxr_diesel_manual_ute_mn,mitsubishi,triton,ute,diesel,manual,glx-r,mn,glx-r|glxr|gl-r,ute|dual cab|pick up|pickup|cab chassis,petrol|auto|automatic|glx+|gls|vr|mq|mr|mv
+mitsubishi_triton_glxr_diesel_auto_ute_mn,mitsubishi,triton,ute,diesel,auto,glx-r,mn,glx-r|glxr|gl-r,ute|dual cab|pick up|pickup|cab chassis,petrol|manual|glx+|gls|vr|mq|mr|mv
 mazda_cx5_maxx-sport_petrol_auto_wagon_ke,mazda,cx5,wagon,petrol,auto,maxx sport,ke,maxx sport|maxx-sport,wagon|suv,manual|diesel|touring|grand touring|akera
 mazda_cx5_maxx_petrol_auto_wagon_ke,mazda,cx5,wagon,petrol,auto,maxx,ke,maxx,wagon|suv,manual|diesel|maxx sport|maxx-sport|touring|grand touring|akera
-mazda_cx5_grand-touring_diesel_auto_wagon_ke,mazda,cx5,wagon,diesel,auto,grand touring,ke,grand touring,wagon|suv,manual|petrol|maxx|akera|touring 
+mazda_cx5_grand-touring_diesel_auto_wagon_ke,mazda,cx5,wagon,diesel,auto,grand touring,ke,grand touring,wagon|suv,manual|petrol|maxx|akera
 mazda_cx5_akera_diesel_auto_wagon_ke,mazda,cx5,wagon,diesel,auto,akera,ke,akera,wagon|suv,manual|petrol|maxx|grand touring|touring
 mitsubishi_pajero_glx_diesel_auto_suv_nx,mitsubishi,pajero,suv,diesel,auto,glx,nx,glx,suv|wagon,petrol|manual|exceed|vrx|vr-x|gls|platinum|nt|nw
 mitsubishi_pajero_gls_diesel_auto_suv_nx,mitsubishi,pajero,suv,diesel,auto,gls,nx,gls,suv|wagon,petrol|manual|exceed|vrx|vr-x|glx|platinum|nt|nw
@@ -73,4 +74,5 @@ isuzu_mux_lst_diesel_auto_suv_mux,isuzu,mux,suv,diesel,auto,ls-t,mux,ls-t|lst,su
 volkswagen_golf_comfortline_petrol_auto_hatch_vi,volkswagen,golf,hatch,petrol,auto,comfortline,vi,comfortline,hatch|hatchback,manual|diesel|wagon|gti|golf r|wolfsburg|r32|trendline|highline|pacific|sport|generation|7|4th gen|v
 volkswagen_golf_comfortline_diesel_auto_hatch_vi,volkswagen,golf,hatch,diesel,auto,comfortline,vi,comfortline,hatch|hatchback,manual|petrol|wagon|gti|golf r|wolfsburg|r32|trendline|highline|pacific|sport|generation|7|4th gen|v
 volkswagen_golf_comfortline_petrol_auto_hatch_v,volkswagen,golf,hatch,petrol,auto,comfortline,v,comfortline,hatch|hatchback,manual|diesel|wagon|gti|golf r|wolfsburg|r32|trendline|highline|pacific|sport|generation|7|4th gen|vi
+volkswagen_golf_gti_petrol_auto_hatch_v,volkswagen,golf,hatch,petrol,auto,gti,v,gti|gti a5|gti 1k,hatch|hatchback,manual|diesel|wagon|comfortline|trendline|highline|golf r|r32|wolfsburg|pacific|generation|7|4th gen|vi
 volkswagen_golf_trendline_petrol_auto_hatch_vi,volkswagen,golf,hatch,petrol,auto,trendline,vi,90tsi trendline|trendline,hatch|hatchback,manual|diesel|wagon|gti|golf r|wolfsburg|r32|comfortline|highline|pacific|sport|generation|7|4th gen|v

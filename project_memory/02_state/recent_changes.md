@@ -1,5 +1,7 @@
 # Recent Changes
 
+- 2026-06-26: Added two more governed retail curves from existing private Carsales/Apify evidence: Toyota Camry Atara S ASV50R automatic petrol sedan and Volkswagen Golf V/A5 GTI automatic petrol hatch. The same pass fixed two duplicate-curve traps: Mitsubishi Triton `GL-R` rows now alias into the existing GLX-R MN manual/auto diesel curves, and Mazda `CX-5` model spelling now normalises into the existing CX5 Grand Touring KE diesel curve path.
+
 - 2026-06-25: Continued the historical-Grays-volume curve batch with four more governed retail lanes from existing private Carsales/Apify evidence: Toyota Camry XV30 Altise ACV36R automatic petrol sedan, Toyota Camry XV30 Altise MCV36R automatic petrol sedan, Volkswagen Golf V Comfortline automatic petrol hatch, and Volkswagen Golf VI Trendline automatic petrol hatch. Grays sold volume was used only to choose targets; curve prices stay Carsales/Apify-led and use the standard 30k/60k/100k/150k/200k grid.
 
 - 2026-06-25: Started the next historical-Grays-volume curve batch without using current active rows as the priority signal. Added governed retail curves from existing private Carsales/Apify evidence for Ford Territory SY/SY MkII TX/TS/Ghia petrol automatic SUV, Ford Territory SZ/SZ MkII TX/TS petrol automatic SUV, Holden Captiva CG petrol automatic SUV, and Holden Captiva CG diesel automatic SUV. Grays sold volume was used only for target priority; retail curve prices remain Carsales/Apify-led.
