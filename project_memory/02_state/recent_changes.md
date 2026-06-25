@@ -1,5 +1,7 @@
 # Recent Changes
 
+- 2026-06-25: Started the next historical-Grays-volume curve batch without using current active rows as the priority signal. Added governed retail curves from existing private Carsales/Apify evidence for Ford Territory SY/SY MkII TX/TS/Ghia petrol automatic SUV, Ford Territory SZ/SZ MkII TX/TS petrol automatic SUV, Holden Captiva CG petrol automatic SUV, and Holden Captiva CG diesel automatic SUV. Grays sold volume was used only for target priority; retail curve prices remain Carsales/Apify-led.
+
 - 2026-06-23: Used the new Carsales/Apify coverage preflight before spending on missing active-gap targets. A tight Holden Captiva filtered run returned no rows at about $0.01, a broader Captiva run imported 120 rows at about $0.90, an Isuzu MU-X run imported 120 rows at about $0.79, and a broad Volkswagen Golf run imported 120 rows at about $0.85. Added governed Isuzu MU-X LS-M/LS-U/LS-T automatic diesel SUV curves plus Volkswagen Golf VI Comfortline automatic petrol/diesel hatch curves from those scrapes, with 225k/300k high-km buckets where current active rows need extended coverage.
 
 - 2026-06-23: Added a Carsales/Apify paid-scrape preflight gate. `scripts/carsales_scrape_preflight.py` compares a proposed target against governed curve tags, local Carsales staging evidence, and active uncovered rows; `scripts/run_carsales_apify.py` runs it by default and blocks/warns before spending when the target mostly duplicates existing curve coverage. Use `--allow-covered-refresh` only for explicit refresh, extension, or validation runs.

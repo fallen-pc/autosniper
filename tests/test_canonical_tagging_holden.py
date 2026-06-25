@@ -203,3 +203,40 @@ def test_assign_canonical_tag_accepts_holden_commodore_ve_series_ii_omega_sedan_
         "holden_commodore_omega_petrol_auto_wagon_ve-series-ii",
         "[OK]",
     )
+
+
+def test_assign_canonical_tag_accepts_holden_captiva_cg_petrol_and_diesel_auto_suv():
+    _load_curve_year_band.cache_clear()
+    petrol_row = {
+        "make": "Holden",
+        "model": "Captiva",
+        "variant": "7 SX 2WD CG Series II petrol automatic wagon",
+        "body_type": "Wagon",
+        "transmission": "Automatic",
+        "fuel_type": "Petrol - Unleaded ULP",
+        "year": "2012",
+        "price": "5500",
+        "url": "https://www.example.com/2012-holden-captiva-7-sx-cg-series-ii-auto-petrol-wagon",
+    }
+    diesel_row = {
+        **petrol_row,
+        "variant": "7 LX AWD CG Series II turbo diesel automatic wagon",
+        "fuel_type": "Diesel",
+        "url": "https://www.example.com/2012-holden-captiva-7-lx-cg-series-ii-diesel-auto-wagon",
+    }
+    manual_row = {
+        **petrol_row,
+        "variant": "5 CG manual petrol SUV",
+        "transmission": "Manual",
+        "url": "https://www.example.com/2011-holden-captiva-5-cg-manual-petrol-suv",
+    }
+
+    assert assign_canonical_tag(petrol_row, require_price=True)[0:2] == (
+        "holden_captiva_petrol_auto_suv_cg",
+        "[OK]",
+    )
+    assert assign_canonical_tag(diesel_row, require_price=True)[0:2] == (
+        "holden_captiva_diesel_auto_suv_cg",
+        "[OK]",
+    )
+    assert assign_canonical_tag(manual_row, require_price=True)[0] == "UNCLASSIFIED"

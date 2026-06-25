@@ -104,3 +104,31 @@ Why:
 - Sedan and wagon are kept separate because the evidence supports both body lanes and they can price differently.
 - The 2013 anchors are conservative because they have thin direct evidence, but they keep 2013 Omega rows inside the supported year band.
 - This curve is a retail resale curve built from Carsales/private asking evidence only. Grays sold history remains hammer-bid evidence, not repricing evidence.
+
+## Captiva CG Automatic SUV
+
+Base curves:
+- `holden_captiva_cg_suv_auto_petrol`
+- `holden_captiva_cg_suv_auto_diesel`
+
+Current working interpretation:
+- body: `suv`, with Grays/Carsales `wagon` accepted as an equivalent source label
+- transmission: `auto`
+- series: `CG` and `CG Series II`, saved as one conservative CG family lane for each fuel
+- petrol anchor years: `2008`, `2011`, `2014`, `2016`
+- diesel anchor years: `2008`, `2011`, `2014`, `2016`
+- buckets use the standard new-curve grid: `30000`, `60000`, `100000`, `150000`, `200000`
+
+Included rows for the current pass:
+- Captiva CG/CG Series II automatic petrol SUV/wagon rows across common 5/7 and LS/LT/LX/SX/CX/LTZ/Active trims
+- Captiva CG/CG Series II automatic diesel SUV/wagon rows across common 5/7 and LS/LT/LX/SX/CX/LTZ trims
+
+Excluded rows for the current pass:
+- manual rows
+- fuel-mismatched rows
+- LPG/gas rows
+
+Why:
+- Historical Grays sold volume is high for Captiva, and the available Carsales/Apify evidence is mixed across low/mid trims with tightly clustered low retail pricing.
+- The first pass keeps petrol and diesel separate, but does not over-split 5/7 or trim badges until stronger private evidence justifies those separate retail curves.
+- This curve is a retail resale curve built from Carsales/private asking evidence only. Grays sold history remains hammer-bid evidence, not repricing evidence.

@@ -51,6 +51,10 @@ toyota_corolla_ascent-sport_petrol_manual_hatch_zre18x,toyota,corolla,hatch,petr
 hyundai_accent_sport_petrol_auto_hatch_rb,hyundai,accent,hatch,petrol,auto,sport,rb,sport,hatch|hatchback,manual|diesel|hybrid|sedan|wagon|active|elite
 hyundai_iload_tq_van_manual_diesel,hyundai,iload,van,diesel,manual,iload,tq,iload,van,auto|automatic|petrol|imax|i max|crew|people mover
 ford_territory_titanium_diesel_auto_suv_sz,ford,territory,suv,diesel,auto,titanium,sz,titanium,suv|wagon,petrol|manual|tx|ts|ghia|turbo petrol|sz mkii|mk ii|mkii
+ford_territory_tx-ts-ghia_petrol_auto_suv_sy,ford,territory,suv,petrol,auto,tx-ts-ghia,sy,tx|ts|ghia|sr,suv|wagon,diesel|manual|turbo|titanium|sz|sx
+ford_territory_tx-ts_petrol_auto_suv_sz,ford,territory,suv,petrol,auto,tx-ts,sz,tx|ts,suv|wagon,diesel|manual|turbo|ghia|titanium|sy|sx
+holden_captiva_petrol_auto_suv_cg,holden,captiva,suv,petrol,auto,captiva,cg,5|7|ls|lt|lx|sx|cx|ltz|active|captiva,suv|wagon,diesel|manual|lpg|gas
+holden_captiva_diesel_auto_suv_cg,holden,captiva,suv,diesel,auto,captiva,cg,5|7|ls|lt|lx|sx|cx|ltz|active|captiva,suv|wagon,petrol|manual|lpg|gas
 mitsubishi_triton_glx_diesel_auto_ute_mn,mitsubishi,triton,ute,diesel,auto,glx,mn,glx,ute|dual cab|pick up|pickup|cab chassis,petrol|manual|glx-r|glxr|glx+|gls|vr|mq|mr|mv
 mitsubishi_triton_glxr_diesel_manual_ute_mn,mitsubishi,triton,ute,diesel,manual,glx-r,mn,glx-r|glxr,ute|dual cab|pick up|pickup|cab chassis,petrol|auto|automatic|glx+|gls|vr|mq|mr|mv
 mitsubishi_triton_glxr_diesel_auto_ute_mn,mitsubishi,triton,ute,diesel,auto,glx-r,mn,glx-r|glxr,ute|dual cab|pick up|pickup|cab chassis,petrol|manual|glx+|gls|vr|mq|mr|mv
