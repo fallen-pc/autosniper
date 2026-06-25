@@ -1,6 +1,7 @@
 # Changelog
 
 ## 2026-06-23
+- Added Toyota Camry Atara S ASV50R automatic petrol sedan and Volkswagen Golf V/A5 GTI automatic petrol hatch curves from private Carsales/Apify evidence, and repaired Triton `GL-R` aliasing plus Mazda `CX-5` spelling so existing governed curves pick up those rows instead of needing duplicates.
 - Added Toyota Camry XV30 Altise ACV36R/MCV36R automatic petrol sedan curves and Volkswagen Golf V Comfortline / Golf VI Trendline automatic petrol hatch curves from existing private Carsales/Apify evidence, prioritised by historical Grays sold volume without using Grays sold prices for retail curve repricing.
 - Added Ford Territory SY/SY MkII petrol automatic SUV, Ford Territory SZ/SZ MkII petrol automatic SUV, and Holden Captiva CG petrol/diesel automatic SUV curves from private Carsales/Apify evidence, prioritised by historical Grays sold volume.
 - Added Volkswagen Golf VI Comfortline automatic petrol and diesel hatch curves from a gated private Carsales/Apify scrape, keeping GTI, Golf R, Trendline, Highline, wagon, and manual lanes separate.
