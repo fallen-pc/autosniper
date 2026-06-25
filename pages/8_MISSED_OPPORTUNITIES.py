@@ -151,6 +151,17 @@ def _to_float(value: object) -> float | None:
         return None
 
 
+def sold_vs_cap_text(sold_price: object, max_bid: object) -> str:
+    sold_value = _to_float(sold_price)
+    cap_value = _to_float(max_bid)
+    if sold_value is None or cap_value is None:
+        return "Cap comparison unavailable"
+    gap = cap_value - sold_value
+    if gap >= 0:
+        return f"Under cap by {money(gap)}"
+    return f"Over cap by {money(abs(gap))}"
+
+
 def build_metric_box(label: str, value: str, subtext: str | None = None, class_name: str | None = None) -> str:
     class_attr = f"metric-box {class_name}".strip() if class_name else "metric-box"
     sub_html = f'<div class="metric-sub">{html.escape(subtext)}</div>' if subtext else ""
@@ -389,7 +400,7 @@ def render_missed_overview_tab(
 ) -> None:
     metric_cols = st.columns(3)
     metric_cols[0].metric("Historical action", action_label)
-    metric_cols[1].metric("Projected profit", money(projected_profit))
+    metric_cols[1].metric("Profit at sold price", money(projected_profit))
     metric_cols[2].metric("Risk level", risk_status)
 
     render_bullet_block(
@@ -436,7 +447,7 @@ def render_missed_curve_tab(
             ("Curve low", money(row.get("curve_low"))),
             ("Curve high", money(row.get("curve_high"))),
             ("Sold price", money(row.get("sold_price"))),
-            ("Expected auction", money(expected_auction)),
+            ("Expected auction guide", money(expected_auction)),
             ("Canonical tag", canonical_tag or "N/A"),
             ("Spec reason", safe_text(row.get("spec_reason"), "N/A")),
         ],
@@ -459,13 +470,13 @@ def render_missed_comparables_tab(
     metric_cols[2].metric("Curve delta", money(delta))
     render_detail_grid(
         [
-            ("Expected auction", money(expected_auction)),
+            ("Expected auction guide", money(expected_auction)),
             ("Underbid", pct(row.get("underbid_pct"))),
             ("Delta %", pct(row.get("delta_pct"))),
             ("Historical status", miss_status),
             (
-                "Sold vs max bid",
-                "Sold inside max bid" if bool(row.get("missed")) else "Sold above max bid or no profit",
+                "Sold vs cap",
+                "Sold inside cap" if bool(row.get("missed")) else "Sold above cap or no profit",
             ),
             ("Metric basis", metric_sub),
         ],
@@ -507,16 +518,19 @@ def render_missed_bid_logic_tab(
     max_bid: object,
     projected_profit: object,
 ) -> None:
+    sold_price = row.get("sold_price")
+    sold_vs_cap = sold_vs_cap_text(sold_price, max_bid)
     metric_cols = st.columns(4)
     metric_cols[0].metric("Action", action_label)
-    metric_cols[1].metric("Max bid limit", money(max_bid))
-    metric_cols[2].metric("Expected auction", money(expected_auction))
-    metric_cols[3].metric("Projected profit", money(projected_profit))
+    metric_cols[1].metric("Max bid cap", money(max_bid))
+    metric_cols[2].metric("Sold vs cap", sold_vs_cap)
+    metric_cols[3].metric("Profit at sold price", money(projected_profit))
     render_detail_grid(
         [
             ("Verdict", computed_verdict),
-            ("Bid status", bid_status),
-            ("Hard max safety", hard_max_safety),
+            ("Sold bid status", bid_status),
+            ("Cap safety", hard_max_safety),
+            ("Expected auction guide", money(expected_auction)),
             ("Platform fees", money(row.get("platform_fees"))),
             ("Transport", money(row.get("transport_costs"))),
             ("Admin", money(row.get("admin_costs"))),
@@ -587,6 +601,7 @@ def render_sold_analysis_card(
     computed_verdict = safe_text(row.get("computed_verdict"), verdict_label)
     projected_profit = row.get("projected_profit_at_sold")
     total_costs = row.get("total_costs")
+    sold_vs_cap = sold_vs_cap_text(sold_price, max_bid)
     risk_summary = safe_text(row.get("risk_summary"), "None")
     signal_row_html = "".join(
         [
@@ -637,8 +652,9 @@ def render_sold_analysis_card(
                 "Deal maths",
                 [
                     build_metric_item(metric_label, money(metric_value), metric_sub, "primary"),
-                    build_metric_item("Max bid limit", money(max_bid), hard_max_safety),
-                    build_metric_item("Profit at sold", money(projected_profit)),
+                    build_metric_item("Max bid cap", money(max_bid), hard_max_safety),
+                    build_metric_item("Sold vs cap", sold_vs_cap, bid_status),
+                    build_metric_item("Profit at sold price", money(projected_profit), "Realised sold scenario"),
                     build_metric_item("Total costs", money(total_costs)),
                 ],
                 "money-group",
@@ -647,7 +663,7 @@ def render_sold_analysis_card(
                 "Model context",
                 [
                     build_metric_item("Expected resale", money(curve_est)),
-                    build_metric_item("Expected auction", money(expected_auction)),
+                    build_metric_item("Expected auction guide", money(expected_auction)),
                     build_metric_item("Profit %", pct(profit_margin)),
                     build_metric_item("Classification", miss_classification),
                 ],
@@ -1762,7 +1778,7 @@ kpi_html = f"""
 <div class="kpi">
   <div class="k">Average Underbid %</div>
   <div class="v">{pct(avg_underbid_pct)}</div>
-  <div class="s">Gap between max bid and sold price</div>
+  <div class="s">Gap between bid cap and sold price</div>
 </div>
 <div class="kpi">
   <div class="k">Highest Theoretical Profit</div>
@@ -1872,7 +1888,7 @@ st.markdown("</div>", unsafe_allow_html=True)
 
 st.markdown('<div class="section-card" style="margin-top:14px;">', unsafe_allow_html=True)
 st.markdown(
-    "### Misses (sorted by highest projected profit)"
+    "### Misses (sorted by highest profit at sold price)"
     if only_missed
     else "### Curve Delta View"
 )
@@ -1880,8 +1896,8 @@ st.markdown(
 sort_choice = st.selectbox(
     "Sort",
     [
-        "Projected profit (high to low)",
-        "Max bid (high to low)",
+        "Profit at sold price (high to low)",
+        "Max bid cap (high to low)",
         "Sold price (low to high)",
         "Odometer (low to high)",
         "Date sold (new to old)",
@@ -1891,9 +1907,9 @@ sort_choice = st.selectbox(
 )
 
 sort_df = view.copy()
-if sort_choice == "Projected profit (high to low)" and "projected_profit_at_sold" in sort_df.columns:
+if sort_choice == "Profit at sold price (high to low)" and "projected_profit_at_sold" in sort_df.columns:
     sort_df = sort_df.sort_values("projected_profit_at_sold", ascending=False, na_position="last")
-elif sort_choice == "Max bid (high to low)" and "max_bid" in sort_df.columns:
+elif sort_choice == "Max bid cap (high to low)" and "max_bid" in sort_df.columns:
     sort_df = sort_df.sort_values("max_bid", ascending=False, na_position="last")
 elif sort_choice == "Sold price (low to high)" and "sold_price" in sort_df.columns:
     sort_df = sort_df.sort_values("sold_price", ascending=True, na_position="last")
