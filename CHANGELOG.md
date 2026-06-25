@@ -1,6 +1,7 @@
 # Changelog
 
 ## 2026-06-23
+- Repaired scraped-data utilisation for existing curves: Corolla Ascent Sport ZRE182R manual rows now feed the existing manual curve, and first-generation 2014 MU-X LS-U/LS-T rows now have conservative early-year anchors while 2021+ MU-X rows remain separate newer-generation targets.
 - Added Toyota Camry Atara S ASV50R automatic petrol sedan and Volkswagen Golf V/A5 GTI automatic petrol hatch curves from private Carsales/Apify evidence, and repaired Triton `GL-R` aliasing plus Mazda `CX-5` spelling so existing governed curves pick up those rows instead of needing duplicates.
 - Added Toyota Camry XV30 Altise ACV36R/MCV36R automatic petrol sedan curves and Volkswagen Golf V Comfortline / Golf VI Trendline automatic petrol hatch curves from existing private Carsales/Apify evidence, prioritised by historical Grays sold volume without using Grays sold prices for retail curve repricing.
 - Added Ford Territory SY/SY MkII petrol automatic SUV, Ford Territory SZ/SZ MkII petrol automatic SUV, and Holden Captiva CG petrol/diesel automatic SUV curves from private Carsales/Apify evidence, prioritised by historical Grays sold volume.
