@@ -78,6 +78,8 @@ V2_REPLACEMENT_COSTS = {
     "bumper_damage": 600,
     "replacement_required": 600,
     "door_handle_damage": 250,
+    "fuel_flap_damage": 250,
+    "sunroof_damage": 600,
     "battery_issue": 300,
     "control_damage": 250,
     "seat_damage": 250,
@@ -117,6 +119,21 @@ REPLACEMENT_TARGET_RE = re.compile(
 CONDITION_FRAGMENT_RE = re.compile(r"[.;|,\r\n]+")
 CONDITION_SECTION_BOUNDARY_RE = re.compile(
     r"(?<=[a-z0-9])(?=(?:interior|exterior|mechanical|engine|transmission|body|paint|glass|windscreen):)",
+    re.IGNORECASE,
+)
+BODY_LOCATION_FRAGMENT_RE = re.compile(
+    r"^(?:(?:front|rear|left|right|lhr|rhr|lh|rh|driver'?s?|passenger(?: side)?)\s+)*"
+    r"(?:roof|bonnet|bumper|bar|door|doors|boot|bootlid|tailgate|guard|panel|quarter|mirror|"
+    r"headlight|head light|tail light|taillight|tail lamp|lamp|side step|side steps)"
+    r"(?:\s*(?:and|&)\s*(?:(?:front|rear|left|right|lhr|rhr|lh|rh|driver'?s?|passenger(?: side)?)\s+)*"
+    r"(?:roof|bonnet|bumper|bar|door|doors|boot|bootlid|tailgate|guard|panel|quarter|mirror|"
+    r"headlight|head light|tail light|taillight|tail lamp|lamp|side step|side steps))*\.?$",
+    re.IGNORECASE,
+)
+CONTEXT_DAMAGE_RE = re.compile(
+    r"\b(?P<context>(?:(?:small|medium|large|minor|major|light|heavy)\s+)?"
+    r"(?:scratch(?:es)?|scuff(?:s)?|dent(?:s)?|damage|body/panel damage|panel damage|"
+    r"paint damage|crack(?:ed)?|broken|hazed|faded|rust|corrosion)\b(?:\s+(?:on|to))?)",
     re.IGNORECASE,
 )
 
@@ -182,11 +199,20 @@ def split_condition_lines(text: str) -> List[str]:
     normalized_text = CONDITION_SECTION_BOUNDARY_RE.sub(". ", decoded_text)
     parts = CONDITION_FRAGMENT_RE.split(normalized_text)
     out: List[str] = []
+    last_location_context = ""
     for part in parts:
         part = part.strip(" -")
         if not part:
             continue
-        out.append(normalise_condition_line(part))
+        line = normalise_condition_line(part)
+        if last_location_context and BODY_LOCATION_FRAGMENT_RE.match(line):
+            line = normalise_condition_line(f"{last_location_context} {line.rstrip('.')}")
+        out.append(line)
+        context_match = CONTEXT_DAMAGE_RE.search(line)
+        if context_match:
+            last_location_context = context_match.group("context").strip()
+        elif not BODY_LOCATION_FRAGMENT_RE.match(line):
+            last_location_context = ""
     seen = set()
     deduped: List[str] = []
     for line in out:

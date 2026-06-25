@@ -83,6 +83,25 @@ def test_split_condition_lines_decodes_nested_html_entities_before_splitting() -
     assert lines == ["medium scratch on passenger side front & rear guard panels."]
 
 
+def test_split_condition_lines_carries_damage_context_to_body_locations() -> None:
+    lines = split_condition_lines("medium scratch on roof, bonnet, rear bumper.")
+
+    assert lines == [
+        "medium scratch on roof.",
+        "medium scratch on bonnet.",
+        "medium scratch on rear bumper.",
+    ]
+
+
+def test_split_condition_lines_carries_body_panel_damage_context() -> None:
+    lines = split_condition_lines("body/panel damage tailgate, rear bar & left rear tail lamp.")
+
+    assert lines == [
+        "body/panel damage tailgate.",
+        "body/panel damage rear bar & left rear tail lamp.",
+    ]
+
+
 def test_assess_repairs_counts_mixed_replacement_and_cosmetic_damage() -> None:
     assessment = assess_repairs("front cracked bumper and scratches and dents visible around vehicle")
 
@@ -236,6 +255,101 @@ def test_assess_repairs_classifies_visible_corrosion_as_body_condition_cost() ->
     assert records[0]["canonical_defects"] == "body_location_list|corrosion_damage"
 
 
+def test_assess_repairs_ignores_grays_metadata_and_ppsr_boilerplate() -> None:
+    assessment = assess_repairs(
+        "Key: Yes. Engine Turns Over: Yes. Owners Manual: No. "
+        "Please allow up to 10 business days for the security interest registration to be removed."
+    )
+    records = repair_fragments_to_records(assessment)
+
+    assert assessment.hard_avoid is False
+    assert assessment.total_cost == 0
+    assert {record["status"] for record in records} == {"ignored"}
+    assert all(record["category"] == "boilerplate" for record in records)
+
+
+def test_assess_repairs_classifies_dash_radio_and_corrosion_evident() -> None:
+    assessment = assess_repairs("dash torn or cracked. radio not working. corrosion evident.")
+    records = repair_fragments_to_records(assessment)
+
+    assert assessment.hard_avoid is False
+    assert assessment.total_cost == 1200
+    assert [record["category"] for record in records] == ["interior", "interior", "cosmetic"]
+    assert records[0]["canonical_defects"] == "interior_trim_damage"
+    assert records[1]["canonical_defects"] == "control_damage"
+    assert records[2]["canonical_defects"] == "corrosion_damage"
+
+
+def test_assess_repairs_classifies_audit_gap_repairs() -> None:
+    assessment = assess_repairs(
+        "cracked windscreen. hazed headlights. fuel flap broken. sunroof requires attention."
+    )
+    records = repair_fragments_to_records(assessment)
+
+    assert assessment.hard_avoid is False
+    assert [record["category"] for record in records] == ["glass", "replacement", "replacement", "replacement"]
+    assert records[0]["canonical_defects"] == "windscreen_damage"
+    assert records[1]["canonical_defects"] == "lighting_damage"
+    assert records[2]["canonical_defects"] == "fuel_flap_damage"
+    assert records[3]["canonical_defects"] == "sunroof_damage"
+
+
+def test_assess_repairs_ignores_salvage_and_usage_risk_boilerplate() -> None:
+    assessment = assess_repairs(
+        "Mine Site Vehicle. This vehicle is sold in a SALVAGE AUCTION. "
+        "Grays strongly recommends a mechanical inspection be completed prior to bidding."
+    )
+    records = repair_fragments_to_records(assessment)
+
+    assert assessment.hard_avoid is False
+    assert assessment.total_cost == 0
+    assert {record["status"] for record in records} == {"ignored"}
+    assert all(record["category"] == "boilerplate" for record in records)
+
+
+def test_assess_repairs_ignores_safety_removal_and_feature_boilerplate() -> None:
+    assessment = assess_repairs(
+        "and. This vehicle is sold in aSALVAGE AUCTION. "
+        "Confirmation of Public Liability Certificate of Currency. hill holder system. alloy wheels."
+    )
+    records = repair_fragments_to_records(assessment)
+
+    assert assessment.hard_avoid is False
+    assert assessment.total_cost == 0
+    assert {record["status"] for record in records} == {"ignored"}
+    assert all(record["category"] == "boilerplate" for record in records)
+
+
+def test_assess_repairs_classifies_wear_and_tear_body_text_as_cosmetic() -> None:
+    assessment = assess_repairs("wear and tear consistent with age and kilometres.")
+    records = repair_fragments_to_records(assessment)
+
+    assert assessment.hard_avoid is False
+    assert assessment.total_cost == 300
+    assert records[0]["status"] == "matched"
+    assert records[0]["category"] == "cosmetic"
+
+
+def test_assess_repairs_classifies_control_and_attention_gap_repairs() -> None:
+    assessment = assess_repairs(
+        "sat nav not working. passenger side mirror requires attention. "
+        "handbrake requires attention. rooflining requires attention."
+    )
+    records = repair_fragments_to_records(assessment)
+
+    assert assessment.hard_avoid is False
+    assert [record["category"] for record in records] == [
+        "interior",
+        "replacement",
+        "replacement",
+        "interior",
+    ]
+    assert records[0]["canonical_defects"] == "control_damage"
+    assert records[1]["canonical_defects"] == "mirror_light_damage"
+    assert records[2]["canonical_defects"] == "replacement_required"
+    assert records[3]["canonical_defects"] == "interior_trim_damage"
+
+
 def test_repair_fragments_preserve_split_items_and_unclassified_status() -> None:
     assessment = assess_repairs("dents or marks on body consistent with age. bull bar.")
     records = repair_fragments_to_records(assessment)
@@ -246,6 +360,14 @@ def test_repair_fragments_preserve_split_items_and_unclassified_status() -> None
     ]
     assert records[0]["status"] == "matched"
     assert records[1]["status"] == "unclassified"
+
+
+def test_assess_repairs_does_not_price_bare_body_location_without_context() -> None:
+    assessment = assess_repairs("roof.")
+    records = repair_fragments_to_records(assessment)
+
+    assert assessment.total_cost == 0
+    assert records[0]["status"] == "unclassified"
 
 
 def test_apply_repairs_to_max_bid_keeps_moderate_repairs_marginal() -> None:
