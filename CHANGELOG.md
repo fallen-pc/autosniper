@@ -1,6 +1,7 @@
 # Changelog
 
 ## 2026-06-23
+- Added Ford Territory SY/SY MkII petrol automatic SUV, Ford Territory SZ/SZ MkII petrol automatic SUV, and Holden Captiva CG petrol/diesel automatic SUV curves from private Carsales/Apify evidence, prioritised by historical Grays sold volume.
 - Added Volkswagen Golf VI Comfortline automatic petrol and diesel hatch curves from a gated private Carsales/Apify scrape, keeping GTI, Golf R, Trendline, Highline, wagon, and manual lanes separate.
 - Added Isuzu MU-X LS-M, LS-U, and LS-T automatic diesel SUV curves from a gated private Carsales/Apify scrape, including high-km buckets for current active MU-X coverage.
 - Added a Carsales/Apify batch of 20 new retail curve lanes across Toyota, Hyundai, Ford, Mitsubishi, and Mazda, and extended the Hyundai iLoad automatic diesel curve with newer private-market anchors.
