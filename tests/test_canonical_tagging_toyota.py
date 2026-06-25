@@ -131,6 +131,43 @@ def test_camry_altise_asv50r_maps_to_expected_lane():
     )
 
 
+def test_camry_altise_xv30_series_map_to_expected_lanes():
+    _load_curve_year_band.cache_clear()
+
+    acv_row = {
+        "make": "Toyota",
+        "model": "Camry",
+        "variant": "Altise ACV36R",
+        "body_type": "Sedan",
+        "transmission": "Automatic",
+        "fuel_type": "Petrol",
+        "year": "2004",
+        "price": "5500",
+        "url": "https://www.example.com/2004-toyota-camry-altise-acv36r-automatic-sedan",
+    }
+    mcv_row = {
+        **acv_row,
+        "variant": "Altise MCV36R",
+        "year": "2005",
+        "url": "https://www.example.com/2005-toyota-camry-altise-mcv36r-automatic-sedan",
+    }
+    sportivo_row = {
+        **acv_row,
+        "variant": "Sportivo ACV36R",
+        "url": "https://www.example.com/2004-toyota-camry-sportivo-acv36r-automatic-sedan",
+    }
+
+    assert assign_canonical_tag(acv_row, require_price=True)[0:2] == (
+        "toyota_camry_altise_petrol_auto_sedan_acv36r",
+        "[OK]",
+    )
+    assert assign_canonical_tag(mcv_row, require_price=True)[0:2] == (
+        "toyota_camry_altise_petrol_auto_sedan_mcv36r",
+        "[OK]",
+    )
+    assert assign_canonical_tag(sportivo_row, require_price=True)[0] == "UNCLASSIFIED"
+
+
 def test_hilux_sr_gun126r_4x4_dual_cab_chassis_maps_to_expected_lane():
     _load_curve_year_band.cache_clear()
 

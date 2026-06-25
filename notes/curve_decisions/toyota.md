@@ -132,6 +132,7 @@ Evidence snapshot:
 ## Carsales/Apify Batch Curves - 2026-06-23
 
 - `toyota_camry_altise_acv40r_sedan_auto_petrol` was built or extended from `50` clean private Carsales/Apify same-lane rows spanning `2006`-`2011`. Nearby trim, body, transmission, fuel, and generation lanes remain separate; Grays sold evidence is not used to reprice this retail curve.
+- `toyota_camry_altise_acv36r_sedan_auto_petrol` and `toyota_camry_altise_mcv36r_sedan_auto_petrol` were built from clean private Carsales/Apify same-lane Altise automatic sedan evidence spanning `2003`-`2006`. The ACV36R and MCV36R engines stay separate, and ACV40R/ASV50R/manual/nearby trims remain excluded.
 - `toyota_corolla_ascent_zre152r_hatch_auto_petrol` was built or extended from `34` clean private Carsales/Apify same-lane rows spanning `2007`-`2012`. Nearby trim, body, transmission, fuel, and generation lanes remain separate; Grays sold evidence is not used to reprice this retail curve.
 - `toyota_yaris_yr_ncp90r_hatch_manual_petrol` was built or extended from `20` clean private Carsales/Apify same-lane rows spanning `2006`-`2011`. Nearby trim, body, transmission, fuel, and generation lanes remain separate; Grays sold evidence is not used to reprice this retail curve.
 - `toyota_yaris_yr_ncp130r_hatch_auto_petrol` was built or extended from `11` clean private Carsales/Apify same-lane rows spanning `2011`-`2014`. Nearby trim, body, transmission, fuel, and generation lanes remain separate; Grays sold evidence is not used to reprice this retail curve.
