@@ -72,3 +72,49 @@ def test_isuzu_mux_rejects_manual_from_auto_lanes():
 
     assert tag == "UNCLASSIFIED"
     assert reason == "[OUT_OF_SCOPE]"
+
+
+@pytest.mark.parametrize(
+    ("variant", "expected_tag"),
+    [
+        ("LS-U Auto 4x4 MY14", "isuzu_mux_lsu_diesel_auto_suv_mux"),
+        ("LS-T Auto 4x4 MY14", "isuzu_mux_lst_diesel_auto_suv_mux"),
+    ],
+)
+def test_isuzu_mux_first_generation_2014_rows_map_to_existing_lanes(variant, expected_tag):
+    _load_curve_year_band.cache_clear()
+
+    row = {
+        "make": "Isuzu",
+        "model": "MU-X",
+        "variant": variant,
+        "body_type": "SUV",
+        "transmission": "Automatic",
+        "fuel_type": "Diesel",
+        "year": "2014",
+        "price": "26000",
+        "url": f"https://www.example.com/2014-isuzu-mu-x-{variant.lower().replace(' ', '-')}",
+    }
+
+    assert assign_canonical_tag(row, require_price=True)[0:2] == (expected_tag, "[OK]")
+
+
+def test_isuzu_mux_2021_newer_generation_stays_out_of_first_generation_curve():
+    _load_curve_year_band.cache_clear()
+
+    row = {
+        "make": "Isuzu",
+        "model": "MU-X",
+        "variant": "LS-T Auto 4x4 MY21",
+        "body_type": "SUV",
+        "transmission": "Automatic",
+        "fuel_type": "Diesel",
+        "year": "2021",
+        "price": "42000",
+        "url": "https://www.example.com/2021-isuzu-mu-x-ls-t-auto-4x4-my21",
+    }
+
+    tag, reason, _drivetrain = assign_canonical_tag(row, require_price=True)
+
+    assert tag == "UNCLASSIFIED"
+    assert reason == "[OUT_OF_SCOPE_YEAR]"

@@ -298,3 +298,30 @@ def test_yaris_ascent_ncp130r_rejects_other_yaris_lanes():
             assert canonical_reason in {"[DISALLOWED_VARIANT]", "[OUT_OF_SCOPE]"}
         else:
             assert canonical_reason == "[OK]"
+
+
+def test_corolla_ascent_sport_zre182r_manual_maps_without_absorbing_ascent_manual():
+    _load_curve_year_band.cache_clear()
+
+    sport_manual = {
+        "make": "Toyota",
+        "model": "Corolla",
+        "variant": "Ascent Sport ZRE182R",
+        "body_type": "Hatch",
+        "transmission": "Manual",
+        "fuel_type": "Petrol",
+        "year": "2014",
+        "price": "11500",
+        "url": "https://www.example.com/2014-toyota-corolla-ascent-sport-zre182r-manual-hatch",
+    }
+    ascent_manual = {
+        **sport_manual,
+        "variant": "Ascent ZRE182R",
+        "url": "https://www.example.com/2014-toyota-corolla-ascent-zre182r-manual-hatch",
+    }
+
+    assert assign_canonical_tag(sport_manual, require_price=True)[0:2] == (
+        "toyota_corolla_ascent-sport_petrol_manual_hatch_zre18x",
+        "[OK]",
+    )
+    assert assign_canonical_tag(ascent_manual, require_price=True)[0] == "UNCLASSIFIED"
