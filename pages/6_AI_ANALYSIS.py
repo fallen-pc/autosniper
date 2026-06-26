@@ -38,6 +38,7 @@ from shared.repair_pricing import (
     assess_repairs,
     repair_fragments_to_records,
 )
+from shared.repair_review import append_live_review_items, repair_mapping_summary
 from shared.styling import clean_html, display_banner, inject_global_styles, page_intro
 from shared.valuation_display import (
     bid_display_parts,
@@ -1212,6 +1213,67 @@ def _render_repair_fragment_records(records: list[dict[str, object]]) -> None:
             st.caption(reasons)
 
 
+def _listing_title(row: pd.Series) -> str:
+    parts = [
+        _safe_text(row.get("year"), fallback=""),
+        _safe_text(row.get("make"), fallback=""),
+        _safe_text(row.get("model"), fallback=""),
+        _safe_text(row.get("variant"), fallback=""),
+    ]
+    return " ".join(part for part in parts if part) or "Unknown vehicle"
+
+
+def _render_repair_mapping_status(
+    row: pd.Series,
+    fragment_records: list[dict[str, object]],
+    display_notes: str,
+) -> None:
+    summary = repair_mapping_summary(fragment_records)
+    total = int(summary.get("total", 0) or 0)
+    needs_review = list(summary.get("needs_review_records", []) or [])
+    unresolved = list(summary.get("unresolved_records", []) or [])
+    mapped = int(summary.get("mapped_count", 0) or 0)
+
+    if not fragment_records:
+        st.info("Repair mapping: no condition fragments found.")
+        return
+
+    if summary.get("pass"):
+        st.success(f"Repair mapping pass: {mapped}/{total} fragments identified.")
+        return
+
+    if needs_review:
+        appended = append_live_review_items(
+            needs_review,
+            vehicle=_listing_title(row),
+            url=_safe_text(row.get("url"), fallback=""),
+            condition_notes=display_notes,
+        )
+        suffix = f" Added {appended} item(s) to Repair Review." if appended else ""
+        st.warning(
+            f"Repair mapping needs review: {len(needs_review)} new/unmapped fragment(s); "
+            f"{len(unresolved)} reviewed unresolved fragment(s).{suffix}"
+        )
+        with st.expander("Unmapped repair fragments", expanded=True):
+            for record in needs_review:
+                st.write(f"- {safe_fragment_text(record)}")
+    else:
+        st.warning(
+            f"Repair mapping reviewed but unresolved: {len(unresolved)} fragment(s) are saved as unclassified."
+        )
+    if unresolved:
+        with st.expander("Reviewed unresolved fragments", expanded=False):
+            for record in unresolved:
+                st.write(f"- {safe_fragment_text(record)}")
+
+
+def safe_fragment_text(record: dict[str, object]) -> str:
+    text = _safe_text(record.get("original_text"), fallback="")
+    status = _safe_text(record.get("status"), fallback="unclassified")
+    category = _safe_text(record.get("category"), fallback="unclassified")
+    return f"{text} ({status}, {category})" if text else f"{status}, {category}"
+
+
 def _render_condition_summary(row: pd.Series) -> None:
     sections, raw_notes = _condition_summary_sections(row)
     display_notes = _safe_text(row.get("normalized_condition_text"), fallback="").strip() or raw_notes
@@ -1232,6 +1294,7 @@ def _render_condition_summary(row: pd.Series) -> None:
             st.write(f"*{impact_line}*")
         st.write("")
     fragment_records = repair_fragments_to_records(assessment)
+    _render_repair_mapping_status(row, fragment_records, display_notes)
     if fragment_records:
         st.markdown("**Repair split / dictionary match**")
         _render_repair_fragment_records(fragment_records)
@@ -2632,6 +2695,19 @@ with filter_cols[3]:
     hide_avoid = st.checkbox("Hide Avoid listings", value=True)
     hide_no_max_bid = st.checkbox("Hide listings without max bid", value=True)
 
+
+def _query_param_text(name: str) -> str:
+    try:
+        value = st.query_params.get(name, "")
+    except Exception:
+        return ""
+    if isinstance(value, list):
+        value = value[0] if value else ""
+    return str(value or "").strip()
+
+
+target_listing_url = _query_param_text("listing_url") or _query_param_text("url")
+
 TIME_BUCKETS: dict[str, tuple[Optional[float], Optional[float]]] = {
     "All": (None, None),
     "<24h": (0.0, 24.0),
@@ -3451,28 +3527,33 @@ output["verdict_label"] = output["computed_verdict"].apply(lambda value: _map_ve
 output["verdict_class"] = output["computed_verdict"].apply(lambda value: _map_verdict_label(str(value))[1])
 
 filtered_output = output.copy()
-filtered_output = apply_global_sidebar_filters(
-    filtered_output,
-    state_columns=("location_state", "rego_state", "location"),
-    vehicle_type_columns=("body_type", "body"),
-    margin_columns=("profit_margin_value", "profit_margin_percent"),
-    canonical_tag_column="curve_tag",
-    curve_tags=allowed_tags,
-)
-if group_filter != "All":
-    group_column = "curve_tag" if "curve_tag" in filtered_output.columns else "canonical_tag"
-    filtered_output = filtered_output[filtered_output[group_column] == group_filter]
+if target_listing_url and "url" in filtered_output.columns:
+    filtered_output = filtered_output[filtered_output["url"].astype(str).str.strip() == target_listing_url].copy()
+    if filtered_output.empty:
+        st.warning("The linked listing is not in the current AI Analysis active set.")
+else:
+    filtered_output = apply_global_sidebar_filters(
+        filtered_output,
+        state_columns=("location_state", "rego_state", "location"),
+        vehicle_type_columns=("body_type", "body"),
+        margin_columns=("profit_margin_value", "profit_margin_percent"),
+        canonical_tag_column="curve_tag",
+        curve_tags=allowed_tags,
+    )
+    if group_filter != "All":
+        group_column = "curve_tag" if "curve_tag" in filtered_output.columns else "canonical_tag"
+        filtered_output = filtered_output[filtered_output[group_column] == group_filter]
 
-if hide_avoid:
-    filtered_output = filtered_output[filtered_output["verdict_label"] != "Avoid"]
+    if hide_avoid:
+        filtered_output = filtered_output[filtered_output["verdict_label"] != "Avoid"]
 
-if min_margin > 0:
-    filtered_output = filtered_output[
-        filtered_output["profit_margin_value"].fillna(-1) >= min_margin
-    ]
+    if min_margin > 0:
+        filtered_output = filtered_output[
+            filtered_output["profit_margin_value"].fillna(-1) >= min_margin
+        ]
 
-if hide_no_max_bid:
-    filtered_output = filtered_output[filtered_output["max_bid_value"].notna()]
+    if hide_no_max_bid:
+        filtered_output = filtered_output[filtered_output["max_bid_value"].notna()]
 
 if filtered_output.empty:
     st.info("No active listings match the current filters.")

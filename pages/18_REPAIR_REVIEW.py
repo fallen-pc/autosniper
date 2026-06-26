@@ -7,7 +7,8 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
-from shared.styling import clean_html, display_banner, inject_global_styles, page_intro
+from shared.repair_review import LIVE_QUEUE_PATH
+from shared.styling import clean_html, display_banner, escape_html, inject_global_styles, page_intro
 
 
 st.set_page_config(page_title="Repair Review", layout="wide")
@@ -64,9 +65,27 @@ USAGE_RISK_RE = re.compile(r"\b(mine site|ex[- ]?rental|taxi|police|beach|farm)\
 
 @st.cache_data(ttl=60)
 def load_lines() -> pd.DataFrame:
+    frames: list[pd.DataFrame] = []
     if not LINES_PATH.exists():
+        base = pd.DataFrame()
+    else:
+        base = pd.read_csv(LINES_PATH).fillna("")
+    if not base.empty:
+        frames.append(base)
+    if LIVE_QUEUE_PATH.exists():
+        live = pd.read_csv(LIVE_QUEUE_PATH).fillna("")
+        if not live.empty:
+            frames.append(live)
+    if not frames:
         return pd.DataFrame()
-    return pd.read_csv(LINES_PATH).fillna("")
+    if len(frames) == 1:
+        return frames[0]
+
+    combined = pd.concat(frames, ignore_index=True, sort=False).fillna("")
+    combined["_source_rank"] = combined["source_file"].astype(str).eq("AI_ANALYSIS_LIVE").astype(int)
+    combined.sort_values(["_source_rank"], ascending=[True], inplace=True)
+    combined = combined.drop_duplicates(subset=["repair_key"], keep="last")
+    return combined.drop(columns=["_source_rank"], errors="ignore")
 
 
 @st.cache_data(ttl=60)
@@ -168,6 +187,50 @@ def display_metric(label: str, value: object, sub: str = "") -> str:
     )
 
 
+def display_selection(label: str, value: object) -> str:
+    display_value = safe_text(value) or "Blank"
+    return (
+        '<div class="repair-review-selection">'
+        f'<div class="repair-review-selection-label">{escape_html(label)}</div>'
+        f'<div class="repair-review-selection-value">{escape_html(display_value)}</div>'
+        "</div>"
+    )
+
+
+def widget_key(prefix: str, repair_key: object) -> str:
+    cleaned = re.sub(r"[^a-z0-9_]+", "_", safe_text(repair_key).lower()).strip("_")
+    return f"{prefix}_{cleaned[:80] or 'row'}"
+
+
+def canonical_from_repair_key(repair_key: object) -> str:
+    cleaned = re.sub(r"[^a-z0-9]+", "_", safe_text(repair_key).lower()).strip("_")
+    return cleaned[:80]
+
+
+def suggested_review_defaults(selected: pd.Series, existing: pd.Series) -> dict[str, str]:
+    status = safe_text(selected.get("status"))
+    category = safe_text(selected.get("category"))
+    canonical = safe_text(existing.get("canonical_defect")) or safe_text(selected.get("canonical_defects"))
+    severity = safe_text(existing.get("severity_hint"))
+    cost_model = safe_text(existing.get("cost_model"))
+
+    if status == "hard_avoid":
+        if not severity:
+            severity = "high"
+        if not cost_model:
+            cost_model = "hard_avoid"
+        if category == "mechanical" and not canonical:
+            canonical = canonical_from_repair_key(selected.get("repair_key"))
+
+    return {
+        "target_category": safe_text(existing.get("target_category")) or category,
+        "canonical_defect": canonical,
+        "severity_hint": severity,
+        "cost_model": cost_model,
+        "notes": safe_text(existing.get("notes")),
+    }
+
+
 st.markdown(
     """
     <style>
@@ -219,6 +282,38 @@ st.markdown(
         color: rgba(255,255,255,0.9);
         overflow-wrap: anywhere;
     }
+    .repair-review-selection-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 0.5rem;
+        margin: 0.5rem 0 0.9rem;
+    }
+    .repair-review-selection {
+        border: 1px solid rgba(255,255,255,0.1);
+        background: rgba(255,255,255,0.04);
+        border-radius: 8px;
+        padding: 0.55rem 0.65rem;
+        min-height: 62px;
+    }
+    .repair-review-selection-label {
+        font-size: 0.58rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: rgba(255,255,255,0.58);
+    }
+    .repair-review-selection-value {
+        margin-top: 0.25rem;
+        font-size: 0.85rem;
+        font-weight: 720;
+        color: rgba(255,255,255,0.94);
+        overflow-wrap: anywhere;
+    }
+    @media (max-width: 900px) {
+        .repair-review-grid,
+        .repair-review-selection-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
     </style>
     """,
     unsafe_allow_html=True,
@@ -261,9 +356,23 @@ bucket_choice = st.sidebar.selectbox("Review bucket", bucket_options, index=0)
 status_options = ["All"] + sorted(queue_df["status"].dropna().unique().tolist())
 status_choice = st.sidebar.selectbox("Parser status", status_options, index=0)
 decision_options = ["All", "Undecided", "Decided"]
-decision_choice = st.sidebar.selectbox("Decision state", decision_options, index=0)
+decision_choice = st.sidebar.selectbox("Decision state", decision_options, index=1)
 min_occurrences = st.sidebar.number_input("Minimum occurrences", min_value=1, value=3, step=1)
 search_text = st.sidebar.text_input("Search repair text")
+st.sidebar.markdown(
+    clean_html(
+        f"""
+        <div class="repair-review-selection-grid" style="grid-template-columns: 1fr;">
+            {display_selection("Review bucket", bucket_choice)}
+            {display_selection("Parser status", status_choice)}
+            {display_selection("Decision state", decision_choice)}
+            {display_selection("Minimum occurrences", min_occurrences)}
+            {display_selection("Search repair text", search_text)}
+        </div>
+        """
+    ),
+    unsafe_allow_html=True,
+)
 
 filtered_df = queue_df[queue_df["occurrences"] >= int(min_occurrences)].copy()
 if bucket_choice != "All":
@@ -282,6 +391,7 @@ if search_text.strip():
     ].copy()
 
 filtered_df.sort_values(["occurrences", "repair_item"], ascending=[False, True], inplace=True)
+filtered_occurrences = int(filtered_df["occurrences"].sum()) if not filtered_df.empty else 0
 
 bucket_counts = (
     queue_df.groupby("review_bucket", as_index=False)
@@ -296,7 +406,26 @@ with bucket_tab:
     st.dataframe(bucket_counts, use_container_width=True, hide_index=True)
 
 with queue_tab:
-    st.markdown(f"### Queue ({len(filtered_df):,} rows)")
+    queue_heading = f"{decision_choice} Queue" if decision_choice != "All" else "Queue"
+    st.markdown(f"### {queue_heading} ({len(filtered_df):,} unique lines)")
+    st.caption(
+        "Queue count is deduped repair lines. The occurrence numbers are listing/fragments seen across the Grays audit, "
+        "so adding row occurrences will be much higher than the unique-line queue count. Saved lines drop out of the "
+        "default Undecided queue; use Decision state = Decided or All to inspect saved reviews."
+    )
+    st.markdown(
+        clean_html(
+            f"""
+            <div class="repair-review-selection-grid">
+                {display_selection("Shown unique lines", f"{len(filtered_df):,}")}
+                {display_selection("Shown occurrences", f"{filtered_occurrences:,}")}
+                {display_selection("Meaning of row number", "Occurrences across listings/fragments")}
+                {display_selection("Meaning of queue number", "Unique deduped repair lines")}
+            </div>
+            """
+        ),
+        unsafe_allow_html=True,
+    )
     display_cols = [
         "review_bucket",
         "repair_item",
@@ -320,6 +449,19 @@ with queue_tab:
         selected_label = st.selectbox("Select row to review", labels)
         selected_idx = labels.index(selected_label)
         selected = filtered_df.iloc[selected_idx]
+        st.markdown(
+            clean_html(
+                f"""
+                <div class="repair-review-selection-grid">
+                    {display_selection("Selected row", selected_label)}
+                    {display_selection("Bucket", selected.get("review_bucket"))}
+                    {display_selection("Status", selected.get("status"))}
+                    {display_selection("Occurrences", selected.get("occurrences"))}
+                </div>
+                """
+            ),
+            unsafe_allow_html=True,
+        )
 
         detail_cols = st.columns([1, 1])
         with detail_cols[0]:
@@ -383,6 +525,7 @@ with queue_tab:
 
         st.markdown("### Save Review Decision")
         default_bucket = safe_text(selected.get("review_bucket"))
+        selected_repair_key = safe_text(selected.get("repair_key"))
         category_options = [
             "",
             "cosmetic",
@@ -411,28 +554,83 @@ with queue_tab:
             "Usage risk": "Mark usage risk",
             "Real repair gap": "Add dictionary rule",
         }.get(default_bucket, "Leave unclassified")
-        with st.form("repair_review_decision_form"):
-            c1, c2, c3 = st.columns(3)
-            with c1:
-                decision = st.selectbox(
-                    "Decision",
-                    decision_options_form,
-                    index=decision_options_form.index(suggested_decision),
-                )
-                target_category = st.selectbox("Target category", category_options)
-            with c2:
-                canonical_defect = st.text_input("Canonical defect", value=safe_text(selected.get("canonical_defects")))
-                severity_hint = st.selectbox("Severity hint", ["", "low", "medium", "high"])
-            with c3:
-                cost_model = st.selectbox(
-                    "Cost model",
-                    ["", "no_cost", "cosmetic_panel", "fixed_replacement", "glass", "hard_avoid"],
-                )
-                notes = st.text_area("Notes", height=92)
-            submitted = st.form_submit_button("Save decision")
-        if submitted:
+        existing_decision = decisions_df[decisions_df["repair_key"] == selected_repair_key]
+        if not existing_decision.empty:
+            existing = existing_decision.iloc[-1]
+            suggested_decision = safe_text(existing.get("decision")) or suggested_decision
+        else:
+            existing = pd.Series(dtype=object)
+        defaults = suggested_review_defaults(selected, existing)
+        category_default = defaults["target_category"]
+        severity_default = defaults["severity_hint"]
+        cost_default = defaults["cost_model"]
+
+        decision_index = decision_options_form.index(suggested_decision) if suggested_decision in decision_options_form else 0
+        category_index = category_options.index(category_default) if category_default in category_options else 0
+        severity_options = ["", "low", "medium", "high"]
+        severity_index = severity_options.index(severity_default) if severity_default in severity_options else 0
+        cost_options = ["", "no_cost", "cosmetic_panel", "fixed_replacement", "glass", "hard_avoid"]
+        cost_index = cost_options.index(cost_default) if cost_default in cost_options else 0
+
+        c1, c2, c3 = st.columns(3)
+        with c1:
+            decision = st.selectbox(
+                "Decision",
+                decision_options_form,
+                index=decision_index,
+                key=widget_key("decision", selected_repair_key),
+            )
+            target_category = st.selectbox(
+                "Target category",
+                category_options,
+                index=category_index,
+                key=widget_key("target_category", selected_repair_key),
+            )
+        with c2:
+            canonical_defect = st.text_input(
+                "Canonical defect",
+                value=defaults["canonical_defect"],
+                key=widget_key("canonical_defect", selected_repair_key),
+            )
+            severity_hint = st.selectbox(
+                "Severity hint",
+                severity_options,
+                index=severity_index,
+                key=widget_key("severity", selected_repair_key),
+            )
+        with c3:
+            cost_model = st.selectbox(
+                "Cost model",
+                cost_options,
+                index=cost_index,
+                key=widget_key("cost_model", selected_repair_key),
+            )
+            notes = st.text_area(
+                "Notes",
+                value=defaults["notes"],
+                height=92,
+                key=widget_key("notes", selected_repair_key),
+            )
+
+        st.markdown(
+            clean_html(
+                f"""
+                <div class="repair-review-selection-grid">
+                    {display_selection("Decision", decision)}
+                    {display_selection("Target category", target_category)}
+                    {display_selection("Canonical defect", canonical_defect)}
+                    {display_selection("Severity hint", severity_hint)}
+                    {display_selection("Cost model", cost_model)}
+                    {display_selection("Notes", notes)}
+                </div>
+                """
+            ),
+            unsafe_allow_html=True,
+        )
+
+        if st.button("Save decision", key=widget_key("save_decision", selected_repair_key)):
             record = {
-                "repair_key": safe_text(selected.get("repair_key")),
+                "repair_key": selected_repair_key,
                 "repair_item": safe_text(selected.get("repair_item")),
                 "review_bucket": default_bucket,
                 "decision": decision,
@@ -444,7 +642,8 @@ with queue_tab:
             }
             upsert_decision(record)
             st.cache_data.clear()
-            st.success(f"Saved review decision for `{record['repair_item']}`.")
+            st.toast(f"Saved review decision for {record['repair_item']}.")
+            st.rerun()
 
 with decision_tab:
     st.markdown("### Saved Decisions")
