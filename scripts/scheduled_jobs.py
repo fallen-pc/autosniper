@@ -32,7 +32,7 @@ from shared.data_loader import dataset_path
 from shared.governance import write_governance_report_bundle
 from shared.sold_cleaning import is_compliance_slug, normalize_listing_fields
 from shared.scraper_health import write_scraper_health_report
-from shared.telegram_alerts import send_telegram_message
+from shared.telegram_alerts import send_on_state_change, send_telegram_message
 
 CHECK_URL = os.getenv("AUTOSNIPER_HEALTHCHECK_URL", "https://www.grays.com/")
 CHECK_INTERVAL_SECONDS = int(os.getenv("AUTOSNIPER_NET_CHECK_INTERVAL_SEC", "300"))
@@ -410,6 +410,75 @@ def _send_job_failure_alert(job: str, detail: str) -> None:
         return
 
 
+def _action_counts_text(df: pd.DataFrame) -> str:
+    counts = df["action_label"].fillna("").astype(str).str.strip().value_counts().to_dict()
+    ordered = ["Buy", "Watch", "Avoid", "Review"]
+    parts = [f"{label} {int(counts.get(label, 0))}" for label in ordered]
+    other_count = sum(int(count) for label, count in counts.items() if label and label not in ordered)
+    if other_count:
+        parts.append(f"Other {other_count}")
+    return " | ".join(parts)
+
+
+def _bid_status_counts_text(df: pd.DataFrame) -> str:
+    if "bid_status" not in df.columns:
+        return "N/A"
+    counts = df["bid_status"].fillna("").astype(str).str.strip().value_counts()
+    parts = [f"{label} {int(count)}" for label, count in counts.items() if label]
+    return " | ".join(parts[:5]) if parts else "N/A"
+
+
+def _load_daily_ai_analysis_frame() -> pd.DataFrame:
+    path = dataset_path("ai_listing_valuations.csv")
+    if not path.exists():
+        return pd.DataFrame()
+    df = pd.read_csv(path, low_memory=False)
+    if "analysis_context" in df.columns:
+        active_mask = df["analysis_context"].fillna("").astype(str).str.strip().str.lower() == "active"
+        df = df[active_mask].copy()
+    return df
+
+
+def _send_daily_ai_analysis_summary(*, trigger: str, coverage_date_local: date) -> bool:
+    try:
+        df = _load_daily_ai_analysis_frame()
+        if df.empty:
+            message = (
+                "AutoSniper daily AI Analysis\n"
+                f"Date: {coverage_date_local.isoformat()}\n"
+                "Active analysed: 0\n"
+                "No active AI Analysis rows were available after the daily run."
+            )
+            verdict = "No active AI Analysis rows"
+        else:
+            if "action_label" not in df.columns:
+                df["action_label"] = ""
+            buy_count = int((df["action_label"].fillna("").astype(str).str.strip() == "Buy").sum())
+            verdict = f"Buy {buy_count}"
+            message = (
+                "AutoSniper daily AI Analysis\n"
+                f"Date: {coverage_date_local.isoformat()}\n"
+                f"Trigger: {trigger}\n"
+                f"Active analysed: {len(df)}\n"
+                f"Actions: {_action_counts_text(df)}\n"
+                f"Bid status: {_bid_status_counts_text(df)}\n"
+                + (
+                    "No AI Analysis Buy vehicles today."
+                    if buy_count == 0
+                    else f"AI Analysis has {buy_count} Buy vehicle(s); individual Buy alerts are sent separately."
+                )
+            )
+        return send_on_state_change(
+            "daily_ai_analysis_summary",
+            "autosniper-daily-ai-analysis-summary",
+            coverage_date_local.isoformat(),
+            message,
+            verdict=verdict,
+        )
+    except Exception:
+        return False
+
+
 def _has_internet() -> bool:
     try:
         requests.get(CHECK_URL, timeout=10)
@@ -678,6 +747,7 @@ def _run_daily_job(*, trigger: str, coverage_date_local: date) -> None:
         write_scraper_health_report(job_name="daily" if trigger == "scheduled" else f"daily-{trigger}", job_status="success")
         _record_daily_run_finish(trigger=trigger, coverage_date_local=coverage_date_local, success=True)
         _write_daily_metrics(success=True, duration_sec=time.time() - started)
+        _send_daily_ai_analysis_summary(trigger=trigger, coverage_date_local=coverage_date_local)
     except Exception as exc:
         error_message = f"{type(exc).__name__}: {exc}"
         write_scraper_health_report(

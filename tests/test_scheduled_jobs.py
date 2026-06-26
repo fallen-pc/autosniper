@@ -117,6 +117,72 @@ def test_hourly_monitor_rematerializes_active_view_after_bid_update(monkeypatch)
     assert calls == ["bids", "master", "revalue"]
 
 
+def test_daily_ai_analysis_summary_reports_active_action_counts(monkeypatch, tmp_path) -> None:
+    valuations_path = tmp_path / "ai_listing_valuations.csv"
+    pd.DataFrame(
+        [
+            {"url": "https://example.com/active-buy", "analysis_context": "active", "action_label": "Buy", "bid_status": "Cheap"},
+            {"url": "https://example.com/active-watch", "analysis_context": "active", "action_label": "Watch", "bid_status": "Near ceiling"},
+            {"url": "https://example.com/active-avoid", "analysis_context": "active", "action_label": "Avoid", "bid_status": "Over max"},
+            {"url": "https://example.com/referred-buy", "analysis_context": "referred", "action_label": "Buy", "bid_status": "Cheap"},
+        ]
+    ).to_csv(valuations_path, index=False)
+    calls: list[dict[str, object]] = []
+
+    monkeypatch.setattr(scheduled_jobs, "dataset_path", lambda name: valuations_path)
+    monkeypatch.setattr(
+        scheduled_jobs,
+        "send_on_state_change",
+        lambda alert_scope, url, state_value, message, verdict=None: calls.append(
+            {
+                "alert_scope": alert_scope,
+                "url": url,
+                "state_value": state_value,
+                "message": message,
+                "verdict": verdict,
+            }
+        )
+        or True,
+    )
+
+    assert scheduled_jobs._send_daily_ai_analysis_summary(
+        trigger="scheduled",
+        coverage_date_local=date(2026, 6, 25),
+    ) is True
+
+    assert calls[0]["alert_scope"] == "daily_ai_analysis_summary"
+    assert calls[0]["state_value"] == "2026-06-25"
+    assert calls[0]["verdict"] == "Buy 1"
+    assert "Active analysed: 3" in str(calls[0]["message"])
+    assert "Actions: Buy 1 | Watch 1 | Avoid 1 | Review 0" in str(calls[0]["message"])
+    assert "Bid status: Cheap 1 | Near ceiling 1 | Over max 1" in str(calls[0]["message"])
+
+
+def test_daily_ai_analysis_summary_sends_no_buy_heartbeat(monkeypatch, tmp_path) -> None:
+    valuations_path = tmp_path / "ai_listing_valuations.csv"
+    pd.DataFrame(
+        [
+            {"url": "https://example.com/watch", "analysis_context": "active", "action_label": "Watch", "bid_status": "Near ceiling"},
+            {"url": "https://example.com/avoid", "analysis_context": "active", "action_label": "Avoid", "bid_status": "Over max"},
+        ]
+    ).to_csv(valuations_path, index=False)
+    messages: list[str] = []
+
+    monkeypatch.setattr(scheduled_jobs, "dataset_path", lambda name: valuations_path)
+    monkeypatch.setattr(
+        scheduled_jobs,
+        "send_on_state_change",
+        lambda alert_scope, url, state_value, message, verdict=None: messages.append(message) or True,
+    )
+
+    scheduled_jobs._send_daily_ai_analysis_summary(
+        trigger="scheduled",
+        coverage_date_local=date(2026, 6, 25),
+    )
+
+    assert "No AI Analysis Buy vehicles today." in messages[0]
+
+
 def test_daily_smoke_runs_limited_pipeline(monkeypatch) -> None:
     ai_scope = pd.DataFrame(
         [

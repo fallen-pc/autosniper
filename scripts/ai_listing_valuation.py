@@ -5,6 +5,7 @@ import warnings
 from datetime import datetime, timezone
 from hashlib import sha256
 from typing import Any, Dict, List, Mapping, Optional, Tuple
+from urllib.parse import urlencode
 
 import pandas as pd
 
@@ -21,6 +22,7 @@ DECISION_EVENTS_PATH = dataset_path("ai/listing_decision_events.csv")
 ACTIVE_LISTINGS_PATH = dataset_path("active_vehicle_details.csv")
 SOLD_LISTINGS_PATH = dataset_path("sold_cars.csv")
 REFERRED_LISTINGS_PATH = dataset_path("referred_cars.csv")
+DEFAULT_AUTOSNIPER_APP_URL = "http://localhost:8501"
 REQUIRED_COLUMNS = [
     "url",
     "year",
@@ -676,6 +678,15 @@ def _alert_title(row: Mapping[str, Any]) -> str:
     return title or "Listing"
 
 
+def _autosniper_listing_url(listing_url: str) -> str:
+    page_url = str(os.getenv("AUTOSNIPER_AI_ANALYSIS_URL") or "").strip()
+    if not page_url:
+        app_url = str(os.getenv("AUTOSNIPER_APP_URL") or DEFAULT_AUTOSNIPER_APP_URL).strip().rstrip("/")
+        page_url = f"{app_url}/AI_ANALYSIS"
+    separator = "&" if "?" in page_url else "?"
+    return f"{page_url}{separator}{urlencode({'listing_url': listing_url})}"
+
+
 def _ai_analysis_alert_message(row: Mapping[str, Any], *, title: str, url: str) -> str:
     action_label = _ai_analysis_action(row) or "N/A"
     bid_status = str(row.get("bid_status") or "N/A").strip() or "N/A"
@@ -690,7 +701,8 @@ def _ai_analysis_alert_message(row: Mapping[str, Any], *, title: str, url: str) 
         f"Expected auction profit: {row.get('expected_auction_profit') or 'N/A'}\n"
         f"Profit at current bid: {row.get('economic_profit_at_current_bid') or 'N/A'}\n"
         f"Analysed: {row.get('analysis_timestamp') or 'N/A'}\n"
-        f"{url}"
+        f"AutoSniper: {_autosniper_listing_url(url)}\n"
+        f"Grays: {url}"
     )
 
 
@@ -727,7 +739,8 @@ def _maybe_send_listing_alerts(
             f"Current bid: {row.get('current_bid') or row.get('price') or 'N/A'}\n"
             f"Max bid: {row.get('recommended_max_bid') or 'N/A'}\n"
             f"Analysed: {row.get('analysis_timestamp') or 'N/A'}\n"
-            f"{url}"
+            f"AutoSniper: {_autosniper_listing_url(url)}\n"
+            f"Grays: {url}"
         )
     else:
         return

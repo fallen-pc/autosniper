@@ -120,6 +120,7 @@ def test_decision_event_payload_captures_meaningful_listing_change() -> None:
 
 def test_listing_alert_reports_ai_analysis_buy_action(monkeypatch, tmp_path: Path) -> None:
     _set_alert_dataset_paths(monkeypatch, tmp_path)
+    monkeypatch.setenv("AUTOSNIPER_AI_ANALYSIS_URL", "https://autosniper.example/AI_ANALYSIS")
     sent: list[dict[str, object]] = []
 
     def fake_send_on_state_change(alert_scope, url, state_value, message, verdict=None):
@@ -147,6 +148,17 @@ def test_listing_alert_reports_ai_analysis_buy_action(monkeypatch, tmp_path: Pat
     assert "AI Analysis alert" in str(sent[0]["message"])
     assert "Action: Buy" in str(sent[0]["message"])
     assert "Profit at current bid:" in str(sent[0]["message"])
+    assert "AutoSniper: https://autosniper.example/AI_ANALYSIS?listing_url=https%3A%2F%2Fexample.com%2Flot%2Fdecision-1" in str(sent[0]["message"])
+    assert "Grays: https://example.com/lot/decision-1" in str(sent[0]["message"])
+
+
+def test_autosniper_listing_url_defaults_to_local_ai_analysis(monkeypatch) -> None:
+    monkeypatch.delenv("AUTOSNIPER_AI_ANALYSIS_URL", raising=False)
+    monkeypatch.delenv("AUTOSNIPER_APP_URL", raising=False)
+
+    url = ai_listing_valuation._autosniper_listing_url("https://example.com/lot/1?a=b")
+
+    assert url == "http://localhost:8501/AI_ANALYSIS?listing_url=https%3A%2F%2Fexample.com%2Flot%2F1%3Fa%3Db"
 
 
 def test_listing_alert_does_not_send_for_watch_only(monkeypatch, tmp_path: Path) -> None:
