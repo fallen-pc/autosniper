@@ -570,7 +570,7 @@ def extract_location(soup: BeautifulSoup) -> str:
 
 PRICE_RE = re.compile(r"\$[\d,]+(?:\.\d+)?")
 BIDS_RE = re.compile(r"(\d+)\s*bids?", re.IGNORECASE)
-JS_LITERAL_RE = re.compile(r"\\b(true|false|null)\\b", re.IGNORECASE)
+JS_LITERAL_RE = re.compile(r"\b(true|false|null)\b", re.IGNORECASE)
 
 
 def extract_sale_meta(soup: BeautifulSoup) -> tuple[str | None, str | None, str | None, str | None]:
@@ -777,7 +777,7 @@ def extract_dynamic_metrics(html: str) -> dict[str, str]:
 
 
 def extract_year_from_url(url: str) -> str:
-    match = re.search(r"/((?:19|20)\\d{2})-", url)
+    match = re.search(r"/((?:19|20)\d{2})-", url)
     return match.group(1) if match else ""
 
 

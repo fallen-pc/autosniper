@@ -1,5 +1,7 @@
 # Recent Changes
 
+- 2026-06-27: Fixed two silent regex bugs in `scripts/extract_vehicle_details.py`. `JS_LITERAL_RE` used `\\b` (literal backslash-b) instead of `\b` (word boundary), so JS `true`/`false`/`null` normalisation was a no-op; `json.loads` fallback masked the failure in most cases. `extract_year_from_url` used `\\d` instead of `\d`, so year extraction from the listing URL always returned empty string and fell through to other fallbacks. Both are now correct single-character fixes.
+
 - 2026-06-26: Repaired more scraped Carsales/Apify utilisation without creating duplicate curves. Corolla Ascent Sport ZRE182R manual rows now feed the existing manual curve after removing a self-excluding matcher keyword, and first-generation 2014 MU-X LS-U/LS-T rows now have conservative early-year anchors on the existing curves. 2021+ MU-X rows remain intentionally out of those first-generation curves as future newer-generation targets.
 
 - 2026-06-26: Added two more governed retail curves from existing private Carsales/Apify evidence: Toyota Camry Atara S ASV50R automatic petrol sedan and Volkswagen Golf V/A5 GTI automatic petrol hatch. The same pass fixed two duplicate-curve traps: Mitsubishi Triton `GL-R` rows now alias into the existing GLX-R MN manual/auto diesel curves, and Mazda `CX-5` model spelling now normalises into the existing CX5 Grand Touring KE diesel curve path.
