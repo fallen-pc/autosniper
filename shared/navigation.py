@@ -54,7 +54,6 @@ def navigation_spec() -> NavigationSpec:
                     ("pages/8_MISSED_OPPORTUNITIES.py", "Missed Opportunities", False),
                     ("pages/16_VALUATION_CALIBRATION.py", "Valuation Calibration", False),
                     ("pages/10_BIDDER_INSIGHTS.py", "Bidder Insights", False),
-                    ("pages/9_VEHICLE_REPAIRS.py", "Vehicle Repairs", False),
                     ("pages/18_REPAIR_REVIEW.py", "Repair Review", False),
                     ("pages/19_REPAIR_PRICING.py", "Repair Pricing", False),
                 ],

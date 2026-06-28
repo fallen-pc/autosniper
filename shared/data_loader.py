@@ -73,7 +73,6 @@ DATASET_PATHS: dict[str, Path] = {
     "sold_cars_historical.csv": Path("archives") / "sold_cars_historical.csv",
     "sold_cars_rescraped.csv": Path("archives") / "sold_cars_rescraped.csv",
     "ai_analysis_ready": Path("archives") / "ai_analysis_ready",
-    "repair_estimates.csv": Path("repairs") / "repair_estimates.csv",
 }
 
 REQUIRED_FILES: List[str] = [
