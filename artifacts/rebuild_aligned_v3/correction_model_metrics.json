@@ -80,6 +80,5 @@
     "sold_dow",
     "sold_month",
     "sold_year"
-  ],
-  "q90_fallback_multiplier": 1.3243
+  ]
 }
