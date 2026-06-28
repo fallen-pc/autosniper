@@ -64,3 +64,8 @@ htmlcov/
 .tox/
 cache/
 status/
+
+# CatBoost binary model files - regenerate from scripts/rebuild_auction_model.py
+artifacts/*.cbm
+artifacts/**/*.cbm
+catboost_info/

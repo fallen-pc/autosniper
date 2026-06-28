@@ -102,6 +102,18 @@ def _time_split(df: pd.DataFrame, date_col: str, validation_days: int) -> Tuple[
     return train, valid
 
 
+def _random_split(df: pd.DataFrame, val_frac: float, seed: int) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    df = df.copy()
+    valid = df.sample(frac=val_frac, random_state=seed)
+    train = df.drop(index=valid.index)
+    if train.empty or valid.empty:
+        raise ValueError(
+            f"Random split produced empty partition(s): train={len(train)}, valid={len(valid)}, "
+            f"val_frac={val_frac}."
+        )
+    return train, valid
+
+
 def _build_feature_frame(df: pd.DataFrame, cols: Cols, drop_cols: Optional[List[str]]) -> pd.DataFrame:
     X = df.copy()
     drop_cols = drop_cols or []
@@ -165,6 +177,8 @@ def _prepare_model_datasets(
     clip_low: float,
     clip_high: float,
     drop_cols: List[str],
+    val_frac: float = 0.0,
+    seed: int = 42,
 ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, np.ndarray, np.ndarray]:
     prepared_df = df.dropna(subset=[cols.price_col, cols.baseline_col]).copy()
     prepared_df = prepared_df[(prepared_df[cols.price_col] > 0) & (prepared_df[cols.baseline_col] > 0)].copy()
@@ -172,7 +186,13 @@ def _prepare_model_datasets(
         clip_low, clip_high
     )
 
-    train_df, valid_df = _time_split(prepared_df, cols.date_col, validation_days)
+    if val_frac > 0:
+        train_df, valid_df = _random_split(prepared_df, val_frac=val_frac, seed=seed)
+        print(f"Random split (val_frac={val_frac}): train={len(train_df)}, valid={len(valid_df)}")
+    else:
+        train_df, valid_df = _time_split(prepared_df, cols.date_col, validation_days)
+        print(f"Time split ({validation_days}d holdout): train={len(train_df)}, valid={len(valid_df)}")
+
     X_train = _build_feature_frame(train_df, cols, drop_cols)
     X_valid = _build_feature_frame(valid_df, cols, drop_cols)
     y_train = train_df["auction_ratio"].to_numpy(dtype=float)
@@ -194,11 +214,21 @@ def main() -> None:
     parser.add_argument("--model-q50-out", default=None)
     parser.add_argument("--model-q90-out", default=None)
     parser.add_argument("--drop-cols", default="", help="Comma-separated columns to drop from features.")
+    parser.add_argument("--features-out", default=None, help="Path to write feature names JSON.")
+    parser.add_argument("--q90-alpha", type=float, default=0.9, help="Quantile alpha for the upper model (default 0.9).")
+    parser.add_argument("--min-comps", type=int, default=0, help="Drop training rows where comps_count < this value.")
+    parser.add_argument("--val-frac", type=float, default=0.0,
+                        help="Random validation fraction (0.0 = use time split). Useful when dataset is too small for a time-based holdout to produce enough validation rows.")
     args = parser.parse_args()
 
     os.makedirs(args.out_dir, exist_ok=True)
     df, cols = _load_and_detect_cols(args.train_data)
     drop_cols = [c.strip() for c in args.drop_cols.split(",") if c.strip()]
+
+    if args.min_comps > 0 and "comps_count" in df.columns:
+        before = len(df)
+        df = df[pd.to_numeric(df["comps_count"], errors="coerce").fillna(0) >= args.min_comps].copy()
+        print(f"Filtered rows with comps_count < {args.min_comps}: {before} -> {len(df)}")
 
     _, train_df, valid_df, X_train, X_valid, y_train, y_valid = _prepare_model_datasets(
         df=df,
@@ -207,13 +237,15 @@ def main() -> None:
         clip_low=args.clip_low,
         clip_high=args.clip_high,
         drop_cols=drop_cols,
+        val_frac=args.val_frac,
+        seed=args.seed,
     )
 
     model_q50 = _train_quantile(
         X_train, y_train, X_valid, y_valid, alpha=0.5, seed=args.seed, iterations=args.iterations
     )
     model_q90 = _train_quantile(
-        X_train, y_train, X_valid, y_valid, alpha=0.9, seed=args.seed + 1, iterations=args.iterations
+        X_train, y_train, X_valid, y_valid, alpha=args.q90_alpha, seed=args.seed + 1, iterations=args.iterations
     )
 
     baseline_valid = valid_df[cols.baseline_col].to_numpy(dtype=float)
@@ -223,26 +255,56 @@ def main() -> None:
     pred_price_q50 = baseline_valid * pred_ratio_q50
     pred_price_q90 = baseline_valid * pred_ratio_q90
 
+    # Post-hoc calibration: find the multiplier on pred_price_q90 that achieves
+    # the target coverage level on the validation set.  Multiply at inference
+    # time instead of relying on alpha tuning, which doesn't account for the
+    # compounded error from a noisy baseline.
+    raw_coverage = float(np.mean(actual_price <= pred_price_q90))
+    calibration_ratios = actual_price / np.where(pred_price_q90 > 0, pred_price_q90, np.nan)
+    calibration_ratios = calibration_ratios[~np.isnan(calibration_ratios)]
+    calibration_multiplier = float(np.percentile(calibration_ratios, args.q90_alpha * 100))
+    pred_price_q90_cal = pred_price_q90 * calibration_multiplier
+    calibrated_coverage = float(np.mean(actual_price <= pred_price_q90_cal))
+
+    # When q90 model crosses below q50 (sparse regions), fall back to
+    # q50_pred * q90_fallback_multiplier. Compute as the q90_alpha-th percentile
+    # of (actual_price / pred_price_q50) over the validation set.
+    q90_spread = actual_price / np.where(pred_price_q50 > 0, pred_price_q50, np.nan)
+    q90_spread = q90_spread[~np.isnan(q90_spread)]
+    q90_fallback_multiplier = float(np.percentile(q90_spread, args.q90_alpha * 100))
+
     metrics = {
         "validation_days": args.validation_days,
         "rows_train": int(len(train_df)),
         "rows_valid": int(len(valid_df)),
         "clip_low": args.clip_low,
         "clip_high": args.clip_high,
+        "q90_alpha": args.q90_alpha,
         "price_metrics_q50": _price_metrics(actual_price, pred_price_q50),
-        "coverage_p90": float(np.mean(actual_price <= pred_price_q90)),
+        "coverage_upper_raw": raw_coverage,
+        "coverage_upper_calibrated": calibrated_coverage,
+        "coverage_p90": calibrated_coverage,
+        "calibration_multiplier": calibration_multiplier,
+        "q90_fallback_multiplier": q90_fallback_multiplier,
+        "median_ratio_valid": float(np.median(y_valid)),
         "columns": {
             "id_col": cols.id_col,
             "date_col": cols.date_col,
             "price_col": cols.price_col,
             "baseline_col": cols.baseline_col,
         },
+        "features": list(X_train.columns),
     }
 
     model_q50_out = args.model_q50_out or os.path.join(args.out_dir, "auction_ratio_q50.cbm")
     model_q90_out = args.model_q90_out or os.path.join(args.out_dir, "auction_ratio_q90.cbm")
     model_q50.save_model(model_q50_out)
     model_q90.save_model(model_q90_out)
+
+    features_out = args.features_out or os.path.join(args.out_dir, "feature_names.json")
+    with open(features_out, "w", encoding="utf-8") as fh:
+        json.dump(list(X_train.columns), fh, indent=2)
+    print("Feature names saved:", features_out)
 
     predictions_out = args.predictions_out or os.path.join(args.out_dir, "correction_model_predictions.csv")
     id_values = (

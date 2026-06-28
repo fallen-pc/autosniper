@@ -10,9 +10,11 @@ from urllib.parse import urlencode
 import pandas as pd
 
 from scripts.atomic_csv import append_dict_rows_csv_atomic, write_dataframe_csv_atomic
+from shared.auction_model import predict_auction_price
 from shared.data_loader import dataset_path
 from shared.decision_policy import DecisionPolicyInput, derive_action_label, derive_action_label_from_row
 from shared.repair_pricing import assess_repairs, apply_repairs_to_max_bid
+from shared.repair_features import build_repair_features, serialize_tags, REPAIR_CATEGORIES
 from shared.telegram_alerts import get_alert_state, send_on_state_change
 from shared.top_buy import apply_top_buy_behavior, top_buy_gate_check
 
@@ -1057,9 +1059,24 @@ def _expected_auction_estimate(
     *,
     comps_median: Any = None,
     comps_count: int | None = None,
+    model_prediction: dict | None = None,
 ) -> tuple[Optional[float], str | None, int | None]:
     comp_count = _parse_int(comps_count)
     comp_median = _parse_currency(comps_median)
+
+    # CatBoost model prediction — use when available and comps baseline exists
+    if (
+        model_prediction is not None
+        and comp_median is not None
+        and comp_median > 0
+        and comp_count is not None
+        and comp_count >= MIN_EXPECTED_AUCTION_COMPS
+    ):
+        q50_price = model_prediction.get("q50_price")
+        if q50_price is not None and q50_price > 0:
+            return _round_to_10(float(q50_price)), "catboost_model", comp_count
+
+    # Fall back to raw comps median when count is sufficient
     if (
         comp_median is not None
         and comp_median > 0
@@ -1067,6 +1084,8 @@ def _expected_auction_estimate(
         and comp_count >= MIN_EXPECTED_AUCTION_COMPS
     ):
         return _round_to_10(comp_median), "historical_sold_median", comp_count
+
+    # Last resort: resale * discount
     if resale_value is None or resale_value <= 0:
         return None, None, comp_count
     return _round_to_10(resale_value * DEFAULT_DISCOUNT), "resale_discount", comp_count
@@ -1221,6 +1240,7 @@ def _action_label(
     expected_auction_worst_profit: Optional[float],
     current_worst_profit: Optional[float],
     hard_max_safety: str,
+    comps_count: int | None = None,
 ) -> str:
     return derive_action_label(
         DecisionPolicyInput(
@@ -1230,6 +1250,7 @@ def _action_label(
             current_worst_profit=current_worst_profit,
             hard_max_safety=hard_max_safety,
             min_profit=MIN_NET_PROFIT_ABSOLUTE,
+            comps_count=comps_count,
         )
     )
 
@@ -1659,6 +1680,31 @@ def run_curve_listing_analysis(
 
     repair_assessment = assess_repairs(listing_row.get("general_condition", ""))
     risk_flags = _detect_risk_flags(listing_data)
+
+    # CatBoost model prediction — build repair features for the feature vector
+    model_prediction: dict | None = None
+    comp_median_val = _parse_currency(comps_median)
+    curve_tag_val = str(listing_data.get("curve_tag") or listing_data.get("canonical_tag") or "")
+    if comp_median_val and comp_median_val > 0 and curve_tag_val:
+        try:
+            repair_feats = build_repair_features(listing_row.get("general_condition", ""))
+            repair_tag_flags = {
+                f"tag_{cat}": (1 if cat in repair_feats.tags else 0)
+                for cat in REPAIR_CATEGORIES
+            }
+            model_prediction = predict_auction_price(
+                listing_data,
+                comps_p50=comp_median_val,
+                curve_tag=curve_tag_val,
+                repair_tags=serialize_tags(repair_feats.tags),
+                repair_severity=float(repair_feats.severity),
+                decision_condition_only=repair_feats.decision_label,
+                estimated_parts_cost_aud=float(repair_assessment.total_cost or 0),
+                repair_tag_flags=repair_tag_flags,
+                total_repair_tags=len(repair_feats.tags),
+            )
+        except Exception:
+            model_prediction = None
     downside_pct = _calculate_downside_percent(risk_flags)
     upside_pct = _calculate_upside_percent(risk_flags)
     confidence_val, confidence_notes = _calculate_confidence(
@@ -1688,6 +1734,7 @@ def run_curve_listing_analysis(
         resale_mid_val,
         comps_median=comps_median,
         comps_count=comps_count,
+        model_prediction=model_prediction,
     )
 
     min_net_profit = max(MIN_NET_PROFIT_ABSOLUTE, MIN_NET_PROFIT_RATIO * (resale_low_val or resale_mid))
@@ -1970,6 +2017,7 @@ def run_curve_listing_analysis(
         expected_auction_worst_profit_val,
         current_worst_profit_val,
         hard_max_safety,
+        comps_count=_parse_int(expected_auction_comps_count),
     )
     edge_note = ""
     if no_edge_at_current_bid:
@@ -2019,12 +2067,18 @@ def run_curve_listing_analysis(
         "roadworthy_estimate": _format_currency(costs_map["roadworthy_estimate"]),
         "prep_estimate": _format_currency(costs_map["prep_estimate"]),
         "repair_estimate": _format_currency(repair_cost_val),
+        "repair_estimate_low": _format_currency(repair_assessment.total_cost_low) if not repair_assessment.hard_avoid else None,
+        "repair_estimate_high": _format_currency(repair_assessment.total_cost_high) if not repair_assessment.hard_avoid else None,
+        "repair_estimate_low_value": repair_assessment.total_cost_low if not repair_assessment.hard_avoid else None,
+        "repair_estimate_high_value": repair_assessment.total_cost_high if not repair_assessment.hard_avoid else None,
         "expected_auction_price": _format_currency(expected_auction_price_val),
         "expected_auction_bid_basis": _format_currency(expected_auction_purchase_basis),
         "expected_auction_profit": _format_currency(expected_auction_profit_val) if expected_auction_profit_val is not None else None,
         "expected_auction_worst_profit": _format_currency(expected_auction_worst_profit_val) if expected_auction_worst_profit_val is not None else None,
         "expected_auction_source": expected_auction_source,
         "expected_auction_comps_count": expected_auction_comps_count,
+        "expected_auction_price_q90": _format_currency(model_prediction["q90_price"]) if model_prediction else None,
+        "expected_auction_price_q90_value": model_prediction["q90_price"] if model_prediction else None,
         "discount_used": DEFAULT_DISCOUNT,
         "profit_at_current_bid": _format_currency(current_profit_val) if current_profit_val is not None else None,
         "profit_at_current_bid_worst": _format_currency(current_worst_profit_val) if current_worst_profit_val is not None else None,

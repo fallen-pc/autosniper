@@ -201,6 +201,10 @@ def main() -> None:
     if not args.input.exists():
         raise FileNotFoundError(f"Enriched sold dataset not found: {args.input}")
     df = pd.read_csv(args.input, low_memory=False)
+    dupes = df.columns[df.columns.duplicated()].tolist()
+    if dupes:
+        print(f"Warning: dropping {len(dupes)} duplicate column(s) from input: {dupes}")
+        df = df.loc[:, ~df.columns.duplicated(keep="first")]
     df = prepare_numeric_columns(df)
     df = add_repair_tag_features(df)
     df = add_temporal_features(df)
