@@ -261,6 +261,10 @@ class RepairFragment:
     reasons: List[str] = field(default_factory=list)
 
 
+REPAIR_COST_LOW_MULTIPLIER = 0.55   # p25 of low_estimate/default_estimate from pricing schedule
+REPAIR_COST_HIGH_MULTIPLIER = 1.60  # median of high_estimate/default_estimate from pricing schedule
+
+
 @dataclass
 class RepairAssessment:
     hard_avoid: bool
@@ -277,6 +281,8 @@ class RepairAssessment:
     hard_avoid_reason: str | None = None
     original_text: str = ""
     fragments: List[RepairFragment] = field(default_factory=list)
+    total_cost_low: int = 0   # optimistic estimate (low repair scenario)
+    total_cost_high: int = 0  # pessimistic estimate (used for bid deduction)
 
 
 HARD_AVOID_BUCKETS = {
@@ -329,6 +335,8 @@ def _hard_avoid_assessment(
         severity_level=severity_level,
         severity_multiplier=severity_multiplier,
         total_cost=hard_cost,
+        total_cost_low=int(hard_cost * REPAIR_COST_LOW_MULTIPLIER),
+        total_cost_high=int(hard_cost * REPAIR_COST_HIGH_MULTIPLIER),
         reasons=[trigger_reason],
         original_text=original_text,
         fragments=fragments,
@@ -698,6 +706,8 @@ def assess_repairs(
             severity_level=severity_level,
             severity_multiplier=severity_multiplier,
             total_cost=total,
+            total_cost_low=int(total * REPAIR_COST_LOW_MULTIPLIER),
+            total_cost_high=int(total * REPAIR_COST_HIGH_MULTIPLIER),
             reasons=reasons,
             original_text=str(general_condition or ""),
             fragments=fragments + _unclassified_fragments(lines, matched_lines),
@@ -845,6 +855,8 @@ def assess_repairs(
         severity_level=severity_level,
         severity_multiplier=severity_multiplier,
         total_cost=total,
+        total_cost_low=int(total * REPAIR_COST_LOW_MULTIPLIER),
+        total_cost_high=int(total * REPAIR_COST_HIGH_MULTIPLIER),
         reasons=reasons,
         original_text=str(general_condition or ""),
         fragments=fragments + _unclassified_fragments(lines, matched_lines),
@@ -855,8 +867,11 @@ def apply_repairs_to_max_bid(max_bid: int, assessment: RepairAssessment) -> Tupl
     if assessment.hard_avoid:
         return 0, "Avoid"
 
-    adjusted = max(0, int(max_bid) - int(assessment.total_cost))
+    # Deduct the HIGH (pessimistic) estimate from the max bid to stay conservative.
+    deduct = assessment.total_cost_high if assessment.total_cost_high > 0 else assessment.total_cost
+    adjusted = max(0, int(max_bid) - deduct)
 
+    # Verdict is based on the DEFAULT estimate so the label reflects the likely scenario.
     if assessment.total_cost <= REPAIR_GATE_GOOD_MAX:
         verdict = "Good"
     elif assessment.total_cost <= REPAIR_GATE_MARGINAL_MAX:
