@@ -22,6 +22,8 @@ SIMULATED_METRICS_PATH = Path("output") / "eval" / "simulated_verdict_proxy" / "
 SIMULATED_JOIN_PATH = Path("output") / "eval" / "simulated_verdict_proxy" / "buy_selection_join.csv"
 SIMULATED_OUTCOMES_PATH = dataset_path("simulated_sold_outcomes.csv")
 REAL_OUTCOMES_PATH = dataset_path("scored_listings_enriched.csv")
+RETAIL_MEDIAN_OUTCOMES_PATH = dataset_path("model_audit/simulated_retail_median_outcomes.csv")
+RETAIL_MEDIAN_METRICS_PATH = Path("output") / "eval" / "simulated_retail_median" / "buy_selection_classification.csv"
 
 
 @st.cache_data(ttl=300)
@@ -118,90 +120,159 @@ with status_cols[1]:
         render_status_badge("Available", "ok")
         st.caption("Proxy evidence only: simulated sale prices come from resale estimate fields, not real sales.")
 
-if sim_metrics_df.empty:
-    st.stop()
+if not sim_metrics_df.empty:
+    metrics = sim_metrics_df.iloc[0]
 
-metrics = sim_metrics_df.iloc[0]
+    section_heading("Simulated Verdict-Proxy Result", "Buyable verdicts tested against simulated profit.")
+    metric_cols = st.columns(6)
+    metric_cols[0].metric("Rows tested", format_int(metric_value(metrics, "rows")))
+    metric_cols[1].metric("Buyable verdicts", format_int(metric_value(metrics, "buy_predictions")))
+    metric_cols[2].metric("Simulated profitable", format_int(metric_value(metrics, "profitable_actuals")))
+    metric_cols[3].metric("Precision", format_ratio(metric_value(metrics, "precision")))
+    metric_cols[4].metric("Recall", format_ratio(metric_value(metrics, "recall")))
+    metric_cols[5].metric("F1", format_ratio(metric_value(metrics, "f1")))
 
-section_heading("Simulated Verdict-Proxy Result", "Buyable verdicts tested against simulated profit.")
-metric_cols = st.columns(6)
-metric_cols[0].metric("Rows tested", format_int(metric_value(metrics, "rows")))
-metric_cols[1].metric("Buyable verdicts", format_int(metric_value(metrics, "buy_predictions")))
-metric_cols[2].metric("Simulated profitable", format_int(metric_value(metrics, "profitable_actuals")))
-metric_cols[3].metric("Precision", format_ratio(metric_value(metrics, "precision")))
-metric_cols[4].metric("Recall", format_ratio(metric_value(metrics, "recall")))
-metric_cols[5].metric("F1", format_ratio(metric_value(metrics, "f1")))
-
-st.info(
-    "Interpretation: under simulated resale assumptions, every buyable-verdict pick was profitable "
-    "in the current dataset, but the system caught only a small share of all simulated-profitable rows."
-)
-
-with st.expander("What these metrics mean", expanded=True):
-    st.markdown(
-        """
-        - **Precision**: of the rows the system marked buyable, how many were profitable under the simulation.
-        - **Recall**: of all rows that were profitable under the simulation, how many the system caught.
-        - **F1**: one combined score balancing precision and recall.
-        - **Current shape**: high precision and low recall means the system is conservative.
-        """
+    st.info(
+        "Interpretation: under simulated resale assumptions, every buyable-verdict pick was profitable "
+        "in the current dataset, but the system caught only a small share of all simulated-profitable rows."
     )
 
-section_heading("Benchmark Contract", "The labels on this page are part of the evidence.")
-contract_cols = st.columns(3)
-contract_cols[0].metric("Benchmark type", str(metric_value(metrics, "benchmark_type")))
-contract_cols[1].metric("Prediction source", str(metric_value(metrics, "prediction_source")))
-contract_cols[2].metric("Profit column", str(metric_value(metrics, "profit_column")))
-st.caption(f"Positive labels: {metric_value(metrics, 'positive_labels')}")
+    with st.expander("What these metrics mean", expanded=True):
+        st.markdown(
+            """
+            - **Precision**: of the rows the system marked buyable, how many were profitable under the simulation.
+            - **Recall**: of all rows that were profitable under the simulation, how many the system caught.
+            - **F1**: one combined score balancing precision and recall.
+            - **Current shape**: high precision and low recall means the system is conservative.
+            """
+        )
 
-if not sim_outcomes_df.empty:
-    profit = numeric_series(sim_outcomes_df, "simulated_actual_profit")
-    source_counts = (
-        sim_outcomes_df.get("simulated_source", pd.Series(dtype=object))
-        .fillna("")
-        .astype(str)
-        .str.strip()
-        .replace("", "missing")
-        .value_counts()
-        .rename_axis("simulated_source")
-        .reset_index(name="rows")
-    )
-    section_heading("Simulated Outcome Inputs", "Where the proxy sale prices came from.")
-    input_cols = st.columns(4)
-    input_cols[0].metric("Outcome rows", format_int(len(sim_outcomes_df)))
-    input_cols[1].metric("Rows with simulated profit", format_int(profit.notna().sum()))
-    input_cols[2].metric("Profitable rows", format_int((profit > 0).sum()))
-    input_cols[3].metric("Average simulated profit", format_money(profit.mean()))
-    st.dataframe(source_counts, width="stretch", hide_index=True)
+    section_heading("Benchmark Contract", "The labels on this page are part of the evidence.")
+    contract_cols = st.columns(3)
+    contract_cols[0].metric("Benchmark type", str(metric_value(metrics, "benchmark_type")))
+    contract_cols[1].metric("Prediction source", str(metric_value(metrics, "prediction_source")))
+    contract_cols[2].metric("Profit column", str(metric_value(metrics, "profit_column")))
+    st.caption(f"Positive labels: {metric_value(metrics, 'positive_labels')}")
 
-section_heading("Rows Behind The Result", "Inspect the joined proof data.")
-if sim_join_df.empty:
-    st.info("No joined simulated benchmark rows were written.")
+    if not sim_outcomes_df.empty:
+        profit = numeric_series(sim_outcomes_df, "simulated_actual_profit")
+        source_counts = (
+            sim_outcomes_df.get("simulated_source", pd.Series(dtype=object))
+            .fillna("")
+            .astype(str)
+            .str.strip()
+            .replace("", "missing")
+            .value_counts()
+            .rename_axis("simulated_source")
+            .reset_index(name="rows")
+        )
+        section_heading("Simulated Outcome Inputs", "Where the proxy sale prices came from.")
+        input_cols = st.columns(4)
+        input_cols[0].metric("Outcome rows", format_int(len(sim_outcomes_df)))
+        input_cols[1].metric("Rows with simulated profit", format_int(profit.notna().sum()))
+        input_cols[2].metric("Profitable rows", format_int((profit > 0).sum()))
+        input_cols[3].metric("Average simulated profit", format_money(profit.mean()))
+        st.dataframe(source_counts, width="stretch", hide_index=True)
+
+    section_heading("Rows Behind The Result", "Inspect the joined proof data.")
+    if sim_join_df.empty:
+        st.info("No joined simulated benchmark rows were written.")
+    else:
+        view_df = sim_join_df.copy()
+        verdicts = sorted(
+            value
+            for value in view_df.get("computed_verdict", pd.Series(dtype=object)).dropna().astype(str).unique()
+            if value.strip()
+        )
+        selected_verdict = st.selectbox("Computed verdict", ["All"] + verdicts, index=0)
+        if selected_verdict != "All":
+            view_df = view_df[view_df["computed_verdict"].astype(str) == selected_verdict]
+
+        only_selected = st.checkbox("Only buyable-verdict predictions", value=False)
+        if only_selected and "y_pred_buy" in view_df.columns:
+            view_df = view_df[view_df["y_pred_buy"].astype(bool)]
+
+        display_columns = [
+            "computed_verdict",
+            "prediction_label",
+            "simulated_sale_price",
+            "simulated_actual_profit",
+            "simulated_source",
+            "purchase_price",
+            "y_pred_buy",
+            "y_true_profitable",
+            "url",
+        ]
+        display_columns = [column for column in display_columns if column in view_df.columns]
+        st.dataframe(view_df[display_columns].head(250), width="stretch", hide_index=True)
 else:
-    view_df = sim_join_df.copy()
-    verdicts = sorted(
-        value
-        for value in view_df.get("computed_verdict", pd.Series(dtype=object)).dropna().astype(str).unique()
-        if value.strip()
+    render_status_badge("Not generated", "warn")
+    st.caption(
+        "Run `scripts/generate_simulated_sold_outcomes.py`, then `scripts/evaluate_buy_selection.py "
+        "--benchmark-type simulated --profit-column simulated_actual_profit --prediction-source computed_verdict`."
     )
-    selected_verdict = st.selectbox("Computed verdict", ["All"] + verdicts, index=0)
-    if selected_verdict != "All":
-        view_df = view_df[view_df["computed_verdict"].astype(str) == selected_verdict]
 
-    only_selected = st.checkbox("Only buyable-verdict predictions", value=False)
-    if only_selected and "y_pred_buy" in view_df.columns:
-        view_df = view_df[view_df["y_pred_buy"].astype(bool)]
+retail_outcomes_df = load_csv(RETAIL_MEDIAN_OUTCOMES_PATH)
+retail_metrics_df = load_csv(RETAIL_MEDIAN_METRICS_PATH)
 
-    display_columns = [
-        "computed_verdict",
-        "prediction_label",
-        "simulated_sale_price",
-        "simulated_actual_profit",
-        "simulated_source",
-        "purchase_price",
-        "y_pred_buy",
-        "y_true_profitable",
+section_heading(
+    "Retail-Median Proxy Benchmark",
+    "Independent of curve estimates: uses current Autotrader/Carsales asking prices for the same spec as a resale proxy.",
+)
+if retail_outcomes_df.empty:
+    st.info(
+        "Run `scripts/generate_retail_median_outcomes.py`, then `scripts/evaluate_buy_selection.py "
+        "--scored CSV_data/model_audit/simulated_retail_median_outcomes.csv "
+        "--profit-column simulated_profit --benchmark-type simulated "
+        "--out-dir output/eval/simulated_retail_median`."
+    )
+else:
+    st.caption(
+        "Proxy evidence only: resale price = median of several concurrent Autotrader/Carsales listings "
+        "for the same make/model/variant family/body/fuel/transmission, matched within a year and odometer "
+        "tolerance. Rows are dropped, not guessed at, when fewer than 5 matches exist. No real sale has "
+        "occurred yet."
+    )
+    retail_profit = numeric_series(retail_outcomes_df, "simulated_profit")
+    has_profit = retail_outcomes_df[retail_profit.notna()]
+    retail_cols = st.columns(4)
+    retail_cols[0].metric("Rows scored", format_int(len(retail_outcomes_df)))
+    retail_cols[1].metric("Rows with retail match", format_int(retail_profit.notna().sum()))
+    retail_cols[2].metric("Simulated profitable", format_int((retail_profit > 0).sum()))
+    retail_cols[3].metric("Median simulated profit", format_money(retail_profit.median()))
+
+    if not has_profit.empty:
+        by_verdict = (
+            has_profit.groupby("action_label")["simulated_profit"]
+            .agg(["count", "median", "mean"])
+            .rename(columns={"count": "rows", "median": "median_profit", "mean": "mean_profit"})
+            .reset_index()
+        )
+        st.dataframe(by_verdict, width="stretch", hide_index=True)
+
+    if not retail_metrics_df.empty:
+        retail_metrics = retail_metrics_df.iloc[0]
+        metric_cols2 = st.columns(5)
+        metric_cols2[0].metric("Rows tested", format_int(metric_value(retail_metrics, "rows")))
+        metric_cols2[1].metric("Buyable verdicts", format_int(metric_value(retail_metrics, "buy_predictions")))
+        metric_cols2[2].metric("Simulated profitable", format_int(metric_value(retail_metrics, "profitable_actuals")))
+        metric_cols2[3].metric("Precision", format_ratio(metric_value(retail_metrics, "precision")))
+        metric_cols2[4].metric("Recall", format_ratio(metric_value(retail_metrics, "recall")))
+
+    display_columns2 = [
+        "make",
+        "model",
+        "variant",
+        "action_label",
+        "buy_price_basis_value",
+        "retail_match_count",
+        "simulated_retail_median",
+        "simulated_profit",
         "url",
     ]
-    display_columns = [column for column in display_columns if column in view_df.columns]
-    st.dataframe(view_df[display_columns].head(250), width="stretch", hide_index=True)
+    display_columns2 = [column for column in display_columns2 if column in retail_outcomes_df.columns]
+    st.dataframe(
+        retail_outcomes_df.dropna(subset=["simulated_profit"])[display_columns2],
+        width="stretch",
+        hide_index=True,
+    )
