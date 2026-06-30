@@ -17,7 +17,7 @@ def test_assign_canonical_tag_rejects_corolla_conquest_from_ascent_curve():
         "url": "https://www.example.com/2008-toyota-corolla-conquest-zre152r-automatic-sedan",
     }
 
-    canonical_tag, canonical_reason, _drivetrain = assign_canonical_tag(row, require_price=True)
+    canonical_tag, canonical_reason = assign_canonical_tag(row, require_price=True)
 
     assert canonical_tag == "UNCLASSIFIED"
     assert canonical_reason == "[DISALLOWED_VARIANT]"
@@ -244,7 +244,7 @@ def test_hilux_sr_gun126r_rejects_nearby_ute_lanes():
     ]
 
     for row in rejected_rows:
-        canonical_tag, canonical_reason, _drivetrain = assign_canonical_tag(row, require_price=True)
+        canonical_tag, canonical_reason = assign_canonical_tag(row, require_price=True)
         assert canonical_tag == "UNCLASSIFIED"
         assert canonical_reason in {"[DISALLOWED_VARIANT]", "[OUT_OF_SCOPE]"}
 
@@ -292,7 +292,7 @@ def test_yaris_ascent_ncp130r_rejects_other_yaris_lanes():
     ]
 
     for row, expected_tag in rejected_rows:
-        canonical_tag, canonical_reason, _drivetrain = assign_canonical_tag(row, require_price=True)
+        canonical_tag, canonical_reason = assign_canonical_tag(row, require_price=True)
         assert canonical_tag == expected_tag
         if expected_tag == "UNCLASSIFIED":
             assert canonical_reason in {"[DISALLOWED_VARIANT]", "[OUT_OF_SCOPE]"}

@@ -46,7 +46,7 @@ def test_isuzu_mux_lsu_does_not_fall_into_lst_curve():
         "url": "https://www.example.com/2020-isuzu-mu-x-ls-u-auto-4x4",
     }
 
-    tag, reason, _drivetrain = assign_canonical_tag(row, require_price=True)
+    tag, reason = assign_canonical_tag(row, require_price=True)
 
     assert tag == "isuzu_mux_lsu_diesel_auto_suv_mux"
     assert tag != "isuzu_mux_lst_diesel_auto_suv_mux"
@@ -68,7 +68,7 @@ def test_isuzu_mux_rejects_manual_from_auto_lanes():
         "url": "https://www.example.com/2018-isuzu-mu-x-ls-u-manual",
     }
 
-    tag, reason, _drivetrain = assign_canonical_tag(row, require_price=True)
+    tag, reason = assign_canonical_tag(row, require_price=True)
 
     assert tag == "UNCLASSIFIED"
     assert reason == "[OUT_OF_SCOPE]"
@@ -114,7 +114,7 @@ def test_isuzu_mux_2021_newer_generation_stays_out_of_first_generation_curve():
         "url": "https://www.example.com/2021-isuzu-mu-x-ls-t-auto-4x4-my21",
     }
 
-    tag, reason, _drivetrain = assign_canonical_tag(row, require_price=True)
+    tag, reason = assign_canonical_tag(row, require_price=True)
 
     assert tag == "UNCLASSIFIED"
     assert reason == "[OUT_OF_SCOPE_YEAR]"

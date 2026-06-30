@@ -574,8 +574,9 @@ def assess_repairs(
                 has_replacement = True
                 panel_count = max(2, _panel_equivalent_for_line(line))
                 cosmetic_panels += panel_count
-                current_cost = V2_REPLACEMENT_COSTS.get("structural_damage", 900) + panel_count * PANEL_RATE
-                replacement_cost += V2_REPLACEMENT_COSTS.get("structural_damage", 900)
+                _structural_key = "hail_damage" if "hail_damage" in canonicals and "structural_damage" not in canonicals else "structural_damage"
+                current_cost = V2_REPLACEMENT_COSTS.get(_structural_key, 900) + panel_count * PANEL_RATE
+                replacement_cost += V2_REPLACEMENT_COSTS.get(_structural_key, 900)
                 line_cost += current_cost
                 reason = f"V2_STRUCTURAL: {line}"
                 reasons.append(reason)

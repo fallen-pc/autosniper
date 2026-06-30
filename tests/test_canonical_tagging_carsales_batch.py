@@ -155,7 +155,7 @@ def test_carsales_batch_lanes_map_to_expected_tags(row, expected_tag):
 def test_carsales_batch_manual_and_glxr_lanes_are_supported(row):
     _load_curve_year_band.cache_clear()
 
-    tag, reason, _drivetrain = assign_canonical_tag(row, require_price=True)
+    tag, reason = assign_canonical_tag(row, require_price=True)
 
     assert tag != "UNCLASSIFIED"
     assert reason == "[OK]"
@@ -191,7 +191,7 @@ def test_carsales_batch_manual_and_glxr_lanes_are_supported(row):
 def test_pajero_nx_trim_lanes_do_not_fall_into_glx(row):
     _load_curve_year_band.cache_clear()
 
-    tag, reason, _drivetrain = assign_canonical_tag(row, require_price=True)
+    tag, reason = assign_canonical_tag(row, require_price=True)
 
     assert tag != "mitsubishi_pajero_glx_diesel_auto_suv_nx"
     assert tag != "UNCLASSIFIED"
@@ -214,7 +214,7 @@ def test_camry_acv40r_altise_does_not_absorb_other_trims(variant):
         "url": f"https://www.example.com/2008-toyota-camry-{variant.lower().replace(' ', '-')}-auto-sedan",
     }
 
-    tag, reason, _drivetrain = assign_canonical_tag(row, require_price=True)
+    tag, reason = assign_canonical_tag(row, require_price=True)
 
     assert tag == "UNCLASSIFIED"
     assert reason == "[DISALLOWED_VARIANT]"

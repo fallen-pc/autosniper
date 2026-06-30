@@ -79,7 +79,7 @@ def test_assign_canonical_tag_accepts_toyota_corolla_ascent_zre182r_early_series
         "price": "6000",
     }
 
-    canonical_tag, canonical_reason, _drivetrain = ct.assign_canonical_tag(row, require_price=True)
+    canonical_tag, canonical_reason = ct.assign_canonical_tag(row, require_price=True)
 
     assert canonical_tag == "toyota_corolla_ascent_petrol_auto_hatch_zre18x"
     assert canonical_reason == "[OK]"
@@ -99,7 +99,7 @@ def test_assign_canonical_tag_accepts_toyota_corolla_ascent_sport_zre182r_early_
         "price": "7000",
     }
 
-    canonical_tag, canonical_reason, _drivetrain = ct.assign_canonical_tag(row, require_price=True)
+    canonical_tag, canonical_reason = ct.assign_canonical_tag(row, require_price=True)
 
     assert canonical_tag == "toyota_corolla_ascent-sport_petrol_auto_hatch_zre18x"
     assert canonical_reason == "[OK]"

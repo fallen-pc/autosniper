@@ -220,8 +220,6 @@ def persist_dataframe(df: pd.DataFrame, note: str) -> None:
     """Write the current dataframe state to disk atomically for resume safety."""
     os.makedirs(os.path.dirname(CSV_FILE), exist_ok=True)
     snapshot = df.copy()
-    if "drivetrain_source" in snapshot.columns:
-        snapshot = snapshot.drop(columns=["drivetrain_source"])
     snapshot["url"] = snapshot["url"].apply(clean_url)
     write_dataframe_csv_atomic(snapshot, CSV_FILE, index=False)
     print(f"{note}: wrote {len(snapshot)} rows to {CSV_FILE}")
@@ -364,8 +362,6 @@ def _load_active_seed_dataframe() -> pd.DataFrame:
         return active_df
 
     seed_df = static_df.copy()
-    if "drivetrain_source" in seed_df.columns:
-        seed_df = seed_df.drop(columns=["drivetrain_source"])
     if "url" in seed_df.columns:
         seed_df["url"] = seed_df["url"].apply(clean_url)
         if queue_urls:

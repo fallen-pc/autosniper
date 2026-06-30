@@ -25,6 +25,10 @@ from scripts.ai_listing_valuation import (
 from shared.decision_policy import derive_action_label_from_row
 from shared.repair_pricing import assess_repairs, apply_repairs_to_max_bid
 
+# Profit threshold that upgrades a replay verdict from "Conditional Flip" to "Strong Flip".
+# Distinct from MIN_NET_PROFIT_ABSOLUTE (the minimum required for any BUY decision).
+STRONG_FLIP_PROFIT_THRESHOLD = 3_000
+
 
 def _to_float(value: Any) -> float | None:
     if value is None:
@@ -106,7 +110,7 @@ def _bid_status_for_replay(
 def _hard_max_safety_for_replay(max_bid: float | None, projected_profit: float | None) -> str:
     if max_bid is None or max_bid <= 0:
         return "No edge"
-    if projected_profit is not None and projected_profit >= 3000:
+    if projected_profit is not None and projected_profit >= STRONG_FLIP_PROFIT_THRESHOLD:
         return "Strong"
     return "Conditional"
 
@@ -118,7 +122,7 @@ def _computed_verdict_for_replay(projected_profit: float | None, *, forced_avoid
         return "Review"
     if projected_profit <= 0:
         return "Avoid"
-    if projected_profit >= 3000:
+    if projected_profit >= STRONG_FLIP_PROFIT_THRESHOLD:
         return "Strong Flip"
     return "Conditional Flip"
 
@@ -295,6 +299,7 @@ def compute_decision_metrics(
                 "expected_auction_worst_profit_value": projected_profit,
                 "profit_at_current_bid_worst_value": projected_profit,
                 "hard_max_safety": hard_max_safety,
+                "expected_auction_comps_count": comps_count,
             },
             min_profit=MIN_NET_PROFIT_ABSOLUTE,
             fallback="Review",

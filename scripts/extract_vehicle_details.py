@@ -1053,8 +1053,6 @@ def merge_and_save_static(existing_df: pd.DataFrame, new_df: pd.DataFrame) -> pd
         print(
             f"Canonical audit flagged {len(canonical_failures)} listing(s); keeping rows in static export."
         )
-    if "drivetrain_source" in static_export.columns:
-        static_export = static_export.drop(columns=["drivetrain_source"])
     static_export = static_export.reindex(columns=STATIC_OUTPUT_COLUMNS, fill_value="")
     static_export, pruned_rows = prune_to_active_queue(static_export)
     if pruned_rows:
@@ -1076,8 +1074,6 @@ def seed_active_dataset(static_df: pd.DataFrame) -> None:
         append_log=True,
     )
     active_df = _normalize_text_columns(active_df)
-    if "drivetrain_source" in active_df.columns:
-        active_df = active_df.drop(columns=["drivetrain_source"])
     base_columns = list(static_df.columns)
     existing_active = pd.read_csv(ACTIVE_OUTPUT_FILE) if ACTIVE_OUTPUT_FILE.exists() else pd.DataFrame()
 

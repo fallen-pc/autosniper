@@ -65,7 +65,7 @@ def test_volkswagen_golf_vi_non_comfortline_or_manual_rows_do_not_map(variant, f
         "url": f"https://www.example.com/2011-volkswagen-golf-{variant.lower().replace(' ', '-')}",
     }
 
-    tag, reason, _drivetrain = assign_canonical_tag(row, require_price=True)
+    tag, reason = assign_canonical_tag(row, require_price=True)
 
     assert tag == "UNCLASSIFIED"
     assert reason in {"[DISALLOWED_VARIANT]", "[OUT_OF_SCOPE]", "[AMBIG_BADGE]"}
