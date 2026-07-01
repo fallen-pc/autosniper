@@ -194,7 +194,8 @@ def _expected_finish_display_parts(row: pd.Series) -> tuple[str, str]:
     bid_basis = parse_currency(row.get("expected_auction_bid_basis"))
     display_value = row.get("expected_auction_bid_basis") or row.get("expected_auction_price")
     display_text = _format_price_text(display_value)
-    status_text = _safe_text(row.get("bid_status"), fallback="Unknown")
+    cap_status = _expected_finish_cap_status(row)
+    status_text = cap_status or _safe_text(row.get("bid_status"), fallback="Unknown")
     if (
         bid_basis is not None
         and raw_expected is not None
@@ -204,6 +205,21 @@ def _expected_finish_display_parts(row: pd.Series) -> tuple[str, str]:
     if _truthy(row.get("no_edge")):
         status_text = f"{status_text}; no edge now"
     return display_text, status_text
+
+
+def _expected_finish_cap_status(row: pd.Series) -> str:
+    expected_value = parse_currency(row.get("expected_auction_bid_basis"))
+    if expected_value is None:
+        expected_value = parse_currency(row.get("expected_auction_price"))
+    max_bid = parse_currency(row.get("recommended_max_bid"))
+    if max_bid is None:
+        max_bid = parse_currency(row.get("max_bid_value"))
+    if expected_value is None or max_bid is None or max_bid <= 0:
+        return ""
+    gap = expected_value - max_bid
+    if gap > 0:
+        return f"Projected over max cap by {_format_currency_value(gap)}"
+    return "Projected within max cap"
 
 
 def _max_bid_safety_text(row: pd.Series) -> str:
@@ -3886,12 +3902,12 @@ def render_listing_card(row: pd.Series) -> None:
     max_bid_display = bid_display["max_label"]
     resale_display = _format_currency_value(row.get("resale_value"))
     profit_pct_display = _format_percent(row.get("profit_margin_value"))
-    expected_auction_display, _ = _expected_finish_display_parts(row)
+    expected_auction_display, expected_finish_status = _expected_finish_display_parts(row)
     expected_profit_display = _format_price_text(row.get("expected_auction_worst_profit") or row.get("expected_auction_profit"))
     expected_profit_label = _display_profit_label(row.get("expected_auction_profit_label"))
     hard_max_safety = _max_bid_safety_text(row)
     cap_profit_display = _format_price_text(row.get("net_profit_worst") or row.get("net_profit_mid"))
-    expected_finish_sub = f"Scenario profit {expected_profit_display}"
+    expected_finish_sub = f"{expected_finish_status}; scenario profit {expected_profit_display}"
     if expected_profit_label not in ("Unknown", "N/A"):
         expected_finish_sub = f"{expected_finish_sub}; {expected_profit_label.lower()}"
     flip_difficulty = _safe_text(row.get("flip_difficulty"), fallback="Unknown")
