@@ -119,17 +119,30 @@ def test_hourly_monitor_rematerializes_active_view_after_bid_update(monkeypatch)
 
 def test_daily_ai_analysis_summary_reports_active_action_counts(monkeypatch, tmp_path) -> None:
     valuations_path = tmp_path / "ai_listing_valuations.csv"
+    active_path = tmp_path / "active_vehicle_details.csv"
+    active_url = "https://example.com/active-buy"
     pd.DataFrame(
         [
-            {"url": "https://example.com/active-buy", "analysis_context": "active", "action_label": "Buy", "bid_status": "Cheap"},
+            {"url": active_url},
+            {"url": "https://example.com/active-watch"},
+            {"url": "https://example.com/active-avoid"},
+        ]
+    ).to_csv(active_path, index=False)
+    pd.DataFrame(
+        [
+            {"url": active_url, "analysis_context": "active", "action_label": "Buy", "bid_status": "Cheap"},
             {"url": "https://example.com/active-watch", "analysis_context": "active", "action_label": "Watch", "bid_status": "Near ceiling"},
             {"url": "https://example.com/active-avoid", "analysis_context": "active", "action_label": "Avoid", "bid_status": "Over max"},
+            {"url": "https://example.com/stale-buy", "analysis_context": "active", "action_label": "Buy", "bid_status": "Cheap"},
             {"url": "https://example.com/referred-buy", "analysis_context": "referred", "action_label": "Buy", "bid_status": "Cheap"},
         ]
     ).to_csv(valuations_path, index=False)
     calls: list[dict[str, object]] = []
 
-    monkeypatch.setattr(scheduled_jobs, "dataset_path", lambda name: valuations_path)
+    def fake_dataset_path(name: str):
+        return active_path if name == "active_vehicle_details.csv" else valuations_path
+
+    monkeypatch.setattr(scheduled_jobs, "dataset_path", fake_dataset_path)
     monkeypatch.setattr(
         scheduled_jobs,
         "send_on_state_change",
@@ -160,6 +173,13 @@ def test_daily_ai_analysis_summary_reports_active_action_counts(monkeypatch, tmp
 
 def test_daily_ai_analysis_summary_sends_no_buy_heartbeat(monkeypatch, tmp_path) -> None:
     valuations_path = tmp_path / "ai_listing_valuations.csv"
+    active_path = tmp_path / "active_vehicle_details.csv"
+    pd.DataFrame(
+        [
+            {"url": "https://example.com/watch"},
+            {"url": "https://example.com/avoid"},
+        ]
+    ).to_csv(active_path, index=False)
     pd.DataFrame(
         [
             {"url": "https://example.com/watch", "analysis_context": "active", "action_label": "Watch", "bid_status": "Near ceiling"},
@@ -168,7 +188,10 @@ def test_daily_ai_analysis_summary_sends_no_buy_heartbeat(monkeypatch, tmp_path)
     ).to_csv(valuations_path, index=False)
     messages: list[str] = []
 
-    monkeypatch.setattr(scheduled_jobs, "dataset_path", lambda name: valuations_path)
+    def fake_dataset_path(name: str):
+        return active_path if name == "active_vehicle_details.csv" else valuations_path
+
+    monkeypatch.setattr(scheduled_jobs, "dataset_path", fake_dataset_path)
     monkeypatch.setattr(
         scheduled_jobs,
         "send_on_state_change",

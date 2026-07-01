@@ -176,6 +176,13 @@ def test_parse_quote_response_extracts_range_and_typical_price() -> None:
     assert parsed["response_parse_status"] == "parsed_price"
 
 
+def test_parse_quote_response_extracts_shorthand_money_ranges() -> None:
+    parsed = parse_quote_response("Cost varies from $400-500, or total $550-700 as a rough guide.")
+
+    assert parsed["quoted_low"] == 400
+    assert parsed["quoted_high"] == 700
+
+
 def test_apply_quote_response_and_promote_to_pricing_row() -> None:
     quotes = pd.DataFrame(
         [

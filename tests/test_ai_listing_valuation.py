@@ -1129,7 +1129,11 @@ def test_curve_analysis_keeps_raw_expected_finish_and_stores_profit_basis(monkey
     monkeypatch.setattr(
         ai_listing_valuation,
         "_expected_auction_estimate",
-        lambda resale_mid_val, comps_median=None, comps_count=None: (6_200, "historical_sold_median", 5),
+        lambda resale_mid_val, comps_median=None, comps_count=None, model_prediction=None: (
+            6_200,
+            "historical_sold_median",
+            5,
+        ),
     )
 
     result = ai_listing_valuation.run_curve_listing_analysis(

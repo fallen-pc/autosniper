@@ -22,12 +22,17 @@ from scripts.ai_listing_valuation import (
     _solve_max_bid,
     apply_platform_risk_adjustments,
 )
+from shared.comps_engine import parse_currency
 from shared.decision_policy import derive_action_label_from_row
+from shared.curves import resolve_curve_canonical_tag
 from shared.repair_pricing import assess_repairs, apply_repairs_to_max_bid
 
 # Profit threshold that upgrades a replay verdict from "Conditional Flip" to "Strong Flip".
 # Distinct from MIN_NET_PROFIT_ABSOLUTE (the minimum required for any BUY decision).
 STRONG_FLIP_PROFIT_THRESHOLD = 3_000
+
+COMPS_STATS_COLUMNS = ["comps_count", "comps_median", "comps_mean", "comps_min", "comps_max"]
+COMPS_STATS_INTERNAL_COLUMNS = ["comps_prices", "comps_urls"]
 
 
 def _to_float(value: Any) -> float | None:
@@ -88,6 +93,128 @@ def _first_present(row: Mapping[str, Any], *keys: str) -> Any:
         if text and text.lower() != "nan":
             return value
     return None
+
+
+def _to_int(value: Any) -> int | None:
+    if value is None:
+        return None
+    try:
+        if pd.isna(value):
+            return None
+        return int(float(str(value).replace(",", "").strip()))
+    except (TypeError, ValueError):
+        return None
+
+
+def _empty_comps_stats() -> pd.DataFrame:
+    return pd.DataFrame(columns=COMPS_STATS_COLUMNS + COMPS_STATS_INTERNAL_COLUMNS)
+
+
+def build_historical_comps_stats(sold_df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Build the same curve-tag/year sold-comps tables used by live AI Analysis."""
+
+    if sold_df.empty or "canonical_tag" not in sold_df.columns:
+        empty_group = _empty_comps_stats()
+        empty_year = _empty_comps_stats()
+        return empty_group, empty_year
+
+    working = sold_df.copy()
+    working["curve_tag"] = working["canonical_tag"].apply(resolve_curve_canonical_tag)
+    if "year_int" not in working.columns:
+        working["year_int"] = working.get("year", pd.Series(index=working.index)).apply(_to_int)
+    if "price_numeric" not in working.columns:
+        working["price_numeric"] = working.get("price", pd.Series(index=working.index)).apply(parse_currency)
+    working["price_numeric"] = pd.to_numeric(working["price_numeric"], errors="coerce")
+    valid = working.dropna(subset=["curve_tag", "price_numeric"]).copy()
+    valid = valid[valid["price_numeric"] > 0]
+    if "url" in valid.columns:
+        valid["comps_url"] = valid["url"].fillna("").astype(str).str.strip()
+    else:
+        valid["comps_url"] = ""
+
+    if valid.empty:
+        empty_group = _empty_comps_stats()
+        empty_year = _empty_comps_stats()
+        return empty_group, empty_year
+
+    group_stats = (
+        valid.groupby("curve_tag")
+        .agg(
+            comps_count=("price_numeric", "count"),
+            comps_median=("price_numeric", "median"),
+            comps_mean=("price_numeric", "mean"),
+            comps_min=("price_numeric", "min"),
+            comps_max=("price_numeric", "max"),
+            comps_prices=("price_numeric", list),
+            comps_urls=("comps_url", list),
+        )
+    )
+    year_stats = (
+        valid.dropna(subset=["year_int"])
+        .groupby(["curve_tag", "year_int"])
+        .agg(
+            comps_count=("price_numeric", "count"),
+            comps_median=("price_numeric", "median"),
+            comps_mean=("price_numeric", "mean"),
+            comps_min=("price_numeric", "min"),
+            comps_max=("price_numeric", "max"),
+            comps_prices=("price_numeric", list),
+            comps_urls=("comps_url", list),
+        )
+    )
+    return group_stats, year_stats
+
+
+def _stats_count_median_without_current(stats: pd.Series, current_url: str) -> tuple[int, float | None]:
+    prices = stats.get("comps_prices")
+    urls = stats.get("comps_urls")
+    if isinstance(prices, list) and isinstance(urls, list) and len(prices) == len(urls) and current_url:
+        filtered_prices = [
+            _to_float(price)
+            for price, url in zip(prices, urls)
+            if str(url or "").strip() != current_url
+        ]
+        valid_prices = [price for price in filtered_prices if price is not None and price > 0]
+        if not valid_prices:
+            return 0, None
+        return len(valid_prices), float(pd.Series(valid_prices).median())
+    return _to_int(stats.get("comps_count")) or 0, _to_float(stats.get("comps_median"))
+
+
+def historical_comps_for_row(
+    row: Mapping[str, Any] | pd.Series,
+    *,
+    curve_tag: str,
+    year_stats: pd.DataFrame,
+    group_stats: pd.DataFrame,
+) -> dict[str, object]:
+    """Return live-style sold-comps context for a replay row."""
+
+    stats = None
+    year_val = _to_int(row.get("year"))
+    current_url = str(row.get("url") or "").strip()
+    if year_val is not None and not year_stats.empty and (curve_tag, year_val) in year_stats.index:
+        year_candidate = year_stats.loc[(curve_tag, year_val)]
+        if _stats_count_median_without_current(year_candidate, current_url)[0] > 0:
+            stats = year_candidate
+    if stats is None and curve_tag and not group_stats.empty and curve_tag in group_stats.index:
+        group_candidate = group_stats.loc[curve_tag]
+        if _stats_count_median_without_current(group_candidate, current_url)[0] > 0:
+            stats = group_candidate
+    if stats is None:
+        return {
+            "historical_match_count": 0,
+            "historical_price_median": None,
+            "comps_count": 0,
+            "comps_median": None,
+        }
+    count, median = _stats_count_median_without_current(stats, current_url)
+    return {
+        "historical_match_count": count,
+        "historical_price_median": median,
+        "comps_count": count,
+        "comps_median": median,
+    }
 
 
 def _bid_status_for_replay(

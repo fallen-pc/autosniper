@@ -168,6 +168,39 @@ def test_missed_decision_metrics_uses_shared_buy_policy(monkeypatch) -> None:
     assert result["action_label"] == "Buy"
 
 
+def test_missed_decision_metrics_uses_shared_thin_comps_watch_policy(monkeypatch) -> None:
+    row = pd.Series(
+        {
+            "url": "test://missed-thin-comps",
+            "price_numeric": 10_000,
+            "price": "$10,000",
+            "body_type": "Hatch",
+            "location": "Melbourne VIC",
+            "rego_state": "VIC",
+            "general_condition": "",
+            "historical_match_count": 2,
+        }
+    )
+
+    monkeypatch.setattr(missed_opportunities, "_solve_max_bid", lambda resale_low, min_profit, listing: 20_000)
+    monkeypatch.setattr(
+        missed_opportunities,
+        "assess_repairs",
+        lambda condition: _repair_assessment(total_cost=0, risk_buffer=0),
+    )
+
+    result = missed_opportunities.compute_decision_metrics(
+        row,
+        20_000,
+        include_repairs=True,
+    )
+
+    assert result["computed_verdict"] == "Strong Flip"
+    assert result["bid_status"] == "Cheap"
+    assert result["hard_max_safety"] == "Strong"
+    assert result["action_label"] == "Watch"
+
+
 def test_missed_decision_metrics_uses_shared_over_max_avoid_policy(monkeypatch) -> None:
     row = pd.Series(
         {
@@ -249,3 +282,61 @@ def test_classify_miss_reason_splits_over_max_from_price_spike() -> None:
     )
 
     assert missed_opportunities.classify_miss_reason(row) == "sold above max bid"
+
+
+def test_historical_comps_context_prefers_exact_year_then_group() -> None:
+    sold_df = pd.DataFrame(
+        [
+            {"canonical_tag": "toyota_corolla_hatch", "year": 2018, "price": "$10,000"},
+            {"canonical_tag": "toyota_corolla_hatch", "year": 2018, "price": "$12,000"},
+            {"canonical_tag": "toyota_corolla_hatch", "year": 2019, "price": "$14,000"},
+        ]
+    )
+    group_stats, year_stats = missed_opportunities.build_historical_comps_stats(sold_df)
+
+    exact = missed_opportunities.historical_comps_for_row(
+        {"year": 2018},
+        curve_tag="toyota_corolla_hatch",
+        year_stats=year_stats,
+        group_stats=group_stats,
+    )
+    fallback = missed_opportunities.historical_comps_for_row(
+        {"year": 2020},
+        curve_tag="toyota_corolla_hatch",
+        year_stats=year_stats,
+        group_stats=group_stats,
+    )
+
+    assert exact["historical_match_count"] == 2
+    assert exact["historical_price_median"] == 11_000
+    assert fallback["historical_match_count"] == 3
+    assert fallback["historical_price_median"] == 12_000
+
+
+def test_historical_comps_context_excludes_current_sold_row_by_url() -> None:
+    sold_df = pd.DataFrame(
+        [
+            {"url": "test://self", "canonical_tag": "toyota_corolla_hatch", "year": 2018, "price": "$10,000"},
+            {"url": "test://peer-same-year", "canonical_tag": "toyota_corolla_hatch", "year": 2018, "price": "$12,000"},
+            {"url": "test://peer-other-year", "canonical_tag": "toyota_corolla_hatch", "year": 2019, "price": "$14,000"},
+        ]
+    )
+    group_stats, year_stats = missed_opportunities.build_historical_comps_stats(sold_df)
+
+    exact = missed_opportunities.historical_comps_for_row(
+        {"url": "test://self", "year": 2018},
+        curve_tag="toyota_corolla_hatch",
+        year_stats=year_stats,
+        group_stats=group_stats,
+    )
+    fallback = missed_opportunities.historical_comps_for_row(
+        {"url": "test://peer-other-year", "year": 2019},
+        curve_tag="toyota_corolla_hatch",
+        year_stats=year_stats,
+        group_stats=group_stats,
+    )
+
+    assert exact["historical_match_count"] == 1
+    assert exact["historical_price_median"] == 12_000
+    assert fallback["historical_match_count"] == 2
+    assert fallback["historical_price_median"] == 11_000

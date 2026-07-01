@@ -436,6 +436,15 @@ def _load_daily_ai_analysis_frame() -> pd.DataFrame:
     if "analysis_context" in df.columns:
         active_mask = df["analysis_context"].fillna("").astype(str).str.strip().str.lower() == "active"
         df = df[active_mask].copy()
+    active_path = dataset_path("active_vehicle_details.csv")
+    if active_path.exists() and "url" in df.columns:
+        try:
+            active_df = pd.read_csv(active_path, usecols=["url"], low_memory=False)
+        except Exception:
+            active_df = pd.DataFrame()
+        if not active_df.empty and "url" in active_df.columns:
+            active_urls = set(active_df["url"].dropna().astype(str).str.strip())
+            df = df[df["url"].astype(str).str.strip().isin(active_urls)].copy()
     return df
 
 
@@ -468,14 +477,17 @@ def _send_daily_ai_analysis_summary(*, trigger: str, coverage_date_local: date) 
                     else f"AI Analysis has {buy_count} Buy vehicle(s); individual Buy alerts are sent separately."
                 )
             )
-        return send_on_state_change(
+        sent = send_on_state_change(
             "daily_ai_analysis_summary",
             "autosniper-daily-ai-analysis-summary",
             coverage_date_local.isoformat(),
             message,
             verdict=verdict,
         )
+        print(f"Daily AI Analysis Telegram summary sent={sent}, verdict={verdict}.")
+        return sent
     except Exception:
+        print("Daily AI Analysis Telegram summary failed.")
         return False
 
 

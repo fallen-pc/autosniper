@@ -538,8 +538,14 @@ def _unique_limited(values: object, limit: int) -> list[str]:
 
 def _extract_money_amounts(text: str) -> list[int]:
     values: list[int] = []
-    for match in re.finditer(r"(?:\$|aud\s*)\s*([0-9][0-9,]*(?:\.\d{1,2})?)", text, flags=re.IGNORECASE):
+    for match in re.finditer(
+        r"(?:\$|aud\s*)\s*([0-9][0-9,]*(?:\.\d{1,2})?)(?:\s*[-–]\s*\$?\s*([0-9][0-9,]*(?:\.\d{1,2})?))?",
+        text,
+        flags=re.IGNORECASE,
+    ):
         values.append(round(float(match.group(1).replace(",", ""))))
+        if match.group(2):
+            values.append(round(float(match.group(2).replace(",", ""))))
     for match in re.finditer(
         r"\b([1-9][0-9]{2,4})(?:\.\d{1,2})?\s*(?:dollars|aud)\b",
         text,

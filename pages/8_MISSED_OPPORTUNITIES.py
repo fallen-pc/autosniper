@@ -25,7 +25,12 @@ from shared.repair_pricing import (
     serialize_repair_fragments,
 )
 from shared.styling import clean_html, display_banner, inject_global_styles, page_intro
-from shared.missed_opportunities import classify_miss_reason, compute_decision_metrics
+from shared.missed_opportunities import (
+    build_historical_comps_stats,
+    classify_miss_reason,
+    compute_decision_metrics,
+    historical_comps_for_row,
+)
 
 
 st.set_page_config(page_title="MISSED OPPORTUNITIES", layout="wide")
@@ -1519,6 +1524,8 @@ wovr_excluded_count = int(wovr_mask.sum())
 if wovr_excluded_count:
     sold_df = sold_df[~wovr_mask].copy()
 
+sold_stats_group, sold_stats_year = build_historical_comps_stats(sold_df)
+
 results: list[dict[str, object]] = []
 for _, row in sold_df.iterrows():
     canonical_tag = safe_text(row.get("canonical_tag"), "")
@@ -1551,6 +1558,16 @@ for _, row in sold_df.iterrows():
     if curve_estimate is None and not spec_reason:
         spec_reason = "NOT_COVERED"
 
+    comps_context = historical_comps_for_row(
+        row,
+        curve_tag=curve_key,
+        year_stats=sold_stats_year,
+        group_stats=sold_stats_group,
+    )
+    replay_row = row.copy()
+    for key, value in comps_context.items():
+        replay_row[key] = value
+
     sold_price = row.get("price_numeric")
     delta = None
     delta_pct = None
@@ -1559,7 +1576,7 @@ for _, row in sold_df.iterrows():
         if curve_estimate > 0:
             delta_pct = (delta / curve_estimate) * 100
     decision = compute_decision_metrics(
-        row,
+        replay_row,
         curve_estimate,
         include_repairs=include_repairs,
     )
@@ -1609,6 +1626,8 @@ for _, row in sold_df.iterrows():
             "repair_cost_estimate": repair_cost,
             "repair_severity": row.get("repair_severity") if include_repairs else None,
             "repair_decision": row.get("repair_decision") if include_repairs else None,
+            "historical_match_count": comps_context.get("historical_match_count"),
+            "historical_price_median": comps_context.get("historical_price_median"),
             "net_delta": net_delta,
             "max_bid": max_bid,
             "underbid_pct": underbid_pct,
