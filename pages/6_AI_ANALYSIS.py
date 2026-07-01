@@ -1179,12 +1179,31 @@ def _condition_summary_sections(row: pd.Series) -> tuple[list[dict[str, object]]
         )
 
     total_deduction = int(assessment.total_cost or 0)
-    if total_deduction > 0:
+    high_deduction = int(assessment.total_cost_high or assessment.total_cost or 0)
+    low_deduction = int(assessment.total_cost_low or 0)
+    if assessment.hard_avoid:
+        hard_reason = _safe_text(assessment.hard_avoid_reason, fallback="condition").replace("_", " ")
         sections.append(
             {
-                "title": "Total repair / risk deduction",
-                "bullets": ["Applied to max bid after repairs."],
-                "cost_line": f"Total deduction: ${total_deduction:,}",
+                "title": "Repair / risk decision",
+                "bullets": [
+                    f"Hard avoid: {hard_reason}.",
+                    "Max bid is blocked rather than reduced by a normal repair allowance.",
+                ],
+                "cost_line": f"Hard-avoid reserve: ${total_deduction:,}",
+            }
+        )
+    elif total_deduction > 0:
+        sections.append(
+            {
+                "title": "Repair / risk allowance",
+                "bullets": [
+                    "Likely allowance is shown separately from the conservative max-bid deduction.",
+                ],
+                "cost_line": (
+                    f"Likely: ${total_deduction:,}"
+                    f" (range ${low_deduction:,}-${high_deduction:,}; max-bid deduction uses ${high_deduction:,})"
+                ),
             }
         )
 
@@ -1582,13 +1601,24 @@ def _curve_range_for_row(row: pd.Series) -> tuple[Optional[float], Optional[floa
 
 
 def _repair_deduction_value(row: pd.Series) -> int:
+    assessment = _repair_assessment_for_row(row)
+    return int(assessment.total_cost or 0)
+
+
+def _repair_assessment_for_row(row: pd.Series):
     raw_notes = _safe_text(row.get("general_condition"), fallback="").strip()
     display_notes = _safe_text(row.get("normalized_condition_text"), fallback="").strip() or raw_notes
     adas_windscreen = bool(
         row.get("adas_windscreen") or row.get("windscreen_adas") or row.get("windshield_adas")
     )
-    assessment = assess_repairs(display_notes, adas_windscreen=adas_windscreen)
-    return int(assessment.total_cost or 0)
+    return assess_repairs(display_notes, adas_windscreen=adas_windscreen)
+
+
+def _format_repair_max_bid_deduction(row: pd.Series) -> str:
+    assessment = _repair_assessment_for_row(row)
+    if assessment.hard_avoid:
+        return "Blocked"
+    return _format_currency_value(assessment.total_cost_high or assessment.total_cost)
 
 
 def _render_grays_comparables(row: pd.Series, comps_items: list[str]) -> None:
@@ -1824,11 +1854,13 @@ def _render_comparables_tab(row: pd.Series, comps_items: list[str]) -> None:
 
 def _render_condition_tab(row: pd.Series, defect_profile: dict[str, object]) -> None:
     repair_deduction = _repair_deduction_value(row)
-    metric_cols = st.columns(4)
+    max_bid_deduction = _format_repair_max_bid_deduction(row)
+    metric_cols = st.columns(5)
     metric_cols[0].metric("Cosmetic damage", str(int(defect_profile.get("cosmetic", 0) or 0)))
     metric_cols[1].metric("Structural flags", str(int(defect_profile.get("structural", 0) or 0)))
     metric_cols[2].metric("Mechanical notes", str(int(defect_profile.get("mechanical", 0) or 0)))
-    metric_cols[3].metric("Repair deduction", _format_currency_value(repair_deduction))
+    metric_cols[3].metric("Allowance", _format_currency_value(repair_deduction))
+    metric_cols[4].metric("Bid deduction", max_bid_deduction)
     _render_condition_summary(row)
 
 
@@ -1840,6 +1872,7 @@ def _render_bid_logic_tab(
     risk_items: list[str],
 ) -> None:
     repair_deduction = _repair_deduction_value(row)
+    max_bid_deduction = _format_repair_max_bid_deduction(row)
     auction_cost = _compute_auction_cost_value(row)
     confidence_value = row.get("confidence")
     confidence_percent = None
@@ -1871,7 +1904,8 @@ def _render_bid_logic_tab(
         ("Auction cost", _format_currency_value(auction_cost)),
         ("Fees", _format_price_text(row.get("fees_estimate"))),
         ("Transport", _format_price_text(row.get("transport_estimate"))),
-        ("Repair cost", _format_currency_value(repair_deduction)),
+        ("Allowance", _format_currency_value(repair_deduction)),
+        ("Bid deduction", max_bid_deduction),
         ("Confidence", confidence_display),
     ]
 
@@ -1905,7 +1939,8 @@ def _render_bid_logic_tab(
             f"Bid status: {_safe_text(row.get('bid_status'), 'N/A')}",
             f"Action: {_display_action_label(row.get('action_label'))}",
             f"Auction cost total: {_format_currency_value(auction_cost)}",
-            f"Repair cost: {_format_currency_value(repair_deduction)}",
+            f"Repair/risk likely: {_format_currency_value(repair_deduction)}",
+            f"Max-bid deduction: {max_bid_deduction}",
             f"Net profit (mid): {_format_price_text(row.get('net_profit_mid'))}",
             f"Net profit (worst): {_format_price_text(row.get('net_profit_worst'))}",
             f"Profit margin: {_format_percent(row.get('profit_margin_value'))}",
