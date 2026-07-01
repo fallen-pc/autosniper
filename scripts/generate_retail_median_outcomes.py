@@ -42,11 +42,23 @@ from shared.data_loader import dataset_path
 
 DEFAULT_VALUATIONS_PATH = dataset_path("ai_listing_valuations.csv")
 DEFAULT_STATIC_DETAILS_PATH = dataset_path("vehicle_static_details.csv")
+DEFAULT_ACTIVE_DETAILS_PATH = dataset_path("active_vehicle_details.csv")
+DEFAULT_SOLD_DETAILS_PATH = dataset_path("sold_cars.csv")
 DEFAULT_CARSALES_PATH = Path("CSV_data/quality/carsales_apify_listings.csv")
 DEFAULT_AUTOTRADER_PATH = Path("autotrader_isolated/output/autotrader_recent_market_tagged.csv")
 DEFAULT_OUTPUT_PATH = dataset_path("model_audit/simulated_retail_median_outcomes.csv")
 
-STATIC_DETAIL_COLUMNS = ["url", "body_type", "transmission", "fuel_type", "odometer_reading"]
+LISTING_DETAIL_COLUMNS = [
+    "url",
+    "year",
+    "make",
+    "model",
+    "variant",
+    "body_type",
+    "transmission",
+    "fuel_type",
+    "odometer_reading",
+]
 
 MIN_RETAIL_MATCHES = 5
 YEAR_TOLERANCE = 2
@@ -115,7 +127,14 @@ def _retail_median_match(
 
 
 def _buy_price_basis(row: pd.Series) -> tuple[float | None, str]:
-    for field in ("expected_auction_price_value", "recommended_max_bid_value", "current_bid_numeric"):
+    for field in (
+        "expected_auction_price_value",
+        "expected_auction_price",
+        "recommended_max_bid_value",
+        "recommended_max_bid",
+        "current_bid_numeric",
+        "current_bid",
+    ):
         value = row.get(field)
         value = parse_currency(value) if not isinstance(value, (int, float)) else value
         if value is not None and not pd.isna(value) and value > 0:
@@ -123,21 +142,44 @@ def _buy_price_basis(row: pd.Series) -> tuple[float | None, str]:
     return None, ""
 
 
-def _join_static_details(valuations: pd.DataFrame, static_details_path: Path) -> pd.DataFrame:
-    if not static_details_path.exists():
-        for column in STATIC_DETAIL_COLUMNS[1:]:
-            valuations[column] = ""
-        return valuations
-    static_details = pd.read_csv(static_details_path, low_memory=False)
-    available = [column for column in STATIC_DETAIL_COLUMNS if column in static_details.columns]
-    static_details = static_details[available].drop_duplicates(subset=["url"], keep="last")
-    return valuations.merge(static_details, on="url", how="left")
+def _merge_listing_details(valuations: pd.DataFrame, detail_paths: tuple[Path, ...]) -> pd.DataFrame:
+    working = valuations.copy()
+    for column in LISTING_DETAIL_COLUMNS[1:]:
+        if column not in working.columns:
+            working[column] = pd.NA
+
+    for detail_path in detail_paths:
+        if not detail_path.exists():
+            continue
+        details = pd.read_csv(detail_path, low_memory=False)
+        if "url" not in details.columns:
+            continue
+        available = [column for column in LISTING_DETAIL_COLUMNS if column in details.columns]
+        if len(available) <= 1:
+            continue
+        details = details[available].drop_duplicates(subset=["url"], keep="last")
+        merged = working.merge(details, on="url", how="left", suffixes=("", "__detail"))
+        for column in available:
+            if column == "url":
+                continue
+            detail_column = f"{column}__detail"
+            if detail_column not in merged.columns:
+                continue
+            base = merged[column]
+            detail = merged[detail_column]
+            merged[column] = base.where(base.notna() & base.astype(str).str.strip().ne(""), detail)
+            merged = merged.drop(columns=[detail_column])
+        working = merged
+
+    return working
 
 
 def generate_retail_median_outcomes(
     *,
     valuations_path: Path = DEFAULT_VALUATIONS_PATH,
     static_details_path: Path = DEFAULT_STATIC_DETAILS_PATH,
+    active_details_path: Path = DEFAULT_ACTIVE_DETAILS_PATH,
+    sold_details_path: Path = DEFAULT_SOLD_DETAILS_PATH,
     carsales_path: Path = DEFAULT_CARSALES_PATH,
     autotrader_path: Path = DEFAULT_AUTOTRADER_PATH,
     output_path: Path = DEFAULT_OUTPUT_PATH,
@@ -147,7 +189,10 @@ def generate_retail_median_outcomes(
 
     valuations = pd.read_csv(valuations_path, low_memory=False)
     valuations = _latest_by_url(valuations)
-    valuations = _join_static_details(valuations, static_details_path)
+    valuations = _merge_listing_details(
+        valuations,
+        (active_details_path, static_details_path, sold_details_path),
+    )
     valuations = _prepare_common(valuations, source="scored")
 
     retail = _load_retail_pool(carsales_path, autotrader_path)
@@ -162,7 +207,7 @@ def generate_retail_median_outcomes(
         fees = parse_currency(row.get("fees_estimate")) or 0.0
         repair_high = row.get("repair_estimate_high_value")
         repair_high = parse_currency(repair_high) if not isinstance(repair_high, (int, float)) else repair_high
-        repair_high = repair_high or 0.0
+        repair_high = 0.0 if repair_high is None or pd.isna(repair_high) else repair_high
 
         simulated_profit = None
         if retail_median is not None and buy_price is not None:
@@ -213,6 +258,8 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--valuations", type=Path, default=DEFAULT_VALUATIONS_PATH)
     parser.add_argument("--static-details", type=Path, default=DEFAULT_STATIC_DETAILS_PATH)
+    parser.add_argument("--active-details", type=Path, default=DEFAULT_ACTIVE_DETAILS_PATH)
+    parser.add_argument("--sold-details", type=Path, default=DEFAULT_SOLD_DETAILS_PATH)
     parser.add_argument("--carsales", type=Path, default=DEFAULT_CARSALES_PATH)
     parser.add_argument("--autotrader", type=Path, default=DEFAULT_AUTOTRADER_PATH)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT_PATH)
@@ -221,6 +268,8 @@ def main(argv: list[str] | None = None) -> int:
     output = generate_retail_median_outcomes(
         valuations_path=args.valuations,
         static_details_path=args.static_details,
+        active_details_path=args.active_details,
+        sold_details_path=args.sold_details,
         carsales_path=args.carsales,
         autotrader_path=args.autotrader,
         output_path=args.output,
