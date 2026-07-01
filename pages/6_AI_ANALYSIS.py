@@ -3545,7 +3545,7 @@ else:
         filtered_output = filtered_output[filtered_output[group_column] == group_filter]
 
     if hide_avoid:
-        filtered_output = filtered_output[filtered_output["verdict_label"] != "Avoid"]
+        filtered_output = filtered_output[filtered_output["action_label"] != "Avoid"]
 
     if min_margin > 0:
         filtered_output = filtered_output[

@@ -1,5 +1,7 @@
 # Recent Changes
 
+- 2026-07-02: Fixed the AI Analysis `Hide Avoid listings` filter to use the resolved shared-policy `action_label` instead of the broader verdict bucket. This prevents `Trap` or `Not Viable` rows whose displayed action is `Avoid` from still appearing while the checkbox is enabled.
+
 - 2026-07-02: Added `docs/new_vehicle_expansion_workflow.md` as the durable checklist for future new-family curve expansions. The workflow records the actual architecture distinction: V2 valuation/mapping uses `config/curve_groups_v2.csv` plus `CSV_data/restricted/curves.csv`, while `config/supported_curve_universe_v1.csv` remains the approved/selectable V2 base-curve registry for Curve Builder V2 and curve-contract tests, not the valuation source.
 
 - 2026-07-01: Started the post-scrape curve build from private Carsales/Apify evidence with thirteen narrow governed lanes across Toyota Kluger, Mitsubishi Outlander, Nissan X-Trail, and Subaru Forester. Each curve uses the extended 30k/60k/100k/150k/200k/225k/300k grid, keeps materially different trims/fuels/series out through allowed variants and V2 group mappings, and preserves the rule that Grays sold volume chooses targets while Carsales evidence drives retail pricing.
