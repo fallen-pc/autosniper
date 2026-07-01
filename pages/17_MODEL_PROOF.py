@@ -59,6 +59,15 @@ def metric_value(metrics: pd.Series, column: str) -> object:
     return metrics[column] if column in metrics.index else pd.NA
 
 
+def prediction_count_label(metrics: pd.Series) -> str:
+    source = str(metric_value(metrics, "prediction_source")).strip()
+    if source == "computed_verdict":
+        return "Buyable verdicts"
+    if source == "action":
+        return "Buy actions"
+    return "Positive predictions"
+
+
 def numeric_series(frame: pd.DataFrame, column: str) -> pd.Series:
     if column not in frame.columns:
         return pd.Series(dtype="float64")
@@ -126,7 +135,7 @@ if not sim_metrics_df.empty:
     section_heading("Simulated Verdict-Proxy Result", "Buyable verdicts tested against simulated profit.")
     metric_cols = st.columns(6)
     metric_cols[0].metric("Rows tested", format_int(metric_value(metrics, "rows")))
-    metric_cols[1].metric("Buyable verdicts", format_int(metric_value(metrics, "buy_predictions")))
+    metric_cols[1].metric(prediction_count_label(metrics), format_int(metric_value(metrics, "buy_predictions")))
     metric_cols[2].metric("Simulated profitable", format_int(metric_value(metrics, "profitable_actuals")))
     metric_cols[3].metric("Precision", format_ratio(metric_value(metrics, "precision")))
     metric_cols[4].metric("Recall", format_ratio(metric_value(metrics, "recall")))
@@ -242,11 +251,19 @@ else:
     retail_cols[3].metric("Median simulated profit", format_money(retail_profit.median()))
 
     if not has_profit.empty:
+        by_action = has_profit.copy()
+        action_labels = (
+            by_action["action_label"]
+            if "action_label" in by_action.columns
+            else pd.Series("", index=by_action.index)
+        )
+        by_action["action_label_display"] = action_labels.fillna("").astype(str).str.strip().replace("", "Missing action label")
         by_verdict = (
-            has_profit.groupby("action_label")["simulated_profit"]
+            by_action.groupby("action_label_display")["simulated_profit"]
             .agg(["count", "median", "mean"])
             .rename(columns={"count": "rows", "median": "median_profit", "mean": "mean_profit"})
             .reset_index()
+            .rename(columns={"action_label_display": "action_label"})
         )
         st.dataframe(by_verdict, width="stretch", hide_index=True)
 
@@ -254,7 +271,7 @@ else:
         retail_metrics = retail_metrics_df.iloc[0]
         metric_cols2 = st.columns(5)
         metric_cols2[0].metric("Rows tested", format_int(metric_value(retail_metrics, "rows")))
-        metric_cols2[1].metric("Buyable verdicts", format_int(metric_value(retail_metrics, "buy_predictions")))
+        metric_cols2[1].metric(prediction_count_label(retail_metrics), format_int(metric_value(retail_metrics, "buy_predictions")))
         metric_cols2[2].metric("Simulated profitable", format_int(metric_value(retail_metrics, "profitable_actuals")))
         metric_cols2[3].metric("Precision", format_ratio(metric_value(retail_metrics, "precision")))
         metric_cols2[4].metric("Recall", format_ratio(metric_value(retail_metrics, "recall")))
@@ -264,6 +281,7 @@ else:
         "model",
         "variant",
         "action_label",
+        "computed_verdict",
         "buy_price_basis_value",
         "retail_match_count",
         "simulated_retail_median",

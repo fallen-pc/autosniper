@@ -237,7 +237,7 @@ def generate_retail_median_outcomes(
                     f"Asking-price proxy, not a confirmed sale. Median of "
                     f"{match_count} concurrent Autotrader/Carsales listings "
                     f"matched by make/model/variant family/body/fuel/transmission "
-                    f"within ±{YEAR_TOLERANCE}yr and odometer tolerance "
+                    f"within +/-{YEAR_TOLERANCE}yr and odometer tolerance "
                     f"max({ODOMETER_TOLERANCE_PCT:.0%}, {ODOMETER_TOLERANCE_FLOOR_KM}km)."
                 ),
             }
@@ -282,9 +282,17 @@ def main(argv: list[str] | None = None) -> int:
         f"output={args.output}"
     )
     if with_profit:
+        profitable = output.dropna(subset=["simulated_profit"]).copy()
+        action_labels = (
+            profitable["action_label"]
+            if "action_label" in profitable.columns
+            else pd.Series("", index=profitable.index)
+        )
+        profitable["action_label_display"] = (
+            action_labels.fillna("").astype(str).str.strip().replace("", "Missing action label")
+        )
         by_verdict = (
-            output.dropna(subset=["simulated_profit"])
-            .groupby("action_label")["simulated_profit"]
+            profitable.groupby("action_label_display")["simulated_profit"]
             .agg(["count", "median", "mean"])
         )
         print(by_verdict.to_string())

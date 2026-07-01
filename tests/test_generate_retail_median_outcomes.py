@@ -220,3 +220,4 @@ def test_generate_profit_treats_blank_repair_high_as_zero(tmp_path) -> None:
     row = output.iloc[0]
     assert row["simulated_retail_median"] == 32000.0
     assert row["simulated_profit"] == 11500.0
+    assert "within +/-2yr" in row["outcome_note"]
