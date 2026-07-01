@@ -1,5 +1,8 @@
 # Changelog
 
+## 2026-07-01
+- Added thirteen narrow Toyota Kluger, Mitsubishi Outlander, Nissan X-Trail, and Subaru Forester retail curve lanes from private Carsales/Apify evidence, with allowed-variant gates, V2 group mappings, supported-universe rows, and a governed curve snapshot.
+
 ## 2026-06-23
 - Repaired scraped-data utilisation for existing curves: Corolla Ascent Sport ZRE182R manual rows now feed the existing manual curve, and first-generation 2014 MU-X LS-U/LS-T rows now have conservative early-year anchors while 2021+ MU-X rows remain separate newer-generation targets.
 - Added Toyota Camry Atara S ASV50R automatic petrol sedan and Volkswagen Golf V/A5 GTI automatic petrol hatch curves from private Carsales/Apify evidence, and repaired Triton `GL-R` aliasing plus Mazda `CX-5` spelling so existing governed curves pick up those rows instead of needing duplicates.

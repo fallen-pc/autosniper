@@ -76,3 +76,16 @@ volkswagen_golf_comfortline_diesel_auto_hatch_vi,volkswagen,golf,hatch,diesel,au
 volkswagen_golf_comfortline_petrol_auto_hatch_v,volkswagen,golf,hatch,petrol,auto,comfortline,v,comfortline,hatch|hatchback,manual|diesel|wagon|gti|golf r|wolfsburg|r32|trendline|highline|pacific|sport|generation|7|4th gen|vi
 volkswagen_golf_gti_petrol_auto_hatch_v,volkswagen,golf,hatch,petrol,auto,gti,v,gti|gti a5|gti 1k,hatch|hatchback,manual|diesel|wagon|comfortline|trendline|highline|golf r|r32|wolfsburg|pacific|generation|7|4th gen|vi
 volkswagen_golf_trendline_petrol_auto_hatch_vi,volkswagen,golf,hatch,petrol,auto,trendline,vi,90tsi trendline|trendline,hatch|hatchback,manual|diesel|wagon|gti|golf r|wolfsburg|r32|comfortline|highline|pacific|sport|generation|7|4th gen|v
+toyota_kluger_kx-r_petrol_auto_suv_gsu40r,toyota,kluger,suv,petrol,auto,kx-r,gsu40r,kx-r|kxr,suv|wagon,manual|diesel|hybrid|kx-s|kxs|grande|altitude|gx|gxl|cv|cvx|mcu28r|gsu45r|gsu50r|gsu55r
+mitsubishi_outlander_ls_petrol_auto_suv_zh,mitsubishi,outlander,suv,petrol,auto,ls,zh,ls,suv|wagon,manual|diesel|hybrid|phev|es|xls|aspire|vr|vr-x|exceed|activ|safety pack|zg|zj|zk|zl|ze
+nissan_xtrail_st_petrol_auto_suv_t31,nissan,xtrail,suv,petrol,auto,st,t31,st,suv|wagon,manual|diesel|hybrid|st-l|stl|ti|ti-l|ts|tl|n-trek|t30|t32
+subaru_forester_x_petrol_auto_suv_s3,subaru,forester,suv,petrol,auto,x,s3,x,suv|wagon,manual|diesel|hybrid|xs|xs premium|x luxury|xt|2.0d|2.5i|limited|79v|s4
+toyota_kluger_kx-s_petrol_auto_suv_gsu40r,toyota,kluger,suv,petrol,auto,kx-s,gsu40r,kx-s|kxs,suv|wagon,manual|diesel|hybrid|kx-r|kxr|grande|altitude|gx|gxl|cv|cvx|mcu28r|gsu45r|gsu50r|gsu55r
+toyota_kluger_kx-r_petrol_auto_suv_gsu45r,toyota,kluger,suv,petrol,auto,kx-r,gsu45r,kx-r|kxr,suv|wagon,manual|diesel|hybrid|kx-s|kxs|grande|altitude|gx|gxl|cv|cvx|mcu28r|gsu40r|gsu50r|gsu55r
+toyota_kluger_kx-s_petrol_auto_suv_gsu45r,toyota,kluger,suv,petrol,auto,kx-s,gsu45r,kx-s|kxs,suv|wagon,manual|diesel|hybrid|kx-r|kxr|grande|altitude|gx|gxl|cv|cvx|mcu28r|gsu40r|gsu50r|gsu55r
+toyota_kluger_grande_petrol_auto_suv_gsu45r,toyota,kluger,suv,petrol,auto,grande,gsu45r,grande,suv|wagon,manual|diesel|hybrid|kx-r|kxr|kx-s|kxs|altitude|gx|gxl|cv|cvx|mcu28r|gsu40r|gsu50r|gsu55r
+mitsubishi_outlander_es_petrol_auto_suv_zj,mitsubishi,outlander,suv,petrol,auto,es,zj,es,suv|wagon,manual|diesel|hybrid|phev|ls|xls|aspire|vr|vr-x|exceed|activ|safety pack|zg|zh|zk|zl|ze
+mitsubishi_outlander_ls_petrol_auto_suv_zk,mitsubishi,outlander,suv,petrol,auto,ls,zk,ls,suv|wagon,manual|diesel|hybrid|phev|es|xls|aspire|vr|vr-x|exceed|activ|safety pack|zg|zh|zj|zl|ze
+nissan_xtrail_st-l_petrol_auto_suv_t31,nissan,xtrail,suv,petrol,auto,st-l,t31,st-l|stl,suv|wagon,manual|diesel|hybrid|ti|ti-l|ts|tl|n-trek|t30|t32
+nissan_xtrail_ti_petrol_auto_suv_t31,nissan,xtrail,suv,petrol,auto,ti,t31,ti,suv|wagon,manual|diesel|hybrid|st|st-l|stl|ti-l|ts|tl|n-trek|t30|t32
+subaru_forester_xs_petrol_auto_suv_s3,subaru,forester,suv,petrol,auto,xs,s3,xs,suv|wagon,manual|diesel|hybrid|x|xs premium|x luxury|xt|2.0d|2.5i|limited|79v|s4

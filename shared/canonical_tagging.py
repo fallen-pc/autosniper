@@ -46,6 +46,8 @@ MAKE_ALIASES = {
     "isuzu": "isuzu",
     "volkswagen": "volkswagen",
     "vw": "volkswagen",
+    "nissan": "nissan",
+    "subaru": "subaru",
 }
 
 MODEL_ALIASES = {
@@ -72,6 +74,13 @@ MODEL_ALIASES = {
     "mu x": "mux",
     "mu-x": "mux",
     "golf": "golf",
+    "kluger": "kluger",
+    "outlander": "outlander",
+    "xtrail": "xtrail",
+    "x trail": "xtrail",
+    "x-trail": "xtrail",
+    "forester": "forester",
+    "focus": "focus",
 }
 
 
@@ -421,7 +430,11 @@ def _extract_series_code(text: str) -> str:
         return candidate
 
     # Some series/platform codes appear as short alpha tokens in the variant text.
-    short_match = re.search(r"\b(BL|BM|KE|KF|LM|TB|TQ|SZ|SY|NT|NW|NX|MN|MQ|CG|VI)\b", text, re.IGNORECASE)
+    short_match = re.search(
+        r"\b(BL|BM|KE|KF|LM|TB|TQ|SZ|SY|NT|NW|NX|MN|MQ|CG|VI|ZH|ZJ|ZK|T30|T31|T32|S3|S4|79V|LW|LZ)\b",
+        text,
+        re.IGNORECASE,
+    )
     if short_match:
         return short_match.group(1).lower()
     return ""
