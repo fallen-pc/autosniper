@@ -453,10 +453,13 @@ def _send_daily_ai_analysis_summary(*, trigger: str, coverage_date_local: date) 
         df = _load_daily_ai_analysis_frame()
         if df.empty:
             message = (
-                "AutoSniper daily AI Analysis\n"
+                "AutoSniper daily status\n"
                 f"Date: {coverage_date_local.isoformat()}\n"
-                "Active analysed: 0\n"
-                "No active AI Analysis rows were available after the daily run."
+                f"Run: {trigger}\n"
+                "Current active AI rows: 0\n"
+                "Result: No current active listings have fresh AI Analysis rows.\n"
+                "Meaning: Telegram is working, but there are no current AI Analysis candidates to report. "
+                "This usually means the valuation cache is stale or no current active listings are in AI Analysis scope."
             )
             verdict = "No active AI Analysis rows"
         else:
@@ -465,16 +468,16 @@ def _send_daily_ai_analysis_summary(*, trigger: str, coverage_date_local: date) 
             buy_count = int((df["action_label"].fillna("").astype(str).str.strip() == "Buy").sum())
             verdict = f"Buy {buy_count}"
             message = (
-                "AutoSniper daily AI Analysis\n"
+                "AutoSniper daily status\n"
                 f"Date: {coverage_date_local.isoformat()}\n"
-                f"Trigger: {trigger}\n"
-                f"Active analysed: {len(df)}\n"
-                f"Actions: {_action_counts_text(df)}\n"
-                f"Bid status: {_bid_status_counts_text(df)}\n"
+                f"Run: {trigger}\n"
+                f"Current active AI rows: {len(df)}\n"
+                f"AI actions: {_action_counts_text(df)}\n"
+                f"Bid positions: {_bid_status_counts_text(df)}\n"
                 + (
-                    "No AI Analysis Buy vehicles today."
+                    "Result: No Buy candidates in current active AI Analysis."
                     if buy_count == 0
-                    else f"AI Analysis has {buy_count} Buy vehicle(s); individual Buy alerts are sent separately."
+                    else f"Result: {buy_count} Buy candidate(s). Individual listing alerts are sent separately."
                 )
             )
         sent = send_on_state_change(

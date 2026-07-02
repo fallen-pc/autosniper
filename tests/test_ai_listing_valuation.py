@@ -145,11 +145,12 @@ def test_listing_alert_reports_ai_analysis_buy_action(monkeypatch, tmp_path: Pat
     assert len(sent) == 1
     assert sent[0]["alert_scope"] == "listing_bid_ready"
     assert sent[0]["state_value"] == "ai_analysis_buy"
-    assert "AI Analysis alert" in str(sent[0]["message"])
+    assert "AutoSniper candidate - AI Analysis says BUY" in str(sent[0]["message"])
+    assert "Why sent: this current active listing is marked Buy in AI Analysis." in str(sent[0]["message"])
     assert "Action: Buy" in str(sent[0]["message"])
     assert "Profit at current bid:" in str(sent[0]["message"])
-    assert "AutoSniper: https://autosniper.example/AI_ANALYSIS?listing_url=https%3A%2F%2Fexample.com%2Flot%2Fdecision-1" in str(sent[0]["message"])
-    assert "Grays: https://example.com/lot/decision-1" in str(sent[0]["message"])
+    assert "Open in AutoSniper: https://autosniper.example/AI_ANALYSIS?listing_url=https%3A%2F%2Fexample.com%2Flot%2Fdecision-1" in str(sent[0]["message"])
+    assert "Open on Grays: https://example.com/lot/decision-1" in str(sent[0]["message"])
 
 
 def test_autosniper_listing_url_defaults_to_local_ai_analysis(monkeypatch) -> None:
@@ -234,7 +235,8 @@ def test_listing_alert_sends_when_buy_becomes_not_bid_ready(monkeypatch, tmp_pat
     assert len(sent) == 1
     assert sent[0]["alert_scope"] == "listing_bid_ready"
     assert sent[0]["state_value"] == "ai_analysis_not_buy"
-    assert "AI Analysis update" in str(sent[0]["message"])
+    assert "AutoSniper update - no longer a Buy" in str(sent[0]["message"])
+    assert "Why sent: this listing was previously alerted as Buy, but AI Analysis changed." in str(sent[0]["message"])
     assert "Previous action: Buy" in str(sent[0]["message"])
     assert "Current action: Watch" in str(sent[0]["message"])
 
@@ -270,7 +272,7 @@ def test_listing_alert_sends_not_buy_update_from_alert_state(monkeypatch, tmp_pa
 
     assert len(sent) == 1
     assert sent[0]["state_value"] == "ai_analysis_not_buy"
-    assert "AI Analysis update" in str(sent[0]["message"])
+    assert "AutoSniper update - no longer a Buy" in str(sent[0]["message"])
     assert "Current action: Avoid" in str(sent[0]["message"])
 
 

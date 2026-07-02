@@ -693,18 +693,19 @@ def _ai_analysis_alert_message(row: Mapping[str, Any], *, title: str, url: str) 
     action_label = _ai_analysis_action(row) or "N/A"
     bid_status = str(row.get("bid_status") or "N/A").strip() or "N/A"
     return (
-        "AI Analysis alert\n"
-        f"{title}\n"
+        "AutoSniper candidate - AI Analysis says BUY\n"
+        f"Vehicle: {title}\n"
+        "Why sent: this current active listing is marked Buy in AI Analysis.\n"
         f"Action: {action_label}\n"
         f"Verdict: {row.get('computed_verdict') or row.get('verdict') or 'N/A'}\n"
-        f"Bid status: {bid_status}\n"
+        f"Bid position: {bid_status}\n"
         f"Current bid: {row.get('current_bid') or row.get('price') or 'N/A'}\n"
         f"Max bid: {row.get('recommended_max_bid') or 'N/A'}\n"
-        f"Expected auction profit: {row.get('expected_auction_profit') or 'N/A'}\n"
         f"Profit at current bid: {row.get('economic_profit_at_current_bid') or 'N/A'}\n"
+        f"Expected auction profit: {row.get('expected_auction_profit') or 'N/A'}\n"
         f"Analysed: {row.get('analysis_timestamp') or 'N/A'}\n"
-        f"AutoSniper: {_autosniper_listing_url(url)}\n"
-        f"Grays: {url}"
+        f"Open in AutoSniper: {_autosniper_listing_url(url)}\n"
+        f"Open on Grays: {url}"
     )
 
 
@@ -732,17 +733,18 @@ def _maybe_send_listing_alerts(
     elif previous_action == "Buy" or previous_alert_state == "ai_analysis_buy":
         state_value = "ai_analysis_not_buy"
         message = (
-            "AI Analysis update\n"
-            f"{title}\n"
+            "AutoSniper update - no longer a Buy\n"
+            f"Vehicle: {title}\n"
+            "Why sent: this listing was previously alerted as Buy, but AI Analysis changed.\n"
             f"Previous action: {previous_action or 'N/A'}\n"
             f"Current action: {current_action or 'N/A'}\n"
             f"Verdict: {row.get('computed_verdict') or row.get('verdict') or 'N/A'}\n"
-            f"Bid status: {row.get('bid_status') or 'N/A'}\n"
+            f"Bid position: {row.get('bid_status') or 'N/A'}\n"
             f"Current bid: {row.get('current_bid') or row.get('price') or 'N/A'}\n"
             f"Max bid: {row.get('recommended_max_bid') or 'N/A'}\n"
             f"Analysed: {row.get('analysis_timestamp') or 'N/A'}\n"
-            f"AutoSniper: {_autosniper_listing_url(url)}\n"
-            f"Grays: {url}"
+            f"Open in AutoSniper: {_autosniper_listing_url(url)}\n"
+            f"Open on Grays: {url}"
         )
     else:
         return

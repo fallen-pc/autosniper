@@ -285,6 +285,18 @@ def _stale_or_missing_urls(active_df: pd.DataFrame, stale_minutes: int) -> set[s
     return stale_urls
 
 
+def _dropped_coverage_target_urls(
+    all_active_df: pd.DataFrame,
+    target_urls: Iterable[str] | None,
+    stale_minutes: int,
+) -> set[str]:
+    if all_active_df.empty or "url" not in all_active_df.columns:
+        return set()
+    if target_urls is not None:
+        return {str(url).strip() for url in target_urls if str(url).strip()}
+    return _stale_or_missing_urls(all_active_df, stale_minutes)
+
+
 def _upsert_not_covered_result(row: pd.Series, reason: str) -> None:
     current_bid = row.get("price")
     payload = {
@@ -303,6 +315,10 @@ def _upsert_not_covered_result(row: pd.Series, reason: str) -> None:
         "confidence": 0.0,
         "risk_flags": "NO_CURVE",
         "computed_verdict": "Not Covered",
+        "verdict": "Not Covered",
+        "action_label": "Review",
+        "bid_status": "Not covered",
+        "hard_max_safety": "No coverage",
         "no_edge": True,
         "edge_note": reason,
         "edge_buffer": None,
@@ -400,9 +416,17 @@ def revalue_active_listings(
         if not active_df.empty:
             urls_to_process |= _stale_or_missing_urls(active_df, stale_minutes)
     if not urls_to_process:
-        return {"evaluated": 0, "urls": []}
+        dropped_targets = _dropped_coverage_target_urls(all_active_df, target_urls, stale_minutes)
+        dropped_count = _mark_dropped_coverage_urls(all_active_df, active_df, dropped_targets)
+        return {
+            "evaluated": dropped_count,
+            "urls": [],
+            "dropped_coverage": dropped_count,
+            "pruned_inactive": pruned_count,
+        }
 
-    dropped_count = _mark_dropped_coverage_urls(all_active_df, active_df, urls_to_process)
+    dropped_targets = urls_to_process | _dropped_coverage_target_urls(all_active_df, target_urls, stale_minutes)
+    dropped_count = _mark_dropped_coverage_urls(all_active_df, active_df, dropped_targets)
 
     scoped_df = active_df[active_df["url"].isin(urls_to_process)].copy()
     evaluated_urls: list[str] = []

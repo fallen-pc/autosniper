@@ -36,6 +36,10 @@ def test_mark_dropped_coverage_urls_writes_not_covered(monkeypatch) -> None:
     assert len(captured) == 1
     row = captured[0]
     assert row["computed_verdict"] == "Not Covered"
+    assert row["verdict"] == "Not Covered"
+    assert row["action_label"] == "Review"
+    assert row["bid_status"] == "Not covered"
+    assert row["hard_max_safety"] == "No coverage"
     assert row["analysis_context"] == "active"
     assert row["no_edge"] is True
     assert "no longer curve-covered" in str(row["edge_note"]).lower()
@@ -65,6 +69,48 @@ def test_mark_dropped_coverage_urls_ignores_non_targets(monkeypatch) -> None:
 
     assert count == 0
     assert captured == []
+
+
+def test_revalue_active_listings_marks_missing_out_of_range_rows(monkeypatch) -> None:
+    target_url = "https://example.com/lot/high-km-kluger"
+    all_active_df = pd.DataFrame(
+        [
+            {
+                "url": target_url,
+                "canonical_tag": "toyota_kluger_kx-s_petrol_auto_suv_gsu40r",
+                "canonical_reason": "[OK]",
+                "price": "$309",
+                "bids": "4",
+                "time_remaining_or_date_sold": "5d 2h",
+            }
+        ]
+    )
+    covered_active_df = pd.DataFrame(columns=all_active_df.columns)
+    captured: list[dict[str, object]] = []
+
+    monkeypatch.setattr(active_monitor, "_prepare_all_active_rows", lambda: all_active_df.copy())
+    monkeypatch.setattr(
+        active_monitor,
+        "_prepare_active_scope",
+        lambda: (covered_active_df.copy(), pd.DataFrame(), pd.DataFrame()),
+    )
+    monkeypatch.setattr(active_monitor, "_prune_inactive_cached_valuations", lambda df: 0)
+    monkeypatch.setattr(
+        active_monitor,
+        "load_cached_results",
+        lambda: pd.DataFrame(columns=active_monitor.REQUIRED_COLUMNS),
+    )
+    monkeypatch.setattr(active_monitor, "upsert_manual_result_row", lambda row: captured.append(dict(row)))
+
+    summary = active_monitor.revalue_active_listings(stale_minutes=60)
+
+    assert summary["evaluated"] == 1
+    assert summary["dropped_coverage"] == 1
+    assert captured[0]["url"] == target_url
+    assert captured[0]["computed_verdict"] == "Not Covered"
+    assert captured[0]["action_label"] == "Review"
+    assert captured[0]["bid_status"] == "Not covered"
+    assert captured[0]["analysis_context"] == "active"
 
 
 def test_load_ai_analysis_active_df_uses_prepared_scope(monkeypatch) -> None:

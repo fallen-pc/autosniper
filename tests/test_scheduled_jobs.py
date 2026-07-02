@@ -166,9 +166,11 @@ def test_daily_ai_analysis_summary_reports_active_action_counts(monkeypatch, tmp
     assert calls[0]["alert_scope"] == "daily_ai_analysis_summary"
     assert calls[0]["state_value"] == "2026-06-25"
     assert calls[0]["verdict"] == "Buy 1"
-    assert "Active analysed: 3" in str(calls[0]["message"])
-    assert "Actions: Buy 1 | Watch 1 | Avoid 1 | Review 0" in str(calls[0]["message"])
-    assert "Bid status: Cheap 1 | Near ceiling 1 | Over max 1" in str(calls[0]["message"])
+    assert "AutoSniper daily status" in str(calls[0]["message"])
+    assert "Current active AI rows: 3" in str(calls[0]["message"])
+    assert "AI actions: Buy 1 | Watch 1 | Avoid 1 | Review 0" in str(calls[0]["message"])
+    assert "Bid positions: Cheap 1 | Near ceiling 1 | Over max 1" in str(calls[0]["message"])
+    assert "Result: 1 Buy candidate(s). Individual listing alerts are sent separately." in str(calls[0]["message"])
 
 
 def test_daily_ai_analysis_summary_sends_no_buy_heartbeat(monkeypatch, tmp_path) -> None:
@@ -203,7 +205,37 @@ def test_daily_ai_analysis_summary_sends_no_buy_heartbeat(monkeypatch, tmp_path)
         coverage_date_local=date(2026, 6, 25),
     )
 
-    assert "No AI Analysis Buy vehicles today." in messages[0]
+    assert "Result: No Buy candidates in current active AI Analysis." in messages[0]
+
+
+def test_daily_ai_analysis_summary_explains_empty_current_scope(monkeypatch, tmp_path) -> None:
+    valuations_path = tmp_path / "ai_listing_valuations.csv"
+    active_path = tmp_path / "active_vehicle_details.csv"
+    pd.DataFrame([{"url": "https://example.com/current-active"}]).to_csv(active_path, index=False)
+    pd.DataFrame(
+        [
+            {"url": "https://example.com/stale-buy", "analysis_context": "active", "action_label": "Buy", "bid_status": "Cheap"},
+        ]
+    ).to_csv(valuations_path, index=False)
+    messages: list[str] = []
+
+    def fake_dataset_path(name: str):
+        return active_path if name == "active_vehicle_details.csv" else valuations_path
+
+    monkeypatch.setattr(scheduled_jobs, "dataset_path", fake_dataset_path)
+    monkeypatch.setattr(
+        scheduled_jobs,
+        "send_on_state_change",
+        lambda alert_scope, url, state_value, message, verdict=None: messages.append(message) or True,
+    )
+
+    scheduled_jobs._send_daily_ai_analysis_summary(
+        trigger="scheduled",
+        coverage_date_local=date(2026, 6, 25),
+    )
+
+    assert "Current active AI rows: 0" in messages[0]
+    assert "Telegram is working, but there are no current AI Analysis candidates to report." in messages[0]
 
 
 def test_daily_smoke_runs_limited_pipeline(monkeypatch) -> None:
