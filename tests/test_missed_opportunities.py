@@ -45,7 +45,7 @@ def test_missed_decision_metrics_apply_ai_cap_and_repair_cost(monkeypatch) -> No
     )
 
     assert result["expected_auction_price"] == 15_000
-    assert result["max_bid"] == 11_780
+    assert result["max_bid"] == 12_440
     assert result["repair_cost"] == 700
     assert result["risk_buffer"] == 300
     assert result["projected_profit_at_sold"] == 7351
@@ -73,7 +73,7 @@ def test_missed_decision_metrics_can_run_no_repair_hypothesis(monkeypatch) -> No
         include_repairs=False,
     )
 
-    assert result["max_bid"] == 12_780
+    assert result["max_bid"] == 13_440
     assert result["repair_cost"] == 0
     assert result["risk_buffer"] == 0
     assert result["projected_profit_at_sold"] == 8351
@@ -133,7 +133,7 @@ def test_missed_decision_metrics_keeps_historical_median_context_without_capping
     )
 
     assert result["expected_auction_price"] == 12_300
-    assert result["max_bid"] == 12_780
+    assert result["max_bid"] == 13_440
 
 
 def test_missed_decision_metrics_uses_shared_buy_policy(monkeypatch) -> None:
@@ -227,7 +227,7 @@ def test_missed_decision_metrics_uses_shared_over_max_avoid_policy(monkeypatch) 
         include_repairs=True,
     )
 
-    assert result["max_bid"] == 12_780
+    assert result["max_bid"] == 13_440
     assert result["bid_status"] == "Over max"
     assert result["action_label"] == "Avoid"
 

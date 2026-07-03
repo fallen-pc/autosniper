@@ -180,10 +180,13 @@ def _round_to_10(value: Optional[float]) -> Optional[float]:
 
 
 # Minimum net profit target and band controls
-MIN_NET_PROFIT_ABSOLUTE = 1_500.0
-MIN_NET_PROFIT_RATIO = 0.15
+# Calibrated 2026-07 against 548 restricted sold rows (scripts/calibration_report.py):
+# 1500/0.15/0.12 -> 28 wins, $169k captured; 1000/0.10/0.08 -> 53 wins, $258k captured,
+# 0 overbid-risk rows, min single-deal profit $2,089, robust to -20% curve error.
+MIN_NET_PROFIT_ABSOLUTE = 1_000.0
+MIN_NET_PROFIT_RATIO = 0.10
 MIN_EXPECTED_PROFIT_VIABILITY = 2_000.0
-BASE_DOWNSIDE_PCT = 0.12
+BASE_DOWNSIDE_PCT = 0.08
 BASE_UPSIDE_PCT = 0.08
 HIGH_KM_THRESHOLD = 180_000
 CONFIDENCE_MIN = 0.0
