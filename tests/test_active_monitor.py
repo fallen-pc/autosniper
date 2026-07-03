@@ -18,6 +18,11 @@ def test_mark_dropped_coverage_urls_writes_not_covered(monkeypatch) -> None:
                 "url": "https://example.com/lot/1",
                 "canonical_tag": "demo_tag",
                 "canonical_reason": "[matched]",
+                "year": "2014",
+                "make": "Toyota",
+                "model": "Kluger",
+                "variant": "KX-S GSU40R",
+                "location": "Melbourne VIC",
                 "price": "$5,000",
                 "bids": "3",
                 "time_remaining_or_date_sold": "2h 15m",
@@ -42,6 +47,14 @@ def test_mark_dropped_coverage_urls_writes_not_covered(monkeypatch) -> None:
     assert row["hard_max_safety"] == "No coverage"
     assert row["analysis_context"] == "active"
     assert row["no_edge"] is True
+    assert row["year"] == "2014"
+    assert row["make"] == "Toyota"
+    assert row["model"] == "Kluger"
+    assert row["variant"] == "KX-S GSU40R"
+    assert row["location"] == "Melbourne VIC"
+    assert row["current_bid"] == "$5,000"
+    assert row["current_bid_numeric"] == 5000.0
+    assert row["valuation_input_hash"]
     assert "no longer curve-covered" in str(row["edge_note"]).lower()
 
 
@@ -79,6 +92,11 @@ def test_revalue_active_listings_marks_missing_out_of_range_rows(monkeypatch) ->
                 "url": target_url,
                 "canonical_tag": "toyota_kluger_kx-s_petrol_auto_suv_gsu40r",
                 "canonical_reason": "[OK]",
+                "year": "2008",
+                "make": "Toyota",
+                "model": "Kluger",
+                "variant": "KX-S GSU40R",
+                "location": "Sydney NSW",
                 "price": "$309",
                 "bids": "4",
                 "time_remaining_or_date_sold": "5d 2h",
@@ -111,6 +129,12 @@ def test_revalue_active_listings_marks_missing_out_of_range_rows(monkeypatch) ->
     assert captured[0]["action_label"] == "Review"
     assert captured[0]["bid_status"] == "Not covered"
     assert captured[0]["analysis_context"] == "active"
+    assert captured[0]["year"] == "2008"
+    assert captured[0]["make"] == "Toyota"
+    assert captured[0]["model"] == "Kluger"
+    assert captured[0]["variant"] == "KX-S GSU40R"
+    assert captured[0]["location"] == "Sydney NSW"
+    assert captured[0]["valuation_input_hash"]
 
 
 def test_load_ai_analysis_active_df_uses_prepared_scope(monkeypatch) -> None:

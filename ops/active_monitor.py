@@ -7,7 +7,14 @@ import re
 
 import pandas as pd
 
-from scripts.ai_listing_valuation import AI_RESULTS_PATH, REQUIRED_COLUMNS, load_cached_results, run_curve_listing_analysis, upsert_manual_result_row
+from scripts.ai_listing_valuation import (
+    AI_RESULTS_PATH,
+    REQUIRED_COLUMNS,
+    _valuation_input_hash,
+    load_cached_results,
+    run_curve_listing_analysis,
+    upsert_manual_result_row,
+)
 from scripts.atomic_csv import write_dataframe_csv_atomic
 from shared.canonical_tagging import is_canonical_eligible
 from shared.comps_engine import parse_currency, parse_numeric
@@ -301,6 +308,11 @@ def _upsert_not_covered_result(row: pd.Series, reason: str) -> None:
     current_bid = row.get("price")
     payload = {
         "url": row.get("url"),
+        "year": row.get("year"),
+        "make": row.get("make"),
+        "model": row.get("model"),
+        "variant": row.get("variant"),
+        "location": row.get("location"),
         "analysis_timestamp": datetime.now(timezone.utc).isoformat(),
         "analysis_context": "active",
         "resale_low": None,
@@ -337,6 +349,17 @@ def _upsert_not_covered_result(row: pd.Series, reason: str) -> None:
         "current_bid_numeric": parse_currency(current_bid) if current_bid is not None else None,
         "bids_observed": row.get("bids"),
         "time_remaining_observed": row.get("time_remaining_or_date_sold"),
+        "valuation_input_hash": _valuation_input_hash(
+            row,
+            resale_mid=None,
+            comps_median=None,
+            comps_count=None,
+            analysis_context="active",
+            km_percentile=None,
+            autotrader_median=None,
+            carsales_estimate=None,
+            listings_cluster_ok=False,
+        ),
     }
     upsert_manual_result_row(payload)
 
