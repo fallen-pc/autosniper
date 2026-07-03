@@ -12,6 +12,8 @@ from shared.repair_pricing_schedule import (
     SUPPLIER_TYPES,
     VEHICLE_CLASSES,
     apply_quote_response,
+    build_quote_request_body,
+    build_quote_request_subject,
     canonical_pricing_candidates,
     load_pricing_schedule,
     load_quote_requests,
@@ -275,8 +277,13 @@ with quotes_tab:
             status = st.selectbox("Status", ["draft", "ready", "sent", "waiting", "replied", "priced"], index=0)
         q_notes = st.text_area(
             "Request notes",
-            placeholder="What to ask for, vehicle details, part condition, VIN requirement, labour assumption.",
+            placeholder="Specific repair to price, for example: replace a cracked front windscreen supplied and fitted.",
         )
+        draft_subject = build_quote_request_subject(q_item)
+        draft_body = build_quote_request_body(q_item, representative_vehicle, q_notes)
+        with st.expander("Draft email preview", expanded=False):
+            st.text_input("Subject", value=draft_subject, disabled=True)
+            st.text_area("Body", value=draft_body, height=220, disabled=True)
         if st.button("Create quote request"):
             request_id = next_request_id(quotes_df)
             new_quote = {
@@ -295,8 +302,8 @@ with quotes_tab:
                 "quoted_high": "",
                 "quoted_default": "",
                 "evidence_url": "",
-                "draft_subject": "",
-                "draft_body": "",
+                "draft_subject": draft_subject,
+                "draft_body": draft_body,
                 "notes": q_notes,
             }
             updated_quotes = pd.concat(

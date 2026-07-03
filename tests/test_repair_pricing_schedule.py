@@ -4,6 +4,8 @@ from shared.repair_pricing_schedule import (
     EXCLUDED_PRICING_CANONICALS,
     HARD_AVOID_PRICING_CANONICALS,
     apply_quote_response,
+    build_quote_request_body,
+    build_quote_request_subject,
     canonical_pricing_candidates,
     dictionary_pricing_candidates,
     needs_pricing,
@@ -165,6 +167,21 @@ def test_next_request_id_increments_existing_ids() -> None:
     existing = pd.DataFrame([{"request_id": "RQ-0003"}, {"request_id": "manual"}])
 
     assert next_request_id(existing) == "RQ-0004"
+
+
+def test_quote_request_draft_asks_for_specific_price_without_auction_context() -> None:
+    subject = build_quote_request_subject("cosmetic_surface_damage")
+    body = build_quote_request_body(
+        "cosmetic_surface_damage",
+        "2016 Toyota Corolla hatch",
+        "repair a scuffed front bumper corner",
+    )
+
+    assert subject == "Price request - cosmetic surface damage"
+    assert "Could you please give me a price for this repair?" in body
+    assert "Job: repair a scuffed front bumper corner" in body
+    blocked_terms = ["auction", "bidding", "reconditioning", "pricing schedule"]
+    assert not any(term in body.lower() for term in blocked_terms)
 
 
 def test_parse_quote_response_extracts_range_and_typical_price() -> None:

@@ -88,6 +88,8 @@ SUPPLIER_TYPES = [
     "tyre_battery",
 ]
 
+DEFAULT_REPAIR_LOCATION = "Melbourne metro"
+
 PART_ONLY_CANONICALS = {
     "battery_issue",
     "mirror_light_damage",
@@ -266,6 +268,40 @@ def save_quote_requests(df: pd.DataFrame, path: Path = QUOTE_REQUESTS_PATH) -> N
         if column not in out.columns:
             out[column] = ""
     out[QUOTE_COLUMNS].to_csv(path, index=False)
+
+
+def humanize_canonical_defect(canonical_defect: object) -> str:
+    text = safe_text(canonical_defect).replace("_", " ").strip()
+    return re.sub(r"\s+", " ", text)
+
+
+def build_quote_request_subject(canonical_defect: object) -> str:
+    item = humanize_canonical_defect(canonical_defect) or "repair job"
+    return f"Price request - {item}"
+
+
+def build_quote_request_body(
+    canonical_defect: object,
+    representative_vehicle: object,
+    request_notes: object = "",
+    *,
+    location: object = DEFAULT_REPAIR_LOCATION,
+) -> str:
+    item = humanize_canonical_defect(canonical_defect) or "repair"
+    vehicle = safe_text(representative_vehicle) or "my vehicle"
+    job = safe_text(request_notes) or item
+    place = safe_text(location)
+    location_line = f"\nLocation: {place}" if place else ""
+    return (
+        "Hi,\n\n"
+        "Could you please give me a price for this repair?\n\n"
+        f"Vehicle: {vehicle}\n"
+        f"Job: {job}"
+        f"{location_line}\n\n"
+        "If the final price depends on photos or inspection, a typical price and likely low/high range is fine.\n\n"
+        "Thanks,\n"
+        "Ewan"
+    )
 
 
 def parse_quote_response(text: object) -> dict[str, object]:
