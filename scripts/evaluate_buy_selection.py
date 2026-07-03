@@ -78,6 +78,17 @@ def _latest_by_url(df: pd.DataFrame) -> pd.DataFrame:
     return working.drop_duplicates(subset=["url"], keep="last")
 
 
+def _rename_scored_policy_columns(scored: pd.DataFrame) -> pd.DataFrame:
+    rename_map = {
+        "action_label": "scored_action_label",
+        "resolved_action_label": "scored_resolved_action_label",
+        "action_label_display": "scored_action_label_display",
+        "policy_resolution_status": "scored_policy_resolution_status",
+        "missing_policy_inputs": "scored_missing_policy_inputs",
+    }
+    return scored.rename(columns={source: target for source, target in rename_map.items() if source in scored.columns})
+
+
 def _classification_metrics(
     joined: pd.DataFrame,
     *,
@@ -196,6 +207,11 @@ def evaluate_buy_selection(
                 "simulated_sale_price",
                 "simulated_source",
                 "outcome_type",
+                "action_label",
+                "resolved_action_label",
+                "action_label_display",
+                "policy_resolution_status",
+                "missing_policy_inputs",
                 "purchase_price",
                 "actual_sale_price",
                 "settled_date",
@@ -204,7 +220,8 @@ def evaluate_buy_selection(
         )
     )
 
-    joined = valuations[keep_valuation_cols].merge(scored[keep_scored_cols], on="url", how="inner")
+    scored_for_join = _rename_scored_policy_columns(scored[keep_scored_cols])
+    joined = valuations[keep_valuation_cols].merge(scored_for_join, on="url", how="inner")
     joined["benchmark_type"] = benchmark_type
     joined["profit_column"] = profit_column
     joined["benchmark_profit"] = joined[profit_column]
@@ -263,6 +280,13 @@ def evaluate_buy_selection(
     metrics["stored_action_fallback_rows"] = int(
         (joined["policy_resolution_status"] == "stored_action_missing_policy_inputs").sum()
     )
+    if "scored_policy_resolution_status" in joined.columns:
+        metrics["scored_unresolved_policy_rows"] = int(
+            (joined["scored_policy_resolution_status"] == "missing_policy_inputs").sum()
+        )
+        metrics["scored_stored_action_fallback_rows"] = int(
+            (joined["scored_policy_resolution_status"] == "stored_action_missing_policy_inputs").sum()
+        )
     out_dir.mkdir(parents=True, exist_ok=True)
     write_dataframe_csv_atomic(joined, out_dir / "buy_selection_join.csv", index=False)
     write_dataframe_csv_atomic(metrics, out_dir / "buy_selection_classification.csv", index=False)

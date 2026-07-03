@@ -306,3 +306,55 @@ def test_evaluate_buy_selection_reports_missing_policy_inputs_without_nan_fallba
     assert joined.iloc[0]["missing_policy_inputs"] == "bid_status|hard_max_safety"
     assert metrics.iloc[0]["unresolved_policy_rows"] == 1
     assert metrics.iloc[0]["stored_action_fallback_rows"] == 0
+
+
+def test_evaluate_buy_selection_carries_scored_policy_resolution_fields(tmp_path) -> None:
+    valuations_path = tmp_path / "ai_listing_valuations.csv"
+    scored_path = tmp_path / "simulated_retail_median_outcomes.csv"
+    out_dir = tmp_path / "eval"
+
+    pd.DataFrame(
+        [
+            {
+                "url": "retail-profit",
+                "action_label": "",
+                "computed_verdict": "Conditional Flip",
+                "bid_status": "Cheap",
+                "hard_max_safety": "Strong",
+                "expected_auction_worst_profit_value": 3000,
+                "profit_at_current_bid_worst_value": 3000,
+                "expected_auction_comps_count": 4,
+            },
+        ]
+    ).to_csv(valuations_path, index=False)
+    pd.DataFrame(
+        [
+            {
+                "url": "retail-profit",
+                "simulated_profit": 2000,
+                "action_label": "",
+                "resolved_action_label": "",
+                "action_label_display": "Missing policy inputs",
+                "policy_resolution_status": "missing_policy_inputs",
+                "missing_policy_inputs": "bid_status|hard_max_safety",
+            },
+        ]
+    ).to_csv(scored_path, index=False)
+
+    joined, metrics = evaluate_buy_selection(
+        valuations_path=valuations_path,
+        scored_path=scored_path,
+        out_dir=out_dir,
+        benchmark_type="simulated",
+        profit_column="simulated_profit",
+        prediction_source="action",
+    )
+
+    row = joined.iloc[0]
+    assert row["resolved_action_label"] == "Buy"
+    assert row["policy_resolution_status"] == "resolved_current_policy"
+    assert row["scored_action_label_display"] == "Missing policy inputs"
+    assert row["scored_policy_resolution_status"] == "missing_policy_inputs"
+    assert row["scored_missing_policy_inputs"] == "bid_status|hard_max_safety"
+    assert metrics.iloc[0]["unresolved_policy_rows"] == 0
+    assert metrics.iloc[0]["scored_unresolved_policy_rows"] == 1
