@@ -99,3 +99,4 @@ Push only when the user asks to push or explicitly asks to keep the remote in sy
 - For long-running pipeline work, verify progress from state/log artifacts before claiming success.
 - Keep Grays hammer-bid logic separate from retail resale curve evidence.
 - Keep source commits separate from runtime CSV/artifact commits unless the user explicitly asks for an intentional data commit.
+- Treat tracked runtime CSV churn as quiet by default. Run `scripts\git_runtime_quiet.ps1 -Mode quiet` during normal source work and do not report runtime CSV dirt unless the user asks for data status, an intentional data snapshot, or the CSV changes are directly relevant to the task. Use `-Mode unquiet` only when intentionally reviewing or committing data.

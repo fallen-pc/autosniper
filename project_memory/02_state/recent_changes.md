@@ -1,5 +1,7 @@
 # Recent Changes
 
+- 2026-07-03: Made runtime CSV churn quiet by default for normal source work. `scripts/git_runtime_quiet.ps1` now includes the governed scraper/restricted CSV outputs that routinely change during pipeline runs, and `AGENTS.md` records the standing rule: do not surface runtime CSV dirt unless the user asks for data status, an intentional data snapshot, or the CSV changes are directly relevant.
+
 - 2026-07-02: Clarified the AI Analysis expected-finish tile after the live Pajero row showed positive profit at max cap but negative scenario profit at projected finish. The card now says when projected finish is over the max bid cap, including the dollar gap, before showing the scenario-profit value.
 
 - 2026-07-02: Clarified AI Analysis repair presentation against live active rows. The Condition and Bid Logic tabs now separate the likely repair/risk allowance from the conservative high-side max-bid deduction, and hard-avoid rows say the bid is blocked instead of presenting the reserve as a normal repair deduction.
