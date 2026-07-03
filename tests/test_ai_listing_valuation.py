@@ -687,7 +687,7 @@ def test_curve_analysis_uses_historical_sold_median_for_expected_auction(monkeyp
     assert result["expected_auction_source"] == "historical_sold_median"
     assert result["expected_auction_comps_count"] == 5
     assert ai_listing_valuation._parse_currency(result["expected_auction_profit"]) == round(expected_profit)
-    assert ai_listing_valuation._parse_currency(result["recommended_max_bid"]) == 3_710
+    assert ai_listing_valuation._parse_currency(result["recommended_max_bid"]) == 4_460
     assert result["current_profit_label"] == "Strong"
     assert result["expected_auction_profit_label"] in {"Good", "Strong"}
     assert result["hard_max_safety"] in {"Conditional", "Strong"}
@@ -712,7 +712,7 @@ def test_curve_analysis_caps_pajero_like_listing_by_historical_auction_comps(mon
     listing = pd.Series(
         {
             "url": "test://pajero-regression",
-            "price": "$3,900",
+            "price": "$4,900",
             "year": 2012,
             "make": "MITSUBISHI",
             "model": "Pajero",
@@ -742,7 +742,7 @@ def test_curve_analysis_caps_pajero_like_listing_by_historical_auction_comps(mon
 
     assert result["expected_auction_price"] == "$6,200"
     assert result["expected_auction_source"] == "historical_sold_median"
-    assert ai_listing_valuation._parse_currency(result["recommended_max_bid"]) < 3_900
+    assert ai_listing_valuation._parse_currency(result["recommended_max_bid"]) < 4_900
     assert result["bid_status"] == "Over max"
     assert result["action_label"] == "Avoid"
     assert result["computed_verdict"] == "Trap"

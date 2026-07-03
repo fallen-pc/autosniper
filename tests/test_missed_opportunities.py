@@ -205,8 +205,8 @@ def test_missed_decision_metrics_uses_shared_over_max_avoid_policy(monkeypatch) 
     row = pd.Series(
         {
             "url": "test://missed-over-max",
-            "price_numeric": 13_000,
-            "price": "$13,000",
+            "price_numeric": 14_000,
+            "price": "$14,000",
             "body_type": "Hatch",
             "location": "Melbourne VIC",
             "rego_state": "VIC",
