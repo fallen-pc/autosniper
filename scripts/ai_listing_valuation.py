@@ -148,10 +148,34 @@ DECISION_EVENT_CURRENT_BID_THRESHOLD = 250.0
 
 # Default cost assumptions (AUD)
 DEFAULT_TRANSPORT = 200.0
+# Interstate depot-to-depot transport into the operating state (VIC base).
+# Conservative (upper-range, ute/4WD-sized) figures from 2026 carrier guides:
+# Melbourne-Sydney-Brisbane lanes ~$450-$850, Brisbane->Melbourne ~$570-$1,080,
+# Melbourne-Perth ~$2,000+, Tasmania adds ~$500-$1,000 ferry component.
+INTERSTATE_TRANSPORT_COSTS = {
+    "NSW": 800.0,
+    "ACT": 750.0,
+    "SA": 700.0,
+    "QLD": 1_250.0,
+    "TAS": 1_500.0,
+    "WA": 2_300.0,
+    "NT": 2_500.0,
+}
+INTERSTATE_TRANSPORT_DEFAULT = 1_250.0
 OPERATING_STATE = os.getenv("AUTOSNIPER_OPERATING_STATE", "VIC").strip().upper() or "VIC"
-INTERSTATE_BUYING_ALLOWED = os.getenv(
-    "AUTOSNIPER_ALLOW_INTERSTATE_BUYING", ""
-).strip().lower() in {"1", "true", "yes", "y"}
+_INTERSTATE_ENV_RAW = os.getenv("AUTOSNIPER_ALLOW_INTERSTATE_BUYING", "").strip().lower()
+_INTERSTATE_TRUE_TOKENS = {"1", "true", "yes", "y"}
+_INTERSTATE_FALSE_TOKENS = {"", "0", "false", "no", "n", "off"}
+INTERSTATE_BUYING_ALLOWED = _INTERSTATE_ENV_RAW not in _INTERSTATE_FALSE_TOKENS
+# Optional per-state allowlist: AUTOSNIPER_ALLOW_INTERSTATE_BUYING="nsw,qld,sa"
+# enables interstate buying for those states only; "1/true/yes" allows all states.
+INTERSTATE_ALLOWED_STATES: frozenset[str] | None = None
+if INTERSTATE_BUYING_ALLOWED and _INTERSTATE_ENV_RAW not in _INTERSTATE_TRUE_TOKENS:
+    INTERSTATE_ALLOWED_STATES = frozenset(
+        token.strip().upper()
+        for token in _INTERSTATE_ENV_RAW.replace(";", ",").split(",")
+        if token.strip()
+    ) or None
 DEFAULT_PREP = 300.0
 ROADWORTHY_ESTIMATE = float(os.getenv("AUTOSNIPER_ROADWORTHY_ESTIMATE", "250").strip() or "250")
 DETAILING_HATCH_SEDAN = 99.0
@@ -973,7 +997,16 @@ def _is_unregistered(listing: Mapping[str, Any]) -> bool:
 
 
 def _estimate_transport_cost(location: Any) -> float:
-    return DEFAULT_TRANSPORT
+    """State-aware transport estimate into the operating state.
+
+    Local/in-state (or unparseable) locations keep the flat DEFAULT_TRANSPORT.
+    Interstate locations use the conservative depot-to-depot lane table so
+    interstate listings carry honest logistics costs instead of local pricing.
+    """
+    state = _state_from_text(location)
+    if state is None or state == OPERATING_STATE:
+        return DEFAULT_TRANSPORT
+    return INTERSTATE_TRANSPORT_COSTS.get(state, INTERSTATE_TRANSPORT_DEFAULT)
 
 
 def _state_from_text(value: Any) -> str | None:
@@ -1006,6 +1039,18 @@ def _listing_location_state(listing: Mapping[str, Any]) -> str | None:
 def _is_interstate_listing(listing: Mapping[str, Any]) -> bool:
     state = _listing_location_state(listing)
     return bool(state and state != OPERATING_STATE)
+
+
+def _interstate_purchase_blocked(listing: Mapping[str, Any]) -> bool:
+    """True when the listing is interstate and buying from its state is not enabled."""
+    state = _listing_location_state(listing)
+    if not state or state == OPERATING_STATE:
+        return False
+    if not INTERSTATE_BUYING_ALLOWED:
+        return True
+    if INTERSTATE_ALLOWED_STATES is not None and state not in INTERSTATE_ALLOWED_STATES:
+        return True
+    return False
 
 
 def _is_grays_listing(listing: Mapping[str, Any]) -> bool:
@@ -1179,7 +1224,7 @@ def _flip_difficulty(
     reasons: list[str] = []
     points = 0
     risk_set = set(risk_flags)
-    if "INTERSTATE" in risk_set and not INTERSTATE_BUYING_ALLOWED:
+    if "INTERSTATE" in risk_set:
         return "Out of scope", "Interstate listing"
     if repair_assessment.hard_avoid or "MECHANICAL" in risk_set:
         return "Hard", "Mechanical/hard-avoid risk"
@@ -1273,7 +1318,7 @@ def _discounted_bid_cap(
 
 def _detect_risk_flags(listing: Mapping[str, Any]) -> list[str]:
     flags: list[str] = []
-    if _is_interstate_listing(listing) and not INTERSTATE_BUYING_ALLOWED:
+    if _interstate_purchase_blocked(listing):
         flags.append("INTERSTATE")
     odometer_value = _parse_odometer(
         listing.get("odometer_numeric") or listing.get("odometer_reading")
@@ -1814,7 +1859,7 @@ def run_curve_listing_analysis(
         economic_current_profit_val = 0.0
         economic_current_worst_profit_val = 0.0
     bid_policy_gate = ""
-    if "INTERSTATE" in risk_flags and not INTERSTATE_BUYING_ALLOWED:
+    if "INTERSTATE" in risk_flags:
         recommended_max_bid_val = 0.0
         bid_policy_gate = "INTERSTATE"
 
@@ -1909,7 +1954,7 @@ def run_curve_listing_analysis(
         max_bid_worst_profit_val = (
             _net_profit_value(resale_low_val or resale_mid, recommended_max_bid_val, listing_data) - repair_cost_val
         )
-    if "INTERSTATE" in risk_flags and not INTERSTATE_BUYING_ALLOWED:
+    if "INTERSTATE" in risk_flags:
         max_bid_mid_profit_val = 0.0
         max_bid_worst_profit_val = 0.0
 
@@ -1933,7 +1978,7 @@ def run_curve_listing_analysis(
     if profit_bid_basis is not None and not repair_assessment.hard_avoid:
         net_profit_mid_val = _net_profit_value(resale_mid_val or resale_mid, profit_bid_basis, listing_data) - repair_cost_val
         net_profit_worst_val = _net_profit_value(resale_low_val or resale_mid, profit_bid_basis, listing_data) - repair_cost_val
-    if "INTERSTATE" in risk_flags and not INTERSTATE_BUYING_ALLOWED:
+    if "INTERSTATE" in risk_flags:
         net_profit_mid_val = 0.0
         net_profit_worst_val = 0.0
 
@@ -1960,7 +2005,7 @@ def run_curve_listing_analysis(
             _net_profit_value(resale_low_val or resale_mid, expected_auction_purchase_basis, listing_data)
             - repair_cost_val
         )
-    if "INTERSTATE" in risk_flags and not INTERSTATE_BUYING_ALLOWED:
+    if "INTERSTATE" in risk_flags:
         expected_auction_profit_val = 0.0
         expected_auction_worst_profit_val = 0.0
 
@@ -1971,7 +2016,7 @@ def run_curve_listing_analysis(
         listing_data,
         repair_cost_val,
     )
-    if repair_assessment.hard_avoid or ("INTERSTATE" in risk_flags and not INTERSTATE_BUYING_ALLOWED):
+    if repair_assessment.hard_avoid or ("INTERSTATE" in risk_flags):
         current_profit_val = 0.0
         current_worst_profit_val = 0.0
     current_profit_score = _profit_score(current_worst_profit_val, resale_mid_val)
@@ -1991,7 +2036,7 @@ def run_curve_listing_analysis(
     )
 
     def _derive_verdict() -> str:
-        if "INTERSTATE" in risk_flags and not INTERSTATE_BUYING_ALLOWED:
+        if "INTERSTATE" in risk_flags:
             return "Avoid"
         if resale_low_val is None:
             return "Not Covered"
