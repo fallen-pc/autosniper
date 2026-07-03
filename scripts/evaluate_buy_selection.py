@@ -29,7 +29,17 @@ def _metric_value(value: float, has_evidence: bool) -> Any:
 
 
 def _normalise_action(value: Any) -> str:
-    return str(value or "").strip()
+    if value is None:
+        return ""
+    try:
+        if pd.isna(value):
+            return ""
+    except (TypeError, ValueError):
+        pass
+    text = str(value).strip()
+    if text.lower() in {"nan", "none", "n/a"}:
+        return ""
+    return text
 
 
 def _missing_policy_inputs(row: pd.Series) -> list[str]:

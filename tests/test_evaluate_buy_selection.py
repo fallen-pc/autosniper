@@ -270,3 +270,39 @@ def test_evaluate_buy_selection_resolves_action_with_comps_gate(tmp_path) -> Non
     assert joined.iloc[0]["policy_resolution_status"] == "resolved_current_policy"
     assert metrics.iloc[0]["buy_predictions"] == 0
     assert metrics.iloc[0]["false_negative"] == 1
+
+
+def test_evaluate_buy_selection_reports_missing_policy_inputs_without_nan_fallback(tmp_path) -> None:
+    valuations_path = tmp_path / "ai_listing_valuations.csv"
+    scored_path = tmp_path / "simulated_sold_outcomes.csv"
+    out_dir = tmp_path / "eval"
+
+    pd.DataFrame(
+        [
+            {
+                "url": "missing-policy-inputs",
+                "action_label": None,
+                "computed_verdict": "Avoid",
+            },
+        ]
+    ).to_csv(valuations_path, index=False)
+    pd.DataFrame(
+        [
+            {"url": "missing-policy-inputs", "simulated_actual_profit": 2000},
+        ]
+    ).to_csv(scored_path, index=False)
+
+    joined, metrics = evaluate_buy_selection(
+        valuations_path=valuations_path,
+        scored_path=scored_path,
+        out_dir=out_dir,
+        benchmark_type="simulated",
+        profit_column="simulated_actual_profit",
+        prediction_source="action",
+    )
+
+    assert joined.iloc[0]["resolved_action_label"] == "Review"
+    assert joined.iloc[0]["policy_resolution_status"] == "missing_policy_inputs"
+    assert joined.iloc[0]["missing_policy_inputs"] == "bid_status|hard_max_safety"
+    assert metrics.iloc[0]["unresolved_policy_rows"] == 1
+    assert metrics.iloc[0]["stored_action_fallback_rows"] == 0
