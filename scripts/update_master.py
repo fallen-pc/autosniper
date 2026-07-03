@@ -20,6 +20,7 @@ if __package__ in (None, ""):
     from shared.governance import SOLD_DETAIL_SCHEMA
     from shared.sold_cleaning import normalize_listing_fields
     from shared.canonical_tagging import tag_dataframe
+    from shared.schema import STATE_DEAD_URL
     from shared.state_machine import ensure_state_schema, normalize_state
     from shared.validators import R, validate_sold_cars_df
     from shared.exclusions import append_pipeline_exclusions
@@ -30,6 +31,7 @@ else:
     from shared.governance import SOLD_DETAIL_SCHEMA
     from shared.sold_cleaning import normalize_listing_fields
     from shared.canonical_tagging import tag_dataframe
+    from shared.schema import STATE_DEAD_URL
     from shared.state_machine import ensure_state_schema, normalize_state
     from shared.validators import R, validate_sold_cars_df
     from shared.exclusions import append_pipeline_exclusions
@@ -475,6 +477,21 @@ def _remove_wovr_rows(frame: pd.DataFrame) -> pd.DataFrame:
     return frame
 
 
+def _filter_active_rows_with_live_signals(frame: pd.DataFrame) -> pd.DataFrame:
+    if frame.empty:
+        return frame
+    working = frame.copy()
+    if "price" not in working.columns:
+        working["price"] = ""
+    if "time_remaining_or_date_sold" not in working.columns:
+        working["time_remaining_or_date_sold"] = ""
+    keep_mask = (~_blank_mask(working["price"])) | (~_blank_mask(working["time_remaining_or_date_sold"]))
+    removed = int((~keep_mask).sum())
+    if removed:
+        print(f"Filtered out {removed} active row(s) without price or countdown evidence.")
+    return working.loc[keep_mask].copy()
+
+
 def _project_columns(frame: pd.DataFrame, columns: Sequence[str]) -> pd.DataFrame:
     if frame is None:
         return pd.DataFrame(columns=columns)
@@ -720,6 +737,7 @@ def update_master_database() -> None:
 
     if not active_df.empty:
         active_df = _remove_wovr_rows(active_df)
+        active_df = _filter_active_rows_with_live_signals(active_df)
         active_queue_urls = _load_active_queue_urls()
         if active_queue_urls and "url" in active_df.columns:
             active_df["_url_norm"] = _normalize_url(active_df["url"])
@@ -814,7 +832,10 @@ def update_master_database() -> None:
         completed_urls.update(sold_df["url"].dropna().tolist())
     if "url" in referred_df.columns:
         completed_urls.update(referred_df["url"].dropna().tolist())
-    _prune_urls_from_dataset(dataset_path("active_vehicle_links.csv"), completed_urls, "active links (sold/referred)")
+    if "url" in state_df.columns and "state" in state_df.columns:
+        dead_urls = state_df.loc[state_df["state"] == STATE_DEAD_URL, "url"].dropna().tolist()
+        completed_urls.update(dead_urls)
+    _prune_urls_from_dataset(dataset_path("active_vehicle_links.csv"), completed_urls, "active links (sold/referred/dead)")
     if "url" in active_target.columns:
         active_urls = {url.strip() for url in active_target["url"].dropna().tolist() if str(url).strip()}
         if active_urls:

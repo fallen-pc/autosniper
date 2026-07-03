@@ -65,6 +65,10 @@ def test_load_allowed_variants_preserves_explicit_canonical_tag(tmp_path):
     assert variants[0].canonical_tag == "mazda_3_maxx-sport_petrol_auto_hatch_bl"
 
 
+def test_is_canonical_eligible_accepts_lowercase_ok_reason():
+    assert ct.is_canonical_eligible("nissan_xtrail_st_petrol_auto_suv_t31", "[ok]")
+
+
 def test_assign_canonical_tag_accepts_toyota_corolla_ascent_zre182r_early_series_match():
     ct._load_curve_year_band.cache_clear()
     row = {

@@ -89,7 +89,7 @@ def is_canonical_eligible(canonical_tag: object, canonical_reason: object) -> bo
     if not tag_text or tag_text == UNCLASSIFIED:
         return False
     reason_text = str(canonical_reason or "").strip()
-    return reason_text in ELIGIBLE_CANONICAL_REASONS
+    return reason_text in ELIGIBLE_CANONICAL_REASONS or reason_text.upper() in ELIGIBLE_CANONICAL_REASONS
 
 BODY_ALIASES: Tuple[Tuple[str, str], ...] = (
     ("hatchback", "hatch"),
