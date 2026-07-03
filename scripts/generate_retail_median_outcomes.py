@@ -39,6 +39,7 @@ from scripts.atomic_csv import write_dataframe_csv_atomic
 from scripts.generate_opportunity_lanes import _prepare_common
 from shared.comps_engine import parse_currency, parse_numeric
 from shared.data_loader import dataset_path
+from shared.decision_policy import derive_action_label_from_row
 
 DEFAULT_VALUATIONS_PATH = dataset_path("ai_listing_valuations.csv")
 DEFAULT_STATIC_DETAILS_PATH = dataset_path("vehicle_static_details.csv")
@@ -47,6 +48,12 @@ DEFAULT_SOLD_DETAILS_PATH = dataset_path("sold_cars.csv")
 DEFAULT_CARSALES_PATH = Path("CSV_data/quality/carsales_apify_listings.csv")
 DEFAULT_AUTOTRADER_PATH = Path("autotrader_isolated/output/autotrader_recent_market_tagged.csv")
 DEFAULT_OUTPUT_PATH = dataset_path("model_audit/simulated_retail_median_outcomes.csv")
+DEFAULT_MIN_PROFIT = 1500.0
+POLICY_INPUT_COLUMNS = (
+    "computed_verdict",
+    "bid_status",
+    "hard_max_safety",
+)
 
 LISTING_DETAIL_COLUMNS = [
     "url",
@@ -142,6 +149,52 @@ def _buy_price_basis(row: pd.Series) -> tuple[float | None, str]:
     return None, ""
 
 
+def _clean_text(value: object) -> str:
+    if value is None:
+        return ""
+    try:
+        if pd.isna(value):
+            return ""
+    except (TypeError, ValueError):
+        pass
+    text = str(value).strip()
+    if text.lower() in {"", "nan", "none", "n/a"}:
+        return ""
+    return text
+
+
+def _missing_policy_inputs(row: pd.Series) -> list[str]:
+    return [column for column in POLICY_INPUT_COLUMNS if not _clean_text(row.get(column))]
+
+
+def _resolved_action_label(row: pd.Series) -> str:
+    fallback = _clean_text(row.get("action_label"))
+    if _missing_policy_inputs(row) and not fallback:
+        return ""
+    return derive_action_label_from_row(
+        row,
+        min_profit=DEFAULT_MIN_PROFIT,
+        fallback=fallback,
+    )
+
+
+def _policy_resolution_status(row: pd.Series) -> str:
+    if not _missing_policy_inputs(row):
+        return "resolved_current_policy"
+    if _clean_text(row.get("action_label")):
+        return "stored_action_missing_policy_inputs"
+    return "missing_policy_inputs"
+
+
+def _action_label_display(row: pd.Series) -> str:
+    action = _clean_text(row.get("resolved_action_label")) or _clean_text(row.get("action_label"))
+    if action:
+        return action
+    if _policy_resolution_status(row) == "missing_policy_inputs":
+        return "Missing policy inputs"
+    return "Missing action label"
+
+
 def _merge_listing_details(valuations: pd.DataFrame, detail_paths: tuple[Path, ...]) -> pd.DataFrame:
     working = valuations.copy()
     for column in LISTING_DETAIL_COLUMNS[1:]:
@@ -212,6 +265,16 @@ def generate_retail_median_outcomes(
         simulated_profit = None
         if retail_median is not None and buy_price is not None:
             simulated_profit = retail_median - buy_price - fees - repair_high
+        resolved_action = _resolved_action_label(row)
+        policy_status = _policy_resolution_status(row)
+        missing_policy_inputs = "|".join(_missing_policy_inputs(row))
+        display_row = pd.Series(
+            {
+                "resolved_action_label": resolved_action,
+                "action_label": row.get("action_label"),
+                "policy_resolution_status": policy_status,
+            }
+        )
 
         rows.append(
             {
@@ -222,7 +285,14 @@ def generate_retail_median_outcomes(
                 "variant": row.get("variant"),
                 "lane_key": row.get("lane_key"),
                 "action_label": row.get("action_label"),
+                "resolved_action_label": resolved_action,
+                "action_label_display": _action_label_display(display_row),
+                "policy_resolution_status": policy_status,
+                "missing_policy_inputs": missing_policy_inputs,
                 "computed_verdict": row.get("computed_verdict"),
+                "bid_status": row.get("bid_status"),
+                "hard_max_safety": row.get("hard_max_safety"),
+                "expected_auction_comps_count": row.get("expected_auction_comps_count"),
                 "confidence": row.get("confidence"),
                 "buy_price_basis_field": buy_price_basis,
                 "buy_price_basis_value": buy_price,
@@ -284,8 +354,8 @@ def main(argv: list[str] | None = None) -> int:
     if with_profit:
         profitable = output.dropna(subset=["simulated_profit"]).copy()
         action_labels = (
-            profitable["action_label"]
-            if "action_label" in profitable.columns
+            profitable["action_label_display"]
+            if "action_label_display" in profitable.columns
             else pd.Series("", index=profitable.index)
         )
         profitable["action_label_display"] = (

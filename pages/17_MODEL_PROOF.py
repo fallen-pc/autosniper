@@ -253,7 +253,11 @@ else:
     if not has_profit.empty:
         by_action = has_profit.copy()
         action_labels = (
-            by_action["action_label"]
+            by_action["action_label_display"]
+            if "action_label_display" in by_action.columns
+            else by_action["resolved_action_label"]
+            if "resolved_action_label" in by_action.columns
+            else by_action["action_label"]
             if "action_label" in by_action.columns
             else pd.Series("", index=by_action.index)
         )
@@ -281,7 +285,12 @@ else:
         "model",
         "variant",
         "action_label",
+        "resolved_action_label",
+        "action_label_display",
+        "policy_resolution_status",
         "computed_verdict",
+        "bid_status",
+        "hard_max_safety",
         "buy_price_basis_value",
         "retail_match_count",
         "simulated_retail_median",

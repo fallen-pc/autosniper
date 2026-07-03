@@ -221,3 +221,63 @@ def test_generate_profit_treats_blank_repair_high_as_zero(tmp_path) -> None:
     assert row["simulated_retail_median"] == 32000.0
     assert row["simulated_profit"] == 11500.0
     assert "within +/-2yr" in row["outcome_note"]
+
+
+def test_generate_profit_marks_missing_policy_inputs(tmp_path) -> None:
+    valuations_path = tmp_path / "valuations.csv"
+    details_path = tmp_path / "details.csv"
+    retail_path = tmp_path / "retail.csv"
+    output_path = tmp_path / "outcomes.csv"
+
+    pd.DataFrame(
+        [
+            {
+                "url": "u1",
+                "analysis_timestamp": "2026-01-01T00:00:00Z",
+                "year": 2018,
+                "make": "Toyota",
+                "model": "Hilux",
+                "variant": "SR5",
+                "body_type": "Ute",
+                "transmission": "Automatic",
+                "fuel_type": "Diesel",
+                "odometer_reading": 100000,
+                "computed_verdict": "Conditional Flip",
+                "recommended_max_bid": "$20,000",
+                "fees_estimate": "$500",
+            }
+        ]
+    ).to_csv(valuations_path, index=False)
+    pd.DataFrame([{"url": "u1"}]).to_csv(details_path, index=False)
+    pd.DataFrame(
+        [
+            {
+                "url": f"retail-{idx}",
+                "year": 2018,
+                "make": "Toyota",
+                "model": "Hilux",
+                "variant": "SR5",
+                "body_type": "Ute",
+                "transmission": "Automatic",
+                "fuel_type": "Diesel",
+                "odometer": 100000,
+                "price": price,
+            }
+            for idx, price in enumerate([30000, 31000, 32000, 33000, 34000])
+        ]
+    ).to_csv(retail_path, index=False)
+
+    output = generate_retail_median_outcomes(
+        valuations_path=valuations_path,
+        static_details_path=details_path,
+        active_details_path=tmp_path / "missing_active.csv",
+        sold_details_path=tmp_path / "missing_sold.csv",
+        carsales_path=retail_path,
+        autotrader_path=tmp_path / "missing_autotrader.csv",
+        output_path=output_path,
+    )
+
+    row = output.iloc[0]
+    assert row["policy_resolution_status"] == "missing_policy_inputs"
+    assert row["missing_policy_inputs"] == "bid_status|hard_max_safety"
+    assert row["action_label_display"] == "Missing policy inputs"

@@ -229,3 +229,44 @@ def test_evaluate_buy_selection_can_use_computed_verdict_proxy(tmp_path) -> None
     assert row["false_negative"] == 1
     assert row["precision"] == 1.0
     assert row["recall"] == 0.5
+
+
+def test_evaluate_buy_selection_resolves_action_with_comps_gate(tmp_path) -> None:
+    valuations_path = tmp_path / "ai_listing_valuations.csv"
+    scored_path = tmp_path / "simulated_sold_outcomes.csv"
+    out_dir = tmp_path / "eval"
+
+    pd.DataFrame(
+        [
+            {
+                "url": "thin-comps-profit",
+                "action_label": "Buy",
+                "computed_verdict": "Conditional Flip",
+                "bid_status": "Cheap",
+                "hard_max_safety": "Strong",
+                "expected_auction_worst_profit_value": 3000,
+                "profit_at_current_bid_worst_value": 3000,
+                "expected_auction_comps_count": 1,
+            },
+        ]
+    ).to_csv(valuations_path, index=False)
+    pd.DataFrame(
+        [
+            {"url": "thin-comps-profit", "simulated_actual_profit": 2000},
+        ]
+    ).to_csv(scored_path, index=False)
+
+    joined, metrics = evaluate_buy_selection(
+        valuations_path=valuations_path,
+        scored_path=scored_path,
+        out_dir=out_dir,
+        benchmark_type="simulated",
+        profit_column="simulated_actual_profit",
+        prediction_source="action",
+    )
+
+    assert joined.iloc[0]["resolved_action_label"] == "Watch"
+    assert joined.iloc[0]["prediction_label"] == "Watch"
+    assert joined.iloc[0]["policy_resolution_status"] == "resolved_current_policy"
+    assert metrics.iloc[0]["buy_predictions"] == 0
+    assert metrics.iloc[0]["false_negative"] == 1

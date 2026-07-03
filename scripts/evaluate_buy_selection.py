@@ -17,6 +17,11 @@ from shared.data_loader import dataset_path
 
 DEFAULT_OUT_DIR = Path("output") / "eval"
 DEFAULT_MIN_PROFIT = 1500.0
+POLICY_INPUT_COLUMNS = (
+    "computed_verdict",
+    "bid_status",
+    "hard_max_safety",
+)
 
 
 def _metric_value(value: float, has_evidence: bool) -> Any:
@@ -25,6 +30,26 @@ def _metric_value(value: float, has_evidence: bool) -> Any:
 
 def _normalise_action(value: Any) -> str:
     return str(value or "").strip()
+
+
+def _missing_policy_inputs(row: pd.Series) -> list[str]:
+    missing: list[str] = []
+    for column in POLICY_INPUT_COLUMNS:
+        value = row.get(column)
+        text = "" if value is None or pd.isna(value) else str(value).strip()
+        if not text or text.lower() in {"nan", "none", "n/a"}:
+            missing.append(column)
+    return missing
+
+
+def _policy_resolution_status(row: pd.Series) -> str:
+    stored_action = _normalise_action(row.get("action_label"))
+    missing = _missing_policy_inputs(row)
+    if not missing:
+        return "resolved_current_policy"
+    if stored_action:
+        return "stored_action_missing_policy_inputs"
+    return "missing_policy_inputs"
 
 
 def _normalise_label_set(values: list[str] | tuple[str, ...] | None) -> set[str]:
@@ -143,6 +168,7 @@ def evaluate_buy_selection(
             "expected_auction_profit_value",
             "expected_auction_worst_profit",
             "expected_auction_worst_profit_value",
+            "expected_auction_comps_count",
             "profit_at_current_bid_worst",
             "profit_at_current_bid_worst_value",
             "hard_max_safety",
@@ -189,6 +215,8 @@ def evaluate_buy_selection(
         ),
         axis=1,
     )
+    joined["policy_resolution_status"] = joined.apply(_policy_resolution_status, axis=1)
+    joined["missing_policy_inputs"] = joined.apply(lambda row: "|".join(_missing_policy_inputs(row)), axis=1)
     if prediction_source == "action":
         joined["prediction_label"] = joined["resolved_action_label"].apply(_normalise_action)
     joined["prediction_source"] = prediction_source
@@ -220,6 +248,10 @@ def evaluate_buy_selection(
                 status=status,
             )
         ]
+    )
+    metrics["unresolved_policy_rows"] = int((joined["policy_resolution_status"] == "missing_policy_inputs").sum())
+    metrics["stored_action_fallback_rows"] = int(
+        (joined["policy_resolution_status"] == "stored_action_missing_policy_inputs").sum()
     )
     out_dir.mkdir(parents=True, exist_ok=True)
     write_dataframe_csv_atomic(joined, out_dir / "buy_selection_join.csv", index=False)
