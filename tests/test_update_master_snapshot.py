@@ -348,6 +348,185 @@ def test_update_master_prunes_dead_url_from_active_links(monkeypatch, tmp_path) 
     assert active_links_after["url"].tolist() == [live_url]
 
 
+def test_update_master_prunes_terminal_state_from_active_links(monkeypatch, tmp_path) -> None:
+    static_path = tmp_path / "vehicle_static_details.csv"
+    state_path = tmp_path / "vehicle_state.csv"
+    sold_path = tmp_path / "sold_cars.csv"
+    referred_path = tmp_path / "referred_cars.csv"
+    active_path = tmp_path / "active_vehicle_details.csv"
+    active_links_path = tmp_path / "active_vehicle_links.csv"
+    sold_url = "https://example.com/lot/sold"
+    live_url = "https://example.com/lot/live"
+
+    pd.DataFrame(
+        [
+            {"url": sold_url, "year": 2013, "make": "Nissan", "model": "X-Trail", "variant": "ST"},
+            {"url": live_url, "year": 2020, "make": "Toyota", "model": "Corolla", "variant": "Ascent"},
+        ]
+    ).to_csv(static_path, index=False)
+    pd.DataFrame(
+        [
+            {
+                "url": sold_url,
+                "state": "sold",
+                "current_price": 6209,
+                "final_sale_price": "",
+                "final_sale_date": "",
+                "bid_count": 78,
+                "time_remaining": "",
+                "terminal_reason": "sold",
+                "state_updated_at": "2026-07-01T00:00:00Z",
+                "fetch_fail_count": 0,
+                "last_fetch_error": "",
+                "last_evidence": "sold_detected",
+                "run_id": "run-1",
+            },
+            {
+                "url": live_url,
+                "state": "active",
+                "current_price": 1000,
+                "bid_count": 1,
+                "time_remaining": "2h",
+                "terminal_reason": "",
+                "state_updated_at": "2026-07-01T00:00:00Z",
+                "fetch_fail_count": 0,
+                "last_fetch_error": "",
+                "last_evidence": "live_countdown_present",
+                "run_id": "run-1",
+            },
+        ]
+    ).to_csv(state_path, index=False)
+    pd.DataFrame(columns=["url"]).to_csv(sold_path, index=False)
+    pd.DataFrame(columns=["url"]).to_csv(referred_path, index=False)
+    pd.DataFrame(columns=["url"]).to_csv(active_path, index=False)
+    pd.DataFrame([{"url": sold_url}, {"url": live_url}]).to_csv(active_links_path, index=False)
+
+    monkeypatch.setattr(update_master, "STATIC_FILE", static_path)
+    monkeypatch.setattr(update_master, "STATE_FILE", state_path)
+    monkeypatch.setattr(update_master, "SOLD_FILE", sold_path)
+    monkeypatch.setattr(update_master, "REFERRED_FILE", referred_path)
+    monkeypatch.setattr(update_master, "ACTIVE_FILE", active_path)
+    monkeypatch.setattr(
+        update_master,
+        "dataset_path",
+        lambda filename: active_links_path if filename == "active_vehicle_links.csv" else tmp_path / filename,
+    )
+    monkeypatch.setattr(update_master, "normalize_listing_fields", lambda df: df.copy())
+    monkeypatch.setattr(update_master, "tag_dataframe", lambda df, **_: df.copy())
+    monkeypatch.setattr(update_master, "build_restricted_datasets", lambda: None)
+
+    update_master.update_master_database()
+
+    active_links_after = pd.read_csv(active_links_path)
+    assert active_links_after["url"].tolist() == [live_url]
+
+
+def test_update_master_backfills_sold_from_normalized_identity(monkeypatch, tmp_path) -> None:
+    static_path = tmp_path / "vehicle_static_details.csv"
+    normalized_path = tmp_path / "normalised_data.csv"
+    state_path = tmp_path / "vehicle_state.csv"
+    sold_path = tmp_path / "sold_cars.csv"
+    referred_path = tmp_path / "referred_cars.csv"
+    active_path = tmp_path / "active_vehicle_details.csv"
+    active_links_path = tmp_path / "active_vehicle_links.csv"
+    sold_url = "https://example.com/lot/sold"
+    live_url = "https://example.com/lot/live"
+
+    pd.DataFrame(
+        [
+            {"url": live_url, "year": 2020, "make": "Toyota", "model": "Corolla", "variant": "Ascent"},
+        ]
+    ).to_csv(static_path, index=False)
+    pd.DataFrame(
+        [
+            {
+                "url": sold_url,
+                "year": 2013,
+                "make": "Toyota",
+                "model": "RAV4",
+                "variant": "GX Petrol Auto",
+                "body_type": "SUV",
+                "transmission": "Automatic",
+                "fuel_type": "Petrol",
+                "odometer_reading": 258326,
+                "vin": "",
+                "location": "NSW",
+            },
+            {
+                "url": live_url,
+                "year": 2020,
+                "make": "Toyota",
+                "model": "Corolla",
+                "variant": "Ascent",
+                "body_type": "Sedan",
+                "transmission": "Automatic",
+                "fuel_type": "Petrol",
+                "odometer_reading": 80000,
+                "vin": "",
+                "location": "VIC",
+            },
+        ]
+    ).to_csv(normalized_path, index=False)
+    pd.DataFrame(
+        [
+            {
+                "url": sold_url,
+                "state": "sold",
+                "current_price": 6209,
+                "final_sale_price": 6209,
+                "final_sale_date": "23 June 2026 20:00 AEST",
+                "bid_count": 78,
+                "time_remaining": "23 June 2026 20:00 AEST",
+                "terminal_reason": "sold_with_final_price",
+                "state_updated_at": "2026-07-01T00:00:00Z",
+                "fetch_fail_count": 0,
+                "last_fetch_error": "",
+                "last_evidence": "sold_detected",
+                "run_id": "run-1",
+            },
+            {
+                "url": live_url,
+                "state": "active",
+                "current_price": 1000,
+                "bid_count": 1,
+                "time_remaining": "2h",
+                "terminal_reason": "",
+                "state_updated_at": "2026-07-01T00:00:00Z",
+                "fetch_fail_count": 0,
+                "last_fetch_error": "",
+                "last_evidence": "live_countdown_present",
+                "run_id": "run-1",
+            },
+        ]
+    ).to_csv(state_path, index=False)
+    pd.DataFrame(columns=["url"]).to_csv(sold_path, index=False)
+    pd.DataFrame(columns=["url"]).to_csv(referred_path, index=False)
+    pd.DataFrame(columns=["url"]).to_csv(active_path, index=False)
+    pd.DataFrame([{"url": sold_url}, {"url": live_url}]).to_csv(active_links_path, index=False)
+
+    monkeypatch.setattr(update_master, "STATIC_FILE", static_path)
+    monkeypatch.setattr(update_master, "NORMALIZED_FILE", normalized_path)
+    monkeypatch.setattr(update_master, "STATE_FILE", state_path)
+    monkeypatch.setattr(update_master, "SOLD_FILE", sold_path)
+    monkeypatch.setattr(update_master, "REFERRED_FILE", referred_path)
+    monkeypatch.setattr(update_master, "ACTIVE_FILE", active_path)
+    monkeypatch.setattr(
+        update_master,
+        "dataset_path",
+        lambda filename: active_links_path if filename == "active_vehicle_links.csv" else tmp_path / filename,
+    )
+    monkeypatch.setattr(update_master, "tag_dataframe", lambda df, **_: df.copy())
+    monkeypatch.setattr(update_master, "build_restricted_datasets", lambda: None)
+
+    update_master.update_master_database()
+
+    sold_after = pd.read_csv(sold_path)
+    assert sold_after["url"].tolist() == [sold_url]
+    assert sold_after.iloc[0]["date_sold"] == "2026-06-23"
+    active_links_after = pd.read_csv(active_links_path)
+    assert active_links_after["url"].tolist() == [live_url]
+
+
 def test_update_master_excludes_active_rows_without_price_or_countdown(monkeypatch, tmp_path) -> None:
     static_path = tmp_path / "vehicle_static_details.csv"
     state_path = tmp_path / "vehicle_state.csv"

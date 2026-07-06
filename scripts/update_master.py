@@ -20,7 +20,7 @@ if __package__ in (None, ""):
     from shared.governance import SOLD_DETAIL_SCHEMA
     from shared.sold_cleaning import normalize_listing_fields
     from shared.canonical_tagging import tag_dataframe
-    from shared.schema import STATE_DEAD_URL
+    from shared.schema import TERMINAL_STATES
     from shared.state_machine import ensure_state_schema, normalize_state
     from shared.validators import R, validate_sold_cars_df
     from shared.exclusions import append_pipeline_exclusions
@@ -31,7 +31,7 @@ else:
     from shared.governance import SOLD_DETAIL_SCHEMA
     from shared.sold_cleaning import normalize_listing_fields
     from shared.canonical_tagging import tag_dataframe
-    from shared.schema import STATE_DEAD_URL
+    from shared.schema import TERMINAL_STATES
     from shared.state_machine import ensure_state_schema, normalize_state
     from shared.validators import R, validate_sold_cars_df
     from shared.exclusions import append_pipeline_exclusions
@@ -42,11 +42,13 @@ ACTIVE_FILE = dataset_path("active_vehicle_details.csv")
 STATIC_FILE = dataset_path("vehicle_static_details.csv")
 STATE_FILE = dataset_path("vehicle_state.csv")
 SOLD_DISCARD_LOG = dataset_path("scrapers/sold_discard_log.csv")
+NORMALIZED_FILE = dataset_path("normalised_data.csv")
 
 DEDUP_KEYS: Sequence[str] = ("url", "vin")
 REFERRED_STATUSES = {"referred", "canceled", "cancelled", "closed"}
 EXCLUDED_VARIANT_KEYWORDS = ("motorcycle",)
 SOLD_REDUNDANT_COLUMNS = ("time_remaining_or_date_sold", "final_price", "final_bids", "status")
+ISO_DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 WOVR_PATTERN = re.compile(
     r"\bwovr\b|wovr[-\s]*(?:inspected|repairable|statutory)|write[-\s]?off",
     re.IGNORECASE,
@@ -132,6 +134,11 @@ def _parse_date(value: object) -> str | None:
     if _is_blank(value):
         return None
     text = str(value).strip()
+    if ISO_DATE_RE.match(text):
+        try:
+            return datetime.strptime(text, "%Y-%m-%d").date().isoformat()
+        except ValueError:
+            return None
     try:
         parsed = date_parser.parse(text, fuzzy=True, dayfirst=True, tzinfos=AU_TZINFOS)
     except (ValueError, TypeError):
@@ -657,6 +664,25 @@ def _load_state_table() -> pd.DataFrame:
     return ensure_state_schema(state_df)
 
 
+def _load_static_identity_table() -> pd.DataFrame:
+    static_df = _load_dataframe(STATIC_FILE)
+    if NORMALIZED_FILE.parent != STATIC_FILE.parent:
+        return static_df
+    normalized_df = _load_dataframe(NORMALIZED_FILE)
+    if normalized_df.empty:
+        return static_df
+    if static_df.empty:
+        return normalized_df
+    if "url" not in normalized_df.columns or "url" not in static_df.columns:
+        return static_df
+    combined = pd.concat([normalized_df, static_df], ignore_index=True, sort=False)
+    combined["_url_norm"] = _normalize_url(combined["url"])
+    combined = combined[combined["_url_norm"].ne("")]
+    combined = combined.drop_duplicates(subset=["_url_norm"], keep="last")
+    combined = combined.drop(columns=["_url_norm"])
+    return combined.reset_index(drop=True)
+
+
 def _prune_urls_from_dataset(path: Path, urls: set[str], label: str) -> None:
     if not urls or not path.exists():
         return
@@ -682,7 +708,7 @@ def update_master_database() -> None:
     state_df = state_df.copy()
     state_df["state"] = state_df["state"].apply(normalize_state)
 
-    static_df = _load_dataframe(STATIC_FILE)
+    static_df = _load_static_identity_table()
     existing_active = _load_dataframe(ACTIVE_FILE)
 
     active_df = _materialize_state_view(
@@ -833,9 +859,10 @@ def update_master_database() -> None:
     if "url" in referred_df.columns:
         completed_urls.update(referred_df["url"].dropna().tolist())
     if "url" in state_df.columns and "state" in state_df.columns:
-        dead_urls = state_df.loc[state_df["state"] == STATE_DEAD_URL, "url"].dropna().tolist()
-        completed_urls.update(dead_urls)
-    _prune_urls_from_dataset(dataset_path("active_vehicle_links.csv"), completed_urls, "active links (sold/referred/dead)")
+        terminal_mask = state_df["state"].astype(str).str.strip().str.lower().isin(TERMINAL_STATES)
+        terminal_urls = state_df.loc[terminal_mask, "url"].dropna().tolist()
+        completed_urls.update(terminal_urls)
+    _prune_urls_from_dataset(dataset_path("active_vehicle_links.csv"), completed_urls, "active links (terminal state)")
     if "url" in active_target.columns:
         active_urls = {url.strip() for url in active_target["url"].dropna().tolist() if str(url).strip()}
         if active_urls:

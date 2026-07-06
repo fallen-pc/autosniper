@@ -21,6 +21,8 @@ TIME_TOKEN_PATTERN = re.compile(
     re.IGNORECASE,
 )
 DATE_SOLD_HINT = re.compile(r"\b\d{1,2}\s+[A-Za-z]+\s+\d{4}\b|\b\d{4}-\d{2}-\d{2}\b")
+ISO_DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+AU_TZINFOS = {"AEST": 10 * 3600, "AEDT": 11 * 3600}
 
 
 class R:
@@ -152,8 +154,14 @@ def _parse_price(value: object) -> int | None:
 def _parse_date_iso(value: object) -> str | None:
     if _is_blank(value):
         return None
+    text = str(value).strip()
+    if ISO_DATE_RE.match(text):
+        try:
+            return datetime.strptime(text, "%Y-%m-%d").date().isoformat()
+        except ValueError:
+            return None
     try:
-        parsed = date_parser.parse(str(value), fuzzy=True, dayfirst=True)
+        parsed = date_parser.parse(text, fuzzy=True, dayfirst=True, tzinfos=AU_TZINFOS)
     except (ValueError, TypeError):
         return None
     return parsed.date().isoformat()
@@ -492,4 +500,3 @@ def validate_sold_cars_df(
     if "bids" in cleaned.columns:
         cleaned["bids"] = bids_series.loc[cleaned.index].fillna(0).astype(int)
     return cleaned, _build_stats(len(df), len(cleaned))
-
