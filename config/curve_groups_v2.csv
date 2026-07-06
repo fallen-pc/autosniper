@@ -88,3 +88,7 @@ mitsubishi_outlander_ls_petrol_auto_suv_zk,mitsubishi_outlander_ls_zk_suv_auto_p
 nissan_xtrail_st-l_petrol_auto_suv_t31,nissan_xtrail_st-l_t31_suv_auto_petrol,active,Direct X-Trail ST-L T31 automatic petrol SUV mapping
 nissan_xtrail_ti_petrol_auto_suv_t31,nissan_xtrail_ti_t31_suv_auto_petrol,active,Direct X-Trail Ti T31 automatic petrol SUV mapping
 subaru_forester_xs_petrol_auto_suv_s3,subaru_forester_xs_s3_suv_auto_petrol,active,Direct Forester XS S3 automatic petrol SUV mapping
+toyota_aurion_at-x_petrol_auto_sedan_gsv40r,toyota_aurion_at-x_gsv40r_sedan_auto_petrol,active,Direct GSV40R AT-X sedan mapping from private Carsales evidence
+holden_calais_petrol_auto_sedan_ve,holden_calais_ve_sedan_auto_petrol,active,Plain VE Calais sedan mapping from private Carsales evidence; excludes V trim
+kia_cerato_s_petrol_auto_sedan_yd,kia_cerato_s_yd_sedan_auto_petrol,active,Direct YD S sedan mapping from private Carsales evidence
+holden_cruze_cdx_petrol_auto_sedan_jg,holden_cruze_cdx_jg_sedan_auto_petrol,active,Direct JG CDX sedan mapping from private Carsales evidence

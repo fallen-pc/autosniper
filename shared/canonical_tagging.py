@@ -81,6 +81,12 @@ MODEL_ALIASES = {
     "x-trail": "xtrail",
     "forester": "forester",
     "focus": "focus",
+    "falcon": "falcon",
+    "aurion": "aurion",
+    "cerato": "cerato",
+    "calais": "calais",
+    "cruze": "cruze",
+    "barina": "barina",
 }
 
 

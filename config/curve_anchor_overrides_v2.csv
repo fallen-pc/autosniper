@@ -54,3 +54,7 @@ volkswagen_golf_comfortline_vi_hatch_auto_diesel,2009|2010|2011,"Volkswagen Golf
 volkswagen_golf_comfortline_v_hatch_auto_petrol,2005|2007|2008,"Volkswagen Golf V Comfortline automatic petrol hatch anchors from private Carsales/Apify evidence; GTI, R, Trendline, Highline, VI, VII, wagon, manual, and diesel lanes stay separate."
 volkswagen_golf_gti_v_hatch_auto_petrol,2007|2008|2009,"Volkswagen Golf V/A5 GTI automatic petrol hatch anchors from private Carsales/Apify evidence; Comfortline, Trendline, Golf R, VI, wagon, manual, and diesel lanes stay separate."
 volkswagen_golf_trendline_vi_hatch_auto_petrol,2009|2011|2012,"Volkswagen Golf VI 90TSI Trendline automatic petrol hatch anchors from private Carsales/Apify evidence; Comfortline, GTI, R, Highline, wagon, manual, and diesel lanes stay separate."
+toyota_aurion_at-x_gsv40r_sedan_auto_petrol,2006|2008|2011,GSV40R AT-X private Carsales evidence; intervening years interpolate.
+holden_calais_ve_sedan_auto_petrol,2006|2008|2010,Plain VE Calais private Carsales evidence; excludes V trim and VE Series II.
+kia_cerato_s_yd_sedan_auto_petrol,2013|2015|2018,YD S private Carsales evidence; Sport/Sport+/Si/S Premium excluded.
+holden_cruze_cdx_jg_sedan_auto_petrol,2009|2010|2011,JG CDX sedan private Carsales evidence; JH Series II excluded.

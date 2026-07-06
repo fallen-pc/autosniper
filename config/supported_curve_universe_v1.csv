@@ -84,3 +84,7 @@ mitsubishi_outlander_ls_zk_suv_auto_petrol,mitsubishi,outlander,suv,petrol,auto,
 nissan_xtrail_st-l_t31_suv_auto_petrol,nissan,xtrail,suv,petrol,auto,t31,live_now,1,Saved X-Trail ST-L T31 automatic petrol SUV curve built from private Carsales/Apify evidence; ST Ti diesel and later-series lanes stay separate
 nissan_xtrail_ti_t31_suv_auto_petrol,nissan,xtrail,suv,petrol,auto,t31,live_now,1,Saved X-Trail Ti T31 automatic petrol SUV curve built from private Carsales/Apify evidence; ST ST-L diesel and later-series lanes stay separate
 subaru_forester_xs_s3_suv_auto_petrol,subaru,forester,suv,petrol,auto,s3,live_now,1,Saved Forester XS S3 automatic petrol SUV curve built from private Carsales/Apify evidence; X XT diesel and later-series lanes stay separate
+toyota_aurion_at-x_gsv40r_sedan_auto_petrol,toyota,aurion,sedan,petrol,auto,gsv40r,live_now,1,Built from July 2026 private Carsales GSV40R AT-X sedan evidence.
+holden_calais_ve_sedan_auto_petrol,holden,calais,sedan,petrol,auto,ve,live_now,1,Built from July 2026 private Carsales plain VE Calais sedan evidence; V trim excluded.
+kia_cerato_s_yd_sedan_auto_petrol,kia,cerato,sedan,petrol,auto,yd,live_now,1,Built from July 2026 private Carsales YD S sedan evidence.
+holden_cruze_cdx_jg_sedan_auto_petrol,holden,cruze,sedan,petrol,auto,jg,live_now,1,Built from July 2026 private Carsales JG CDX sedan evidence.

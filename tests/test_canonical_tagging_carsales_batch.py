@@ -218,3 +218,132 @@ def test_camry_acv40r_altise_does_not_absorb_other_trims(variant):
 
     assert tag == "UNCLASSIFIED"
     assert reason == "[DISALLOWED_VARIANT]"
+
+
+@pytest.mark.parametrize(
+    ("row", "expected_tag"),
+    [
+        (
+            {
+                "make": "Toyota",
+                "model": "Aurion",
+                "variant": "AT-X GSV40R",
+                "body_type": "Sedan",
+                "transmission": "Automatic",
+                "fuel_type": "Petrol",
+                "year": "2008",
+                "price": "9000",
+                "url": "https://www.example.com/2008-toyota-aurion-at-x-gsv40r-auto-sedan",
+            },
+            "toyota_aurion_at-x_petrol_auto_sedan_gsv40r",
+        ),
+        (
+            {
+                "make": "Kia",
+                "model": "Cerato",
+                "variant": "S YD",
+                "body_type": "Sedan",
+                "transmission": "Automatic",
+                "fuel_type": "Petrol",
+                "year": "2014",
+                "price": "11000",
+                "url": "https://www.example.com/2014-kia-cerato-s-yd-auto-sedan",
+            },
+            "kia_cerato_s_petrol_auto_sedan_yd",
+        ),
+        (
+            {
+                "make": "Holden",
+                "model": "Calais",
+                "variant": "VE Petrol",
+                "body_type": "Sedan",
+                "transmission": "Automatic",
+                "fuel_type": "Petrol",
+                "year": "2007",
+                "price": "9000",
+                "url": "https://www.example.com/2007-holden-calais-ve-auto-sedan",
+            },
+            "holden_calais_petrol_auto_sedan_ve",
+        ),
+        (
+            {
+                "make": "Holden",
+                "model": "Cruze",
+                "variant": "CDX JG",
+                "body_type": "Sedan",
+                "transmission": "Automatic",
+                "fuel_type": "Petrol",
+                "year": "2010",
+                "price": "5000",
+                "url": "https://www.example.com/2010-holden-cruze-cdx-jg-auto-sedan",
+            },
+            "holden_cruze_cdx_petrol_auto_sedan_jg",
+        ),
+    ],
+)
+def test_new_carsales_scrape_lanes_map_to_expected_tags(row, expected_tag):
+    _load_curve_year_band.cache_clear()
+
+    assert assign_canonical_tag(row, require_price=True)[0:2] == (expected_tag, "[OK]")
+
+
+@pytest.mark.parametrize(
+    "row",
+    [
+        {
+            "make": "Toyota",
+            "model": "Aurion",
+            "variant": "Sportivo SX6 GSV40R",
+            "body_type": "Sedan",
+            "transmission": "Automatic",
+            "fuel_type": "Petrol",
+            "year": "2010",
+            "price": "12000",
+            "url": "https://www.example.com/2010-toyota-aurion-sportivo-sx6-gsv40r-auto-sedan",
+        },
+        {
+            "make": "Kia",
+            "model": "Cerato",
+            "variant": "Sport YD",
+            "body_type": "Sedan",
+            "transmission": "Automatic",
+            "fuel_type": "Petrol",
+            "year": "2017",
+            "price": "16000",
+            "url": "https://www.example.com/2017-kia-cerato-sport-yd-auto-sedan",
+        },
+        {
+            "make": "Holden",
+            "model": "Calais",
+            "variant": "V VE",
+            "body_type": "Sedan",
+            "transmission": "Automatic",
+            "fuel_type": "Petrol",
+            "year": "2009",
+            "price": "12000",
+            "url": "https://www.example.com/2009-holden-calais-v-ve-auto-sedan",
+        },
+        {
+            "make": "Holden",
+            "model": "Cruze",
+            "variant": "Equipe JH Series II",
+            "body_type": "Sedan",
+            "transmission": "Automatic",
+            "fuel_type": "Petrol",
+            "year": "2014",
+            "price": "6500",
+            "url": "https://www.example.com/2014-holden-cruze-equipe-jh-series-ii-auto-sedan",
+        },
+    ],
+)
+def test_new_carsales_scrape_lanes_do_not_absorb_excluded_trims(row):
+    _load_curve_year_band.cache_clear()
+
+    tag, _reason = assign_canonical_tag(row, require_price=True)
+
+    assert tag not in {
+        "toyota_aurion_at-x_petrol_auto_sedan_gsv40r",
+        "kia_cerato_s_petrol_auto_sedan_yd",
+        "holden_calais_petrol_auto_sedan_ve",
+        "holden_cruze_cdx_petrol_auto_sedan_jg",
+    }
