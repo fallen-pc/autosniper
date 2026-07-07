@@ -4,6 +4,7 @@ import re
 import warnings
 from datetime import datetime, timezone
 from hashlib import sha256
+from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional, Tuple
 from urllib.parse import urlencode
 
@@ -2180,4 +2181,5 @@ def run_curve_listing_analysis(
 
     _save_result_row(result_row)
     result_row["cached"] = False
+
     return result_row
