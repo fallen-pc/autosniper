@@ -28,7 +28,10 @@ $settings = New-ScheduledTaskSettingsSet `
     -DontStopIfGoingOnBatteries `
     -ExecutionTimeLimit (New-TimeSpan -Hours 72) `
     -MultipleInstances IgnoreNew `
-    -StartWhenAvailable
+    -StartWhenAvailable `
+    -WakeToRun `
+    -RestartCount 3 `
+    -RestartInterval (New-TimeSpan -Minutes 10)
 $principal = New-ScheduledTaskPrincipal -UserId $user -LogonType Interactive
 
 $dailyAction = New-ScheduledTaskAction -Execute "cmd.exe" -Argument "/c `"$dailyCmd`"" -WorkingDirectory $root
