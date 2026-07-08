@@ -5,7 +5,7 @@ import warnings
 from datetime import datetime, timezone
 from hashlib import sha256
 from pathlib import Path
-from typing import Any, Dict, List, Mapping, Optional, Tuple
+from typing import Any, Dict, List, Mapping, Optional
 from urllib.parse import urlencode
 
 import pandas as pd

@@ -17,7 +17,6 @@ from scripts.ai_listing_valuation import (
     _discounted_resale_cap_price,
     _estimate_costs,
     _expected_auction_estimate,
-    _is_interstate_listing,
     _round_to_10,
     _solve_max_bid,
     apply_platform_risk_adjustments,

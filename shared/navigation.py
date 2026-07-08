@@ -7,6 +7,14 @@ import streamlit as st
 
 NavigationSpec = "OrderedDict[str, list[tuple[str, str, bool]]]"
 
+# Pages kept routable for drill-down links (st.switch_page targets) but
+# hidden from the sidebar after the June 2026 low-confidence page audit.
+HIDDEN_ROUTABLE_GROUP = "_HIDDEN"
+HIDDEN_ROUTABLE_PAGES: list[tuple[str, str, bool]] = [
+    # Exceptions and Listing Detail both switch_page here.
+    ("pages/04_MAPPINGS.py", "Mappings", False),
+]
+
 
 def navigation_spec() -> NavigationSpec:
     return OrderedDict(
@@ -35,8 +43,6 @@ def navigation_spec() -> NavigationSpec:
                     ("pages/03_CURVES.py", "Curves", False),
                     ("pages/15_CURVE_BUILDER_V2.py", "Curve Builder V2", False),
                     ("pages/14_CURVE_PIPELINE.py", "Curve Pipeline", False),
-                    ("pages/04_MAPPINGS.py", "Mappings", False),
-                    ("pages/4_MASTER_DATABASE.py", "Master Database", False),
                 ],
             ),
             (
@@ -44,8 +50,6 @@ def navigation_spec() -> NavigationSpec:
                 [
                     ("pages/6_AI_ANALYSIS.py", "AI Analysis", False),
                     ("pages/17_MODEL_PROOF.py", "Model Proof", False),
-                    ("pages/8_MODEL_ACCURACY.py", "Model Accuracy", False),
-                    ("pages/8_REAUCTION_MONITOR.py", "Re-Auction Tracker", False),
                 ],
             ),
             (
@@ -53,7 +57,6 @@ def navigation_spec() -> NavigationSpec:
                 [
                     ("pages/8_MISSED_OPPORTUNITIES.py", "Missed Opportunities", False),
                     ("pages/16_VALUATION_CALIBRATION.py", "Valuation Calibration", False),
-                    ("pages/10_BIDDER_INSIGHTS.py", "Bidder Insights", False),
                     ("pages/18_REPAIR_REVIEW.py", "Repair Review", False),
                     ("pages/19_REPAIR_PRICING.py", "Repair Pricing", False),
                 ],
@@ -61,7 +64,6 @@ def navigation_spec() -> NavigationSpec:
             (
                 "COVERAGE",
                 [
-                    ("pages/11_TOYOTA_COVERAGE.py", "Toyota Coverage", False),
                     ("pages/7_AUTOTRADER_SCRAPER.py", "Autotrader Scraper", False),
                 ],
             ),
@@ -77,6 +79,10 @@ def build_navigation() -> "OrderedDict[str, list[st.Page]]":
             st.Page(path, title=title, default=default)
             for path, title, default in entries
         ]
+    pages[HIDDEN_ROUTABLE_GROUP] = [
+        st.Page(path, title=title, default=default)
+        for path, title, default in HIDDEN_ROUTABLE_PAGES
+    ]
     return pages
 
 
@@ -101,6 +107,8 @@ def render_sidebar_navigation(pages: "OrderedDict[str, list[st.Page]]") -> None:
         unsafe_allow_html=True,
     )
     for group, entries in pages.items():
+        if group == HIDDEN_ROUTABLE_GROUP:
+            continue
         st.sidebar.markdown(f"<div class='autosniper-nav-group'>{group}</div>", unsafe_allow_html=True)
         for page in entries:
             st.sidebar.page_link(page, label=page.title)

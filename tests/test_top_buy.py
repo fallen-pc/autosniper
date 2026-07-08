@@ -1,5 +1,4 @@
 import unittest
-from copy import deepcopy
 
 from shared.top_buy import TopBuyResult, apply_top_buy_behavior, top_buy_gate_check
 

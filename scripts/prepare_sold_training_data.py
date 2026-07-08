@@ -121,7 +121,7 @@ def add_repair_tag_features(df: pd.DataFrame) -> pd.DataFrame:
     tag_columns = {tag: [] for tag in REPAIR_CATEGORIES.keys()}
     parsed_series = working["repair_tags"].apply(_parse_tags)
     for tag in tag_columns:
-        tag_columns[tag] = parsed_series.apply(lambda tags: 1 if tag in tags else 0)
+        tag_columns[tag] = parsed_series.apply(lambda tags, tag=tag: 1 if tag in tags else 0)
         working[f"tag_{tag}"] = tag_columns[tag]
     working["total_repair_tags"] = parsed_series.apply(len)
     return working

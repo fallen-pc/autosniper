@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import json
 import re
-from typing import Iterable, List, Sequence, Set
+from typing import Iterable, Sequence, Set
 
 
 REPAIR_CATEGORIES: dict[str, Sequence[str]] = {

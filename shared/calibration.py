@@ -11,7 +11,6 @@ import pandas as pd
 from scripts.ai_listing_valuation import (
     _interstate_purchase_blocked,
     OPERATING_STATE,
-    _is_interstate_listing,
 )
 from shared.comps_engine import parse_currency, parse_numeric
 from shared.curves import (

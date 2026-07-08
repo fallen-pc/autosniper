@@ -4100,7 +4100,7 @@ def render_listing_card(row: pd.Series) -> None:
                 )
                 for label, key in bucket_defs
             ),
-            f'<span class="chip warn">AMBIG_DRIVETRAIN</span>' if drivetrain_warning else "",
+            '<span class="chip warn">AMBIG_DRIVETRAIN</span>' if drivetrain_warning else "",
             "</div>",
             "</div>",
         ]

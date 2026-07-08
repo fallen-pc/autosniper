@@ -147,7 +147,7 @@ def _enforce_year_monotonicity(proposed_df: pd.DataFrame) -> pd.DataFrame:
     if proposed_df.empty:
         return proposed_df
     working = proposed_df.copy().sort_values(["km_bucket", "anchor_year"]).reset_index(drop=True)
-    for km_bucket, subset in working.groupby("km_bucket", sort=True):
+    for _km_bucket, subset in working.groupby("km_bucket", sort=True):
         years = subset["anchor_year"].astype(int).tolist()
         for price_column in ["price_low", "price_mid", "price_high"]:
             fitted = _isotonic_fit(years, subset[price_column].astype(float).tolist(), increasing=True)

@@ -1,0 +1,28 @@
+[tool.ruff]
+target-version = "py311"
+line-length = 120
+extend-exclude = [
+    ".venv_local",
+    ".venv_wsl",
+    "venv",
+    "autotrader_isolated",
+    "telegram-bot-api",
+    "tmp",
+]
+
+[tool.ruff.lint]
+# Bug-catching rules only; no style churn.
+# F  = pyflakes (undefined names, unused imports, redefinitions)
+# E9 = syntax/indentation errors
+# B  = bugbear (mutable defaults, useless expressions, loop-var capture)
+# PLE = pylint errors
+select = ["F", "E9", "B", "PLE"]
+ignore = [
+    "B008", # function call in default arg -- used intentionally in a few CLIs
+    "B905", # zip() without strict= -- 34 pre-existing sites, churn not worth it yet
+    "F841", # unused local variable -- 7 pre-existing sites queued for manual triage
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Streamlit pages use module-level side effects and wide imports by design.
+"pages/*" = ["F401"]

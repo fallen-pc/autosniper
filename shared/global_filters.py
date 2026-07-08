@@ -10,7 +10,7 @@ import streamlit as st
 from shared.csv_utils import read_csv_or_empty
 from shared.curves import list_curve_tags, load_curves
 from shared.data_loader import dataset_path
-from shared.ops_utils import load_active_df, load_valuations_df, parse_percent
+from shared.ops_utils import load_active_df, load_valuations_df
 from shared.valuation_display import conservative_margin_percent
 
 

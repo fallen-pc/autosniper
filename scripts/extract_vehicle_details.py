@@ -23,7 +23,6 @@ if __package__ in (None, ""):
     from shared.sold_cleaning import (
         drop_invalid_odometer_rows,
         drop_invalid_years,
-        drop_sparse_rows,
         normalize_listing_fields,
         remove_compliance_markers,
     )
@@ -38,7 +37,6 @@ else:
     from shared.sold_cleaning import (
         drop_invalid_odometer_rows,
         drop_invalid_years,
-        drop_sparse_rows,
         normalize_listing_fields,
         remove_compliance_markers,
     )

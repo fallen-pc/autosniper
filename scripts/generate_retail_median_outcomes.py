@@ -37,7 +37,7 @@ if __package__ in (None, ""):
 
 from scripts.atomic_csv import write_dataframe_csv_atomic
 from scripts.generate_opportunity_lanes import _prepare_common
-from shared.comps_engine import parse_currency, parse_numeric
+from shared.comps_engine import parse_currency
 from shared.data_loader import dataset_path
 from shared.decision_policy import derive_action_label_from_row
 
