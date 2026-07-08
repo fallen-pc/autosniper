@@ -876,7 +876,6 @@ def fetch_html(session: requests.Session, url: str) -> str:
     last_error: str | None = None
     for attempt in range(1, MAX_FETCH_RETRIES + 1):
         prefix = PROXY_ROTATION[min(attempt - 1, len(PROXY_ROTATION) - 1)]
-        use_proxy = bool(prefix) or url.startswith(prefix)
         if prefix:
             suffix = url.replace("https://", "").replace("http://", "")
             target_url = f"{prefix}{suffix}"

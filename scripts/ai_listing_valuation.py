@@ -245,7 +245,8 @@ def load_cached_results() -> pd.DataFrame:
         return pd.DataFrame(columns=REQUIRED_COLUMNS)
     try:
         df = pd.read_csv(AI_RESULTS_PATH)
-    except Exception:
+    except Exception as exc:
+        print(f"WARNING: could not read cached AI results {AI_RESULTS_PATH}: {type(exc).__name__}: {exc}")
         return pd.DataFrame(columns=REQUIRED_COLUMNS)
     missing = [column for column in REQUIRED_COLUMNS if column not in df.columns]
     for column in missing:
@@ -785,7 +786,8 @@ def _maybe_send_listing_alerts(
             message,
             verdict=str(row.get("computed_verdict") or ""),
         )
-    except Exception:
+    except Exception as exc:
+        print(f"WARNING: Telegram alert send failed for {url}: {type(exc).__name__}: {exc}")
         return
 
 
@@ -1754,7 +1756,8 @@ def run_curve_listing_analysis(
                 repair_tag_flags=repair_tag_flags,
                 total_repair_tags=len(repair_feats.tags),
             )
-        except Exception:
+        except Exception as exc:
+            print(f"WARNING: auction model prediction failed, falling back to curve-only pricing: {type(exc).__name__}: {exc}")
             model_prediction = None
     downside_pct = _calculate_downside_percent(risk_flags)
     upside_pct = _calculate_upside_percent(risk_flags)

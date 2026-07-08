@@ -398,7 +398,6 @@ def rank_live_opportunities(active_df: pd.DataFrame, valuations_df: pd.DataFrame
         except (TypeError, ValueError):
             confidence = 0.0
 
-        verdict = _first_row_value(row, "computed_verdict", "computed_verdict_ai", "verdict", "verdict_ai")
         is_safe = is_safe_opportunity_row(row)
 
         current_prices.append(current_price)

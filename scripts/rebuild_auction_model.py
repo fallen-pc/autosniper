@@ -164,6 +164,7 @@ def _write_validation_report(metrics_path: Path, predictions_path: Path, out_pat
         | MAE | ${q50_mae:,.0f} |
         | RMSE | ${q50_rmse:,.0f} |
         | WAPE | {q50_wape:.1%} |
+        | Directional accuracy (price vs ratio side) | {correct_direction:.1%} |
 
         ## Q50 Model — Error Distribution
         | Percentile | Absolute Error |
@@ -186,6 +187,7 @@ def _write_validation_report(metrics_path: Path, predictions_path: Path, out_pat
         | Raw coverage (no calibration) | {raw_coverage:.1%} | |
         | Calibration multiplier | {calibration_multiplier:.4f} | 1.0 ideally |
         | Calibrated coverage | {calibrated_coverage:.1%} | >={q90_alpha:.0%} |
+        | Coverage recomputed from predictions CSV | {upper_coverage_actual:.1%} | cross-check |
         | Status | {"OK" if calibrated_coverage >= q90_alpha else "FAIL - still under-covers after calibration, check for extreme ratio outliers in validation set"} | |
 
         The calibration multiplier is applied to q90 price predictions at inference time.

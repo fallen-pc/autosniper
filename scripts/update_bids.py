@@ -752,7 +752,7 @@ async def update_bids(
                         df.loc[df["url"] == url, "sale_price_source"] = sale_price_source
                     try:
                         df.loc[df["url"] == url, "bids"] = int(bids)
-                    except:
+                    except (ValueError, TypeError):
                         df.loc[df["url"] == url, "bids"] = 0
 
                     print(f"  Time remaining: {time_remaining if time_remaining else 'None'}")

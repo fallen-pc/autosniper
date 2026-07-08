@@ -20,7 +20,6 @@ select = ["F", "E9", "B", "PLE"]
 ignore = [
     "B008", # function call in default arg -- used intentionally in a few CLIs
     "B905", # zip() without strict= -- 34 pre-existing sites, churn not worth it yet
-    "F841", # unused local variable -- 7 pre-existing sites queued for manual triage
 ]
 
 [tool.ruff.lint.per-file-ignores]

@@ -257,7 +257,6 @@ def compute_severity_level(text: str, tags: Iterable[str]) -> str:
 
 def defects_only_summary(text: str) -> str:
     """Keep only fragments that appear to reference a real defect."""
-    lowered = text.lower()
     keepers: list[str] = []
     fragments = _sentence_fragments(text)
 

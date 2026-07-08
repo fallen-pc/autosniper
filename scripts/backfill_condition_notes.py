@@ -123,7 +123,6 @@ def collect_missing_urls(datasets: list[tuple[Path, pd.DataFrame]]) -> dict[str,
     for path, df in datasets:
         if "url" not in df.columns:
             continue
-        url_series = df["url"].astype(str).str.strip()
         condition_series = df["general_condition"].fillna("").astype(str).str.strip()
         mask = condition_series.apply(lambda text: text.lower() in MISSING_VALUES)
         missing_rows = df[mask]

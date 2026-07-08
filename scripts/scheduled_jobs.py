@@ -406,7 +406,8 @@ def _send_job_failure_alert(job: str, detail: str) -> None:
     )
     try:
         send_telegram_message(message)
-    except Exception:
+    except Exception as exc:
+        print(f"WARNING: job-failure Telegram alert did not send: {type(exc).__name__}: {exc}")
         return
 
 
@@ -824,11 +825,8 @@ def main() -> None:
     if not _acquire_lock(args.job):
         return
 
-    started = time.time()
     try:
-        if args.job == "daily":
-            run_daily_pipeline()
-        elif args.job == "daily-smoke":
+        if args.job == "daily-smoke":
             run_daily_smoke()
         elif args.job == "hourly-monitor":
             run_hourly_monitor()
