@@ -1731,7 +1731,7 @@ def run_curve_listing_analysis(
         listing_data["historical_match_count"] = comps_count
         listing_data["historical_matches_rows"] = comps_count
 
-    repair_assessment = assess_repairs(listing_row.get("general_condition", ""))
+    repair_assessment = assess_repairs(listing_row.get("general_condition", ""), vehicle_value=resale_mid)
     risk_flags = _detect_risk_flags(listing_data)
 
     # CatBoost model prediction — build repair features for the feature vector
@@ -1843,6 +1843,7 @@ def run_curve_listing_analysis(
         adjusted_bid, repair_verdict = apply_repairs_to_max_bid(
             int(round(recommended_max_bid_val)),
             repair_assessment,
+            vehicle_value=resale_mid_val or resale_mid,
         )
         recommended_max_bid_val = float(adjusted_bid)
     if repair_assessment.hard_avoid:

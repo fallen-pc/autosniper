@@ -375,7 +375,9 @@ def compute_decision_metrics(
     elif discounted_bid_cap is not None:
         max_bid_val = discounted_bid_cap
 
-    repair_assessment = assess_repairs(listing_data.get("general_condition", ""))
+    repair_assessment = assess_repairs(
+        listing_data.get("general_condition", ""), vehicle_value=resale_mid_val or resale_mid
+    )
     repair_cost_total = float(repair_assessment.total_cost or 0.0) if include_repairs else 0.0
     risk_buffer = float(repair_assessment.risk_buffer or 0.0) if include_repairs else 0.0
     repair_cost = max(0.0, repair_cost_total - risk_buffer)
@@ -384,6 +386,7 @@ def compute_decision_metrics(
         adjusted_bid, _ = apply_repairs_to_max_bid(
             int(round(max_bid_val)),
             repair_assessment,
+            vehicle_value=resale_mid_val or resale_mid,
         )
         max_bid_val = float(adjusted_bid)
     if include_repairs and repair_assessment.hard_avoid:

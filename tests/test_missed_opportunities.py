@@ -36,7 +36,7 @@ def test_missed_decision_metrics_apply_ai_cap_and_repair_cost(monkeypatch) -> No
     )
 
     monkeypatch.setattr(missed_opportunities, "_solve_max_bid", lambda resale_low, min_profit, listing: 20_000)
-    monkeypatch.setattr(missed_opportunities, "assess_repairs", lambda condition: _repair_assessment())
+    monkeypatch.setattr(missed_opportunities, "assess_repairs", lambda condition, **_kwargs: _repair_assessment())
 
     result = missed_opportunities.compute_decision_metrics(
         row,
@@ -65,7 +65,7 @@ def test_missed_decision_metrics_can_run_no_repair_hypothesis(monkeypatch) -> No
     )
 
     monkeypatch.setattr(missed_opportunities, "_solve_max_bid", lambda resale_low, min_profit, listing: 20_000)
-    monkeypatch.setattr(missed_opportunities, "assess_repairs", lambda condition: _repair_assessment())
+    monkeypatch.setattr(missed_opportunities, "assess_repairs", lambda condition, **_kwargs: _repair_assessment())
 
     result = missed_opportunities.compute_decision_metrics(
         row,
@@ -93,7 +93,7 @@ def test_missed_decision_metrics_zeroes_interstate_max_bid(monkeypatch) -> None:
     )
 
     monkeypatch.setattr(missed_opportunities, "_solve_max_bid", lambda resale_low, min_profit, listing: 20_000)
-    monkeypatch.setattr(missed_opportunities, "assess_repairs", lambda condition: _repair_assessment(total_cost=0, risk_buffer=0))
+    monkeypatch.setattr(missed_opportunities, "assess_repairs", lambda condition, **_kwargs: _repair_assessment(total_cost=0, risk_buffer=0))
 
     result = missed_opportunities.compute_decision_metrics(
         row,
@@ -123,7 +123,7 @@ def test_missed_decision_metrics_keeps_historical_median_context_without_capping
     monkeypatch.setattr(
         missed_opportunities,
         "assess_repairs",
-        lambda condition: _repair_assessment(total_cost=0, risk_buffer=0),
+        lambda condition, **_kwargs: _repair_assessment(total_cost=0, risk_buffer=0),
     )
 
     result = missed_opportunities.compute_decision_metrics(
@@ -153,7 +153,7 @@ def test_missed_decision_metrics_uses_shared_buy_policy(monkeypatch) -> None:
     monkeypatch.setattr(
         missed_opportunities,
         "assess_repairs",
-        lambda condition: _repair_assessment(total_cost=0, risk_buffer=0),
+        lambda condition, **_kwargs: _repair_assessment(total_cost=0, risk_buffer=0),
     )
 
     result = missed_opportunities.compute_decision_metrics(
@@ -186,7 +186,7 @@ def test_missed_decision_metrics_uses_shared_thin_comps_watch_policy(monkeypatch
     monkeypatch.setattr(
         missed_opportunities,
         "assess_repairs",
-        lambda condition: _repair_assessment(total_cost=0, risk_buffer=0),
+        lambda condition, **_kwargs: _repair_assessment(total_cost=0, risk_buffer=0),
     )
 
     result = missed_opportunities.compute_decision_metrics(
@@ -218,7 +218,7 @@ def test_missed_decision_metrics_uses_shared_over_max_avoid_policy(monkeypatch) 
     monkeypatch.setattr(
         missed_opportunities,
         "assess_repairs",
-        lambda condition: _repair_assessment(total_cost=0, risk_buffer=0),
+        lambda condition, **_kwargs: _repair_assessment(total_cost=0, risk_buffer=0),
     )
 
     result = missed_opportunities.compute_decision_metrics(

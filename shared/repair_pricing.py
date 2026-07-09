@@ -37,6 +37,13 @@ HARD_CAPS = {
     "with_replacement": 1500,
 }
 
+# For low-value/older cars, pure cosmetic damage (scuffs, minor panel marks) often
+# isn't worth fixing before a flip -- the $900 flat cap can still eat a big chunk of
+# a cheap car's value. When a vehicle_value is supplied, the cosmetic-only cap scales
+# down to this fraction of value instead, so a $10k car caps at $300 rather than $900.
+# Cars above ~$30k are unaffected since 3% of value exceeds the existing $900 cap.
+COSMETIC_CAP_PCT_OF_VALUE = 0.03
+
 RISK_BUFFERS = {
     "unknown_photos": 300,
     "no_closeups": 300,
@@ -81,6 +88,8 @@ V2_REPLACEMENT_COSTS = {
     "fuel_flap_damage": 250,
     "sunroof_damage": 600,
     "battery_issue": 300,
+    "tyre_replacement": 180,
+    "wheel_missing": 250,
     "control_damage": 250,
     "seat_damage": 250,
     "seat_issue": 150,
@@ -164,6 +173,7 @@ MECH_AVOID_PATTERNS = [
     r"\bsuspension\b.*\b(attention|fault|issue|noise)\b",
     r"\balignment\b.*\b(issue|pull)\b",
     r"\bbrakes?\b.*\b(attention|fault|issue|require|requires)\b",
+    r"\bmechanical\b.*\b(attention|fault|issue|require|requires)\b",
     r"\bclutch\b.*\b(attention|fault|issue|slip)\b",
     r"\bdoes not start\b",
     r"\bwon't start\b",
@@ -294,6 +304,29 @@ HARD_AVOID_BUCKETS = {
 REPAIR_GATE_GOOD_MAX = 600
 REPAIR_GATE_MARGINAL_MAX = 2_500
 REPAIR_GATE_NOT_VIABLE_MAX = 4_000
+
+# The flat dollar gates above treat a $2,500 repair bill the same whether the car is
+# worth $3,000 or $80,000. When a vehicle_value is supplied, each gate becomes
+# whichever is LARGER of the flat floor above or this percentage of vehicle value --
+# so cheap cars keep today's behaviour unchanged (the flat floor still binds below
+# ~$12k-$16k of value) while higher-value cars get proportionally more repair
+# headroom before being downgraded to Marginal/Not Viable/Avoid.
+REPAIR_GATE_GOOD_PCT = 0.05
+REPAIR_GATE_MARGINAL_PCT = 0.15
+REPAIR_GATE_NOT_VIABLE_PCT = 0.25
+
+
+def _repair_gate_thresholds(vehicle_value: float | None) -> tuple[float, float, float]:
+    if not vehicle_value or vehicle_value <= 0:
+        return (
+            float(REPAIR_GATE_GOOD_MAX),
+            float(REPAIR_GATE_MARGINAL_MAX),
+            float(REPAIR_GATE_NOT_VIABLE_MAX),
+        )
+    good = max(REPAIR_GATE_GOOD_MAX, vehicle_value * REPAIR_GATE_GOOD_PCT)
+    marginal = max(REPAIR_GATE_MARGINAL_MAX, vehicle_value * REPAIR_GATE_MARGINAL_PCT)
+    not_viable = max(REPAIR_GATE_NOT_VIABLE_MAX, vehicle_value * REPAIR_GATE_NOT_VIABLE_PCT)
+    return good, marginal, not_viable
 
 
 def _hard_avoid_assessment(
@@ -478,7 +511,11 @@ def assess_repairs(
     dict_csv_path: str = "condition_dictionary.csv",
     adas_windscreen: bool = False,
     extra_risk_flags: Optional[List[str]] = None,
+    vehicle_value: Optional[float] = None,
 ) -> RepairAssessment:
+    cosmetic_only_cap = HARD_CAPS["cosmetic_only"]
+    if vehicle_value and vehicle_value > 0:
+        cosmetic_only_cap = min(cosmetic_only_cap, vehicle_value * COSMETIC_CAP_PCT_OF_VALUE)
     feature_set = build_repair_features(general_condition)
     severity_level = feature_set.severity_level or "minor"
     severity_multiplier = float(SEVERITY_MULTIPLIERS.get(severity_level, 1.0))
@@ -514,6 +551,11 @@ def assess_repairs(
             matched_lines.add(line)
             canonicals = {hit.canonical_defect for hit in hits}
             categories = {hit.category for hit in hits}
+            if "replacement_required" in canonicals and any(
+                hit.category == "replacement" and hit.canonical_defect != "replacement_required"
+                for hit in hits
+            ):
+                canonicals.discard("replacement_required")
             line_pills: set[str] = set()
             line_reasons: list[str] = []
             line_cost = 0
@@ -598,6 +640,10 @@ def assess_repairs(
             replacement_hits = [
                 hit for hit in hits if hit.category == "replacement" or hit.canonical_defect == "battery_issue"
             ]
+            if any(hit.canonical_defect != "replacement_required" for hit in replacement_hits):
+                replacement_hits = [
+                    hit for hit in replacement_hits if hit.canonical_defect != "replacement_required"
+                ]
             if not replacement_hits:
                 inferred_replacements = _infer_replacement_canonicals(line)
                 for canonical in inferred_replacements:
@@ -688,7 +734,7 @@ def assess_repairs(
         elif has_glass:
             base_total = min(base_total, HARD_CAPS["cosmetic_plus_glass"])
         else:
-            base_total = min(base_total, HARD_CAPS["cosmetic_only"])
+            base_total = min(base_total, cosmetic_only_cap)
 
         if extra_risk_flags:
             for flag in extra_risk_flags:
@@ -836,7 +882,7 @@ def assess_repairs(
     elif has_glass:
         base_total = min(base_total, HARD_CAPS["cosmetic_plus_glass"])
     else:
-        base_total = min(base_total, HARD_CAPS["cosmetic_only"])
+        base_total = min(base_total, cosmetic_only_cap)
 
     if extra_risk_flags:
         for flag in extra_risk_flags:
@@ -864,7 +910,11 @@ def assess_repairs(
     )
 
 
-def apply_repairs_to_max_bid(max_bid: int, assessment: RepairAssessment) -> Tuple[int, str]:
+def apply_repairs_to_max_bid(
+    max_bid: int,
+    assessment: RepairAssessment,
+    vehicle_value: Optional[float] = None,
+) -> Tuple[int, str]:
     if assessment.hard_avoid:
         return 0, "Avoid"
 
@@ -873,11 +923,13 @@ def apply_repairs_to_max_bid(max_bid: int, assessment: RepairAssessment) -> Tupl
     adjusted = max(0, int(max_bid) - deduct)
 
     # Verdict is based on the DEFAULT estimate so the label reflects the likely scenario.
-    if assessment.total_cost <= REPAIR_GATE_GOOD_MAX:
+    # Gates scale with vehicle_value when known -- see _repair_gate_thresholds.
+    good_max, marginal_max, not_viable_max = _repair_gate_thresholds(vehicle_value)
+    if assessment.total_cost <= good_max:
         verdict = "Good"
-    elif assessment.total_cost <= REPAIR_GATE_MARGINAL_MAX:
+    elif assessment.total_cost <= marginal_max:
         verdict = "Marginal"
-    elif assessment.total_cost <= REPAIR_GATE_NOT_VIABLE_MAX:
+    elif assessment.total_cost <= not_viable_max:
         verdict = "Not Viable"
     else:
         verdict = "Avoid"
@@ -885,15 +937,16 @@ def apply_repairs_to_max_bid(max_bid: int, assessment: RepairAssessment) -> Tupl
     return adjusted, verdict
 
 
-def repair_decision_label(assessment: RepairAssessment) -> str:
+def repair_decision_label(assessment: RepairAssessment, vehicle_value: Optional[float] = None) -> str:
     if assessment.hard_avoid:
         reason = (assessment.hard_avoid_reason or "condition").replace("_", " ")
         return f"HARD AVOID ({reason})"
-    if assessment.total_cost <= REPAIR_GATE_GOOD_MAX:
+    good_max, marginal_max, not_viable_max = _repair_gate_thresholds(vehicle_value)
+    if assessment.total_cost <= good_max:
         return "GOOD (repairs)"
-    if assessment.total_cost <= REPAIR_GATE_MARGINAL_MAX:
+    if assessment.total_cost <= marginal_max:
         return "MARGINAL (repairs)"
-    if assessment.total_cost <= REPAIR_GATE_NOT_VIABLE_MAX:
+    if assessment.total_cost <= not_viable_max:
         return "NOT VIABLE (repairs)"
     return "AVOID (repairs)"
 

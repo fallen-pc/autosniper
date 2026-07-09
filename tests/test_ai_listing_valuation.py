@@ -376,7 +376,7 @@ def test_curve_analysis_subtracts_repair_cost_from_displayed_profit(monkeypatch)
 
     monkeypatch.setattr(ai_listing_valuation, "load_cached_results", lambda: pd.DataFrame(columns=ai_listing_valuation.REQUIRED_COLUMNS))
     monkeypatch.setattr(ai_listing_valuation, "_save_result_row", lambda row: None)
-    monkeypatch.setattr(ai_listing_valuation, "assess_repairs", lambda condition: repair_assessment)
+    monkeypatch.setattr(ai_listing_valuation, "assess_repairs", lambda condition, **_kwargs: repair_assessment)
 
     result = ai_listing_valuation.run_curve_listing_analysis(
         listing,
@@ -438,7 +438,7 @@ def test_curve_analysis_keeps_moderate_repairs_as_marginal_not_avoid(monkeypatch
         lambda: pd.DataFrame(columns=ai_listing_valuation.REQUIRED_COLUMNS),
     )
     monkeypatch.setattr(ai_listing_valuation, "_save_result_row", lambda row: None)
-    monkeypatch.setattr(ai_listing_valuation, "assess_repairs", lambda condition: repair_assessment)
+    monkeypatch.setattr(ai_listing_valuation, "assess_repairs", lambda condition, **_kwargs: repair_assessment)
 
     result = ai_listing_valuation.run_curve_listing_analysis(
         listing,
@@ -500,7 +500,7 @@ def test_curve_analysis_uses_current_bid_profit_when_no_edge(monkeypatch) -> Non
 
     monkeypatch.setattr(ai_listing_valuation, "load_cached_results", lambda: pd.DataFrame(columns=ai_listing_valuation.REQUIRED_COLUMNS))
     monkeypatch.setattr(ai_listing_valuation, "_save_result_row", lambda row: None)
-    monkeypatch.setattr(ai_listing_valuation, "assess_repairs", lambda condition: repair_assessment)
+    monkeypatch.setattr(ai_listing_valuation, "assess_repairs", lambda condition, **_kwargs: repair_assessment)
     monkeypatch.setattr(ai_listing_valuation, "_solve_max_bid", lambda resale_low, min_profit, listing_data: 0.0)
 
     result = ai_listing_valuation.run_curve_listing_analysis(
@@ -553,7 +553,7 @@ def test_curve_analysis_expected_profit_uses_final_max_bid_basis(monkeypatch) ->
 
     monkeypatch.setattr(ai_listing_valuation, "load_cached_results", lambda: pd.DataFrame(columns=ai_listing_valuation.REQUIRED_COLUMNS))
     monkeypatch.setattr(ai_listing_valuation, "_save_result_row", lambda row: None)
-    monkeypatch.setattr(ai_listing_valuation, "assess_repairs", lambda condition: repair_assessment)
+    monkeypatch.setattr(ai_listing_valuation, "assess_repairs", lambda condition, **_kwargs: repair_assessment)
     monkeypatch.setattr(ai_listing_valuation, "_solve_max_bid", lambda resale_low, min_profit, listing_data: 5_040.0)
 
     result = ai_listing_valuation.run_curve_listing_analysis(
@@ -605,7 +605,7 @@ def test_curve_analysis_avoids_interstate_listings(monkeypatch) -> None:
 
     monkeypatch.setattr(ai_listing_valuation, "load_cached_results", lambda: pd.DataFrame(columns=ai_listing_valuation.REQUIRED_COLUMNS))
     monkeypatch.setattr(ai_listing_valuation, "_save_result_row", lambda row: None)
-    monkeypatch.setattr(ai_listing_valuation, "assess_repairs", lambda condition: repair_assessment)
+    monkeypatch.setattr(ai_listing_valuation, "assess_repairs", lambda condition, **_kwargs: repair_assessment)
 
     result = ai_listing_valuation.run_curve_listing_analysis(
         listing,
@@ -670,7 +670,7 @@ def test_curve_analysis_uses_historical_sold_median_for_expected_auction(monkeyp
 
     monkeypatch.setattr(ai_listing_valuation, "load_cached_results", lambda: pd.DataFrame(columns=ai_listing_valuation.REQUIRED_COLUMNS))
     monkeypatch.setattr(ai_listing_valuation, "_save_result_row", lambda row: None)
-    monkeypatch.setattr(ai_listing_valuation, "assess_repairs", lambda condition: repair_assessment)
+    monkeypatch.setattr(ai_listing_valuation, "assess_repairs", lambda condition, **_kwargs: repair_assessment)
 
     result = ai_listing_valuation.run_curve_listing_analysis(
         listing,
@@ -729,7 +729,7 @@ def test_curve_analysis_caps_pajero_like_listing_by_historical_auction_comps(mon
 
     monkeypatch.setattr(ai_listing_valuation, "load_cached_results", lambda: pd.DataFrame(columns=ai_listing_valuation.REQUIRED_COLUMNS))
     monkeypatch.setattr(ai_listing_valuation, "_save_result_row", lambda row: None)
-    monkeypatch.setattr(ai_listing_valuation, "assess_repairs", lambda condition: repair_assessment)
+    monkeypatch.setattr(ai_listing_valuation, "assess_repairs", lambda condition, **_kwargs: repair_assessment)
 
     result = ai_listing_valuation.run_curve_listing_analysis(
         listing,
@@ -802,7 +802,7 @@ def test_curve_analysis_refreshes_cached_rows_missing_display_fields(monkeypatch
 
     monkeypatch.setattr(ai_listing_valuation, "load_cached_results", lambda: pd.DataFrame([cached_row]))
     monkeypatch.setattr(ai_listing_valuation, "_save_result_row", lambda row: None)
-    monkeypatch.setattr(ai_listing_valuation, "assess_repairs", lambda condition: repair_assessment)
+    monkeypatch.setattr(ai_listing_valuation, "assess_repairs", lambda condition, **_kwargs: repair_assessment)
 
     result = ai_listing_valuation.run_curve_listing_analysis(
         listing,
@@ -947,7 +947,7 @@ def test_curve_analysis_refreshes_cached_row_when_input_hash_changes(monkeypatch
 
     monkeypatch.setattr(ai_listing_valuation, "load_cached_results", lambda: pd.DataFrame([cached_row]))
     monkeypatch.setattr(ai_listing_valuation, "_save_result_row", lambda row: None)
-    monkeypatch.setattr(ai_listing_valuation, "assess_repairs", lambda condition: repair_assessment)
+    monkeypatch.setattr(ai_listing_valuation, "assess_repairs", lambda condition, **_kwargs: repair_assessment)
 
     result = ai_listing_valuation.run_curve_listing_analysis(
         changed_listing,
@@ -998,7 +998,7 @@ def test_curve_analysis_uses_worst_case_margin_for_profit_percent(monkeypatch) -
         lambda: pd.DataFrame(columns=ai_listing_valuation.REQUIRED_COLUMNS),
     )
     monkeypatch.setattr(ai_listing_valuation, "_save_result_row", lambda row: None)
-    monkeypatch.setattr(ai_listing_valuation, "assess_repairs", lambda condition: repair_assessment)
+    monkeypatch.setattr(ai_listing_valuation, "assess_repairs", lambda condition, **_kwargs: repair_assessment)
 
     result = ai_listing_valuation.run_curve_listing_analysis(
         listing,
@@ -1055,7 +1055,7 @@ def test_curve_analysis_top_buy_gate_uses_worst_case_margin(monkeypatch) -> None
         lambda: pd.DataFrame(columns=ai_listing_valuation.REQUIRED_COLUMNS),
     )
     monkeypatch.setattr(ai_listing_valuation, "_save_result_row", lambda row: None)
-    monkeypatch.setattr(ai_listing_valuation, "assess_repairs", lambda condition: repair_assessment)
+    monkeypatch.setattr(ai_listing_valuation, "assess_repairs", lambda condition, **_kwargs: repair_assessment)
     monkeypatch.setattr(
         ai_listing_valuation,
         "top_buy_gate_check",
@@ -1127,7 +1127,7 @@ def test_curve_analysis_keeps_raw_expected_finish_and_stores_profit_basis(monkey
         lambda: pd.DataFrame(columns=ai_listing_valuation.REQUIRED_COLUMNS),
     )
     monkeypatch.setattr(ai_listing_valuation, "_save_result_row", lambda row: None)
-    monkeypatch.setattr(ai_listing_valuation, "assess_repairs", lambda condition: repair_assessment)
+    monkeypatch.setattr(ai_listing_valuation, "assess_repairs", lambda condition, **_kwargs: repair_assessment)
     monkeypatch.setattr(
         ai_listing_valuation,
         "_expected_auction_estimate",
@@ -1191,7 +1191,7 @@ def test_curve_analysis_hard_max_safety_uses_final_max_bid_basis(monkeypatch) ->
         lambda: pd.DataFrame(columns=ai_listing_valuation.REQUIRED_COLUMNS),
     )
     monkeypatch.setattr(ai_listing_valuation, "_save_result_row", lambda row: None)
-    monkeypatch.setattr(ai_listing_valuation, "assess_repairs", lambda condition: repair_assessment)
+    monkeypatch.setattr(ai_listing_valuation, "assess_repairs", lambda condition, **_kwargs: repair_assessment)
     monkeypatch.setattr(ai_listing_valuation, "_solve_max_bid", lambda resale_low, min_profit, listing_data: 5_040.0)
 
     def _capture_hard_max_label(profit_value):
@@ -1260,7 +1260,7 @@ def test_curve_analysis_keeps_repair_estimate_visible_for_hard_avoid(monkeypatch
         lambda: pd.DataFrame(columns=ai_listing_valuation.REQUIRED_COLUMNS),
     )
     monkeypatch.setattr(ai_listing_valuation, "_save_result_row", lambda row: None)
-    monkeypatch.setattr(ai_listing_valuation, "assess_repairs", lambda condition: repair_assessment)
+    monkeypatch.setattr(ai_listing_valuation, "assess_repairs", lambda condition, **_kwargs: repair_assessment)
 
     result = ai_listing_valuation.run_curve_listing_analysis(
         listing,
@@ -1312,7 +1312,7 @@ def test_curve_analysis_surfaces_structural_hard_avoid_bucket(monkeypatch) -> No
         lambda: pd.DataFrame(columns=ai_listing_valuation.REQUIRED_COLUMNS),
     )
     monkeypatch.setattr(ai_listing_valuation, "_save_result_row", lambda row: None)
-    monkeypatch.setattr(ai_listing_valuation, "assess_repairs", lambda condition: repair_assessment)
+    monkeypatch.setattr(ai_listing_valuation, "assess_repairs", lambda condition, **_kwargs: repair_assessment)
 
     result = ai_listing_valuation.run_curve_listing_analysis(
         listing,
