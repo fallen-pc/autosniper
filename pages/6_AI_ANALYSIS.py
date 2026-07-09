@@ -730,12 +730,29 @@ def _rego_ok(row: dict[str, object]) -> bool:
     return bool(expiry)
 
 
+def _resale_value_for_repairs(row) -> Optional[float]:
+    # Same vehicle-value figure the live pipeline passes to assess_repairs(), so the
+    # cosmetic-cap/verdict-gate scaling shown here matches what actually drove the
+    # stored recommended_max_bid/computed_verdict for this listing. Falls back through
+    # a few resale field names since callers pass either a pd.Series row or a plain
+    # dict (row.to_dict()) with the same keys.
+    getter = row.get
+    return first_currency_value(
+        getter("resale_mid_value"),
+        getter("resale_mid"),
+        getter("expected_sale"),
+        getter("curve_adjusted"),
+    )
+
+
 def build_defect_profile(row: dict[str, object]) -> dict[str, object]:
     notes = row.get("normalized_condition_text") or row.get("general_condition", "") or ""
     adas_windscreen = bool(
         row.get("adas_windscreen") or row.get("windscreen_adas") or row.get("windshield_adas")
     )
-    assessment = assess_repairs(notes, adas_windscreen=adas_windscreen)
+    assessment = assess_repairs(
+        notes, adas_windscreen=adas_windscreen, vehicle_value=_resale_value_for_repairs(row)
+    )
     bucket_lines = {
         "cosmetic": [],
         "glass": [],
@@ -1057,7 +1074,9 @@ def _condition_summary_sections(row: pd.Series) -> tuple[list[dict[str, object]]
     adas_windscreen = bool(
         row.get("adas_windscreen") or row.get("windscreen_adas") or row.get("windshield_adas")
     )
-    assessment = assess_repairs(display_notes, adas_windscreen=adas_windscreen)
+    assessment = assess_repairs(
+        display_notes, adas_windscreen=adas_windscreen, vehicle_value=_resale_value_for_repairs(row)
+    )
     _, bucket_lines, _ = _bucket_details_from_notes(display_notes)
     sections: list[dict[str, object]] = []
 
@@ -1315,7 +1334,9 @@ def _render_condition_summary(row: pd.Series) -> None:
     adas_windscreen = bool(
         row.get("adas_windscreen") or row.get("windscreen_adas") or row.get("windshield_adas")
     )
-    assessment = assess_repairs(display_notes, adas_windscreen=adas_windscreen)
+    assessment = assess_repairs(
+        display_notes, adas_windscreen=adas_windscreen, vehicle_value=_resale_value_for_repairs(row)
+    )
     st.markdown("**Condition summary**")
     for section in sections:
         st.markdown(f"**{section['title']}**")
@@ -1627,7 +1648,9 @@ def _repair_assessment_for_row(row: pd.Series):
     adas_windscreen = bool(
         row.get("adas_windscreen") or row.get("windscreen_adas") or row.get("windshield_adas")
     )
-    return assess_repairs(display_notes, adas_windscreen=adas_windscreen)
+    return assess_repairs(
+        display_notes, adas_windscreen=adas_windscreen, vehicle_value=_resale_value_for_repairs(row)
+    )
 
 
 def _format_repair_max_bid_deduction(row: pd.Series) -> str:

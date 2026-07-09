@@ -24,7 +24,7 @@ from scripts.ai_listing_valuation import (
 from shared.comps_engine import parse_currency
 from shared.decision_policy import derive_action_label_from_row
 from shared.curves import resolve_curve_canonical_tag
-from shared.repair_pricing import assess_repairs, apply_repairs_to_max_bid
+from shared.repair_pricing import assess_repairs, apply_repairs_to_max_bid, repair_decision_label
 
 # Profit threshold that upgrades a replay verdict from "Conditional Flip" to "Strong Flip".
 # Distinct from MIN_NET_PROFIT_ABSOLUTE (the minimum required for any BUY decision).
@@ -73,6 +73,7 @@ def _blank_decision() -> dict[str, object]:
         "admin_costs": None,
         "risk_buffer": None,
         "repair_cost": None,
+        "repair_decision": None,
         "expected_auction_price": None,
         "action_label": "Review",
     }
@@ -378,6 +379,10 @@ def compute_decision_metrics(
     repair_assessment = assess_repairs(
         listing_data.get("general_condition", ""), vehicle_value=resale_mid_val or resale_mid
     )
+    # Exposed so callers (e.g. the Missed Opportunities table) can show the same
+    # vehicle-value-scaled Good/Marginal/Not Viable/Avoid label this function used
+    # internally, instead of separately recomputing it against flat dollar gates.
+    repair_decision = repair_decision_label(repair_assessment, vehicle_value=resale_mid_val or resale_mid)
     repair_cost_total = float(repair_assessment.total_cost or 0.0) if include_repairs else 0.0
     risk_buffer = float(repair_assessment.risk_buffer or 0.0) if include_repairs else 0.0
     repair_cost = max(0.0, repair_cost_total - risk_buffer)
@@ -444,6 +449,7 @@ def compute_decision_metrics(
         "admin_costs": admin_costs,
         "risk_buffer": risk_buffer,
         "repair_cost": repair_cost,
+        "repair_decision": repair_decision,
         "expected_auction_price": expected_auction_price,
         "bid_status": bid_status,
         "hard_max_safety": hard_max_safety,

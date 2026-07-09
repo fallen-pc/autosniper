@@ -1614,7 +1614,12 @@ for _, row in sold_df.iterrows():
             "delta_pct": delta_pct,
             "repair_cost_estimate": repair_cost,
             "repair_severity": row.get("repair_severity") if include_repairs else None,
-            "repair_decision": row.get("repair_decision") if include_repairs else None,
+            # decision.get("repair_decision") is vehicle-value-scaled (matches the
+            # Good/Marginal/Not Viable/Avoid gates now used everywhere else), unlike
+            # row.get("repair_decision") which comes from the earlier bulk
+            # enrich_repair_estimates() pass that runs before a resale value exists
+            # for this row and so is still on the flat dollar gates.
+            "repair_decision": decision.get("repair_decision") if include_repairs else None,
             "historical_match_count": comps_context.get("historical_match_count"),
             "historical_price_median": comps_context.get("historical_price_median"),
             "net_delta": net_delta,
