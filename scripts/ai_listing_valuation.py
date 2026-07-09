@@ -1826,7 +1826,20 @@ def run_curve_listing_analysis(
         }.get(getattr(repair_assessment, "hard_avoid_reason", None), "MECHANICAL")
         if hard_avoid_flag not in risk_flags:
             risk_flags.append(hard_avoid_flag)
+    # How much apply_repairs_to_max_bid actually deducted from the bid ceiling
+    # (mirrors its own high-estimate-first fallback in shared/repair_pricing.py so
+    # this always matches, whichever branch it took). Any profit figure that uses a
+    # repair-ADJUSTED bid as its cost basis must subtract this same amount -- not
+    # repair_cost_val (the plain mid estimate) -- or the two numbers mismatch and
+    # profit stops tracking repair severity consistently. Figures that use a bid
+    # basis which was never repair-adjusted (current price, expected auction price)
+    # should keep using repair_cost_val, since nothing has deducted repairs from
+    # those numbers yet.
+    repair_deduction_for_bid = 0.0
     if recommended_max_bid_val is not None:
+        repair_deduction_for_bid = float(
+            repair_assessment.total_cost_high if repair_assessment.total_cost_high > 0 else repair_assessment.total_cost
+        )
         adjusted_bid, repair_verdict = apply_repairs_to_max_bid(
             int(round(recommended_max_bid_val)),
             repair_assessment,
@@ -1845,12 +1858,12 @@ def run_curve_listing_analysis(
     economic_profit_mid_val = None
     if economic_max_bid_val is not None and resale_mid_val is not None and not repair_assessment.hard_avoid:
         economic_profit_mid_val = (
-            resale_mid_val - sum(economic_costs_map.values()) - economic_max_bid_val - repair_cost_val
+            resale_mid_val - sum(economic_costs_map.values()) - economic_max_bid_val - repair_deduction_for_bid
         )
     economic_profit_worst_val = None
     if economic_max_bid_val is not None and resale_low_val is not None and not repair_assessment.hard_avoid:
         economic_profit_worst_val = (
-            resale_low_val - sum(economic_costs_map.values()) - economic_max_bid_val - repair_cost_val
+            resale_low_val - sum(economic_costs_map.values()) - economic_max_bid_val - repair_deduction_for_bid
         )
     economic_current_profit_val, economic_current_worst_profit_val = _profit_at_purchase_price(
         resale_mid_val or resale_mid,
@@ -1881,10 +1894,10 @@ def run_curve_listing_analysis(
 
     base_net_profit_mid = None
     if base_max_bid_val is not None and resale_mid_val is not None:
-        base_net_profit_mid = resale_mid_val - sum(base_costs_map.values()) - base_max_bid_val - repair_cost_val
+        base_net_profit_mid = resale_mid_val - sum(base_costs_map.values()) - base_max_bid_val - repair_deduction_for_bid
     base_net_profit_worst = None
     if base_max_bid_val is not None and resale_low_val is not None:
-        base_net_profit_worst = resale_low_val - sum(base_costs_map.values()) - base_max_bid_val - repair_cost_val
+        base_net_profit_worst = resale_low_val - sum(base_costs_map.values()) - base_max_bid_val - repair_deduction_for_bid
     base_margin_value = None
     if resale_mid_val:
         base_margin_value = _profit_margin_percent_value(base_net_profit_worst, resale_mid_val)
@@ -1953,10 +1966,10 @@ def run_curve_listing_analysis(
     max_bid_worst_profit_val = None
     if recommended_max_bid_val is not None and not repair_assessment.hard_avoid:
         max_bid_mid_profit_val = (
-            _net_profit_value(resale_mid_val or resale_mid, recommended_max_bid_val, listing_data) - repair_cost_val
+            _net_profit_value(resale_mid_val or resale_mid, recommended_max_bid_val, listing_data) - repair_deduction_for_bid
         )
         max_bid_worst_profit_val = (
-            _net_profit_value(resale_low_val or resale_mid, recommended_max_bid_val, listing_data) - repair_cost_val
+            _net_profit_value(resale_low_val or resale_mid, recommended_max_bid_val, listing_data) - repair_deduction_for_bid
         )
     if "INTERSTATE" in risk_flags:
         max_bid_mid_profit_val = 0.0
@@ -1966,13 +1979,18 @@ def run_curve_listing_analysis(
     if recommended_max_bid_val is not None and current_price_val is not None:
         no_edge_at_current_bid = recommended_max_bid_val <= current_price_val + EDGE_BUFFER
 
+    # profit_bid_basis is recommended_max_bid_val (repair-adjusted) UNLESS the listing
+    # has no bidding edge, in which case it falls back to current_price_val, which was
+    # never repair-adjusted. Match the repair deduction to whichever basis is in use.
     profit_bid_basis = recommended_max_bid_val
+    profit_bid_basis_is_repair_adjusted = True
     if (
         current_price_val is not None
         and profit_bid_basis is not None
         and profit_bid_basis <= current_price_val + EDGE_BUFFER
     ):
         profit_bid_basis = current_price_val
+        profit_bid_basis_is_repair_adjusted = False
 
     cost_basis = profit_bid_basis if profit_bid_basis is not None else 0.0
     costs_map = _estimate_costs(cost_basis, listing_data)
@@ -1980,8 +1998,13 @@ def run_curve_listing_analysis(
     net_profit_mid_val = None
     net_profit_worst_val = None
     if profit_bid_basis is not None and not repair_assessment.hard_avoid:
-        net_profit_mid_val = _net_profit_value(resale_mid_val or resale_mid, profit_bid_basis, listing_data) - repair_cost_val
-        net_profit_worst_val = _net_profit_value(resale_low_val or resale_mid, profit_bid_basis, listing_data) - repair_cost_val
+        repair_deduction_for_basis = repair_deduction_for_bid if profit_bid_basis_is_repair_adjusted else repair_cost_val
+        net_profit_mid_val = (
+            _net_profit_value(resale_mid_val or resale_mid, profit_bid_basis, listing_data) - repair_deduction_for_basis
+        )
+        net_profit_worst_val = (
+            _net_profit_value(resale_low_val or resale_mid, profit_bid_basis, listing_data) - repair_deduction_for_basis
+        )
     if "INTERSTATE" in risk_flags:
         net_profit_mid_val = 0.0
         net_profit_worst_val = 0.0
