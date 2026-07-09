@@ -35,6 +35,7 @@ _BASE_STYLES = textwrap.dedent(
         --autosniper-border: #2d3748;
         --autosniper-shadow: rgba(0, 0, 0, 0.22);
         --autosniper-banner-navy: #0f1724;
+        --autosniper-signal-cyan: #27b6ff;
         --autosniper-radius-sm: 6px;
         --autosniper-radius-md: 8px;
         --autosniper-radius-lg: 8px;
@@ -108,6 +109,70 @@ _BASE_STYLES = textwrap.dedent(
     .autosniper-section .section-subtitle {
         color: var(--autosniper-muted);
         margin-top: 0.35rem;
+    }
+    .autosniper-body {
+        color: var(--autosniper-text);
+        line-height: 1.55;
+        margin: 0.2rem 0;
+    }
+    .autosniper-table {
+        overflow-x: auto;
+        border-radius: var(--autosniper-radius-lg);
+        border: 1px solid var(--autosniper-border);
+        background: rgba(18, 23, 36, 0.9);
+    }
+    .autosniper-table table {
+        width: 100%;
+        border-collapse: collapse;
+        color: var(--autosniper-text);
+    }
+    .autosniper-table th,
+    .autosniper-table td {
+        padding: 0.55rem 0.75rem;
+        border-bottom: 1px solid var(--autosniper-border);
+        text-align: left;
+    }
+    .autosniper-table th {
+        background: rgba(31, 166, 255, 0.08);
+        color: var(--autosniper-muted);
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.08em;
+    }
+    .autosniper-table tr:last-child td {
+        border-bottom: none;
+    }
+    /* Shared "open listing" pill link, used by the AI Analysis and Missed
+       Opportunities card components (previously two drifted local copies). */
+    .card-actions a {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.2rem 0.55rem;
+        border-radius: 999px;
+        border: 1px solid rgba(39, 182, 255, 0.6);
+        color: var(--autosniper-primary);
+        text-decoration: none;
+        font-size: 0.62rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+    }
+    .card-actions a:hover {
+        background: rgba(39, 182, 255, 0.12);
+    }
+    /* Shared 4-up stat grid used by the Repair Review and Repair Pricing
+       pages (previously two identical local copies). */
+    .autosniper-repair-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 0.65rem;
+        margin: 0.75rem 0 1rem;
+    }
+    @media (max-width: 900px) {
+        .autosniper-repair-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
     }
     .autosniper-chip {
         display: inline-flex;
@@ -671,7 +736,19 @@ _BASE_STYLES = textwrap.dedent(
         background: linear-gradient(135deg, #00aaff 0%, #0066cc 100%);
         box-shadow: none;
     }
-    /* New dark/blue theme overrides */
+    /* New dark/blue theme overrides.
+       NOTE: this block intentionally repeats several selectors already
+       defined above (h1/h2/h3, .stButton>button, stMetric*, stSidebar text,
+       .page-intro, .autosniper-banner, div[data-testid="stVerticalBlock"].ai-card-wrapper).
+       Because it appears later in this stylesheet, it wins the cascade for
+       any property it sets, so THIS block is the one that actually renders
+       app-wide (its hex values, e.g. #00AFFF/#E5E5E5, match .streamlit/config.toml's
+       [theme] section). The earlier declarations for those same selectors are
+       mostly dead weight, kept only because a couple of properties they set
+       (e.g. margin-bottom, letter-spacing, opacity) aren't touched here and
+       still apply. Treat this block, not the original token block above, as
+       the source of truth when styling new pages -- 99_STYLE_GUIDE.py still
+       shows the older palette and should be refreshed to match this one. */
     .stApp {
         background-color: var(--autosniper-bg) !important;
     }

@@ -64,52 +64,47 @@ def non_empty_count(df: pd.DataFrame, column: str) -> int:
 
 
 st.markdown(
-    """
-    <style>
-    .repair-pricing-grid {
-        display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 0.65rem;
-        margin: 0.75rem 0 1rem;
-    }
-    .repair-pricing-card {
-        border: 1px solid rgba(255,255,255,0.1);
-        background: rgba(255,255,255,0.04);
-        border-radius: 8px;
-        padding: 0.7rem 0.8rem;
-        min-height: 78px;
-    }
-    .repair-pricing-label {
-        font-size: 0.6rem;
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-        color: rgba(255,255,255,0.58);
-    }
-    .repair-pricing-value {
-        margin-top: 0.3rem;
-        font-size: 1.35rem;
-        font-weight: 820;
-        color: rgba(255,255,255,0.94);
-    }
-    .repair-pricing-sub {
-        margin-top: 0.25rem;
-        font-size: 0.72rem;
-        color: rgba(255,255,255,0.58);
-    }
-    .repair-pricing-note {
-        border-left: 3px solid rgba(39, 182, 255, 0.55);
-        background: rgba(39, 182, 255, 0.06);
-        padding: 0.7rem 0.85rem;
-        margin: 0.5rem 0 1rem;
-        border-radius: 0 8px 8px 0;
-    }
-    @media (max-width: 900px) {
-        .repair-pricing-grid {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+    clean_html(
+        """
+        <style>
+        /* .repair-pricing-grid's grid/gap/margin (plus its responsive
+           breakpoint) now come from the shared .autosniper-repair-grid
+           class in shared/styling.py -- was an identical duplicate of the
+           .repair-review-grid rule in 18_REPAIR_REVIEW.py. */
+        .repair-pricing-card {
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.04);
+            border-radius: 8px;
+            padding: 0.7rem 0.8rem;
+            min-height: 78px;
         }
-    }
-    </style>
-    """,
+        .repair-pricing-label {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--autosniper-muted);
+        }
+        .repair-pricing-value {
+            margin-top: 0.3rem;
+            font-size: 1.35rem;
+            font-weight: 820;
+            color: var(--autosniper-primary);
+        }
+        .repair-pricing-sub {
+            margin-top: 0.25rem;
+            font-size: 0.72rem;
+            color: var(--autosniper-muted);
+        }
+        .repair-pricing-note {
+            border-left: 3px solid rgba(39, 182, 255, 0.55);
+            background: rgba(39, 182, 255, 0.06);
+            padding: 0.7rem 0.85rem;
+            margin: 0.5rem 0 1rem;
+            border-radius: 0 8px 8px 0;
+        }
+        </style>
+        """
+    ),
     unsafe_allow_html=True,
 )
 
@@ -127,7 +122,7 @@ if not quotes_df.empty and "status" in quotes_df.columns:
 st.markdown(
     clean_html(
         f"""
-        <div class="repair-pricing-grid">
+        <div class="repair-pricing-grid autosniper-repair-grid">
             {metric_card("Canonical items", f"{len(candidates_df):,}", "from Repair Review decisions")}
             {metric_card("Priced items", f"{priced_count:,}", "saved pricing schedule")}
             {metric_card("Needs pricing", f"{len(needs_df):,}", "canonical items without pricing")}

@@ -232,90 +232,88 @@ def suggested_review_defaults(selected: pd.Series, existing: pd.Series) -> dict[
 
 
 st.markdown(
-    """
-    <style>
-    .repair-review-grid {
-        display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 0.65rem;
-        margin: 0.75rem 0 1rem;
-    }
-    .repair-review-metric {
-        border: 1px solid rgba(39, 182, 255, 0.24);
-        background: rgba(8, 12, 18, 0.64);
-        border-radius: 8px;
-        padding: 0.7rem 0.8rem;
-        min-height: 82px;
-    }
-    .repair-review-label {
-        font-size: 0.62rem;
-        text-transform: uppercase;
-        letter-spacing: 0.12em;
-        color: rgba(255,255,255,0.62);
-    }
-    .repair-review-value {
-        margin-top: 0.3rem;
-        font-size: 1.5rem;
-        font-weight: 850;
-        color: rgba(255,255,255,0.94);
-    }
-    .repair-review-sub {
-        margin-top: 0.25rem;
-        font-size: 0.72rem;
-        color: rgba(255,255,255,0.58);
-    }
-    .repair-review-item {
-        border: 1px solid rgba(255,255,255,0.08);
-        background: rgba(255,255,255,0.035);
-        border-radius: 8px;
-        padding: 0.7rem 0.8rem;
-        margin-top: 0.5rem;
-    }
-    .repair-review-item .k {
-        font-size: 0.62rem;
-        text-transform: uppercase;
-        letter-spacing: 0.12em;
-        color: rgba(255,255,255,0.58);
-    }
-    .repair-review-item .v {
-        margin-top: 0.25rem;
-        color: rgba(255,255,255,0.9);
-        overflow-wrap: anywhere;
-    }
-    .repair-review-selection-grid {
-        display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 0.5rem;
-        margin: 0.5rem 0 0.9rem;
-    }
-    .repair-review-selection {
-        border: 1px solid rgba(255,255,255,0.1);
-        background: rgba(255,255,255,0.04);
-        border-radius: 8px;
-        padding: 0.55rem 0.65rem;
-        min-height: 62px;
-    }
-    .repair-review-selection-label {
-        font-size: 0.58rem;
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-        color: rgba(255,255,255,0.58);
-    }
-    .repair-review-selection-value {
-        margin-top: 0.25rem;
-        font-size: 0.85rem;
-        font-weight: 720;
-        color: rgba(255,255,255,0.94);
-        overflow-wrap: anywhere;
-    }
-    @media (max-width: 900px) {
-        .repair-review-grid,
-        .repair-review-selection-grid {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+    clean_html(
+        """
+        <style>
+        /* .repair-review-grid's grid/gap/margin now come from the shared
+           .autosniper-repair-grid class (see shared/styling.py); this page
+           still styles its own metric/item/selection accents locally. */
+        .repair-review-metric {
+            border: 1px solid rgba(39, 182, 255, 0.24);
+            background: rgba(8, 12, 18, 0.64);
+            border-radius: 8px;
+            padding: 0.7rem 0.8rem;
+            min-height: 82px;
         }
-    }
-    </style>
-    """,
+        .repair-review-label {
+            font-size: 0.62rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--autosniper-muted);
+        }
+        .repair-review-value {
+            margin-top: 0.3rem;
+            font-size: 1.5rem;
+            font-weight: 850;
+            color: var(--autosniper-primary);
+        }
+        .repair-review-sub {
+            margin-top: 0.25rem;
+            font-size: 0.72rem;
+            color: var(--autosniper-muted);
+        }
+        .repair-review-item {
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.035);
+            border-radius: 8px;
+            padding: 0.7rem 0.8rem;
+            margin-top: 0.5rem;
+        }
+        .repair-review-item .k {
+            font-size: 0.62rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--autosniper-muted);
+        }
+        .repair-review-item .v {
+            margin-top: 0.25rem;
+            color: var(--autosniper-text);
+            overflow-wrap: anywhere;
+        }
+        .repair-review-selection-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 0.5rem;
+            margin: 0.5rem 0 0.9rem;
+        }
+        .repair-review-selection {
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.04);
+            border-radius: 8px;
+            padding: 0.55rem 0.65rem;
+            min-height: 62px;
+        }
+        .repair-review-selection-label {
+            font-size: 0.58rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--autosniper-muted);
+        }
+        .repair-review-selection-value {
+            margin-top: 0.25rem;
+            font-size: 0.85rem;
+            font-weight: 720;
+            color: var(--autosniper-primary);
+            overflow-wrap: anywhere;
+        }
+        @media (max-width: 900px) {
+            .repair-review-selection-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+        </style>
+        """
+    ),
     unsafe_allow_html=True,
 )
 
@@ -346,7 +344,7 @@ metric_html = "".join(
         display_metric("Decisions", f"{len(decisions_df):,}", "saved review rows"),
     ]
 )
-st.markdown(f'<div class="repair-review-grid">{metric_html}</div>', unsafe_allow_html=True)
+st.markdown(f'<div class="repair-review-grid autosniper-repair-grid">{metric_html}</div>', unsafe_allow_html=True)
 
 queue_df = lines_df[lines_df["review_bucket"] != "Already matched"].copy()
 

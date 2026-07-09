@@ -865,7 +865,10 @@ st.markdown(
         :root{
           --bg:#070b10;
           --bg2:#0b1220;
-          --cyan:#27b6ff;
+          /* --cyan used to hardcode #27b6ff here too (same value as
+             6_AI_ANALYSIS.py's separately-declared --sniper-cyan) --
+             both now point at the single shared token. */
+          --cyan: var(--autosniper-signal-cyan);
           --text: rgba(255,255,255,.92);
           --muted: rgba(255,255,255,.65);
         }
@@ -1109,22 +1112,8 @@ st.markdown(
           flex-wrap: wrap;
           justify-content: flex-end;
         }
-        .card-actions a {
-          display: inline-flex;
-          align-items: center;
-          padding: 0.2rem 0.55rem;
-          border-radius: 999px;
-          border: 1px solid rgba(39, 182, 255, 0.6);
-          color: rgba(255,255,255,.92) !important;
-          text-decoration: none;
-          font-size: 0.62rem;
-          text-transform: uppercase;
-          letter-spacing: 0.12em;
-          font-weight: 800;
-        }
-        .card-actions a:hover {
-          background: rgba(39, 182, 255, 0.12);
-        }
+        /* .card-actions a / a:hover now live in shared/styling.py so this
+           page and 6_AI_ANALYSIS.py share one definition. */
         .decision-signal-row {
           margin-top: 0.55rem;
           display: grid;

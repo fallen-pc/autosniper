@@ -2773,13 +2773,13 @@ st.markdown(
         """
         <style>
         :root {
-            --sniper-card: #0b0f14;
-            --sniper-card-deep: #070b10;
-            --sniper-cyan: #27b6ff;
-            --sniper-cyan-soft: rgba(39, 182, 255, 0.2);
-            --sniper-green: #2cff9a;
-            --sniper-amber: #ffb347;
-            --sniper-red: #ff4d4d;
+            /* --sniper-card, --sniper-card-deep, --sniper-cyan-soft, --sniper-green,
+               --sniper-amber, and --sniper-red used to be declared here too, but
+               nothing in this file ever referenced them (verified via grep) --
+               removed as dead custom properties. --sniper-cyan is kept as a local
+               alias so the one real usage below doesn't need touching, but the
+               actual color now lives once in shared/styling.py. */
+            --sniper-cyan: var(--autosniper-signal-cyan);
         }
         .vehicle-card {
             --card-glow: 0 0 0 rgba(0, 0, 0, 0);
@@ -2915,22 +2915,8 @@ st.markdown(
             border-color: rgba(39, 182, 255, 0.25);
             background: rgba(39, 182, 255, 0.06);
         }
-        .card-actions a {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.35rem;
-            padding: 0.2rem 0.55rem;
-            border-radius: 999px;
-            border: 1px solid rgba(39, 182, 255, 0.6);
-            color: var(--autosniper-primary);
-            text-decoration: none;
-            font-size: 0.62rem;
-            text-transform: uppercase;
-            letter-spacing: 0.12em;
-        }
-        .card-actions a:hover {
-            background: rgba(39, 182, 255, 0.12);
-        }
+        /* .card-actions a / a:hover now live in shared/styling.py so this
+           page and 8_MISSED_OPPORTUNITIES.py share one definition. */
         .card-metrics {
             margin-top: 0.5rem;
             display: grid;

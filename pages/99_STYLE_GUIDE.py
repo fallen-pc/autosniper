@@ -67,15 +67,16 @@ st.markdown(
 )
 
 section_heading(
-    "Brand Palette",
-    "Dark navy base with electric blue accents; reuse these tokens for any custom HTML blocks.",
+    "CSS Tokens",
+    "Custom properties available to any raw HTML block you write with st.markdown(..., unsafe_allow_html=True). "
+    "Use var(--autosniper-*) rather than hardcoding hex so new pages stay in sync with shared/styling.py.",
 )
 
 palette = [
-    ("Background", "var(--autosniper-bg)", "#0f1724"),
-    ("Surface", "var(--autosniper-surface)", "#121724"),
-    ("Panel", "var(--autosniper-panel)", "#1a2130"),
-    ("Highlight", "var(--autosniper-highlight)", "#1a2130"),
+    ("Background", "var(--autosniper-bg)", "#10141c"),
+    ("Surface", "var(--autosniper-surface)", "#151a23"),
+    ("Panel", "var(--autosniper-panel)", "#1b2230"),
+    ("Highlight", "var(--autosniper-highlight)", "#202938"),
     ("Primary", "var(--autosniper-primary)", "#e6edf6"),
     ("Primary Dark", "var(--autosniper-primary-dark)", "#b9c8dc"),
     ("Accent", "var(--autosniper-accent)", "#1fa6ff"),
@@ -109,6 +110,42 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+section_heading(
+    "Rendered Theme (native widgets)",
+    "st.button, st.metric, headings, inputs, and the sidebar don't follow the tokens above -- they follow "
+    ".streamlit/config.toml, which is layered on top in shared/styling.py's later \"dark/blue theme overrides\" "
+    "block and wins the cascade. This is what a real button or metric on any page actually looks like today.",
+)
+
+rendered_palette = [
+    ("App background", "#0A0A0C"),
+    ("Secondary surface", "#1A1A1C"),
+    ("Primary text", "#E5E5E5"),
+    ("Accent (buttons, links, focus rings)", "#00AFFF"),
+]
+
+rendered_tiles = "".join(
+    f"""
+    <div class="palette-tile">
+        <div class="palette-swatch" style="background:{hex_code};"></div>
+        <div class="palette-label">{label}</div>
+        <div class="palette-token">{hex_code}</div>
+    </div>
+    """
+    for label, hex_code in rendered_palette
+)
+
+st.markdown(
+    clean_html(
+        f"""
+        <div class="autosniper-section">
+            <div class="palette-grid">{rendered_tiles}</div>
+        </div>
+        """
+    ),
+    unsafe_allow_html=True,
+)
+
 section_heading("Component Cheatsheet", "Copy these references to keep buttons, tables, and headings consistent.")
 
 st.markdown(
@@ -117,7 +154,9 @@ st.markdown(
         <div class="autosniper-section">
             <div class="section-title">Buttons</div>
             <p class="autosniper-body">
-                Primary: gradient blue, 12px radius, bold white text. Disabled: muted blue gradient, still readable.
+                Native st.button renders pill-shaped (999px radius) with a radial #00AFFF-to-#0066CC gradient and a
+                glowing accent border -- this comes from the config.toml-driven override styles, not the button
+                token block above. Disabled: muted blue gradient, still readable.
             </p>
         </div>
         """

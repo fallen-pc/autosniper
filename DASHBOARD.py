@@ -194,13 +194,31 @@ st.markdown(
             padding: 1rem;
         }
         .pipeline-health-card[data-tone="green"] {
-            border-left: 6px solid #3cb371;
+            border-left: 6px solid var(--autosniper-success);
         }
         .pipeline-health-card[data-tone="orange"] {
-            border-left: 6px solid #ffa726;
+            border-left: 6px solid var(--autosniper-warning);
         }
         .pipeline-health-card[data-tone="red"] {
-            border-left: 6px solid #ff5a5f;
+            border-left: 6px solid var(--autosniper-danger);
+        }
+        .ghost-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.45rem 1.1rem;
+            border-radius: 999px;
+            border: 1px solid rgba(31, 166, 255, 0.45);
+            background: transparent;
+            color: var(--autosniper-accent);
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-decoration: none;
+            transition: all 0.15s ease-out;
+        }
+        .ghost-button:hover {
+            background: rgba(31, 166, 255, 0.12);
+            color: var(--autosniper-accent);
         }
         .pipeline-health-status {
             font-size: 0.74rem;

@@ -76,9 +76,9 @@ def numeric_series(frame: pd.DataFrame, column: str) -> pd.Series:
 
 def render_status_badge(label: str, tone: str) -> None:
     palette = {
-        "ok": ("#0f5132", "#d1e7dd"),
-        "warn": ("#664d03", "#fff3cd"),
-        "info": ("#084298", "#cfe2ff"),
+        "ok": ("var(--autosniper-success)", "rgba(94, 230, 167, 0.12)"),
+        "warn": ("var(--autosniper-warning)", "rgba(255, 167, 38, 0.12)"),
+        "info": ("var(--autosniper-accent)", "rgba(31, 166, 255, 0.12)"),
     }
     text_color, bg_color = palette.get(tone, palette["info"])
     st.markdown(
