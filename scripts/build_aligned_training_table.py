@@ -452,7 +452,7 @@ def main() -> None:
     if abs(p50 - 1.0) > 0.20:
         print(f"  WARNING: median ratio {p50:.3f} is far from 1.0 -- check price/baseline alignment")
     else:
-        print(f"  Ratio healthy (median near 1.0)")
+        print("  Ratio healthy (median near 1.0)")
 
 
 if __name__ == "__main__":

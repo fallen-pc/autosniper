@@ -4,14 +4,17 @@ from shared.repair_pricing_schedule import (
     EXCLUDED_PRICING_CANONICALS,
     HARD_AVOID_PRICING_CANONICALS,
     apply_quote_response,
+    build_quote_followup_body,
     build_quote_request_body,
     build_quote_request_subject,
     canonical_pricing_candidates,
     dictionary_pricing_candidates,
     needs_pricing,
     next_request_id,
+    overdue_quote_followup_candidates,
     parse_quote_response,
     pricing_row_from_quote,
+    should_skip_quote_followup,
     is_hard_avoid_pricing_candidate,
     suggest_pricing_method,
     suggest_supplier_type,
@@ -71,6 +74,8 @@ def test_supplier_suggestions_distinguish_wreckers_from_specialists() -> None:
     assert suggest_pricing_method("mirror_light_damage") == "wrecker_part_price"
     assert suggest_supplier_type("mirror_light_damage") == "wrecker"
     assert suggest_supplier_type("battery_issue") == "tyre_battery"
+    assert suggest_pricing_method("wheel_missing") == "parts_supplier_price"
+    assert suggest_supplier_type("wheel_missing") == "tyre_battery"
     assert suggest_pricing_method("windscreen_damage") == "repair_quote"
     assert suggest_supplier_type("windscreen_damage") == "glass"
 
@@ -182,6 +187,84 @@ def test_quote_request_draft_asks_for_specific_price_without_auction_context() -
     assert "Job: repair a scuffed front bumper corner" in body
     blocked_terms = ["auction", "bidding", "reconditioning", "pricing schedule"]
     assert not any(term in body.lower() for term in blocked_terms)
+
+
+def test_overdue_quote_followups_skip_photo_requests_and_prior_followups() -> None:
+    quotes = pd.DataFrame(
+        [
+            {
+                "request_id": "RQ-0027",
+                "canonical_defect": "seat_issue",
+                "contact_method": "gmail",
+                "status": "replied",
+                "request_date": "2026-07-06",
+                "recipient_email": "rob@example.com",
+                "sent_thread_id": "thread-seat",
+                "response_text": "Please send photos before I can estimate.",
+                "response_parse_status": "no_price_found",
+            },
+            {
+                "request_id": "RQ-0028",
+                "canonical_defect": "paint_surface_issue",
+                "contact_method": "gmail",
+                "status": "sent",
+                "request_date": "2026-07-07",
+                "recipient_email": "paint@example.com",
+                "sent_thread_id": "thread-paint",
+                "last_attempted_date": "2026-07-07",
+                "notes": "Initial request sent.",
+            },
+            {
+                "request_id": "RQ-0029",
+                "canonical_defect": "generic_damage",
+                "contact_method": "gmail",
+                "status": "sent",
+                "request_date": "2026-07-07",
+                "recipient_email": "panel@example.com",
+                "sent_thread_id": "thread-panel",
+                "notes": "Follow-up sent via Gmail 2026-07-09.",
+            },
+        ]
+    )
+
+    overdue = overdue_quote_followup_candidates(quotes, today="2026-07-10")
+
+    assert overdue["request_id"].tolist() == ["RQ-0028"]
+    assert should_skip_quote_followup(quotes.iloc[0])
+    assert should_skip_quote_followup(quotes.iloc[2])
+
+
+def test_quote_followup_body_reuses_vehicle_job_and_avoids_internal_context() -> None:
+    row = {
+        "canonical_defect": "paint_surface_issue",
+        "representative_vehicle": "2016 Toyota Corolla hatch",
+        "draft_body": (
+            "Vehicle: 2016 Toyota Corolla hatch\n"
+            "Job: localised clear coat peel on one panel\n"
+            "Location: Melbourne metro"
+        ),
+    }
+
+    body = build_quote_followup_body(row)
+
+    assert "Just following up on this price request." in body
+    assert "Vehicle: 2016 Toyota Corolla hatch" in body
+    assert "Job: localised clear coat peel on one panel" in body
+    blocked_terms = ["auction", "bidding", "reconditioning", "pricing schedule"]
+    assert not any(term in body.lower() for term in blocked_terms)
+
+
+def test_quote_followup_body_can_use_request_notes_when_draft_body_is_empty() -> None:
+    row = {
+        "canonical_defect": "generic_damage",
+        "representative_vehicle": "2016 Toyota Corolla hatch",
+        "draft_body": "",
+        "notes": "Asked Pomroy Panels for vehicle-specific minor cosmetic one-panel dent/scuff/scratch repair price range.",
+    }
+
+    body = build_quote_followup_body(row)
+
+    assert "Job: vehicle-specific minor cosmetic one-panel dent/scuff/scratch repair price range" in body
 
 
 def test_parse_quote_response_extracts_range_and_typical_price() -> None:

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import date
 import re
 from pathlib import Path
 
@@ -89,6 +90,7 @@ SUPPLIER_TYPES = [
 ]
 
 DEFAULT_REPAIR_LOCATION = "Melbourne metro"
+DEFAULT_FOLLOWUP_WAIT_DAYS = 3
 
 PART_ONLY_CANONICALS = {
     "battery_issue",
@@ -100,6 +102,7 @@ PART_ONLY_CANONICALS = {
     "sunroof_damage",
     "key_missing",
     "tyre_replacement",
+    "wheel_missing",
 }
 
 SPECIALIST_CANONICALS = {
@@ -302,6 +305,93 @@ def build_quote_request_body(
         "Thanks,\n"
         "Ewan"
     )
+
+
+def build_quote_followup_body(
+    row: pd.Series | dict[str, object],
+    *,
+    sender_name: object = "Ewan",
+) -> str:
+    canonical = safe_text(row.get("canonical_defect")) if hasattr(row, "get") else ""
+    item = humanize_canonical_defect(canonical) or "repair"
+    vehicle = safe_text(row.get("representative_vehicle")) if hasattr(row, "get") else ""
+    job = safe_text(row.get("draft_body")) if hasattr(row, "get") else ""
+    job_line = _extract_email_field(job, "Job")
+    if not job_line:
+        job_line = _job_from_request_notes(row)
+    location_line = _extract_email_field(job, "Location")
+    vehicle_line = vehicle or _extract_email_field(job, "Vehicle")
+    greeting_name = safe_text(sender_name) or "Ewan"
+
+    details = []
+    if vehicle_line:
+        details.append(f"Vehicle: {vehicle_line}")
+    if job_line:
+        details.append(f"Job: {job_line}")
+    else:
+        details.append(f"Job: {item}")
+    if location_line:
+        details.append(f"Location: {location_line}")
+
+    detail_block = "\n".join(details)
+    return (
+        "Hi,\n\n"
+        "Just following up on this price request.\n\n"
+        f"{detail_block}\n\n"
+        "A rough typical price and likely low/high range is fine if the final quote depends on photos or inspection.\n\n"
+        "Thanks,\n"
+        f"{greeting_name}"
+    )
+
+
+def overdue_quote_followup_candidates(
+    quotes: pd.DataFrame,
+    *,
+    today: date | str | None = None,
+    min_days_waiting: int = DEFAULT_FOLLOWUP_WAIT_DAYS,
+) -> pd.DataFrame:
+    if quotes.empty:
+        return quotes.copy()
+    current = _coerce_date(today) or date.today()
+    out = quotes.copy().fillna("")
+    for column in QUOTE_COLUMNS:
+        if column not in out.columns:
+            out[column] = ""
+    sent = out["status"].map(safe_text).isin({"sent", "waiting"})
+    gmail = out["contact_method"].map(safe_text).eq("gmail")
+    has_recipient = out["recipient_email"].map(safe_text) != ""
+    has_thread = out["sent_thread_id"].map(safe_text) != ""
+    request_dates = out["request_date"].map(_coerce_date)
+    old_enough = request_dates.map(lambda value: value is not None and (current - value).days >= min_days_waiting)
+    return out[sent & gmail & has_recipient & has_thread & old_enough & ~out.apply(should_skip_quote_followup, axis=1)][
+        QUOTE_COLUMNS
+    ]
+
+
+def should_skip_quote_followup(row: pd.Series | dict[str, object]) -> bool:
+    status = safe_text(row.get("status")) if hasattr(row, "get") else ""
+    if status in {"priced", "no_quote", "superseded"}:
+        return True
+
+    combined = " ".join(
+        safe_text(row.get(column))
+        for column in ["notes", "response_text", "response_parse_status", "response_source"]
+        if hasattr(row, "get")
+    ).lower()
+    if any(term in combined for term in ["photo", "inspection", "tyre size", "tire size", "no_price_found"]):
+        return True
+    return has_followup_marker(row)
+
+
+def has_followup_marker(row: pd.Series | dict[str, object]) -> bool:
+    if not hasattr(row, "get"):
+        return False
+    last_attempted = safe_text(row.get("last_attempted_date"))
+    request_date = safe_text(row.get("request_date"))
+    if last_attempted and last_attempted != request_date:
+        return True
+    notes = safe_text(row.get("notes")).lower()
+    return "follow-up sent" in notes or "follow-up draft" in notes or "follow up sent" in notes
 
 
 def parse_quote_response(text: object) -> dict[str, object]:
@@ -513,7 +603,7 @@ def is_vehicle_specific(canonical_defect: object) -> bool:
 
 def suggest_pricing_method(canonical_defect: object) -> str:
     key = safe_text(canonical_defect)
-    if key in {"battery_issue", "tyre_replacement"}:
+    if key in {"battery_issue", "tyre_replacement", "wheel_missing"}:
         return "parts_supplier_price"
     if key in PART_ONLY_CANONICALS:
         return "wrecker_part_price"
@@ -526,7 +616,7 @@ def suggest_supplier_type(canonical_defect: object) -> str:
     key = safe_text(canonical_defect)
     if key in {"windscreen_damage", "window_damage", "window_tint_damage"}:
         return "glass"
-    if key in {"battery_issue", "tyre_replacement"}:
+    if key in {"battery_issue", "tyre_replacement", "wheel_missing"}:
         return "tyre_battery"
     if key in PART_ONLY_CANONICALS:
         return "wrecker"
@@ -589,6 +679,35 @@ def _extract_money_amounts(text: str) -> list[int]:
     ):
         values.append(round(float(match.group(1).replace(",", ""))))
     return [value for value in values if 20 <= value <= 20000]
+
+
+def _extract_email_field(body: object, field: str) -> str:
+    pattern = rf"^{re.escape(field)}:\s*(.+)$"
+    for line in safe_text(body).splitlines():
+        match = re.match(pattern, line.strip(), flags=re.IGNORECASE)
+        if match:
+            return match.group(1).strip()
+    return ""
+
+
+def _job_from_request_notes(row: pd.Series | dict[str, object]) -> str:
+    if not hasattr(row, "get"):
+        return ""
+    notes = safe_text(row.get("notes"))
+    match = re.search(r"(?:asked|ask)\s+[^.]*?\s+for\s+(?:a\s+)?(.+?)(?:\.|$)", notes, flags=re.IGNORECASE)
+    if match:
+        return match.group(1).strip()
+    return ""
+
+
+def _coerce_date(value: object) -> date | None:
+    text = safe_text(value)
+    if not text:
+        return None
+    try:
+        return date.fromisoformat(text[:10])
+    except ValueError:
+        return None
 
 
 def _extract_default_amount(text: str, amounts: list[int]) -> int | None:

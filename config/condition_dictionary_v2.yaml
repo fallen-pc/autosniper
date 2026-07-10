@@ -106,6 +106,11 @@ entries:
     category: glass
     severity_hint: medium
 
+  - pattern: "\\b(windscreen|windshield).*(pitting|pit|pitted)"
+    canonical_defect: windscreen_damage
+    category: glass
+    severity_hint: low
+
   - pattern: "\\b(window|glass).*(crack|cracked|chip|chipped|broken)"
     canonical_defect: window_damage
     category: glass
@@ -137,6 +142,11 @@ entries:
     severity_hint: high
 
   - pattern: "\\b(flat battery|jump start|towing required)\\b"
+    canonical_defect: battery_issue
+    category: mechanical
+    severity_hint: medium
+
+  - pattern: "\\bbattery\\b.*\\b(flat|requires attention|missing|dead)\\b"
     canonical_defect: battery_issue
     category: mechanical
     severity_hint: medium
@@ -231,6 +241,16 @@ entries:
     category: replacement
     severity_hint: medium
 
+  - pattern: "\\btyres?\\b.*\\b(missing|requires replacement|needs replacing|bald|flat|worn)\\b|\\b(missing|requires replacement|needs replacing|bald|flat|worn)\\b.*\\btyres?\\b"
+    canonical_defect: tyre_replacement
+    category: replacement
+    severity_hint: medium
+
+  - pattern: "\\bwheel\\b.*\\b(missing|requires replacement|needs replacing|damaged)\\b|\\b(missing|requires replacement|needs replacing|damaged)\\b.*\\bwheel\\b"
+    canonical_defect: wheel_missing
+    category: replacement
+    severity_hint: medium
+
   - pattern: "\\b(missing|needs replacing|requires replacement)"
     canonical_defect: replacement_required
     category: replacement
@@ -261,7 +281,7 @@ entries:
     category: cosmetic
     severity_hint: low
 
-  - pattern: "\\b(dent|dented|scratch|scratched|scuff|scuffed|mark|marks|chip|chipped)"
+  - pattern: "\\b(dent|dented|scratch|scratched|scrape|scraped|scuff|scuffed|mark|marks|chip|chipped)"
     canonical_defect: cosmetic_surface_damage
     category: cosmetic
     severity_hint: low

@@ -6,6 +6,7 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
+from ops.outcome_tracking import logged_outcome_mask
 from shared.data_loader import dataset_path, ensure_datasets_available
 from shared.styling import display_banner, inject_global_styles, page_intro, section_heading
 
@@ -99,15 +100,10 @@ if "settled_date" in scored_df.columns:
     scored_df["settled_date"] = pd.to_datetime(scored_df["settled_date"], errors="coerce")
 
 hit_series = coerce_bool(scored_df["hit"]) if "hit" in scored_df.columns else pd.Series(pd.NA, index=scored_df.index)
-valid_hits = hit_series[hit_series.notna()]
+outcome_mask = logged_outcome_mask(scored_df)
+valid_outcome_hits = hit_series[outcome_mask & hit_series.notna()]
 
-settled_mask = pd.Series(False, index=scored_df.index)
-if "hit" in scored_df.columns:
-    settled_mask = hit_series.notna()
-if "actual_sale_price" in scored_df.columns:
-    settled_mask |= pd.to_numeric(scored_df["actual_sale_price"], errors="coerce").notna()
-if "settled_date" in scored_df.columns:
-    settled_mask |= scored_df["settled_date"].notna()
+settled_mask = outcome_mask
 
 error_abs = (
     pd.to_numeric(scored_df["outcome_error_abs"], errors="coerce")
@@ -145,8 +141,8 @@ settled_latest = scored_df["settled_date"].max() if "settled_date" in scored_df.
 section_heading("Accuracy Snapshot", "Coverage for settled listings and pricing error.")
 metrics = st.columns(6)
 metrics[0].metric("Scored listings", f"{len(scored_df):,}")
-metrics[1].metric("Settled outcomes", f"{len(valid_hits):,}")
-metrics[2].metric("Hit accuracy", format_ratio(valid_hits.astype(float).mean()) if not valid_hits.empty else "N/A")
+metrics[1].metric("Logged outcomes", f"{int(outcome_mask.sum()):,}")
+metrics[2].metric("Hit accuracy", format_ratio(valid_outcome_hits.astype(float).mean()) if not valid_outcome_hits.empty else "N/A")
 metrics[3].metric("MAE price", format_currency(mae_price))
 metrics[4].metric("MAPE price", format_percent(mape_price))
 metrics[5].metric("Profit match", format_ratio(profit_calibration))

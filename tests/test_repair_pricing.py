@@ -350,6 +350,39 @@ def test_assess_repairs_classifies_control_and_attention_gap_repairs() -> None:
     assert records[3]["canonical_defects"] == "interior_trim_damage"
 
 
+def test_assess_repairs_classifies_pickles_condition_detail_rows() -> None:
+    assessment = assess_repairs(
+        "Tyre (Spare) missing. Wheel (Spare) missing. "
+        "Windscreen (Front) minor pitting visible. Battery Std Light Commercial flat."
+    )
+    records = repair_fragments_to_records(assessment)
+    defects = {record["canonical_defects"] for record in records}
+
+    assert assessment.hard_avoid is False
+    assert "PANEL_REPLACE" in assessment.pills
+    assert "GLASS" in assessment.pills
+    assert "tyre_replacement" in defects
+    assert "wheel_missing" in defects
+    assert "windscreen_damage" in defects
+    assert "battery_issue" in defects
+
+
+def test_assess_repairs_pickles_mechanical_issue_is_hard_avoid() -> None:
+    assessment = assess_repairs("Mechanical mechanical issue - requires attention.")
+
+    assert assessment.hard_avoid is True
+    assert assessment.hard_avoid_reason == "mechanical"
+    assert assessment.pills == ["MECHANICAL"]
+
+
+def test_assess_repairs_pickles_chassis_corrosion_is_structural_hard_avoid() -> None:
+    assessment = assess_repairs("Chassis/Undercarriage bubbling/delamination corrosion evident.")
+
+    assert assessment.hard_avoid is True
+    assert assessment.hard_avoid_reason == "structural"
+    assert assessment.pills == ["STRUCTURAL"]
+
+
 def test_repair_fragments_preserve_split_items_and_unclassified_status() -> None:
     assessment = assess_repairs("dents or marks on body consistent with age. bull bar.")
     records = repair_fragments_to_records(assessment)

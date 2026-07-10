@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AutoSniper - Project Flowchart</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b1017;
+      --panel: #121a24;
+      --panel-2: #172232;
+      --text: #eef5ff;
+      --muted: #9fb2c7;
+      --line: #38506d;
+      --blue: #64b5f6;
+      --green: #7bd88f;
+      --amber: #ffd166;
+      --red: #ff8a8a;
+      --violet: #c7a2ff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background:
+        linear-gradient(180deg, rgba(100, 181, 246, 0.08), transparent 34rem),
+        var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 1rem 1.25rem;
+      background: rgba(11, 16, 23, 0.92);
+      border-bottom: 1px solid rgba(159, 178, 199, 0.18);
+      backdrop-filter: blur(14px);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.05rem;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin: 0.15rem 0 0;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: 1px solid rgba(159, 178, 199, 0.28);
+      background: var(--panel-2);
+      color: var(--text);
+      border-radius: 6px;
+      padding: 0.5rem 0.7rem;
+      cursor: pointer;
+      font-weight: 650;
+    }
+
+    button:hover {
+      border-color: var(--blue);
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 20rem;
+      gap: 1rem;
+      min-height: calc(100vh - 74px);
+      padding: 1rem;
+    }
+
+    .canvas-wrap {
+      overflow: auto;
+      border: 1px solid rgba(159, 178, 199, 0.18);
+      border-radius: 8px;
+      background:
+        linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+        rgba(8, 12, 18, 0.82);
+      background-size: 42px 42px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+    }
+
+    .diagram-scale {
+      width: max-content;
+      min-width: 100%;
+      padding: 2rem;
+      transform-origin: top left;
+      transition: transform 120ms ease;
+    }
+
+    .mermaid {
+      min-width: 1800px;
+      padding: 1rem;
+    }
+
+    aside {
+      align-self: start;
+      position: sticky;
+      top: 5.25rem;
+      display: grid;
+      gap: 0.8rem;
+    }
+
+    .card {
+      background: rgba(18, 26, 36, 0.92);
+      border: 1px solid rgba(159, 178, 199, 0.18);
+      border-radius: 8px;
+      padding: 0.95rem;
+    }
+
+    h2 {
+      margin: 0 0 0.65rem;
+      font-size: 0.95rem;
+      letter-spacing: 0;
+    }
+
+    ol,
+    ul {
+      margin: 0;
+      padding-left: 1.2rem;
+      color: var(--muted);
+      font-size: 0.86rem;
+      line-height: 1.45;
+    }
+
+    li + li {
+      margin-top: 0.42rem;
+    }
+
+    code {
+      color: #dbeafe;
+      background: rgba(100, 181, 246, 0.12);
+      border: 1px solid rgba(100, 181, 246, 0.16);
+      border-radius: 4px;
+      padding: 0.05rem 0.2rem;
+      font-size: 0.82rem;
+    }
+
+    @media (max-width: 1050px) {
+      main {
+        grid-template-columns: 1fr;
+      }
+
+      aside {
+        position: static;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>AutoSniper Project Flowchart</h1>
+      <p class="subtitle">Use this as a recording board: zoom out for the full system, then pan through each lane.</p>
+    </div>
+    <div class="controls">
+      <button type="button" data-zoom="out">Zoom Out</button>
+      <button type="button" data-zoom="reset">Reset</button>
+      <button type="button" data-zoom="in">Zoom In</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="canvas-wrap" id="canvas">
+      <div class="diagram-scale" id="diagramScale">
+        <pre class="mermaid">
+flowchart LR
+  %% AutoSniper project flowchart for short explainer video.
+
+  classDef source fill:#152033,stroke:#64b5f6,color:#eef5ff,stroke-width:2px
+  classDef data fill:#14241d,stroke:#7bd88f,color:#eef5ff,stroke-width:2px
+  classDef logic fill:#211a30,stroke:#c7a2ff,color:#eef5ff,stroke-width:2px
+  classDef ai fill:#2a2114,stroke:#ffd166,color:#eef5ff,stroke-width:2px
+  classDef risk fill:#2a171b,stroke:#ff8a8a,color:#eef5ff,stroke-width:2px
+  classDef ui fill:#102235,stroke:#59d1ff,color:#eef5ff,stroke-width:2px
+  classDef proof fill:#1f2530,stroke:#9fb2c7,color:#eef5ff,stroke-width:2px
+
+  subgraph S1["1. Market Intake"]
+    A1["Grays auction pages<br/>scripts/extract_links.py"]:::source
+    A2["Listing detail scrape<br/>scripts/extract_vehicle_details.py"]:::source
+    A3["Live bid refresh<br/>scripts/update_bids.py"]:::source
+    A4["Carsales / Autotrader evidence<br/>Apify + manual imports"]:::source
+  end
+
+  subgraph S2["2. Working Datasets"]
+    D1["all_vehicle_links.csv<br/>active_vehicle_links.csv"]:::data
+    D2["raw_vehicle_data.csv<br/>normalised_data.csv"]:::data
+    D3["vehicle_static_details.csv<br/>active_vehicle_details.csv"]:::data
+    D4["vehicle_state.csv<br/>active_snapshots.csv"]:::data
+    D5["sold_cars.csv<br/>referred_cars.csv"]:::data
+  end
+
+  subgraph S3["3. Normalisation + Coverage"]
+    N1["Canonical tagging<br/>shared/canonical_tagging.py"]:::logic
+    N2["Restricted operating universe<br/>scripts/build_restricted_datasets.py"]:::logic
+    N3["Curve library<br/>curves.csv + versions"]:::logic
+    N4["Curve governance<br/>allowed variants, manifests, coverage reports"]:::proof
+    N5["Gap queues<br/>curve candidates + enrichment backlog"]:::proof
+  end
+
+  subgraph S4["4. Valuation Engine"]
+    V1["Active monitor shortlist<br/>ops/active_monitor.py"]:::logic
+    V2["Historical comparable sales<br/>shared/comps_engine.py"]:::logic
+    V3["Curve-based resale estimate<br/>shared/curves.py"]:::logic
+    V4["Repair assessment<br/>shared/repair_pricing.py"]:::logic
+    V5["Auction price correction<br/>shared/auction_model.py"]:::ai
+    V6["AI listing valuation<br/>scripts/ai_listing_valuation.py"]:::ai
+  end
+
+  subgraph S5["5. Decision Policy"]
+    P1["Profit bands<br/>low / mid / high resale"]:::ai
+    P2["Costs and frictions<br/>fees, transport, rego, RWC, prep, repairs"]:::ai
+    P3["Recommended max bid<br/>economic max + safety buffer"]:::ai
+    P4["Shared action label<br/>Buy / Watch / Avoid / Review"]:::risk
+    P5["Top Buy behaviour<br/>extra gate for best opportunities"]:::risk
+  end
+
+  subgraph S6["6. Operator Surfaces"]
+    U1["Dashboard<br/>DASHBOARD.py"]:::ui
+    U2["Radar / Active Listings<br/>pages/00_RADAR.py<br/>pages/3_ACTIVE_LISTINGS.py"]:::ui
+    U3["AI Analysis<br/>pages/6_AI_ANALYSIS.py"]:::ui
+    U4["Detail transparency<br/>pages/02_DETAIL.py"]:::ui
+    U5["Health + Pipeline pages<br/>pages/05_HEALTH.py<br/>pages/12_GRAYS_PIPELINE.py"]:::ui
+    U6["Telegram / decision events<br/>alerts on important changes"]:::ui
+  end
+
+  subgraph S7["7. Proof, Learning + Feedback"]
+    F1["Model Proof<br/>pages/17_MODEL_PROOF.py"]:::proof
+    F2["Missed Opportunities replay<br/>pages/8_MISSED_OPPORTUNITIES.py"]:::proof
+    F3["Model Accuracy<br/>scored_listings_enriched.csv"]:::proof
+    F4["Retail-median simulation<br/>model_audit outputs"]:::proof
+    F5["Repair Review + Pricing<br/>pages/18_REPAIR_REVIEW.py<br/>pages/19_REPAIR_PRICING.py"]:::proof
+    F6["Governance checks<br/>readiness smoke, schema, curve validation"]:::proof
+  end
+
+  A1 --> D1
+  D1 --> A2
+  A2 --> D2
+  D2 --> D3
+  A3 --> D3
+  A3 --> D4
+  D3 --> D4
+  D3 --> N1
+  D5 --> N1
+  N1 --> N2
+  D3 --> N2
+  D5 --> N2
+  N2 --> V1
+  N3 --> V1
+  N3 --> V3
+  D5 --> V2
+  V1 --> V2
+  V1 --> V3
+  V1 --> V4
+  V1 --> V5
+  V2 --> V6
+  V3 --> V6
+  V4 --> V6
+  V5 --> V6
+  V6 --> P1
+  P1 --> P2
+  P2 --> P3
+  P3 --> P4
+  P4 --> P5
+  P4 --> U3
+  P5 --> U2
+  D3 --> U1
+  D3 --> U2
+  D3 --> U4
+  D4 --> U5
+  V6 --> U6
+  U3 --> U4
+  P4 --> F1
+  D5 --> F1
+  P4 --> F2
+  D5 --> F2
+  V6 --> F3
+  D5 --> F3
+  V6 --> F4
+  D3 --> F4
+  V4 --> F5
+  F5 --> V4
+  F1 --> F6
+  F2 --> F6
+  N4 --> F6
+  F6 --> N3
+  F6 --> N4
+  N5 --> A4
+  A4 --> N3
+  A4 --> N4
+  F2 -. "missed wins tune gates" .-> P4
+  F3 -. "accuracy feedback" .-> V5
+  F1 -. "proof of settled outcomes" .-> P4
+        </pre>
+      </div>
+    </section>
+
+    <aside>
+      <section class="card">
+        <h2>Camera Path</h2>
+        <ol>
+          <li>Open wide: AutoSniper turns auction listings into bid decisions.</li>
+          <li>Pan left: Grays, bid refreshes, and external market evidence feed the CSV datasets.</li>
+          <li>Move to the middle: normalisation, restricted universe, and curves decide what is covered.</li>
+          <li>Zoom into valuation: comps, curves, repairs, and auction-price prediction produce profit bands.</li>
+          <li>Move right: shared policy converts numbers into Buy, Watch, Avoid, or Review.</li>
+          <li>Finish bottom-right: proof pages, missed opportunities, repair pricing, and governance improve the system.</li>
+        </ol>
+      </section>
+
+      <section class="card">
+        <h2>Short Voiceover</h2>
+        <ul>
+          <li><code>Buy</code> is not a guess. It requires coverage, profit, bid room, safety, and enough historical comps.</li>
+          <li><code>Watch</code> means the car may become attractive if price, repairs, or confidence improves.</li>
+          <li><code>Avoid</code> blocks cars where price, safety, or policy removes the edge.</li>
+          <li><code>Review</code> means the system needs missing context before it can recommend action.</li>
+        </ul>
+      </section>
+    </aside>
+  </main>
+
+  <script type="module">
+    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs";
+
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: "base",
+      themeVariables: {
+        background: "#0b1017",
+        primaryColor: "#152033",
+        primaryTextColor: "#eef5ff",
+        primaryBorderColor: "#64b5f6",
+        lineColor: "#6f86a3",
+        secondaryColor: "#172232",
+        tertiaryColor: "#121a24",
+        fontFamily: "Inter, Segoe UI, sans-serif",
+        clusterBkg: "rgba(18, 26, 36, 0.75)",
+        clusterBorder: "#38506d",
+        edgeLabelBackground: "#0b1017"
+      },
+      flowchart: {
+        curve: "basis",
+        nodeSpacing: 44,
+        rankSpacing: 74,
+        padding: 22
+      }
+    });
+
+    const scaleTarget = document.getElementById("diagramScale");
+    let zoom = 1;
+
+    function applyZoom(nextZoom) {
+      zoom = Math.min(1.65, Math.max(0.45, nextZoom));
+      scaleTarget.style.transform = `scale(${zoom})`;
+      scaleTarget.style.marginBottom = `${(zoom - 1) * 100}%`;
+      scaleTarget.style.marginRight = `${(zoom - 1) * 100}%`;
+    }
+
+    document.querySelectorAll("button[data-zoom]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const mode = button.dataset.zoom;
+        if (mode === "in") applyZoom(zoom + 0.1);
+        if (mode === "out") applyZoom(zoom - 0.1);
+        if (mode === "reset") applyZoom(1);
+      });
+    });
+  </script>
+</body>
+</html>
