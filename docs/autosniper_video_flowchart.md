@@ -1,5 +1,7 @@
 # AutoSniper Video Flowchart
 
+Experimental video-only artifact: these flowcharts are not sources of truth for the project. Use the repo code, datasets, tests, and project memory as the authoritative references.
+
 Use [autosniper_video_flowchart.html](./autosniper_video_flowchart.html) as the recording board. Open it in a browser, zoom out for the whole system, then pan through the numbered sections.
 
 ## Mermaid Source
