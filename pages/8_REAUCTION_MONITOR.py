@@ -2,6 +2,7 @@ import pandas as pd
 import streamlit as st
 
 from shared.data_loader import dataset_path, ensure_datasets_available
+from shared.reauction import build_reauction_summary, prepare_reauction_frame
 from shared.styling import inject_global_styles, page_intro
 
 
@@ -14,58 +15,16 @@ page_intro(
 )
 
 
-def _coerce_price(value: object) -> float | None:
-    if value is None or (isinstance(value, float) and pd.isna(value)):
-        return None
-    text = str(value).strip()
-    if not text:
-        return None
-    cleaned = text.replace("$", "").replace(",", "")
-    try:
-        return float(cleaned)
-    except ValueError:
-        return None
-
-
-def _parse_odometer(text: object) -> float | None:
-    if text is None or (isinstance(text, float) and pd.isna(text)):
-        return None
-    cleaned = "".join(ch for ch in str(text) if ch.isdigit() or ch == ".")
-    if not cleaned:
-        return None
-    try:
-        return float(cleaned)
-    except ValueError:
-        return None
-
-
 @st.cache_data(ttl=600)
 def load_reauction_data() -> tuple[pd.DataFrame, pd.DataFrame]:
     ensure_datasets_available(["sold_cars.csv"])
     sold_path = dataset_path("sold_cars.csv")
-    df = pd.read_csv(sold_path)
-
-    price_columns = [col for col in ["final_price", "price", "sold_price", "hammer_price"] if col in df.columns]
-    if "final_price_numeric" in df.columns:
-        df["price_numeric"] = df["final_price_numeric"]
-    elif price_columns:
-        df["price_numeric"] = df[price_columns[0]].apply(_coerce_price)
-        for column in price_columns[1:]:
-            fallback = df[column].apply(_coerce_price)
-            df["price_numeric"] = df["price_numeric"].fillna(fallback)
-    else:
-        df["price_numeric"] = None
-
-    df["vin_norm"] = df.get("vin", pd.Series([None] * len(df))).astype(str).str.strip().str.lower()
-    df["vin_norm"] = df["vin_norm"].replace({"": pd.NA})
-    df["odometer_numeric"] = df.get("odometer_numeric", pd.Series([None] * len(df))).copy()
-    if df["odometer_numeric"].isna().all() and "odometer_reading" in df.columns:
-        df["odometer_numeric"] = df["odometer_reading"].apply(_parse_odometer)
+    df = prepare_reauction_frame(pd.read_csv(sold_path))
     df["date_sold"] = df.get("date_sold", pd.Series([None] * len(df)))
     df["date_sold_text"] = df["date_sold"].fillna("").astype(str)
 
     valid_mask = (
-        df["vin_norm"].notna()
+        df["vin_norm"].ne("")
         & df["odometer_numeric"].notna()
         & df["price_numeric"].notna()
     )
@@ -73,26 +32,38 @@ def load_reauction_data() -> tuple[pd.DataFrame, pd.DataFrame]:
     if subset.empty:
         return pd.DataFrame(), pd.DataFrame()
 
-    summary = (
-        subset.groupby(["vin_norm", "odometer_numeric"])
-        .agg(
-            count=("vin_norm", "size"),
-            make=("make", "first"),
-            model=("model", "first"),
-            variant=("variant", "first"),
-            min_price=("price_numeric", "min"),
-            max_price=("price_numeric", "max"),
-            first_date=("date_sold_text", "min"),
-            last_date=("date_sold_text", "max"),
-        )
-        .reset_index()
-    )
-
-    summary = summary[summary["count"] >= 2].copy()
+    summary = build_reauction_summary(subset)
     if summary.empty:
         return pd.DataFrame(), pd.DataFrame()
 
-    summary["price_range"] = summary["max_price"] - summary["min_price"]
+    first_dates = (
+        subset.sort_values("date_sold_text")
+        .groupby(["vin_norm", "odometer_numeric"])["date_sold_text"]
+        .first()
+        .rename("first_date")
+    )
+    last_dates = (
+        subset.sort_values("date_sold_text")
+        .groupby(["vin_norm", "odometer_numeric"])["date_sold_text"]
+        .last()
+        .rename("last_date")
+    )
+    first_vehicle = (
+        subset.sort_values("date_sold_text")
+        .groupby(["vin_norm", "odometer_numeric"])[["make", "model", "variant"]]
+        .first()
+    )
+    summary = summary.merge(first_dates, on=["vin_norm", "odometer_numeric"], how="left")
+    summary = summary.merge(last_dates, on=["vin_norm", "odometer_numeric"], how="left")
+    summary = summary.merge(first_vehicle, on=["vin_norm", "odometer_numeric"], how="left")
+    summary = summary.rename(
+        columns={
+            "reauction_event_count": "count",
+            "reauction_min_price": "min_price",
+            "reauction_max_price": "max_price",
+            "reauction_price_range": "price_range",
+        }
+    )
     summary["vin_display"] = summary["vin_norm"].str.upper()
     summary["odometer_display"] = summary["odometer_numeric"].apply(
         lambda val: f"{int(val):,} km" if pd.notna(val) else "N/A"

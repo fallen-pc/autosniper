@@ -24,6 +24,7 @@ from shared.repair_pricing import (
     repair_decision_label,
     serialize_repair_fragments,
 )
+from shared.reauction import collapse_reauction_lifecycles
 from shared.styling import clean_html, display_banner, inject_global_styles, page_intro
 from shared.missed_opportunities import (
     build_historical_comps_stats,
@@ -1513,6 +1514,10 @@ wovr_excluded_count = int(wovr_mask.sum())
 if wovr_excluded_count:
     sold_df = sold_df[~wovr_mask].copy()
 
+raw_sold_after_exclusions = int(sold_df.shape[0])
+sold_df = collapse_reauction_lifecycles(sold_df)
+reauction_collapsed_count = raw_sold_after_exclusions - int(sold_df.shape[0])
+
 sold_stats_group, sold_stats_year = build_historical_comps_stats(sold_df)
 
 results: list[dict[str, object]] = []
@@ -1645,6 +1650,13 @@ for _, row in sold_df.iterrows():
             "risk_summary": risk_summary,
             "general_condition": row.get("general_condition"),
             "repair_cost_detail": row.get("repair_cost_detail") if include_repairs else None,
+            "reauction_event_count": row.get("reauction_event_count", 1),
+            "reauction_first_price": row.get("reauction_first_price"),
+            "reauction_last_price": row.get("reauction_last_price"),
+            "reauction_price_delta": row.get("reauction_price_delta"),
+            "reauction_price_range": row.get("reauction_price_range"),
+            "reauction_first_date": row.get("reauction_first_date"),
+            "reauction_last_date": row.get("reauction_last_date"),
         }
     )
 
@@ -1738,6 +1750,11 @@ if excluded_count:
 if wovr_excluded_count:
     st.markdown(
         f'<div class="notice">Excluded {wovr_excluded_count:,} WOVR/write-off listings.</div>',
+        unsafe_allow_html=True,
+    )
+if reauction_collapsed_count:
+    st.markdown(
+        f'<div class="notice">Collapsed {reauction_collapsed_count:,} repeated VIN + odometer sale rows to their latest auction result.</div>',
         unsafe_allow_html=True,
     )
 if future_sold_count:

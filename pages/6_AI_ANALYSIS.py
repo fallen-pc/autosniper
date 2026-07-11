@@ -39,6 +39,7 @@ from shared.repair_pricing import (
     repair_fragments_to_records,
 )
 from shared.repair_review import append_live_review_items, repair_mapping_summary
+from shared.reauction import collapse_reauction_lifecycles, reauction_context_for_listing
 from shared.styling import clean_html, display_banner, inject_global_styles, page_intro
 from shared.valuation_display import (
     bid_display_parts,
@@ -2675,6 +2676,7 @@ else:
     sold_df = sold_df[sold_df["curve_tag"].isin(allowed_tags)].copy()
 sold_df = _exclude_corolla_sport_comps(sold_df)
 sold_df = _exclude_major_engine_defects(sold_df)
+sold_df = collapse_reauction_lifecycles(sold_df)
 sold_df["year_int"] = sold_df["year"].apply(_safe_int) if "year" in sold_df.columns else None
 if "curve_tag" not in sold_df.columns:
     sold_df["curve_tag"] = sold_df["canonical_tag"].apply(resolve_curve_canonical_tag)
@@ -3419,6 +3421,7 @@ for _, row in filtered.iterrows():
         autotrader_median=autotrader_median,
         carsales_estimate=adjusted_estimate,
         listings_cluster_ok=listings_cluster_ok,
+        reauction_context=reauction_context_for_listing(row, sold_df),
         force_refresh=force_refresh_row,
     )
     analysis["curve_base"] = base_estimate

@@ -16,6 +16,7 @@ from shared.data_loader import dataset_path
 from shared.decision_policy import DecisionPolicyInput, derive_action_label, derive_action_label_from_row
 from shared.repair_pricing import assess_repairs, apply_repairs_to_max_bid
 from shared.repair_features import build_repair_features, serialize_tags, REPAIR_CATEGORIES
+from shared.reauction import adjusted_expected_auction_price
 from shared.telegram_alerts import get_alert_state, send_on_state_change
 from shared.top_buy import apply_top_buy_behavior, top_buy_gate_check
 
@@ -54,6 +55,11 @@ REQUIRED_COLUMNS = [
     "expected_auction_worst_profit",
     "expected_auction_source",
     "expected_auction_comps_count",
+    "expected_auction_reauction_adjustment",
+    "expected_auction_reauction_reason",
+    "reauction_event_count",
+    "reauction_last_price",
+    "reauction_price_delta",
     "economic_max_bid",
     "economic_profit_mid",
     "economic_profit_worst",
@@ -343,6 +349,7 @@ def _valuation_input_hash(
     autotrader_median: float | None,
     carsales_estimate: float | None,
     listings_cluster_ok: bool | None,
+    reauction_context: Mapping[str, Any] | None = None,
 ) -> str:
     payload = {
         "fields": {
@@ -357,6 +364,10 @@ def _valuation_input_hash(
         "autotrader_median": _hashable_value(autotrader_median),
         "carsales_estimate": _hashable_value(carsales_estimate),
         "listings_cluster_ok": _hashable_value(listings_cluster_ok),
+        "reauction_context": {
+            key: _hashable_value(value)
+            for key, value in (reauction_context or {}).items()
+        },
     }
     encoded = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
     return sha256(encoded.encode("utf-8")).hexdigest()
@@ -1600,6 +1611,7 @@ def run_curve_listing_analysis(
     autotrader_median: float | None = None,
     carsales_estimate: float | None = None,
     listings_cluster_ok: bool | None = None,
+    reauction_context: Mapping[str, Any] | None = None,
     force_refresh: bool = False,
 ) -> Dict[str, Any]:
     cached_df = load_cached_results()
@@ -1614,6 +1626,7 @@ def run_curve_listing_analysis(
         autotrader_median=autotrader_median,
         carsales_estimate=carsales_estimate,
         listings_cluster_ok=listings_cluster_ok,
+        reauction_context=reauction_context,
     )
 
     if (
@@ -1668,6 +1681,11 @@ def run_curve_listing_analysis(
             "expected_auction_worst_profit": None,
             "expected_auction_source": None,
             "expected_auction_comps_count": None,
+            "expected_auction_reauction_adjustment": None,
+            "expected_auction_reauction_reason": None,
+            "reauction_event_count": None,
+            "reauction_last_price": None,
+            "reauction_price_delta": None,
             "economic_max_bid": _format_currency(0),
             "economic_profit_mid": None,
             "economic_profit_worst": None,
@@ -1790,6 +1808,17 @@ def run_curve_listing_analysis(
         comps_count=comps_count,
         model_prediction=model_prediction,
     )
+    (
+        expected_auction_price_val,
+        reauction_adjustment_val,
+        reauction_reason,
+    ) = adjusted_expected_auction_price(expected_auction_price_val, reauction_context)
+    if reauction_reason:
+        expected_auction_source = (
+            f"{expected_auction_source}+{reauction_reason}"
+            if expected_auction_source
+            else reauction_reason
+        )
 
     min_net_profit = max(MIN_NET_PROFIT_ABSOLUTE, MIN_NET_PROFIT_RATIO * (resale_low_val or resale_mid))
     recommended_max_bid_val = _solve_max_bid(resale_low_val, min_net_profit, listing_data)
@@ -2155,6 +2184,25 @@ def run_curve_listing_analysis(
         "expected_auction_worst_profit": _format_currency(expected_auction_worst_profit_val) if expected_auction_worst_profit_val is not None else None,
         "expected_auction_source": expected_auction_source,
         "expected_auction_comps_count": expected_auction_comps_count,
+        "expected_auction_reauction_adjustment": (
+            _format_currency(reauction_adjustment_val)
+            if reauction_adjustment_val
+            else None
+        ),
+        "expected_auction_reauction_reason": reauction_reason or None,
+        "reauction_event_count": (
+            reauction_context.get("reauction_event_count") if reauction_context else None
+        ),
+        "reauction_last_price": (
+            _format_currency(reauction_context.get("reauction_last_price"))
+            if reauction_context and reauction_context.get("reauction_last_price") is not None
+            else None
+        ),
+        "reauction_price_delta": (
+            _format_currency(reauction_context.get("reauction_price_delta"))
+            if reauction_context and reauction_context.get("reauction_price_delta") is not None
+            else None
+        ),
         "expected_auction_price_q90": _format_currency(model_prediction["q90_price"]) if model_prediction else None,
         "expected_auction_price_q90_value": model_prediction["q90_price"] if model_prediction else None,
         "discount_used": DEFAULT_DISCOUNT,

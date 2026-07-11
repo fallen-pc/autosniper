@@ -695,6 +695,69 @@ def test_curve_analysis_uses_historical_sold_median_for_expected_auction(monkeyp
     assert result["action_label"] == "Buy"
 
 
+def test_curve_analysis_caps_expected_auction_for_reauction_context(monkeypatch) -> None:
+    repair_assessment = RepairAssessment(
+        hard_avoid=False,
+        pills=[],
+        cosmetic_panels=0,
+        glass_cost=0,
+        replacement_cost=0,
+        risk_buffer=0,
+        base_cost=0,
+        severity_level="minor",
+        severity_multiplier=1.0,
+        total_cost=0,
+        reasons=[],
+    )
+    listing = pd.Series(
+        {
+            "url": "test://reauction-active",
+            "price": "$2,000",
+            "make": "Hyundai",
+            "model": "i30",
+            "variant": "Active",
+            "body_type": "Hatch",
+            "transmission": "Auto",
+            "fuel_type": "Petrol",
+            "location": "Melbourne VIC",
+            "rego_state": "VIC",
+            "key": "Yes",
+            "spare_key": "Yes",
+            "owners_manual": "Yes",
+            "service_history": "Full",
+            "general_condition": "",
+        }
+    )
+
+    monkeypatch.setattr(ai_listing_valuation, "load_cached_results", lambda: pd.DataFrame(columns=ai_listing_valuation.REQUIRED_COLUMNS))
+    monkeypatch.setattr(ai_listing_valuation, "_save_result_row", lambda row: None)
+    monkeypatch.setattr(ai_listing_valuation, "assess_repairs", lambda condition, **_kwargs: repair_assessment)
+
+    result = ai_listing_valuation.run_curve_listing_analysis(
+        listing,
+        resale_mid=20_000,
+        comps_median=6_200,
+        comps_count=5,
+        analysis_context="active",
+        reauction_context={
+            "reauction_event_count": 1,
+            "reauction_last_price": 5_500,
+            "reauction_price_delta": -700,
+        },
+        force_refresh=True,
+    )
+
+    expected_profit = ai_listing_valuation._net_profit_value(20_000, 5_500, listing.to_dict())
+
+    assert result["expected_auction_price"] == "$5,500"
+    assert result["expected_auction_source"] == "historical_sold_median+reauction_latest_sale_cap"
+    assert result["expected_auction_reauction_adjustment"] == "$-700"
+    assert result["expected_auction_reauction_reason"] == "reauction_latest_sale_cap"
+    assert result["reauction_event_count"] == 1
+    assert result["reauction_last_price"] == "$5,500"
+    assert ai_listing_valuation._parse_currency(result["expected_auction_profit"]) == round(expected_profit)
+
+
 def test_curve_analysis_caps_pajero_like_listing_by_historical_auction_comps(monkeypatch) -> None:
     repair_assessment = RepairAssessment(
         hard_avoid=False,
