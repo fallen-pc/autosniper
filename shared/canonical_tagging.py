@@ -84,6 +84,7 @@ MODEL_ALIASES = {
     "falcon": "falcon",
     "aurion": "aurion",
     "cerato": "cerato",
+    "elantra": "elantra",
     "calais": "calais",
     "cruze": "cruze",
     "barina": "barina",

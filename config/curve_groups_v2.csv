@@ -92,3 +92,8 @@ toyota_aurion_at-x_petrol_auto_sedan_gsv40r,toyota_aurion_at-x_gsv40r_sedan_auto
 holden_calais_petrol_auto_sedan_ve,holden_calais_ve_sedan_auto_petrol,active,Plain VE Calais sedan mapping from private Carsales evidence; excludes V trim
 kia_cerato_s_petrol_auto_sedan_yd,kia_cerato_s_yd_sedan_auto_petrol,active,Direct YD S sedan mapping from private Carsales evidence
 holden_cruze_cdx_petrol_auto_sedan_jg,holden_cruze_cdx_jg_sedan_auto_petrol,active,Direct JG CDX sedan mapping from private Carsales evidence
+holden_cruze_cdx_petrol_auto_sedan_jh-series-ii,holden_cruze_cdx_jh-series-ii_sedan_auto_petrol,active,Direct JH Series II CDX sedan mapping from private Carsales evidence
+holden_cruze_cd_petrol_auto_sedan_jh-series-ii,holden_cruze_cd_jh-series-ii_sedan_auto_petrol,active,Direct JH Series II CD sedan mapping from private Carsales evidence
+hyundai_elantra_active_petrol_auto_sedan_md3,hyundai_elantra_active_md3_sedan_auto_petrol,active,Direct MD3 Active sedan mapping from private Carsales evidence
+hyundai_elantra_active_petrol_auto_sedan_ad,hyundai_elantra_active_ad_sedan_auto_petrol,active,Direct AD Active sedan mapping from private Carsales evidence
+ford_focus_trend_petrol_auto_hatch_lz,ford_focus_trend_lz_hatch_auto_petrol,active,Direct Focus Trend LZ automatic petrol hatch mapping from private Carsales evidence

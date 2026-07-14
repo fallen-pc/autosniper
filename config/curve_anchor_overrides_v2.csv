@@ -58,3 +58,8 @@ toyota_aurion_at-x_gsv40r_sedan_auto_petrol,2006|2008|2011,GSV40R AT-X private C
 holden_calais_ve_sedan_auto_petrol,2006|2008|2010,Plain VE Calais private Carsales evidence; excludes V trim and VE Series II.
 kia_cerato_s_yd_sedan_auto_petrol,2013|2015|2018,YD S private Carsales evidence; Sport/Sport+/Si/S Premium excluded.
 holden_cruze_cdx_jg_sedan_auto_petrol,2009|2010|2011,JG CDX sedan private Carsales evidence; JH Series II excluded.
+holden_cruze_cdx_jh-series-ii_sedan_auto_petrol,2011|2013|2015,JH Series II CDX sedan private Carsales evidence; JG CDX and other trims stay separate.
+holden_cruze_cd_jh-series-ii_sedan_auto_petrol,2011|2012,JH Series II CD sedan private Carsales evidence; JG and CDX/SRi lanes stay separate.
+hyundai_elantra_active_md3_sedan_auto_petrol,2013|2014|2015,MD3 Active sedan private Carsales evidence; MD/MD2/AD and Elite/SE/Trophy lanes stay separate.
+hyundai_elantra_active_ad_sedan_auto_petrol,2016|2017|2018,AD Active sedan private Carsales evidence; AD.2 and Elite/SR/Sport lanes stay separate.
+ford_focus_trend_lz_hatch_auto_petrol,2015|2016,Focus Trend LZ automatic petrol hatch private Carsales evidence; LW Sport Titanium Ambiente ST XR5 manual diesel and non-hatch lanes stay separate.

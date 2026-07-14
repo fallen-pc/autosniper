@@ -106,6 +106,34 @@ from shared.canonical_tagging import _load_curve_year_band, assign_canonical_tag
             },
             "mazda_cx5_grand-touring_diesel_auto_wagon_ke",
         ),
+        (
+            {
+                "make": "Toyota",
+                "model": "Yaris",
+                "variant": "YR petrol",
+                "body_type": "Hatchback",
+                "transmission": "Automatic",
+                "fuel_type": "Petrol",
+                "year": "2011",
+                "price": "4900",
+                "url": "https://www.example.com/2011-toyota-yaris-yr-petrol",
+            },
+            "toyota_yaris_yr_petrol_auto_hatch_ncp90r",
+        ),
+        (
+            {
+                "make": "Ford",
+                "model": "Focus",
+                "variant": "Trend petrol",
+                "body_type": "Hatchback",
+                "transmission": "Automatic",
+                "fuel_type": "Petrol",
+                "year": "2016",
+                "price": "9000",
+                "url": "https://www.example.com/2016-ford-focus-trend-petrol",
+            },
+            "ford_focus_trend_petrol_auto_hatch_lz",
+        ),
     ],
 )
 def test_carsales_batch_lanes_map_to_expected_tags(row, expected_tag):
@@ -159,6 +187,55 @@ def test_carsales_batch_manual_and_glxr_lanes_are_supported(row):
 
     assert tag != "UNCLASSIFIED"
     assert reason == "[OK]"
+
+
+@pytest.mark.parametrize(
+    "row",
+    [
+        {
+            "make": "Toyota",
+            "model": "Yaris",
+            "variant": "YR NCP130R",
+            "body_type": "Hatch",
+            "transmission": "Automatic",
+            "fuel_type": "Petrol",
+            "year": "2013",
+            "price": "11000",
+            "url": "https://www.example.com/2013-toyota-yaris-yr-ncp130r-auto-hatch",
+        },
+        {
+            "make": "Ford",
+            "model": "Focus",
+            "variant": "Trend LW MKII",
+            "body_type": "Hatch",
+            "transmission": "Automatic",
+            "fuel_type": "Petrol",
+            "year": "2014",
+            "price": "8000",
+            "url": "https://www.example.com/2014-ford-focus-trend-lw-mkii-auto-hatch",
+        },
+        {
+            "make": "Ford",
+            "model": "Focus",
+            "variant": "Titanium LZ",
+            "body_type": "Hatch",
+            "transmission": "Automatic",
+            "fuel_type": "Petrol",
+            "year": "2016",
+            "price": "10000",
+            "url": "https://www.example.com/2016-ford-focus-titanium-lz-auto-hatch",
+        },
+    ],
+)
+def test_yaris_focus_batch_keeps_adjacent_lanes_separate(row):
+    _load_curve_year_band.cache_clear()
+
+    tag, _reason = assign_canonical_tag(row, require_price=True)
+
+    assert tag not in {
+        "toyota_yaris_yr_petrol_auto_hatch_ncp90r",
+        "ford_focus_trend_petrol_auto_hatch_lz",
+    }
 
 
 @pytest.mark.parametrize(
@@ -346,4 +423,111 @@ def test_new_carsales_scrape_lanes_do_not_absorb_excluded_trims(row):
         "kia_cerato_s_petrol_auto_sedan_yd",
         "holden_calais_petrol_auto_sedan_ve",
         "holden_cruze_cdx_petrol_auto_sedan_jg",
+    }
+
+
+@pytest.mark.parametrize(
+    ("row", "expected_tag"),
+    [
+        (
+            {
+                "make": "Holden",
+                "model": "Cruze",
+                "variant": "CDX Petrol",
+                "body_type": "Sedan",
+                "transmission": "Automatic",
+                "fuel_type": "Petrol",
+                "year": "2012",
+                "price": "5500",
+                "url": "https://www.example.com/2012-holden-cruze-cdx-petrol-auto-sedan",
+            },
+            "holden_cruze_cdx_petrol_auto_sedan_jh-series-ii",
+        ),
+        (
+            {
+                "make": "Holden",
+                "model": "Cruze",
+                "variant": "CD Petrol",
+                "body_type": "Sedan",
+                "transmission": "Automatic",
+                "fuel_type": "Petrol",
+                "year": "2012",
+                "price": "5200",
+                "url": "https://www.example.com/2012-holden-cruze-cd-petrol-auto-sedan",
+            },
+            "holden_cruze_cd_petrol_auto_sedan_jh-series-ii",
+        ),
+        (
+            {
+                "make": "Hyundai",
+                "model": "Elantra",
+                "variant": "Active Petrol",
+                "body_type": "Sedan",
+                "transmission": "Automatic",
+                "fuel_type": "Petrol",
+                "year": "2015",
+                "price": "12000",
+                "url": "https://www.example.com/2015-hyundai-elantra-active-petrol",
+            },
+            "hyundai_elantra_active_petrol_auto_sedan_md3",
+        ),
+        (
+            {
+                "make": "Hyundai",
+                "model": "Elantra",
+                "variant": "Active Petrol",
+                "body_type": "Sedan",
+                "transmission": "Automatic",
+                "fuel_type": "Petrol",
+                "year": "2018",
+                "price": "15000",
+                "url": "https://www.example.com/2018-hyundai-elantra-active-petrol",
+            },
+            "hyundai_elantra_active_petrol_auto_sedan_ad",
+        ),
+    ],
+)
+def test_staged_batch_lanes_map_to_expected_tags(row, expected_tag):
+    _load_curve_year_band.cache_clear()
+
+    assert assign_canonical_tag(row, require_price=True)[0:2] == (expected_tag, "[OK]")
+
+
+@pytest.mark.parametrize(
+    "row",
+    [
+        {
+            "make": "Holden",
+            "model": "Cruze",
+            "variant": "SRi-V Petrol",
+            "body_type": "Sedan",
+            "transmission": "Automatic",
+            "fuel_type": "Petrol",
+            "year": "2012",
+            "price": "5700",
+            "url": "https://www.example.com/2012-holden-cruze-sri-v-auto-sedan",
+        },
+        {
+            "make": "Hyundai",
+            "model": "Elantra",
+            "variant": "Elite Petrol",
+            "body_type": "Sedan",
+            "transmission": "Automatic",
+            "fuel_type": "Petrol",
+            "year": "2018",
+            "price": "16000",
+            "url": "https://www.example.com/2018-hyundai-elantra-elite-petrol",
+        },
+    ],
+)
+def test_staged_batch_lanes_do_not_absorb_excluded_trims(row):
+    _load_curve_year_band.cache_clear()
+
+    tag, _reason = assign_canonical_tag(row, require_price=True)
+
+    assert tag not in {
+        "holden_cruze_cdx_petrol_auto_sedan_jh-series-ii",
+        "holden_cruze_cd_petrol_auto_sedan_jh-series-ii",
+        "hyundai_elantra_active_petrol_auto_sedan_md3",
+        "hyundai_elantra_active_petrol_auto_sedan_ad",
     }

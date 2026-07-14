@@ -34,3 +34,7 @@ Why:
 - `ford_territory_titanium_sz_suv_auto_diesel` was built or extended from `38` clean private Carsales/Apify same-lane rows spanning `2011`-`2014`. Nearby trim, body, transmission, fuel, and generation lanes remain separate; Grays sold evidence is not used to reprice this retail curve.
 - `ford_territory_sy_suv_auto_petrol` was built from private Carsales/Apify SY/SY MkII automatic petrol TX/TS/Ghia/SR evidence spanning `2006`-`2011`. It intentionally excludes SZ, SX, Titanium, turbo petrol, diesel, and manual rows.
 - `ford_territory_sz_suv_auto_petrol` was built from private Carsales/Apify SZ/SZ MkII automatic petrol TX/TS evidence spanning `2011`-`2016`. It intentionally excludes SY, SX, Titanium, Ghia, turbo petrol, diesel, and manual rows.
+
+## Carsales/Apify Batch Curves - 2026-07-13
+
+- `ford_focus_trend_lz_hatch_auto_petrol` was built from `7` clean private Carsales/Apify Focus Trend LZ automatic petrol hatch rows spanning `2015`-`2016`. LW, Sport, Titanium, Ambiente, ST, XR5, manual, diesel, and non-hatch lanes remain separate.
