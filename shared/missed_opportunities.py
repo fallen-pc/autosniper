@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any, Mapping
+import os
+import re
 
 import pandas as pd
 
@@ -32,6 +35,8 @@ STRONG_FLIP_PROFIT_THRESHOLD = 3_000
 
 COMPS_STATS_COLUMNS = ["comps_count", "comps_median", "comps_mean", "comps_min", "comps_max"]
 COMPS_STATS_INTERNAL_COLUMNS = ["comps_prices", "comps_urls"]
+EXTERNAL_AUCTION_MATCHES_FILENAME = "external_auction_curve_matches.csv"
+EXTERNAL_SETTLED_STATUSES = {"sold", "closed", "ended", "complete", "completed"}
 
 
 def _to_float(value: Any) -> float | None:
@@ -60,6 +65,58 @@ def _clean_text(value: Any) -> str:
     if not text or text.lower() == "nan":
         return ""
     return text
+
+
+def external_auction_matches_path() -> Path:
+    output_dir = Path(os.getenv("AUTOSNIPER_EXTERNAL_AUCTIONS_OUTPUT_DIR") or "output/external_auction_scrape/daily")
+    return output_dir / EXTERNAL_AUCTION_MATCHES_FILENAME
+
+
+def _external_settled_date(row: Mapping[str, Any] | pd.Series) -> str:
+    date_sold = _clean_text(row.get("date_sold"))
+    if date_sold:
+        return date_sold
+    time_text = _clean_text(row.get("time_remaining_or_date_sold"))
+    lower = time_text.lower()
+    if not time_text or not any(token in lower for token in ("sold", "closed", "ended", "complete")):
+        return ""
+    if not re.search(r"\b\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b|\b\d{1,2}\s+[A-Za-z]{3,9}\s+\d{4}\b", time_text):
+        return ""
+    return time_text
+
+
+def load_external_auction_sold_rows(path: Path | None = None) -> pd.DataFrame:
+    source_path = path or external_auction_matches_path()
+    if not source_path.exists():
+        return pd.DataFrame()
+    try:
+        df = pd.read_csv(source_path, low_memory=False)
+    except Exception:
+        return pd.DataFrame()
+    if df.empty or "url" not in df.columns:
+        return pd.DataFrame()
+
+    working = df.copy()
+    for column in ("price", "status", "date_sold", "time_remaining_or_date_sold", "canonical_tag", "canonical_reason"):
+        if column not in working.columns:
+            working[column] = ""
+    working["url"] = working["url"].astype(str).str.strip()
+    working = working[working["url"].str.startswith("http", na=False)].copy()
+    if working.empty:
+        return working
+    if "source" not in working.columns:
+        working["source"] = "external_auction"
+
+    working["price_numeric"] = working["price"].apply(parse_currency)
+    working["status_norm"] = working["status"].fillna("").astype(str).str.lower().str.strip()
+    working["date_sold"] = working.apply(_external_settled_date, axis=1)
+    settled_mask = working["status_norm"].isin(EXTERNAL_SETTLED_STATUSES) | working["date_sold"].astype(str).str.strip().ne("")
+    working = working[settled_mask & working["price_numeric"].notna()].copy()
+    if working.empty:
+        return working.drop(columns=[column for column in ("status_norm",) if column in working.columns])
+    working["canonical_tag"] = working["canonical_tag"].fillna("").astype(str).str.strip()
+    working["canonical_reason"] = working["canonical_reason"].fillna("").astype(str).str.strip()
+    return working.drop(columns=[column for column in ("status_norm",) if column in working.columns])
 
 
 def _blank_decision() -> dict[str, object]:

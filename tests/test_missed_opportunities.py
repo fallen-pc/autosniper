@@ -51,6 +51,69 @@ def test_missed_decision_metrics_apply_ai_cap_and_repair_cost(monkeypatch) -> No
     assert result["projected_profit_at_sold"] == 7351
 
 
+def test_load_external_auction_sold_rows_keeps_only_settled_price_rows(tmp_path) -> None:
+    path = tmp_path / "external_auction_curve_matches.csv"
+    pd.DataFrame(
+        [
+            {
+                "source": "pickles",
+                "url": "https://www.pickles.com.au/used/details/cars/sold/1",
+                "price": "$8,100",
+                "status": "Sold",
+                "date_sold": "11 July 2026",
+                "canonical_tag": "toyota_corolla_zre182r_hatch_auto_petrol",
+                "canonical_reason": "[OK]",
+            },
+            {
+                "source": "manheim",
+                "url": "https://www.manheim.com.au/passenger-vehicles/active/2",
+                "price": "$7,500",
+                "status": "Active",
+                "date_sold": "",
+                "canonical_tag": "toyota_corolla_zre182r_hatch_auto_petrol",
+                "canonical_reason": "[OK]",
+            },
+            {
+                "source": "slattery",
+                "url": "https://slatteryauctions.com.au/assets/3",
+                "price": "",
+                "status": "Closed",
+                "date_sold": "11/07/2026",
+                "canonical_tag": "toyota_corolla_zre182r_hatch_auto_petrol",
+                "canonical_reason": "[OK]",
+            },
+        ]
+    ).to_csv(path, index=False)
+
+    rows = missed_opportunities.load_external_auction_sold_rows(path)
+
+    assert rows["url"].tolist() == ["https://www.pickles.com.au/used/details/cars/sold/1"]
+    assert rows.iloc[0]["source"] == "pickles"
+    assert rows.iloc[0]["price_numeric"] == 8100
+    assert rows.iloc[0]["canonical_tag"] == "toyota_corolla_zre182r_hatch_auto_petrol"
+
+
+def test_load_external_auction_sold_rows_accepts_closed_date_text(tmp_path) -> None:
+    path = tmp_path / "external_auction_curve_matches.csv"
+    pd.DataFrame(
+        [
+            {
+                "source": "manheim",
+                "url": "https://www.manheim.com.au/passenger-vehicles/sold/4",
+                "price": "$9,200",
+                "time_remaining_or_date_sold": "Closed 11/07/2026",
+                "canonical_tag": "toyota_corolla_zre182r_hatch_auto_petrol",
+                "canonical_reason": "[OK]",
+            },
+        ]
+    ).to_csv(path, index=False)
+
+    rows = missed_opportunities.load_external_auction_sold_rows(path)
+
+    assert rows["url"].tolist() == ["https://www.manheim.com.au/passenger-vehicles/sold/4"]
+    assert rows.iloc[0]["date_sold"] == "Closed 11/07/2026"
+
+
 def test_missed_decision_metrics_can_run_no_repair_hypothesis(monkeypatch) -> None:
     row = pd.Series(
         {

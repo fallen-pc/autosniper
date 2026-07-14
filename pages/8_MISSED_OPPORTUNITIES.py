@@ -31,6 +31,7 @@ from shared.missed_opportunities import (
     classify_miss_reason,
     compute_decision_metrics,
     historical_comps_for_row,
+    load_external_auction_sold_rows,
 )
 
 
@@ -857,6 +858,16 @@ sold_groups = (
     .drop_duplicates("url")
 )
 sold_df = sold_df.merge(sold_groups, on="url", how="left")
+external_sold_df = load_external_auction_sold_rows()
+if not external_sold_df.empty:
+    external_sold_df["url"] = external_sold_df["url"].astype(str).str.strip()
+    if "odometer_numeric" not in external_sold_df.columns:
+        if "odometer_reading" not in external_sold_df.columns:
+            external_sold_df["odometer_reading"] = ""
+        external_sold_df["odometer_numeric"] = external_sold_df["odometer_reading"].apply(parse_numeric)
+    if "price_numeric" not in external_sold_df.columns:
+        external_sold_df["price_numeric"] = external_sold_df["price"].apply(parse_currency)
+    sold_df = pd.concat([sold_df, external_sold_df], ignore_index=True, sort=False)
 sold_df = sold_df.dropna(subset=["canonical_tag", "price_numeric"]).copy()
 
 st.markdown(

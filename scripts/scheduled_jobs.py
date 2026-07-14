@@ -20,7 +20,7 @@ ROOT_DIR = Path(__file__).resolve().parent.parent
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
-from scripts import extract_links, extract_vehicle_details, update_bids, update_master
+from scripts import extract_links, extract_vehicle_details, scrape_external_auction_sources, update_bids, update_master
 from scripts.active_monitor import (
     active_urls_from_frame,
     diff_price_changed_listing_urls,
@@ -42,6 +42,7 @@ METRICS_PATH = ROOT_DIR / "status" / "metrics.json"
 DAILY_STATE_PATH = ROOT_DIR / "status" / "daily_run_state.json"
 RUNTIME_BACKUP_SCRIPT = ROOT_DIR / "scripts" / "backup_runtime_data.ps1"
 AUTOTRADER_SEED_URLS_PATH = ROOT_DIR / "autotrader_isolated" / "seed_urls.txt"
+EXTERNAL_AUCTION_OUTPUT_DIR = ROOT_DIR / "output" / "external_auction_scrape" / "daily"
 PLAYWRIGHT_MISSING_BROWSER_MARKERS = (
     "executable doesn't exist",
     "please run the following command to download new browsers",
@@ -66,6 +67,17 @@ def _env_flag_enabled(name: str) -> bool:
 
 def _env_flag_disabled(name: str) -> bool:
     return str(os.getenv(name) or "").strip().lower() in {"0", "false", "no", "n", "off"}
+
+
+def _env_int(name: str, default: int, *, minimum: int = 0) -> int:
+    raw_value = str(os.getenv(name) or "").strip()
+    if not raw_value:
+        return default
+    try:
+        value = int(raw_value)
+    except ValueError:
+        return default
+    return max(minimum, value)
 
 
 async def _probe_playwright_chromium() -> None:
@@ -625,6 +637,7 @@ def run_daily_pipeline() -> None:
     asyncio.run(update_bids.update_bids(skip_master=True))
     _run_autotrader_scrape()
     update_master.update_master_database()
+    _run_external_auction_scrape_if_enabled()
     revalue_active_listings(stale_minutes=0, force_refresh=True)
     report_bundle = write_governance_report_bundle(GOVERNANCE_REPORT_DIR)
     compute_outcome_metrics()
@@ -701,6 +714,102 @@ def _run_autotrader_scrape(max_pages: int | None = None) -> None:
         command.extend(["--max-pages", str(max_pages)])
     subprocess.run(command, check=True)
     print("Autotrader scrape completed.")
+
+
+def _external_auction_daily_plan() -> dict[str, dict[str, int]]:
+    return {
+        "pickles": {
+            "max_list_pages_per_source": _env_int("AUTOSNIPER_EXTERNAL_PICKLES_PAGES", 20),
+            "max_details_per_source": _env_int("AUTOSNIPER_EXTERNAL_PICKLES_DETAILS", 0),
+        },
+        "manheim": {
+            "max_list_pages_per_source": _env_int("AUTOSNIPER_EXTERNAL_MANHEIM_PAGES", 1),
+            "max_details_per_source": _env_int("AUTOSNIPER_EXTERNAL_MANHEIM_DETAILS", 25),
+        },
+        "slattery": {
+            "max_list_pages_per_source": _env_int("AUTOSNIPER_EXTERNAL_SLATTERY_PAGES", 0),
+            "max_details_per_source": _env_int("AUTOSNIPER_EXTERNAL_SLATTERY_DETAILS", 0),
+        },
+    }
+
+
+def _load_external_auction_seed_listings(output_dir: Path) -> list[scrape_external_auction_sources.BrowserListing]:
+    seed_paths = {
+        output_dir / "external_auction_curve_matches.csv",
+    }
+    evidence_root = output_dir.parent
+    if evidence_root.exists():
+        seed_paths.update(evidence_root.rglob("external_auction_curve_matches.csv"))
+    seeds: list[scrape_external_auction_sources.BrowserListing] = []
+    seen: set[str] = set()
+    for path in sorted(seed_paths):
+        if not path.exists():
+            continue
+        try:
+            df = pd.read_csv(path, low_memory=False)
+        except Exception:
+            continue
+        if df.empty or "url" not in df.columns:
+            continue
+        for _, row in df.iterrows():
+            url = str(row.get("url") or "").strip()
+            source = str(row.get("source") or "").strip()
+            if not url.startswith("http") or source not in scrape_external_auction_sources.DEFAULT_SOURCES:
+                continue
+            key = f"{source}|{url}"
+            if key in seen:
+                continue
+            seen.add(key)
+            seeds.append(
+                scrape_external_auction_sources.BrowserListing(
+                    source=source,
+                    url=url,
+                    title_hint=str(row.get("title") or ""),
+                )
+            )
+    return seeds
+
+
+def _run_external_auction_scrape_if_enabled() -> None:
+    if _env_flag_disabled("AUTOSNIPER_EXTERNAL_AUCTIONS_DAILY"):
+        print("External auction daily scrape disabled by AUTOSNIPER_EXTERNAL_AUCTIONS_DAILY=0.")
+        return
+
+    output_dir = Path(os.getenv("AUTOSNIPER_EXTERNAL_AUCTIONS_OUTPUT_DIR") or EXTERNAL_AUCTION_OUTPUT_DIR)
+    detail_timeout_ms = _env_int("AUTOSNIPER_EXTERNAL_DETAIL_TIMEOUT_MS", 12_000, minimum=5_000)
+    detail_wait_ms = _env_int("AUTOSNIPER_EXTERNAL_DETAIL_WAIT_MS", 1_000)
+    headless = not _env_flag_enabled("AUTOSNIPER_EXTERNAL_AUCTIONS_HEADED")
+    prefilter_list_to_curves = not _env_flag_disabled("AUTOSNIPER_EXTERNAL_PREFILTER_TO_CURVES")
+    seed_listings = _load_external_auction_seed_listings(output_dir)
+
+    raw_frames: list[pd.DataFrame] = []
+    link_frames: list[pd.DataFrame] = []
+    for source, limits in _external_auction_daily_plan().items():
+        raw_df, links_df = asyncio.run(
+            scrape_external_auction_sources.scrape_sources(
+                [source],
+                max_list_pages_per_source=limits["max_list_pages_per_source"],
+                max_details_per_source=limits["max_details_per_source"],
+                headless=headless,
+                prefilter_list_to_curves=prefilter_list_to_curves,
+                detail_timeout_ms=detail_timeout_ms,
+                detail_wait_ms=detail_wait_ms,
+                seed_listings=[listing for listing in seed_listings if listing.source == source],
+            )
+        )
+        raw_frames.append(raw_df)
+        link_frames.append(links_df)
+
+    raw_df = pd.concat(raw_frames, ignore_index=True, sort=False) if raw_frames else pd.DataFrame()
+    links_df = pd.concat(link_frames, ignore_index=True, sort=False) if link_frames else pd.DataFrame()
+    links_path, all_path, matched_path = scrape_external_auction_sources.write_outputs(raw_df, links_df, output_dir)
+    matched_df = pd.read_csv(matched_path) if matched_path.exists() else pd.DataFrame()
+    print(
+        "External auction scrape completed: "
+        f"{len(links_df):,} discovered links, {len(raw_df):,} detail rows, "
+        f"{len(matched_df):,} saved-curve matches. "
+        f"Outputs: {links_path}, {all_path}, {matched_path}"
+    )
 
 
 def run_daily_smoke() -> None:

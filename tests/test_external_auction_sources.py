@@ -114,6 +114,75 @@ def test_parse_pickles_condition_details_into_repair_fragments():
     assert "Battery Std Light Commercial flat." in condition
 
 
+def test_parse_pickles_embedded_sold_fields_into_grays_like_columns():
+    text = r"""
+    STOCK 62146160
+    2018 Toyota Hilux
+    GUN126R SR Cab Chassis Double Cab 4dr Spts Auto 6sp 4x4 1045kg 2.8DT
+    Odometer (Showing on)
+    155,100 km
+    {\"stockNumber\":\"62146160\",\"dateSold\":\"2026-06-17T07:00:00.000Z\",\"currentBid\":27100}
+    """
+
+    row = parse_listing_text(
+        "pickles",
+        "https://www.pickles.com.au/used/details/cars/2018-toyota-hilux/62146160",
+        "2018 Toyota Hilux, 62146160 - Pickles AU",
+        text,
+    )
+
+    assert row["status"] == "Sold"
+    assert row["date_sold"] == "2026-06-17T07:00:00.000Z"
+    assert row["time_remaining_or_date_sold"] == "2026-06-17T07:00:00.000Z"
+    assert row["price"] == "27100"
+
+
+def test_parse_pickles_sold_unregistered_boilerplate_does_not_mark_sold():
+    text = r"""
+    STOCK 62278257
+    2019 Toyota Hilux
+    GUN126R SR Cab Chassis Double Cab 4dr Spts Auto 6sp 4x4 1045kg 2.8DT
+    Odometer (Showing on)
+    100,100 km
+    {\"stockNumber\":\"62278257\",\"importantBuyerInfo\":[\"THIS VEHICLE IS SOLD UNREGISTERED AUSTRALIA WIDE\"],\"currentBid\":12000}
+    """
+
+    row = parse_listing_text(
+        "pickles",
+        "https://www.pickles.com.au/used/details/cars/2019-toyota-hilux/62278257",
+        "2019 Toyota Hilux, 62278257 - Pickles AU",
+        text,
+    )
+
+    assert row["status"] == ""
+    assert row["date_sold"] == ""
+    assert row["price"] == ""
+
+
+def test_parse_pickles_no_longer_available_marks_terminal_without_fabricating_price():
+    text = r"""
+    STOCK 62339379
+    2017 Toyota Hilux
+    GUN126R SR Cab Chassis Double Cab 4dr Spts Auto 6sp 4x4 1045kg 2.8DT
+    No longer available
+    Sorry this item is no longer available.
+    SOLD
+    {\"stockNumber\":\"62339379\",\"lotEndTime\":\"2026-07-12T10:00:00.000Z\"}
+    """
+
+    row = parse_listing_text(
+        "pickles",
+        "https://www.pickles.com.au/used/details/cars/2017-toyota-hilux/62339379",
+        "2017 Toyota Hilux, 62339379 - Pickles AU",
+        text,
+    )
+
+    assert row["status"] == "Sold"
+    assert row["time_remaining_or_date_sold"] == "2026-07-12T10:00:00.000Z"
+    assert row["date_sold"] == ""
+    assert row["price"] == ""
+
+
 def test_parse_manheim_detail_text_extracts_identity_and_static_fields():
     text = """
     2023 Toyota Corolla Ascent Sport 4D Sedan

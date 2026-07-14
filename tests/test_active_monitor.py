@@ -314,6 +314,83 @@ def test_prepare_active_scope_keeps_sold_rows_after_curve_tag_resolution(monkeyp
     assert sold_df.iloc[0]["curve_tag"] == curve_tag
 
 
+def test_prepare_active_scope_includes_external_auction_curve_matches(monkeypatch, tmp_path) -> None:
+    curve_tag = "toyota_corolla_zre182r_hatch_auto_petrol"
+    external_url = "https://www.pickles.com.au/used/details/cars/2015-toyota-corolla/123"
+    external_path = tmp_path / "external_auction_curve_matches.csv"
+    external_matches = pd.DataFrame(
+        [
+            {
+                "source": "pickles",
+                "url": external_url,
+                "year": 2015,
+                "make": "Toyota",
+                "model": "Corolla",
+                "variant": "Ascent ZRE182R",
+                "body_type": "Hatchback",
+                "transmission": "Automatic",
+                "fuel_type": "Petrol",
+                "odometer_reading": 110_000,
+                "price": "$7,000",
+                "status": "Active",
+                "general_condition": "Windscreen (Front) minor pitting visible.",
+                "canonical_tag": curve_tag,
+                "canonical_reason": "[OK]",
+                "curve_tag": curve_tag,
+            }
+        ]
+    )
+    sold = pd.DataFrame(
+        [
+            {
+                "url": "https://example.com/sold-corolla",
+                "year": 2015,
+                "odometer_reading": 115_000,
+                "price": "$8,500",
+            }
+        ]
+    )
+    group_map = pd.DataFrame(
+        [
+            {
+                "url": "https://example.com/sold-corolla",
+                "source": "sold",
+                "canonical_tag": curve_tag,
+                "reason_code": "[OK]",
+            }
+        ]
+    )
+    curves = pd.DataFrame(
+        [
+            {"canonical_tag": curve_tag, "anchor_year": 2015, "km_bucket": 100_000, "price_mid": 11_000},
+            {"canonical_tag": curve_tag, "anchor_year": 2015, "km_bucket": 150_000, "price_mid": 10_000},
+        ]
+    )
+
+    def fake_load_csv(path):
+        path_text = str(path)
+        if path_text == str(external_path):
+            return external_matches.copy()
+        if path_text.endswith("sold_cars_restricted.csv"):
+            return sold.copy()
+        if path_text.endswith("restricted_group_map.csv"):
+            return group_map.copy()
+        return pd.DataFrame()
+
+    monkeypatch.setattr(active_monitor, "_external_auction_matches_path", lambda: external_path)
+    monkeypatch.setattr(active_monitor, "_load_csv", fake_load_csv)
+    monkeypatch.setattr(active_monitor, "load_curves", lambda: curves.copy())
+
+    active_df, sold_df, _ = active_monitor._prepare_active_scope()
+    all_active_df = active_monitor._prepare_all_active_rows()
+
+    assert active_df["url"].tolist() == [external_url]
+    assert active_df.iloc[0]["source"] == "pickles"
+    assert bool(active_df.iloc[0]["curve_coverage"]) is True
+    assert sold_df.iloc[0]["curve_tag"] == curve_tag
+    assert all_active_df["url"].tolist() == [external_url]
+
+
 def test_diff_price_changed_listing_urls_ignores_timer_changes() -> None:
     before_df = pd.DataFrame(
         [

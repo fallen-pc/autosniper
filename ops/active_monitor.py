@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Iterable
+import os
 import re
 
 import pandas as pd
@@ -27,6 +28,7 @@ ACTIVE_LIVE_PATH = dataset_path("active_vehicle_details.csv")
 GROUP_MAP_PATH = dataset_path("restricted_group_map.csv")
 SOLD_RESTRICTED_PATH = dataset_path("sold_cars_restricted.csv")
 NORMALIZED_CONDITIONS_PATH = Path("CSV_data/reports/normalized_conditions.csv")
+EXTERNAL_AUCTION_MATCHES_FILENAME = "external_auction_curve_matches.csv"
 COMPLETED_STATUSES = {"sold", "referred", "canceled", "cancelled", "closed"}
 WOVR_PATTERN = re.compile(
     r"\bwovr\b|wovr[-\s]*(?:inspected|repairable|statutory)|write[-\s]?off",
@@ -47,6 +49,31 @@ def _load_csv(path: Path) -> pd.DataFrame:
     if not path.exists():
         return pd.DataFrame()
     return pd.read_csv(path, low_memory=False)
+
+
+def _external_auction_matches_path() -> Path:
+    output_dir = Path(os.getenv("AUTOSNIPER_EXTERNAL_AUCTIONS_OUTPUT_DIR") or "output/external_auction_scrape/daily")
+    return output_dir / EXTERNAL_AUCTION_MATCHES_FILENAME
+
+
+def _load_external_auction_active_rows() -> pd.DataFrame:
+    df = _load_csv(_external_auction_matches_path())
+    if df.empty:
+        return df
+    working = df.copy()
+    for column in ("url", "year", "odometer_reading", "price", "status", "canonical_tag", "canonical_reason", "curve_tag"):
+        if column not in working.columns:
+            working[column] = ""
+    working["url"] = working["url"].astype(str).str.strip()
+    working = working[working["url"].str.startswith("http", na=False)].copy()
+    if working.empty:
+        return working
+    if "source" not in working.columns:
+        working["source"] = "external_auction"
+    working["status"] = working["status"].fillna("").astype(str).str.strip().replace("", "Active")
+    working["canonical_tag"] = working["canonical_tag"].fillna("").astype(str).str.strip()
+    working["canonical_reason"] = working["canonical_reason"].fillna("").astype(str).str.strip()
+    return working
 
 
 def _load_normalized_conditions() -> pd.DataFrame:
@@ -152,14 +179,16 @@ def _curve_band_maps(curves_df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFram
 def _prepare_active_scope() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     curves_df = load_curves()
     active_df = _load_csv(ACTIVE_RESTRICTED_PATH)
+    external_active_df = _load_external_auction_active_rows()
     live_df = _load_csv(ACTIVE_LIVE_PATH)
     group_map_df = _load_csv(GROUP_MAP_PATH)
     sold_df = _load_csv(SOLD_RESTRICTED_PATH)
 
-    if active_df.empty:
+    if active_df.empty and external_active_df.empty:
         return pd.DataFrame(), sold_df, curves_df
 
-    active_df["url"] = active_df["url"].astype(str).str.strip()
+    if not active_df.empty:
+        active_df["url"] = active_df["url"].astype(str).str.strip()
     if not live_df.empty and "url" in live_df.columns:
         live_df["url"] = live_df["url"].astype(str).str.strip()
     if not group_map_df.empty and "url" in group_map_df.columns:
@@ -167,9 +196,12 @@ def _prepare_active_scope() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     if not sold_df.empty and "url" in sold_df.columns:
         sold_df["url"] = sold_df["url"].astype(str).str.strip()
 
-    active_df = _attach_group_tags(active_df, group_map_df, "active")
+    if not active_df.empty:
+        active_df = _attach_group_tags(active_df, group_map_df, "active")
+        active_df = _merge_live_fields(active_df, live_df)
+    if not external_active_df.empty:
+        active_df = pd.concat([active_df, external_active_df], ignore_index=True, sort=False)
     sold_df = _attach_group_tags(sold_df, group_map_df, "sold")
-    active_df = _merge_live_fields(active_df, live_df)
     active_df, sold_df = _attach_normalized_conditions(active_df, sold_df)
     active_df = _exclude_shortlist_ineligible_rows(active_df)
 
@@ -226,17 +258,22 @@ def _prepare_active_scope() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
 
 def _prepare_all_active_rows() -> pd.DataFrame:
     active_df = _load_csv(ACTIVE_RESTRICTED_PATH)
+    external_active_df = _load_external_auction_active_rows()
     live_df = _load_csv(ACTIVE_LIVE_PATH)
     group_map_df = _load_csv(GROUP_MAP_PATH)
-    if active_df.empty:
+    if active_df.empty and external_active_df.empty:
         return active_df
-    active_df["url"] = active_df["url"].astype(str).str.strip()
+    if not active_df.empty:
+        active_df["url"] = active_df["url"].astype(str).str.strip()
     if not live_df.empty and "url" in live_df.columns:
         live_df["url"] = live_df["url"].astype(str).str.strip()
     if not group_map_df.empty and "url" in group_map_df.columns:
         group_map_df["url"] = group_map_df["url"].astype(str).str.strip()
-    active_df = _attach_group_tags(active_df, group_map_df, "active")
-    active_df = _merge_live_fields(active_df, live_df)
+    if not active_df.empty:
+        active_df = _attach_group_tags(active_df, group_map_df, "active")
+        active_df = _merge_live_fields(active_df, live_df)
+    if not external_active_df.empty:
+        active_df = pd.concat([active_df, external_active_df], ignore_index=True, sort=False)
     active_df = _exclude_shortlist_ineligible_rows(active_df)
     return active_df
 

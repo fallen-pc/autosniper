@@ -325,6 +325,173 @@ def test_daily_smoke_runs_limited_pipeline(monkeypatch) -> None:
     ]
 
 
+def test_daily_pipeline_runs_external_auction_stage(monkeypatch) -> None:
+    calls: list[str] = []
+
+    async def fake_update_bids(skip_master=True):
+        calls.append("bids")
+
+    monkeypatch.setattr(
+        scheduled_jobs.extract_links,
+        "extract_all_vehicle_links",
+        lambda: calls.append("links"),
+    )
+    monkeypatch.setattr(
+        scheduled_jobs.extract_vehicle_details,
+        "main",
+        lambda: calls.append("details"),
+    )
+    monkeypatch.setattr(
+        scheduled_jobs.update_bids,
+        "update_bids",
+        fake_update_bids,
+    )
+    monkeypatch.setattr(
+        scheduled_jobs,
+        "_run_autotrader_scrape",
+        lambda: calls.append("autotrader"),
+    )
+    monkeypatch.setattr(
+        scheduled_jobs,
+        "_run_external_auction_scrape_if_enabled",
+        lambda: calls.append("external"),
+    )
+    monkeypatch.setattr(
+        scheduled_jobs.update_master,
+        "update_master_database",
+        lambda: calls.append("master"),
+    )
+    monkeypatch.setattr(
+        scheduled_jobs,
+        "revalue_active_listings",
+        lambda **kwargs: calls.append("revalue") or {"evaluated": 0},
+    )
+    monkeypatch.setattr(
+        scheduled_jobs,
+        "write_governance_report_bundle",
+        lambda report_dir: {
+            "coverage_summary": {"missing_tags": 0},
+            "monotonicity_summary": {"errors": 0, "warnings": 0},
+        },
+    )
+    monkeypatch.setattr(
+        scheduled_jobs,
+        "compute_outcome_metrics",
+        lambda: calls.append("outcomes"),
+    )
+
+    scheduled_jobs.run_daily_pipeline()
+
+    assert calls == [
+        "links",
+        "details",
+        "bids",
+        "autotrader",
+        "master",
+        "external",
+        "revalue",
+        "outcomes",
+    ]
+
+
+def test_external_auction_daily_scrape_uses_source_specific_caps(monkeypatch, tmp_path) -> None:
+    calls: list[dict[str, object]] = []
+    written: list[tuple[pd.DataFrame, pd.DataFrame, object]] = []
+
+    async def fake_scrape_sources(
+        sources,
+        *,
+        max_list_pages_per_source,
+        max_details_per_source,
+        headless,
+        prefilter_list_to_curves,
+        detail_timeout_ms,
+        detail_wait_ms,
+        seed_listings=(),
+    ):
+        source = list(sources)[0]
+        calls.append(
+            {
+                "source": source,
+                "max_list_pages_per_source": max_list_pages_per_source,
+                "max_details_per_source": max_details_per_source,
+                "headless": headless,
+                "prefilter_list_to_curves": prefilter_list_to_curves,
+                "detail_timeout_ms": detail_timeout_ms,
+                "detail_wait_ms": detail_wait_ms,
+            }
+        )
+        return (
+            pd.DataFrame([{"source": source, "url": f"https://example.test/{source}"}]),
+            pd.DataFrame([{"source": source, "url": f"https://example.test/{source}"}]),
+        )
+
+    def fake_write_outputs(raw_df, links_df, output_dir):
+        written.append((raw_df.copy(), links_df.copy(), output_dir))
+        matched_path = tmp_path / "external_auction_curve_matches.csv"
+        pd.DataFrame([{"source": "pickles"}]).to_csv(matched_path, index=False)
+        return (
+            tmp_path / "external_auction_links.csv",
+            tmp_path / "external_auction_listings_all.csv",
+            matched_path,
+        )
+
+    monkeypatch.setenv("AUTOSNIPER_EXTERNAL_AUCTIONS_OUTPUT_DIR", str(tmp_path / "daily"))
+    monkeypatch.setattr(scheduled_jobs.scrape_external_auction_sources, "scrape_sources", fake_scrape_sources)
+    monkeypatch.setattr(scheduled_jobs.scrape_external_auction_sources, "write_outputs", fake_write_outputs)
+
+    scheduled_jobs._run_external_auction_scrape_if_enabled()
+
+    assert calls == [
+        {
+            "source": "pickles",
+            "max_list_pages_per_source": 20,
+            "max_details_per_source": 0,
+            "headless": True,
+            "prefilter_list_to_curves": True,
+            "detail_timeout_ms": 12000,
+            "detail_wait_ms": 1000,
+        },
+        {
+            "source": "manheim",
+            "max_list_pages_per_source": 1,
+            "max_details_per_source": 25,
+            "headless": True,
+            "prefilter_list_to_curves": True,
+            "detail_timeout_ms": 12000,
+            "detail_wait_ms": 1000,
+        },
+        {
+            "source": "slattery",
+            "max_list_pages_per_source": 0,
+            "max_details_per_source": 0,
+            "headless": True,
+            "prefilter_list_to_curves": True,
+            "detail_timeout_ms": 12000,
+            "detail_wait_ms": 1000,
+        },
+    ]
+    assert len(written) == 1
+    assert len(written[0][0]) == 3
+    assert len(written[0][1]) == 3
+    assert written[0][2] == tmp_path / "daily"
+
+
+def test_external_auction_daily_scrape_can_be_disabled(monkeypatch) -> None:
+    calls: list[object] = []
+
+    monkeypatch.setenv("AUTOSNIPER_EXTERNAL_AUCTIONS_DAILY", "0")
+    monkeypatch.setattr(
+        scheduled_jobs.scrape_external_auction_sources,
+        "scrape_sources",
+        lambda *args, **kwargs: calls.append((args, kwargs)),
+    )
+
+    scheduled_jobs._run_external_auction_scrape_if_enabled()
+
+    assert calls == []
+
+
 def test_scheduled_autotrader_uses_seed_urls_file(monkeypatch, tmp_path) -> None:
     calls: list[list[str]] = []
     storage_state = tmp_path / "autotrader_isolated" / "output" / "storage_state.json"

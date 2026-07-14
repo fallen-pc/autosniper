@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import html
 import re
 import sys
 from dataclasses import dataclass
@@ -267,6 +268,92 @@ def _extract_int(value: object) -> str:
     return match.group(1).replace(",", "") if match else ""
 
 
+def _pickles_stock_number(url: str) -> str:
+    match = re.search(r"/(\d+)(?:[/?#]|$)", _normalise_url(url))
+    return match.group(1) if match else ""
+
+
+def _normalise_embedded_page_text(text: str) -> str:
+    return html.unescape(str(text)).replace('\\"', '"').replace("\\/", "/")
+
+
+def _extract_jsonish_value(text: str, field: str) -> str:
+    match = re.search(rf'"{re.escape(field)}"\s*:\s*("[^"]*"|null|true|false|-?\d+(?:\.\d+)?)', text)
+    if not match:
+        return ""
+    value = match.group(1)
+    if value in {"null", "true", "false"}:
+        return "" if value == "null" else value
+    return value.strip('"')
+
+
+def _pickles_embedded_listing_window(url: str, text: str) -> str:
+    normalised = _normalise_embedded_page_text(text)
+    stock = _pickles_stock_number(url)
+    if not stock:
+        return normalised
+    index = normalised.find(f'"stockNumber":"{stock}"')
+    if index < 0:
+        index = normalised.find(stock)
+    if index < 0:
+        return normalised
+    return normalised[max(0, index - 15_000) : index + 40_000]
+
+
+def _extract_pickles_terminal_fields(url: str, text: str) -> dict[str, str]:
+    normalised = _normalise_embedded_page_text(text)
+    visible_text = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", normalised)).strip()
+    window = _pickles_embedded_listing_window(url, text)
+    fields = {
+        "date_sold": _extract_jsonish_value(window, "dateSold"),
+        "lot_end_time": _extract_jsonish_value(window, "lotEndTime"),
+        "sale_status": _extract_jsonish_value(window, "saleStatus"),
+        "status": _extract_jsonish_value(window, "status"),
+        "no_longer_available": "1" if re.search(r"\bno longer available\b", visible_text, re.IGNORECASE) else "",
+        "price": "",
+    }
+    for price_field in (
+        "finalSalePrice",
+        "salePrice",
+        "soldPrice",
+        "hammerPrice",
+        "currentBid",
+        "currentBidAmount",
+        "currentBidValue",
+        "askingPrice",
+        "fixedPrice",
+    ):
+        price = _extract_money(_extract_jsonish_value(window, price_field))
+        if price:
+            fields["price"] = price
+            break
+    return fields
+
+
+def _apply_pickles_terminal_fields(row: dict[str, object], terminal: dict[str, str]) -> None:
+    terminal_status_text = " ".join(
+        _clean_text(terminal.get(key, ""))
+        for key in ("sale_status", "status")
+    ).lower()
+    is_terminal = bool(
+        terminal.get("date_sold")
+        or terminal.get("no_longer_available")
+        or re.search(r"\b(sold|closed|ended|complete|completed)\b", terminal_status_text)
+    )
+    if not is_terminal:
+        return
+    row["status"] = "Sold"
+    if terminal.get("date_sold"):
+        row["date_sold"] = terminal["date_sold"]
+        row["time_remaining_or_date_sold"] = terminal["date_sold"]
+    elif terminal.get("lot_end_time"):
+        row["time_remaining_or_date_sold"] = terminal["lot_end_time"]
+    elif not row.get("time_remaining_or_date_sold"):
+        row["time_remaining_or_date_sold"] = "Sold"
+    if not row.get("price") and terminal.get("price"):
+        row["price"] = terminal["price"]
+
+
 def _normalise_transmission(value: object) -> str:
     text = _clean_text(value)
     lower = text.lower()
@@ -284,7 +371,7 @@ def _normalise_fuel(value: object) -> str:
     lower = text.lower()
     if "hybrid" in lower:
         return "Hybrid"
-    if "diesel" in lower:
+    if "diesel" in lower or re.search(r"\b\d(?:\.\d)?\s*d\.?t\b", lower):
         return "Diesel"
     if "electric" in lower or lower == "ev":
         return "Electric"
@@ -457,7 +544,7 @@ def parse_listing_text(source: str, url: str, title: str, text: str) -> dict[str
 
     row["body_type"] = _normalise_body(labels.get("body_type", ""), f"{row.get('title', '')} {text}")
     row["transmission"] = _normalise_transmission(labels.get("transmission", ""))
-    row["fuel_type"] = _normalise_fuel(labels.get("fuel_type", ""))
+    row["fuel_type"] = _normalise_fuel(labels.get("fuel_type", "") or f"{row.get('variant', '')} {display_title}")
     row["odometer_reading"] = _extract_int(labels.get("odometer_reading", ""))
     row["no_of_seats"] = _extract_int(labels.get("no_of_seats", ""))
     row["vin"] = _clean_text(labels.get("vin", ""))
@@ -473,6 +560,8 @@ def parse_listing_text(source: str, url: str, title: str, text: str) -> dict[str
     row["price"] = _extract_money(labels.get("price", ""))
     row["bids"] = _extract_int(labels.get("bids", ""))
     row["time_remaining_or_date_sold"] = _clean_text(labels.get("time_remaining_or_date_sold", ""))
+    if source == "pickles":
+        _apply_pickles_terminal_fields(row, _extract_pickles_terminal_fields(url, text))
     row["general_condition"] = _extract_pickles_condition_text(lines) if source == "pickles" else _extract_condition_text(lines)
     return row
 
@@ -672,6 +761,7 @@ async def scrape_sources(
     prefilter_list_to_curves: bool,
     detail_timeout_ms: int,
     detail_wait_ms: int,
+    seed_listings: Iterable[BrowserListing] = (),
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     try:
         from playwright.async_api import async_playwright
@@ -680,6 +770,9 @@ async def scrape_sources(
 
     records: list[dict[str, object]] = []
     link_frames: list[pd.DataFrame] = []
+    seeds_by_source: dict[str, list[BrowserListing]] = {}
+    for listing in seed_listings:
+        seeds_by_source.setdefault(listing.source, []).append(listing)
     async with async_playwright() as playwright:
         browser = await playwright.chromium.launch(headless=headless)
         context = await browser.new_context(
@@ -710,6 +803,12 @@ async def scrape_sources(
                 selected_listings = [listing for listing in listings if listing.url in selected_urls]
             if max_details_per_source > 0:
                 selected_listings = selected_listings[:max_details_per_source]
+            seen_selected = {listing.url for listing in selected_listings}
+            for seed in seeds_by_source.get(source, []):
+                if seed.url in seen_selected:
+                    continue
+                selected_listings.append(seed)
+                seen_selected.add(seed.url)
             print(
                 f"{source}: discovered {len(listings)} candidate detail URL(s); "
                 f"selected {len(selected_listings)} for detail scrape",
@@ -814,7 +913,16 @@ async def scrape_detail(
         await prepare_detail_page(page, listing.source)
         title = await page.title()
         text = await page.locator("body").inner_text(timeout=detail_timeout_ms)
+        html_text = await page.content()
         row = parse_listing_text(listing.source, page.url, title or listing.title_hint, text)
+        if listing.source == "pickles":
+            response_text = ""
+            try:
+                if response is not None:
+                    response_text = await response.text()
+            except Exception:
+                response_text = ""
+            _apply_pickles_terminal_fields(row, _extract_pickles_terminal_fields(page.url, f"{html_text}\n{response_text}"))
         status_code = response.status if response is not None else ""
         row["scrape_status"] = f"parsed_http_{status_code}" if status_code else "parsed"
         return row

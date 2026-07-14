@@ -14,7 +14,34 @@ This job runs:
 - bid refresh
 - Autotrader scrape
 - master database update
+- Pickles, Manheim, and Slattery external auction scrape into `output/external_auction_scrape/daily`
 - full active-listing AI revaluation
+
+External auction saved-curve matches are loaded into the same active AI
+revaluation path as Grays restricted active rows, so repair parsing, curve
+coverage, max-bid logic, and AI Analysis output use the same valuation process.
+External rows with settled sale evidence also feed Missed Opportunities through
+the same historical replay logic; active/upcoming rows are not treated as missed
+opportunities until they have a price and sold/closed date or status.
+
+External auction scrape defaults are intentionally source-specific so the daily
+job stays bounded:
+- Pickles: 20 list pages, all curve-prefiltered detail rows
+- Manheim: 1 list page per configured location, first 25 curve-prefiltered detail rows
+- Slattery: current motor-vehicles category, all curve-prefiltered detail rows
+
+Useful overrides:
+
+```text
+AUTOSNIPER_EXTERNAL_AUCTIONS_DAILY=0
+AUTOSNIPER_EXTERNAL_PICKLES_PAGES=20
+AUTOSNIPER_EXTERNAL_PICKLES_DETAILS=0
+AUTOSNIPER_EXTERNAL_MANHEIM_PAGES=1
+AUTOSNIPER_EXTERNAL_MANHEIM_DETAILS=25
+AUTOSNIPER_EXTERNAL_SLATTERY_PAGES=0
+AUTOSNIPER_EXTERNAL_SLATTERY_DETAILS=0
+AUTOSNIPER_EXTERNAL_AUCTIONS_OUTPUT_DIR=output\external_auction_scrape\daily
+```
 
 ## Hourly Active Monitor
 
