@@ -58,6 +58,11 @@ def safe_text(value: object) -> str:
     return text
 
 
+def review_key(value: object) -> str:
+    text = safe_text(value).lower()
+    return text.replace("’", "'").replace("‘", "'")
+
+
 def load_repair_review_decisions(path: Path = DECISIONS_PATH) -> pd.DataFrame:
     if not path.exists():
         return pd.DataFrame(columns=REVIEW_COLUMNS)
@@ -77,7 +82,7 @@ def latest_decision_lookup(decisions: pd.DataFrame | None = None) -> dict[str, d
         return {}
     latest = df.drop_duplicates(subset=["repair_key"], keep="last")
     return {
-        safe_text(row["repair_key"]): {column: safe_text(row.get(column)) for column in REVIEW_COLUMNS}
+        review_key(row["repair_key"]): {column: safe_text(row.get(column)) for column in REVIEW_COLUMNS}
         for _, row in latest.iterrows()
         if safe_text(row.get("repair_key"))
     }
@@ -100,7 +105,7 @@ def repair_mapping_summary(
     unresolved: list[dict[str, object]] = []
 
     for record in records:
-        repair_key = safe_text(record.get("repair_key"))
+        repair_key = review_key(record.get("repair_key"))
         decision = lookup.get(repair_key, {})
         decision_label = safe_text(decision.get("decision"))
         if decision_label == "Leave unclassified":
@@ -136,7 +141,7 @@ def append_live_review_items(
 ) -> int:
     rows: list[dict[str, object]] = []
     for record in records:
-        repair_key = safe_text(record.get("repair_key"))
+        repair_key = review_key(record.get("repair_key"))
         if not repair_key:
             continue
         rows.append(
@@ -168,3 +173,36 @@ def append_live_review_items(
     combined = combined.drop_duplicates(subset=["repair_key"], keep="last")
     combined.to_csv(path, index=False)
     return len(incoming)
+
+
+def append_unclassified_condition_lines(
+    lines: Iterable[object],
+    *,
+    vehicle: str,
+    url: str,
+    condition_notes: str,
+    source_file: str = "AI_ANALYSIS_LIVE",
+    path: Path = LIVE_QUEUE_PATH,
+) -> int:
+    records: list[dict[str, object]] = []
+    for line in lines:
+        text = safe_text(line)
+        if not text or text.rstrip(".").isdigit():
+            continue
+        records.append(
+            {
+                "repair_key": review_key(text),
+                "original_text": text,
+                "status": "unclassified",
+                "category": "unclassified",
+                "canonical_defects": "",
+            }
+        )
+    return append_live_review_items(
+        records,
+        vehicle=vehicle,
+        url=url,
+        condition_notes=condition_notes,
+        source_file=source_file,
+        path=path,
+    )

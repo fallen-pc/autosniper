@@ -38,7 +38,11 @@ from shared.repair_pricing import (
     assess_repairs,
     repair_fragments_to_records,
 )
-from shared.repair_review import append_live_review_items, repair_mapping_summary
+from shared.repair_review import (
+    append_live_review_items,
+    append_unclassified_condition_lines,
+    repair_mapping_summary,
+)
 from shared.reauction import collapse_reauction_lifecycles, reauction_context_for_listing
 from shared.styling import clean_html, display_banner, inject_global_styles, page_intro
 from shared.valuation_display import (
@@ -1824,7 +1828,19 @@ def _render_grays_comparables(row: pd.Series, comps_items: list[str]) -> None:
 
     unmatched = active_profile.get("unmatched_lines", [])
     if unmatched:
+        display_notes = (
+            _safe_text(row.get("normalized_condition_text"), fallback="").strip()
+            or _safe_text(row.get("general_condition"), fallback="").strip()
+        )
+        appended = append_unclassified_condition_lines(
+            unmatched,
+            vehicle=_listing_title(row),
+            url=_safe_text(row.get("url"), fallback=""),
+            condition_notes=display_notes,
+        )
         with st.expander("Unclassified condition lines", expanded=False):
+            if appended:
+                st.caption(f"Added {appended} item(s) to Repair Review.")
             st.markdown("\n".join(f"- {line}" for line in unmatched))
 
     comp_unmatched: list[str] = []

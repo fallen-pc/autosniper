@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import pandas as pd
+from bs4 import BeautifulSoup
 
 import scripts.extract_vehicle_details as evd
 
@@ -182,3 +183,49 @@ def test_build_canonical_exclusion_failures_preserves_semantics():
     by_url = {row["url"]: row for row in failures}
     assert by_url["https://example.com/ambig"]["reason_code"] == "AMBIG_BADGE"
     assert by_url["https://example.com/missing"]["reason_code"] == "NOT_CANONICAL_ELIGIBLE"
+
+
+def test_read_general_condition_preserves_grays_numbered_assessment_rows():
+    html = """
+    <html>
+      <body>
+        <p>The below condition assessment is the opinion of our booking staff which may differ from your own opinion:</p>
+        <p>1. Rear End (Rear Bar) - Scratched;Dent(s) under 5cm</p>
+        <p>2. Front End (Front Bar) - Scratched</p>
+        <p>3. Driver & Passenger Side Wheels - Scratched</p>
+        <p>4. Passenger Side (Quarter Panel (Rear Passenger)) - Scratched</p>
+        <p>5. Driver Side Driver Door - Dent(s) under 5cm</p>
+        <p><strong>Condition</strong></p>
+        <ul>
+          <li>Scratches And Dents Visible Around Vehicle, Paint Fading Around Vehicle</li>
+          <li>Sunglasses Holder Requires Attention, Steering Requires Attention</li>
+        </ul>
+        <p>Features:</p>
+        <p>Reverse camera, bluetooth capability.</p>
+      </body>
+    </html>
+    """
+    condition = evd.read_general_condition(BeautifulSoup(html, "html.parser"))
+
+    assert "1. Rear End (Rear Bar) - Scratched;Dent(s) under 5cm" in condition
+    assert "3. Driver & Passenger Side Wheels - Scratched" in condition
+    assert "Scratches And Dents Visible Around Vehicle, Paint Fading Around Vehicle" in condition
+    assert "Sunglasses Holder Requires Attention, Steering Requires Attention" in condition
+    assert "Reverse camera" not in condition
+
+
+def test_read_general_condition_keeps_legacy_condition_list_without_numbered_rows():
+    html = """
+    <html>
+      <body>
+        <p><strong>Condition</strong></p>
+        <ul>
+          <li>Scratches And Dents Visible Around Vehicle</li>
+          <li>Windscreen Cracked</li>
+        </ul>
+      </body>
+    </html>
+    """
+    condition = evd.read_general_condition(BeautifulSoup(html, "html.parser"))
+
+    assert condition == "Scratches And Dents Visible Around Vehicle\nWindscreen Cracked"

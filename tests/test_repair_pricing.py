@@ -395,6 +395,19 @@ def test_repair_fragments_preserve_split_items_and_unclassified_status() -> None
     assert records[1]["status"] == "unclassified"
 
 
+def test_numbered_grays_condition_rows_do_not_emit_number_only_fragments() -> None:
+    assessment = assess_repairs(
+        "1. Rear End (Rear Bar) - Scratched;Dent(s) under 5cm\n"
+        "2. Front End (Front Bar) - Scratched\n"
+        "Scratches And Dents Visible Around Vehicle"
+    )
+    records = repair_fragments_to_records(assessment)
+
+    assert all(record["repair_key"] not in {"1", "2"} for record in records)
+    assert any(record["repair_key"] == "rear end rear bar scratched" for record in records)
+    assert any(record["repair_key"] == "front end front bar scratched" for record in records)
+
+
 def test_assess_repairs_does_not_price_bare_body_location_without_context() -> None:
     assessment = assess_repairs("roof.")
     records = repair_fragments_to_records(assessment)

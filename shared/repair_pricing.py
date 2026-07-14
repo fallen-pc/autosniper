@@ -192,6 +192,10 @@ def normalise_condition_line(line: str) -> str:
     return text.rstrip(" .;") + "." if text else ""
 
 
+def _is_numbering_only_condition_fragment(line: str) -> bool:
+    return bool(re.fullmatch(r"#?\d{1,3}\.?", str(line or "").strip()))
+
+
 def _decode_condition_entities(text: str) -> str:
     decoded = str(text or "")
     for _ in range(5):
@@ -215,6 +219,8 @@ def split_condition_lines(text: str) -> List[str]:
         if not part:
             continue
         line = normalise_condition_line(part)
+        if _is_numbering_only_condition_fragment(line):
+            continue
         if last_location_context and BODY_LOCATION_FRAGMENT_RE.match(line):
             line = normalise_condition_line(f"{last_location_context} {line.rstrip('.')}")
         out.append(line)

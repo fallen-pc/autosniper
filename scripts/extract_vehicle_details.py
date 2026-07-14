@@ -117,6 +117,16 @@ CONDITION_METADATA_FIELDS = {
     "service history",
     "engine turns over",
 }
+CONDITION_ASSESSMENT_RE = re.compile(
+    r"condition assessment is the opinion of .*?staff",
+    re.IGNORECASE,
+)
+CONDITION_ASSESSMENT_ROW_RE = re.compile(r"^\d{1,2}\.\s+.+?\s+-\s+.+")
+CONDITION_ASSESSMENT_STOP_RE = re.compile(
+    r"^(?:features|location|key no|vin|motor dealer|inspection|conditions of sale|"
+    r"description and photos|bid history|bidding history)\b",
+    re.IGNORECASE,
+)
 
 ALLOWED_BODY_TYPES = {
     "Wagon",
@@ -546,6 +556,40 @@ def filter_condition_entries(entries: Iterable[str]) -> list[str]:
     return filtered
 
 
+def extract_numbered_condition_assessment(soup: BeautifulSoup) -> list[str]:
+    lines = [line.strip() for line in soup.get_text("\n", strip=True).splitlines() if line.strip()]
+    start_index: int | None = None
+    for index, line in enumerate(lines):
+        if CONDITION_ASSESSMENT_RE.search(line):
+            start_index = index + 1
+            break
+    if start_index is None:
+        return []
+
+    entries: list[str] = []
+    for line in lines[start_index:]:
+        if CONDITION_ASSESSMENT_ROW_RE.match(line):
+            entries.append(line)
+            continue
+        if entries and CONDITION_ASSESSMENT_STOP_RE.match(line):
+            break
+
+    return filter_condition_entries(entries)
+
+
+def combine_condition_entries(*groups: Iterable[str]) -> str:
+    combined: list[str] = []
+    seen: set[str] = set()
+    for group in groups:
+        for entry in filter_condition_entries(group):
+            key = re.sub(r"\s+", " ", entry).strip().lower()
+            if not key or key in seen:
+                continue
+            seen.add(key)
+            combined.append(entry)
+    return "\n".join(combined)
+
+
 def normalize_state(text: str) -> str:
     if not text:
         return ""
@@ -780,15 +824,17 @@ def extract_year_from_url(url: str) -> str:
 
 
 def read_general_condition(soup: BeautifulSoup) -> str:
+    numbered_assessment = extract_numbered_condition_assessment(soup)
+
     section = soup.find(attrs={"id": re.compile("ConditionAssessment", re.IGNORECASE)})
     if section:
         bullet_items = filter_condition_entries(safe_get_text(li) for li in section.find_all("li"))
         if bullet_items:
-            return "\n".join(bullet_items)
+            return combine_condition_entries(numbered_assessment, bullet_items)
 
         paragraphs = filter_condition_entries(safe_get_text(p) for p in section.find_all("p"))
         if paragraphs:
-            return "\n".join(paragraphs)
+            return combine_condition_entries(numbered_assessment, paragraphs)
 
     legacy_note = soup.find("strong", string=re.compile("condition assessment", re.IGNORECASE))
     if legacy_note:
@@ -798,13 +844,15 @@ def read_general_condition(soup: BeautifulSoup) -> str:
             if next_list:
                 bullet_items = filter_condition_entries(safe_get_text(li) for li in next_list.find_all("li"))
                 if bullet_items:
-                    return "\n".join(bullet_items)
+                    return combine_condition_entries(numbered_assessment, bullet_items)
 
     condition = extract_bullets(soup, "condition")
     if condition:
         filtered_condition = filter_condition_entries(condition.splitlines())
         if filtered_condition:
-            return "\n".join(filtered_condition)
+            return combine_condition_entries(numbered_assessment, filtered_condition)
+    if numbered_assessment:
+        return combine_condition_entries(numbered_assessment)
     return ""
 
 
