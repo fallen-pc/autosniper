@@ -1,0 +1,371 @@
+repair_key,repair_item,review_bucket,status,category,canonical_defects,occurrences,listing_count,source_file,example_vehicles,example_urls,example_condition_notes
+rear tailgate needs attention cannot open,rear tailgate needs attention cannot open.,Needs AI Analysis review,unclassified,unclassified,,1,1,AI_ANALYSIS_LIVE,2014 HYUNDAI Accent active petrol,https://www.grays.com/lot/0055-23500651/motor-vehicles-motor-cycles/2014-hyundai-accent-active-petrol,"scratches and dents visible around vehicle, rear tint bubbling, chips in paint, rear tailgate needs attention cannot open"
+build plate requires attention,build plate requires attention.,Needs AI Analysis review,unclassified,unclassified,,1,1,AI_ANALYSIS_LIVE,2012 HOLDEN Captiva lx petrol,https://www.grays.com/lot/0023-23500640/motor-vehicles-motor-cycles/2012-holden-captiva-lx-petrol,"scratches and dents visible around vehicle, paint peeling on passenger side rear door, driver seat torn, build plate requires attention, hail damage evident"
+coating on console coming off and stickypaint cracked on various panels,coating on console coming off and stickypaint cracked on various panels.,Needs AI Analysis review,unclassified,unclassified,body_location_list,1,1,AI_ANALYSIS_LIVE,2009 VOLKSWAGEN Golf trendline petrol,https://www.grays.com/lot/0006-23500616/motor-vehicles-motor-cycles/2009-volkswagen-golf-trendline-petrol,"gearshift trim wornscratches and dents visible around vehicleimpact damage on front bumper, rhf guardmissing trim on front bardent on rear bumpervisible chips in paintscratches on tailgate, rear bumperscrape on lhf door handledeep scratches on windscreen and rhf door glassall door trim require attention. coating on console coming off and stickypaint cracked on various panels"
+clear coat peeling on door handles,clear coat peeling on door handles.,Needs AI Analysis review,unclassified,unclassified,body_location_list,1,1,AI_ANALYSIS_LIVE,2016 HYUNDAI Accent active petrol,https://www.grays.com/lot/0051-23500739/motor-vehicles-motor-cycles/2016-hyundai-accent-active-petrol,"scratches and dents visible around vehicle, rear view mirror missing, clear coat peeling on door handles."
+carpet torn,carpet torn.,Needs AI Analysis review,unclassified,unclassified,,1,1,AI_ANALYSIS_LIVE,2011 SUBARU Forester x awd suv,https://www.grays.com/lot/0005-23500520/motor-vehicles-motor-cycles/2011-subaru-forester-x-auto-awd-suv,"carpet torn, sun visor driver side needs attention"
+sun visor driver side needs attention,sun visor driver side needs attention.,Needs AI Analysis review,unclassified,unclassified,,1,1,AI_ANALYSIS_LIVE,2011 SUBARU Forester x awd suv,https://www.grays.com/lot/0005-23500520/motor-vehicles-motor-cycles/2011-subaru-forester-x-auto-awd-suv,"carpet torn, sun visor driver side needs attention"
+grille requires attention,grille requires attention.,Needs AI Analysis review,unclassified,unclassified,,1,1,AI_ANALYSIS_LIVE,2016.0 HYUNDAI Accent active petrol,https://www.grays.com/lot/0022-23500922/motor-vehicles-motor-cycles/2016-hyundai-accent-active-petrol,"scratches and dents visible around vehicle, grille requires attention"
+sunglasses holder requires attention,sunglasses holder requires attention.,Needs AI Analysis review,unclassified,unclassified,,1,1,AI_ANALYSIS_LIVE,2013.0 HYUNDAI I30 active petrol,https://www.grays.com/lot/0050-23500990/motor-vehicles-motor-cycles/2013-hyundai-i30-active-auto-petrol-hatch,"scratches and dents visible around vehicle, paint fading around vehicle, sunglasses holder requires attention, steering requires attention"
+ticking noise from engine,ticking noise from engine.,Needs AI Analysis review,unclassified,unclassified,,1,1,AI_ANALYSIS_LIVE,2012.0 HOLDEN Cruze cd petrol,https://www.grays.com/lot/0017-23500834/motor-vehicles-motor-cycles/2012-holden-cruze-cd-petrol,"scratches and dents visible around vehicle, ticking noise from engine, 1 key faulty, reverse/gears slipping, interior lining worn"
+1 key faulty,1 key faulty.,Needs AI Analysis review,unclassified,unclassified,,1,1,AI_ANALYSIS_LIVE,2012.0 HOLDEN Cruze cd petrol,https://www.grays.com/lot/0017-23500834/motor-vehicles-motor-cycles/2012-holden-cruze-cd-petrol,"scratches and dents visible around vehicle, ticking noise from engine, 1 key faulty, reverse/gears slipping, interior lining worn"
+reverse gears slipping,reverse/gears slipping.,Needs AI Analysis review,unclassified,unclassified,,1,1,AI_ANALYSIS_LIVE,2012.0 HOLDEN Cruze cd petrol,https://www.grays.com/lot/0017-23500834/motor-vehicles-motor-cycles/2012-holden-cruze-cd-petrol,"scratches and dents visible around vehicle, ticking noise from engine, 1 key faulty, reverse/gears slipping, interior lining worn"
+interior lining worn,interior lining worn.,Needs AI Analysis review,unclassified,unclassified,,1,1,AI_ANALYSIS_LIVE,2012.0 HOLDEN Cruze cd petrol,https://www.grays.com/lot/0017-23500834/motor-vehicles-motor-cycles/2012-holden-cruze-cd-petrol,"scratches and dents visible around vehicle, ticking noise from engine, 1 key faulty, reverse/gears slipping, interior lining worn"
+coolant issue,coolant issue.,Needs AI Analysis review,unclassified,unclassified,,1,1,AI_ANALYSIS_LIVE,2013.0 MAZDA Cx-5 maxx sport,https://www.grays.com/lot/0033-23500834/motor-vehicles-motor-cycles/2013-mazda-cx-5-maxx-sport-diesel,"scratches and dents visible around vehicle, coolant issue"
+low tire pressure,low tire pressure.,Needs AI Analysis review,unclassified,unclassified,,1,1,AI_ANALYSIS_LIVE,2014.0 MAZDA Cx-5 maxx sport,https://www.grays.com/lot/0029-23500950/motor-vehicles-motor-cycles/2014-mazda-cx-5-maxx-sport-diesel,"scratches and dents visible around vehicle, low tire pressure"
+dash says service required soon,dash says service required soon.,Needs AI Analysis review,unclassified,unclassified,,1,1,AI_ANALYSIS_LIVE,2018.0 HYUNDAI Elantra active petrol,https://www.grays.com/lot/0010-23500950/motor-vehicles-motor-cycles/2018-hyundai-elantra-active-petrol,"scratches and dents visible around vehicle, dash says service required soon"
+front punctured bumper,front punctured bumper.,Needs AI Analysis review,unclassified,unclassified,body_location_list,1,1,AI_ANALYSIS_LIVE,2015.0 MAZDA Cx-5 grand touring,https://www.grays.com/lot/0002-23500964/motor-vehicles-motor-cycles/2015-mazda-cx-5-grand-touring-diesel,interior: steering wheel wornexterior: scratches and dents visible around vehicle. front punctured bumper
+low fuel,low fuel.,Needs AI Analysis review,unclassified,unclassified,,1,1,AI_ANALYSIS_LIVE,2013.0 NISSAN X-trail st petrol,https://www.grays.com/lot/0007-23500950/motor-vehicles-motor-cycles/2013-nissan-x-trail-st-petrol,"scratches and dents visible around vehicle, low fuel"
+passenger side rear light reflector requires attention,passenger side rear light reflector requires attention.,Needs AI Analysis review,unclassified,unclassified,,1,1,AI_ANALYSIS_LIVE,2011.0 VOLKSWAGEN Golf comfortline petrol,https://www.grays.com/lot/0005-23500971/motor-vehicles-motor-cycles/2011-volkswagen-golf-comfortline-petrol,"scratches and dents visible around vehicle, passenger side rear light reflector requires attention, hood lining requires attention, paint spots along driver side"
+paint spots along driver side,paint spots along driver side.,Needs AI Analysis review,unclassified,unclassified,,1,1,AI_ANALYSIS_LIVE,2011.0 VOLKSWAGEN Golf comfortline petrol,https://www.grays.com/lot/0005-23500971/motor-vehicles-motor-cycles/2011-volkswagen-golf-comfortline-petrol,"scratches and dents visible around vehicle, passenger side rear light reflector requires attention, hood lining requires attention, paint spots along driver side"
+exterior: poor touch up paint evident on front bumper.,exterior: poor touch up paint evident on front bumper.,Needs AI Analysis review,unclassified,unclassified,,1,1,AI_ANALYSIS_LIVE,2008.0 TOYOTA Camry altise acv40r petrol,https://www.grays.com/lot/0003-23500748/motor-vehicles-motor-cycles/2008-toyota-camry-altise-acv40r-auto-petrol,"interior: driver seat torn, centre console tornexterior: poor touch up paint evident on front bumper, paint fading around vehicle, dents evident on roof, visible chips in paint"
+centre console torn.,centre console torn.,Needs AI Analysis review,unclassified,unclassified,,1,1,AI_ANALYSIS_LIVE,2008.0 TOYOTA Camry altise acv40r petrol,https://www.grays.com/lot/0003-23500748/motor-vehicles-motor-cycles/2008-toyota-camry-altise-acv40r-auto-petrol,"interior: driver seat torn, centre console tornexterior: poor touch up paint evident on front bumper, paint fading around vehicle, dents evident on roof, visible chips in paint"
+compartment to the right of wheel won’t stay closed.,compartment to the right of wheel won’t stay closed.,Needs AI Analysis review,unclassified,unclassified,,1,1,AI_ANALYSIS_LIVE,2007.0 VOLKSWAGEN Golf comfortline petrol,https://www.grays.com/lot/0003-23500921/motor-vehicles-motor-cycles/2007-volkswagen-golf-comfortline-petrol,"1. rear end (rear bar) - scratched
+2. roof (roof) - dent(s) under 5cm;surface rust
+3. driver side (driver door including window) - dent(s) under 5cm
+4. driver side (driver sill panel) - dent(s) under 5cm
+5. passenger side (wheels - passenger rear) - scratched
+6. front end (front bar) - scratched
+7. passenger side (wheels - passenger front) - scratched
+8. passenger side (passenger door including window) - dent(s) under 5cm
+9. driver side (wheels - driver rear) - scratched
+10. interior (seat (driver)) - stains
+11. interior (seat (passenger)) - stains
+12. driver side (wheels - driver front) - scratched
+13. driver side (quarter panel (rear driver)) - dent(s) under 5cm
+scratches and dents visible around vehicle, compartment to the right of wheel won’t stay closed"
+front end (front bar) - tear.,front end (front bar) - tear.,Needs AI Analysis review,unclassified,unclassified,,1,1,AI_ANALYSIS_LIVE,2008.0 TOYOTA Camry altise petrol,https://www.grays.com/lot/0005-23500922/motor-vehicles-motor-cycles/2008-toyota-camry-altise-petrol,"1. front end (front bar) - tear;dent(s) under 5cm;scratched
+2. interior (seat (passenger)) - stains
+3. driver side (driver door including window) - dent(s) under 5cm
+4. rear end (rear bar) - dent(s) under 5cm;scratched
+5. interior (centre console) - damaged
+6. rear end (tail gate / boot lid if the vehicle is a sedan) - dent(s) under 5cm
+interior: sticky dashboard, back seats stains, steering wheel worn, driver's seat wornexterior: scratches and dents visible around vehicle, paint fading on various panels. bonnet doesn't stay up. visible chips in paint"
+interior: sticky dashboard.,interior: sticky dashboard.,Needs AI Analysis review,unclassified,unclassified,,1,1,AI_ANALYSIS_LIVE,2008.0 TOYOTA Camry altise petrol,https://www.grays.com/lot/0005-23500922/motor-vehicles-motor-cycles/2008-toyota-camry-altise-petrol,"1. front end (front bar) - tear;dent(s) under 5cm;scratched
+2. interior (seat (passenger)) - stains
+3. driver side (driver door including window) - dent(s) under 5cm
+4. rear end (rear bar) - dent(s) under 5cm;scratched
+5. interior (centre console) - damaged
+6. rear end (tail gate / boot lid if the vehicle is a sedan) - dent(s) under 5cm
+interior: sticky dashboard, back seats stains, steering wheel worn, driver's seat wornexterior: scratches and dents visible around vehicle, paint fading on various panels. bonnet doesn't stay up. visible chips in paint"
+reversing camera.,reversing camera.,Needs AI Analysis review,unclassified,unclassified,,1,1,AI_ANALYSIS_LIVE,2008.0 TOYOTA Corolla ascent zre152r petrol,https://www.grays.com/lot/0011-23500748/motor-vehicles-motor-cycles/2008-toyota-corolla-ascent-zre152r-auto-petrol,"reversing camera
+location: dandenong
+key no: 708"
+passenger side (wheels - passenger rear) - tear.,passenger side (wheels - passenger rear) - tear.,Needs AI Analysis review,unclassified,unclassified,,1,1,AI_ANALYSIS_LIVE,2011.0 FORD Territory titanium,https://www.grays.com/lot/0021-23501009/motor-vehicles-motor-cycles/2011-ford-territory-titanium-diesel,"1. driver side (quarter panel (rear driver)) - scratched
+2. rear end (rear bar) - scratched;dent(s) under 5cm
+3. rear end (tail gate / boot lid if the vehicle is a sedan) - dent(s) under 5cm;scratched
+4. interior (seat (passenger)) - stains
+5. roof (roof) - dent(s) under 5cm;scratched
+6. front end (bonnet) - scratched;dent(s) under 5cm;impact damage
+7. passenger side (passenger rear door including window) - dent(s) under 5cm
+8. passenger side (near side guard (passenger)) - dent(s) under 5cm;scratched
+9. passenger side (passenger sill panel) - impact damage
+10. driver side (driver door including window) - dent(s) under 5cm;scratched
+11. passenger side (wheels - passenger rear) - tear
+12. driver side (driver rear door including window) - scratched
+13. interior (seat (driver)) - damaged
+14. passenger side (quarter panel (rear passenger)) - scratched;dent(s) under 5cm
+15. driver side (wheels - driver rear) - scratched
+16. passenger side (passenger door including window) - dent(s) under 5cm
+17. front end (front bar) - misaligned;scratched;impact damage;dent(s) under 5cm
+18. passenger side (wheels - passenger front) - scratched
+19. driver side (wheels - driver front) - scratched
+sold as salvage vehicle. scratches and dents visible around vehicle, rear tyre damaged, vehicle on rim, engine runs but unable to be driven due to tyre issue, front bar damaged, bonnet and grille also damaged, many dents along sides and roof, head lining sagging, dvd player untested."
+sold as salvage vehicle.,sold as salvage vehicle.,Needs AI Analysis review,unclassified,unclassified,,1,1,AI_ANALYSIS_LIVE,2011.0 FORD Territory titanium,https://www.grays.com/lot/0021-23501009/motor-vehicles-motor-cycles/2011-ford-territory-titanium-diesel,"1. driver side (quarter panel (rear driver)) - scratched
+2. rear end (rear bar) - scratched;dent(s) under 5cm
+3. rear end (tail gate / boot lid if the vehicle is a sedan) - dent(s) under 5cm;scratched
+4. interior (seat (passenger)) - stains
+5. roof (roof) - dent(s) under 5cm;scratched
+6. front end (bonnet) - scratched;dent(s) under 5cm;impact damage
+7. passenger side (passenger rear door including window) - dent(s) under 5cm
+8. passenger side (near side guard (passenger)) - dent(s) under 5cm;scratched
+9. passenger side (passenger sill panel) - impact damage
+10. driver side (driver door including window) - dent(s) under 5cm;scratched
+11. passenger side (wheels - passenger rear) - tear
+12. driver side (driver rear door including window) - scratched
+13. interior (seat (driver)) - damaged
+14. passenger side (quarter panel (rear passenger)) - scratched;dent(s) under 5cm
+15. driver side (wheels - driver rear) - scratched
+16. passenger side (passenger door including window) - dent(s) under 5cm
+17. front end (front bar) - misaligned;scratched;impact damage;dent(s) under 5cm
+18. passenger side (wheels - passenger front) - scratched
+19. driver side (wheels - driver front) - scratched
+sold as salvage vehicle. scratches and dents visible around vehicle, rear tyre damaged, vehicle on rim, engine runs but unable to be driven due to tyre issue, front bar damaged, bonnet and grille also damaged, many dents along sides and roof, head lining sagging, dvd player untested."
+vehicle on rim.,vehicle on rim.,Needs AI Analysis review,unclassified,unclassified,,1,1,AI_ANALYSIS_LIVE,2011.0 FORD Territory titanium,https://www.grays.com/lot/0021-23501009/motor-vehicles-motor-cycles/2011-ford-territory-titanium-diesel,"1. driver side (quarter panel (rear driver)) - scratched
+2. rear end (rear bar) - scratched;dent(s) under 5cm
+3. rear end (tail gate / boot lid if the vehicle is a sedan) - dent(s) under 5cm;scratched
+4. interior (seat (passenger)) - stains
+5. roof (roof) - dent(s) under 5cm;scratched
+6. front end (bonnet) - scratched;dent(s) under 5cm;impact damage
+7. passenger side (passenger rear door including window) - dent(s) under 5cm
+8. passenger side (near side guard (passenger)) - dent(s) under 5cm;scratched
+9. passenger side (passenger sill panel) - impact damage
+10. driver side (driver door including window) - dent(s) under 5cm;scratched
+11. passenger side (wheels - passenger rear) - tear
+12. driver side (driver rear door including window) - scratched
+13. interior (seat (driver)) - damaged
+14. passenger side (quarter panel (rear passenger)) - scratched;dent(s) under 5cm
+15. driver side (wheels - driver rear) - scratched
+16. passenger side (passenger door including window) - dent(s) under 5cm
+17. front end (front bar) - misaligned;scratched;impact damage;dent(s) under 5cm
+18. passenger side (wheels - passenger front) - scratched
+19. driver side (wheels - driver front) - scratched
+sold as salvage vehicle. scratches and dents visible around vehicle, rear tyre damaged, vehicle on rim, engine runs but unable to be driven due to tyre issue, front bar damaged, bonnet and grille also damaged, many dents along sides and roof, head lining sagging, dvd player untested."
+engine runs but unable to be driven due to tyre issue.,engine runs but unable to be driven due to tyre issue.,Needs AI Analysis review,unclassified,unclassified,,1,1,AI_ANALYSIS_LIVE,2011.0 FORD Territory titanium,https://www.grays.com/lot/0021-23501009/motor-vehicles-motor-cycles/2011-ford-territory-titanium-diesel,"1. driver side (quarter panel (rear driver)) - scratched
+2. rear end (rear bar) - scratched;dent(s) under 5cm
+3. rear end (tail gate / boot lid if the vehicle is a sedan) - dent(s) under 5cm;scratched
+4. interior (seat (passenger)) - stains
+5. roof (roof) - dent(s) under 5cm;scratched
+6. front end (bonnet) - scratched;dent(s) under 5cm;impact damage
+7. passenger side (passenger rear door including window) - dent(s) under 5cm
+8. passenger side (near side guard (passenger)) - dent(s) under 5cm;scratched
+9. passenger side (passenger sill panel) - impact damage
+10. driver side (driver door including window) - dent(s) under 5cm;scratched
+11. passenger side (wheels - passenger rear) - tear
+12. driver side (driver rear door including window) - scratched
+13. interior (seat (driver)) - damaged
+14. passenger side (quarter panel (rear passenger)) - scratched;dent(s) under 5cm
+15. driver side (wheels - driver rear) - scratched
+16. passenger side (passenger door including window) - dent(s) under 5cm
+17. front end (front bar) - misaligned;scratched;impact damage;dent(s) under 5cm
+18. passenger side (wheels - passenger front) - scratched
+19. driver side (wheels - driver front) - scratched
+sold as salvage vehicle. scratches and dents visible around vehicle, rear tyre damaged, vehicle on rim, engine runs but unable to be driven due to tyre issue, front bar damaged, bonnet and grille also damaged, many dents along sides and roof, head lining sagging, dvd player untested."
+head lining sagging.,head lining sagging.,Needs AI Analysis review,unclassified,unclassified,,1,1,AI_ANALYSIS_LIVE,2011.0 FORD Territory titanium,https://www.grays.com/lot/0021-23501009/motor-vehicles-motor-cycles/2011-ford-territory-titanium-diesel,"1. driver side (quarter panel (rear driver)) - scratched
+2. rear end (rear bar) - scratched;dent(s) under 5cm
+3. rear end (tail gate / boot lid if the vehicle is a sedan) - dent(s) under 5cm;scratched
+4. interior (seat (passenger)) - stains
+5. roof (roof) - dent(s) under 5cm;scratched
+6. front end (bonnet) - scratched;dent(s) under 5cm;impact damage
+7. passenger side (passenger rear door including window) - dent(s) under 5cm
+8. passenger side (near side guard (passenger)) - dent(s) under 5cm;scratched
+9. passenger side (passenger sill panel) - impact damage
+10. driver side (driver door including window) - dent(s) under 5cm;scratched
+11. passenger side (wheels - passenger rear) - tear
+12. driver side (driver rear door including window) - scratched
+13. interior (seat (driver)) - damaged
+14. passenger side (quarter panel (rear passenger)) - scratched;dent(s) under 5cm
+15. driver side (wheels - driver rear) - scratched
+16. passenger side (passenger door including window) - dent(s) under 5cm
+17. front end (front bar) - misaligned;scratched;impact damage;dent(s) under 5cm
+18. passenger side (wheels - passenger front) - scratched
+19. driver side (wheels - driver front) - scratched
+sold as salvage vehicle. scratches and dents visible around vehicle, rear tyre damaged, vehicle on rim, engine runs but unable to be driven due to tyre issue, front bar damaged, bonnet and grille also damaged, many dents along sides and roof, head lining sagging, dvd player untested."
+dvd player untested.,dvd player untested.,Needs AI Analysis review,unclassified,unclassified,,1,1,AI_ANALYSIS_LIVE,2011.0 FORD Territory titanium,https://www.grays.com/lot/0021-23501009/motor-vehicles-motor-cycles/2011-ford-territory-titanium-diesel,"1. driver side (quarter panel (rear driver)) - scratched
+2. rear end (rear bar) - scratched;dent(s) under 5cm
+3. rear end (tail gate / boot lid if the vehicle is a sedan) - dent(s) under 5cm;scratched
+4. interior (seat (passenger)) - stains
+5. roof (roof) - dent(s) under 5cm;scratched
+6. front end (bonnet) - scratched;dent(s) under 5cm;impact damage
+7. passenger side (passenger rear door including window) - dent(s) under 5cm
+8. passenger side (near side guard (passenger)) - dent(s) under 5cm;scratched
+9. passenger side (passenger sill panel) - impact damage
+10. driver side (driver door including window) - dent(s) under 5cm;scratched
+11. passenger side (wheels - passenger rear) - tear
+12. driver side (driver rear door including window) - scratched
+13. interior (seat (driver)) - damaged
+14. passenger side (quarter panel (rear passenger)) - scratched;dent(s) under 5cm
+15. driver side (wheels - driver rear) - scratched
+16. passenger side (passenger door including window) - dent(s) under 5cm
+17. front end (front bar) - misaligned;scratched;impact damage;dent(s) under 5cm
+18. passenger side (wheels - passenger front) - scratched
+19. driver side (wheels - driver front) - scratched
+sold as salvage vehicle. scratches and dents visible around vehicle, rear tyre damaged, vehicle on rim, engine runs but unable to be driven due to tyre issue, front bar damaged, bonnet and grille also damaged, many dents along sides and roof, head lining sagging, dvd player untested."
+front punctured bumper.,front punctured bumper.,Needs AI Analysis review,unclassified,unclassified,,1,1,AI_ANALYSIS_LIVE,2015.0 MAZDA Cx-5 grand touring,https://www.grays.com/lot/0002-23500964/motor-vehicles-motor-cycles/2015-mazda-cx-5-grand-touring-diesel,"1. front end (front bar) - scratched;dent(s) under 5cm
+2. rear end (rear bar) - dent(s) under 5cm
+3. passenger side (quarter panel (rear passenger)) - dent(s) under 5cm
+4. rear end (tail gate / boot lid if the vehicle is a sedan) - scratched
+5. front end (bonnet) - scratched
+6. passenger side (wheels - passenger front) - scratched
+interior: steering wheel wornexterior: scratches and dents visible around vehicle. front punctured bumper"
+passenger side rear light reflector requires attention.,passenger side rear light reflector requires attention.,Needs AI Analysis review,unclassified,unclassified,,1,1,AI_ANALYSIS_LIVE,2011.0 VOLKSWAGEN Golf comfortline petrol,https://www.grays.com/lot/0005-23500971/motor-vehicles-motor-cycles/2011-volkswagen-golf-comfortline-petrol,"1. passenger rear door - dent(s) under 5cm
+2. passenger side (passenger sill panel) - dent(s) under 5cm
+3. rear end (rear bar) - dent(s) under 5cm
+4. interior (seat (passenger) - stains
+5. driver side (off side guard (driver side) - dent(s) under 5cm
+6. passenger side wheels - scratched
+scratches and dents visible around vehicle, passenger side rear light reflector requires attention, hood lining requires attention, paint spots along driver side"
+paint spots along driver side.,paint spots along driver side.,Needs AI Analysis review,unclassified,unclassified,,1,1,AI_ANALYSIS_LIVE,2011.0 VOLKSWAGEN Golf comfortline petrol,https://www.grays.com/lot/0005-23500971/motor-vehicles-motor-cycles/2011-volkswagen-golf-comfortline-petrol,"1. passenger rear door - dent(s) under 5cm
+2. passenger side (passenger sill panel) - dent(s) under 5cm
+3. rear end (rear bar) - dent(s) under 5cm
+4. interior (seat (passenger) - stains
+5. driver side (off side guard (driver side) - dent(s) under 5cm
+6. passenger side wheels - scratched
+scratches and dents visible around vehicle, passenger side rear light reflector requires attention, hood lining requires attention, paint spots along driver side"
+passenger side (passenger sill panel) - stains.,passenger side (passenger sill panel) - stains.,Needs AI Analysis review,unclassified,unclassified,,1,1,AI_ANALYSIS_LIVE,2014.0 MAZDA Cx-5 maxx sport 4x4 () (),https://www.grays.com/lot/0009-23500968/motor-vehicles-motor-cycles/2014-mazda-cx-5-maxx-sport-4x4-wagon-diesel-auto,"1. passenger side (near side guard (passenger)) - scratched
+2. passenger side (passenger rear door including window) - dent(s) under 5cm
+3. passenger side (passenger door including window) - dent(s) under 5cm
+4. driver side (wheels - driver front) - scratched
+5. driver side (off side guard (driver side)) - dent(s) under 5cm
+6. front end (bonnet) - dent(s) under 5cm
+7. front end (front bar) - scratched
+8. passenger side (quarter panel (rear passenger)) - dent(s) under 5cm
+9. rear end (rear bar) - dent(s) under 5cm;misaligned;scratched
+10. driver side (driver side mirror) - scratched
+11. roof (roof) - scratched
+12. rear end (tail gate / boot lid if the vehicle is a sedan) - dent(s) under 5cm
+13. passenger side (passenger sill panel) - stains
+scratches and dents visible around vehicle"
+dash says service required soon.,dash says service required soon.,Needs AI Analysis review,unclassified,unclassified,,1,1,AI_ANALYSIS_LIVE,2018.0 HYUNDAI Elantra active petrol,https://www.grays.com/lot/0010-23500950/motor-vehicles-motor-cycles/2018-hyundai-elantra-active-petrol,"1. passenger side (passenger rear door including window) - dent(s) under 5cm
+2. driver side (wheels - driver front) - scratched
+3. rear end (rear bar) - dent(s) under 5cm
+4. front end (front bar) - scratched;misaligned
+5. driver side (driver door including window) - dent(s) under 5cm
+scratches and dents visible around vehicle, dash says service required soon"
+coating on console coming off and stickypaint cracked on various panels.,coating on console coming off and stickypaint cracked on various panels.,Needs AI Analysis review,unclassified,unclassified,,1,1,AI_ANALYSIS_LIVE,2009.0 VOLKSWAGEN Golf trendline petrol,https://www.grays.com/lot/0015-23500888/motor-vehicles-motor-cycles/2009-volkswagen-golf-trendline-petrol,"gearshift trim wornscratches and dents visible around vehicleimpact damage on front bumper, rhf guardmissing trim on front bardent on rear bumpervisible chips in paintscratches on tailgate, rear bumperscrape on lhf door handledeep scratches on windscreen and rhf door glassall door trim require attention. coating on console coming off and stickypaint cracked on various panels"
+passenger side (passenger rear door including window) - null.,passenger side (passenger rear door including window) - null.,Needs AI Analysis review,unclassified,unclassified,,1,1,AI_ANALYSIS_LIVE,2007.0 TOYOTA Aurion at-x petrol,https://www.grays.com/lot/0016-23501009/motor-vehicles-motor-cycles/2007-toyota-aurion-at-x-petrol,"1. passenger side (quarter panel (rear passenger)) - scratched;dent(s) under 5cm
+2. passenger side (passenger rear door including window) - null
+3. passenger side (passenger door including window) - dent(s) under 5cm
+4. driver side (wheels - driver rear) - scratched
+5. driver side (quarter panel (rear driver)) - dent(s) under 5cm
+6. driver side (driver door including window) - dent(s) under 5cm
+7. passenger side (wheels - passenger rear) - scratched
+8. passenger side (near side guard (passenger)) - dent(s) under 5cm
+9. roof (roof) - null
+10. rear end (tail gate / boot lid if the vehicle is a sedan) - dent(s) under 5cm
+11. rear end (rear bar) - scratched
+12. front end (front bar) - scratched
+13. driver side (wheels - driver front) - impact damage
+14. interior (seat (passenger)) - stains
+15. front end (bonnet) - null
+16. passenger side (wheels - passenger front) - scratched17. vi170526094518935
+scratches and dents visible around vehicle"
+roof (roof) - null.,roof (roof) - null.,Needs AI Analysis review,unclassified,unclassified,,1,1,AI_ANALYSIS_LIVE,2007.0 TOYOTA Aurion at-x petrol,https://www.grays.com/lot/0016-23501009/motor-vehicles-motor-cycles/2007-toyota-aurion-at-x-petrol,"1. passenger side (quarter panel (rear passenger)) - scratched;dent(s) under 5cm
+2. passenger side (passenger rear door including window) - null
+3. passenger side (passenger door including window) - dent(s) under 5cm
+4. driver side (wheels - driver rear) - scratched
+5. driver side (quarter panel (rear driver)) - dent(s) under 5cm
+6. driver side (driver door including window) - dent(s) under 5cm
+7. passenger side (wheels - passenger rear) - scratched
+8. passenger side (near side guard (passenger)) - dent(s) under 5cm
+9. roof (roof) - null
+10. rear end (tail gate / boot lid if the vehicle is a sedan) - dent(s) under 5cm
+11. rear end (rear bar) - scratched
+12. front end (front bar) - scratched
+13. driver side (wheels - driver front) - impact damage
+14. interior (seat (passenger)) - stains
+15. front end (bonnet) - null
+16. passenger side (wheels - passenger front) - scratched17. vi170526094518935
+scratches and dents visible around vehicle"
+front end (bonnet) - null.,front end (bonnet) - null.,Needs AI Analysis review,unclassified,unclassified,,1,1,AI_ANALYSIS_LIVE,2007.0 TOYOTA Aurion at-x petrol,https://www.grays.com/lot/0016-23501009/motor-vehicles-motor-cycles/2007-toyota-aurion-at-x-petrol,"1. passenger side (quarter panel (rear passenger)) - scratched;dent(s) under 5cm
+2. passenger side (passenger rear door including window) - null
+3. passenger side (passenger door including window) - dent(s) under 5cm
+4. driver side (wheels - driver rear) - scratched
+5. driver side (quarter panel (rear driver)) - dent(s) under 5cm
+6. driver side (driver door including window) - dent(s) under 5cm
+7. passenger side (wheels - passenger rear) - scratched
+8. passenger side (near side guard (passenger)) - dent(s) under 5cm
+9. roof (roof) - null
+10. rear end (tail gate / boot lid if the vehicle is a sedan) - dent(s) under 5cm
+11. rear end (rear bar) - scratched
+12. front end (front bar) - scratched
+13. driver side (wheels - driver front) - impact damage
+14. interior (seat (passenger)) - stains
+15. front end (bonnet) - null
+16. passenger side (wheels - passenger front) - scratched17. vi170526094518935
+scratches and dents visible around vehicle"
+vi170526094518935.,vi170526094518935.,Needs AI Analysis review,unclassified,unclassified,,1,1,AI_ANALYSIS_LIVE,2007.0 TOYOTA Aurion at-x petrol,https://www.grays.com/lot/0016-23501009/motor-vehicles-motor-cycles/2007-toyota-aurion-at-x-petrol,"1. passenger side (quarter panel (rear passenger)) - scratched;dent(s) under 5cm
+2. passenger side (passenger rear door including window) - null
+3. passenger side (passenger door including window) - dent(s) under 5cm
+4. driver side (wheels - driver rear) - scratched
+5. driver side (quarter panel (rear driver)) - dent(s) under 5cm
+6. driver side (driver door including window) - dent(s) under 5cm
+7. passenger side (wheels - passenger rear) - scratched
+8. passenger side (near side guard (passenger)) - dent(s) under 5cm
+9. roof (roof) - null
+10. rear end (tail gate / boot lid if the vehicle is a sedan) - dent(s) under 5cm
+11. rear end (rear bar) - scratched
+12. front end (front bar) - scratched
+13. driver side (wheels - driver front) - impact damage
+14. interior (seat (passenger)) - stains
+15. front end (bonnet) - null
+16. passenger side (wheels - passenger front) - scratched17. vi170526094518935
+scratches and dents visible around vehicle"
+ticking noise from engine.,ticking noise from engine.,Needs AI Analysis review,unclassified,unclassified,,1,1,AI_ANALYSIS_LIVE,2012.0 HOLDEN Cruze cd petrol,https://www.grays.com/lot/0017-23500834/motor-vehicles-motor-cycles/2012-holden-cruze-cd-petrol,"scratches and dents visible around vehicle, ticking noise from engine, 1 key faulty, reverse/gears slipping, interior lining worn"
+1 key faulty.,1 key faulty.,Needs AI Analysis review,unclassified,unclassified,,1,1,AI_ANALYSIS_LIVE,2012.0 HOLDEN Cruze cd petrol,https://www.grays.com/lot/0017-23500834/motor-vehicles-motor-cycles/2012-holden-cruze-cd-petrol,"scratches and dents visible around vehicle, ticking noise from engine, 1 key faulty, reverse/gears slipping, interior lining worn"
+reverse/gears slipping.,reverse/gears slipping.,Needs AI Analysis review,unclassified,unclassified,,1,1,AI_ANALYSIS_LIVE,2012.0 HOLDEN Cruze cd petrol,https://www.grays.com/lot/0017-23500834/motor-vehicles-motor-cycles/2012-holden-cruze-cd-petrol,"scratches and dents visible around vehicle, ticking noise from engine, 1 key faulty, reverse/gears slipping, interior lining worn"
+interior lining worn.,interior lining worn.,Needs AI Analysis review,unclassified,unclassified,,1,1,AI_ANALYSIS_LIVE,2012.0 HOLDEN Cruze cd petrol,https://www.grays.com/lot/0017-23500834/motor-vehicles-motor-cycles/2012-holden-cruze-cd-petrol,"scratches and dents visible around vehicle, ticking noise from engine, 1 key faulty, reverse/gears slipping, interior lining worn"
+condensation in left brake light.,condensation in left brake light.,Needs AI Analysis review,unclassified,unclassified,,1,1,AI_ANALYSIS_LIVE,2009.0 HOLDEN Commodore omega petrol,https://www.grays.com/lot/0022-23500834/motor-vehicles-motor-cycles/2009-holden-commodore-omega-petrol,"scratches and dents visible around vehicle, condensation in left brake light, rear tint bubbling, paint peeling left front fender, headlining requires repair."
+headlining requires repair.,headlining requires repair.,Needs AI Analysis review,unclassified,unclassified,,1,1,AI_ANALYSIS_LIVE,2009.0 HOLDEN Commodore omega petrol,https://www.grays.com/lot/0022-23500834/motor-vehicles-motor-cycles/2009-holden-commodore-omega-petrol,"scratches and dents visible around vehicle, condensation in left brake light, rear tint bubbling, paint peeling left front fender, headlining requires repair."
+grille requires attention.,grille requires attention.,Needs AI Analysis review,unclassified,unclassified,,1,1,AI_ANALYSIS_LIVE,2016.0 HYUNDAI Accent active petrol,https://www.grays.com/lot/0022-23500922/motor-vehicles-motor-cycles/2016-hyundai-accent-active-petrol,"scratches and dents visible around vehicle, grille requires attention"
+coolant issue.,coolant issue.,Needs AI Analysis review,unclassified,unclassified,,1,1,AI_ANALYSIS_LIVE,2013.0 MAZDA Cx-5 maxx sport,https://www.grays.com/lot/0033-23500834/motor-vehicles-motor-cycles/2013-mazda-cx-5-maxx-sport-diesel,"scratches and dents visible around vehicle, coolant issue"
+driver side (wheels - driver rear) - null.,driver side (wheels - driver rear) - null.,Needs AI Analysis review,unclassified,unclassified,,1,1,AI_ANALYSIS_LIVE,2006.0 TOYOTA Yaris yrs,https://www.grays.com/lot/0033-23500990/motor-vehicles-motor-cycles/2006-toyota-yaris-yrs-automatic-hatchback,"1. front end (front bar) - scratched;dent(s) under 5cm;misaligned
+2. passenger side (passenger rear door including window) - dent(s) under 5cm
+3. passenger side (passenger door including window) - dent(s) under 5cm
+4. driver side (wheels - driver front) - scratched;impact damage
+5. rear end (tail gate / boot lid if the vehicle is a sedan) - dent(s) under 5cm
+6. rear end (rear bar) - dent(s) under 5cm
+7. driver side (wheels - driver rear) - null
+8. roof (roof) - dent(s) under 5cm
+9. driver side (off side guard (driver side)) - dent(s) under 5cm
+10. driver side (driver door including window) - dent(s) under 5cm
+11. driver side (driver side mirror) - impact damage
+12. passenger side (wheels - passenger rear) - scratched
+scratches and dents visible around vehicle, paint fading around vehicle, driver side mirror requires attention, front bumper requires attention, rear window tint requires attention, driver door requires attention, windscreen chip"
+bonnet struts not working.,bonnet struts not working.,Needs AI Analysis review,unclassified,unclassified,,1,1,AI_ANALYSIS_LIVE,2015.0 HOLDEN Captiva ltz,https://www.grays.com/lot/0041-23500863/motor-vehicles-motor-cycles/2015-holden-captiva-ltz-diesel,bonnet struts not working.
+lhr guard window smashed.,lhr guard window smashed.,Needs AI Analysis review,unclassified,unclassified,,1,1,AI_ANALYSIS_LIVE,2012.0 MITSUBISHI Outlander ls petrol,https://www.grays.com/lot/0046-23500972/motor-vehicles-motor-cycles/2012-mitsubishi-outlander-ls-petrol,"1. passenger side (quarter panel (rear passenger)) - scratched;dent(s) under 5cm
+2. rear end (rear bar) - scratched;misaligned;dent(s) under 5cm
+3. driver side (wheels - driver rear) - scratched
+4. passenger side (near side guard (passenger)) - dent(s) under 5cm;scratched
+5. front end (front bar) - dent(s) under 5cm;scratched
+6. passenger side (passenger door including window) - scratched
+7. passenger side (passenger sill panel) - scratched
+8. driver side (wheels - driver front) - scratched
+9. passenger side (passenger side mirror) - impact damage
+10. interior (seat (driver)) - damaged
+11. front end (bonnet) - dent(s) under 5cm;scratched
+12. driver side (driver door including window) - scratched
+13. driver side (driver sill panel) - scratched
+14. driver side (quarter panel (rear driver)) - scratched
+15. front end (driver head light) - dent(s) under 5cm
+16. rear end (tail gate / boot lid if the vehicle is a sedan) - dent(s) under 5cm
+interior: spare key requires attention, driver's seat tornexterior: scratches and dents visible around vehicle, lhr guard window smashed, visible chips in paintwindscreen chipped, large dents bonnet, large dent lhf guard, large scuff lhr door plus guard, large scuff rear bumper, water in exterior rear tail lightroof trim missing/damaged"
+misaligned.,misaligned.,Needs AI Analysis review,unclassified,unclassified,,1,1,AI_ANALYSIS_LIVE,2012.0 MITSUBISHI Outlander ls petrol,https://www.grays.com/lot/0046-23500972/motor-vehicles-motor-cycles/2012-mitsubishi-outlander-ls-petrol,"1. passenger side (quarter panel (rear passenger)) - scratched;dent(s) under 5cm
+2. rear end (rear bar) - scratched;misaligned;dent(s) under 5cm
+3. driver side (wheels - driver rear) - scratched
+4. passenger side (near side guard (passenger)) - dent(s) under 5cm;scratched
+5. front end (front bar) - dent(s) under 5cm;scratched
+6. passenger side (passenger door including window) - scratched
+7. passenger side (passenger sill panel) - scratched
+8. driver side (wheels - driver front) - scratched
+9. passenger side (passenger side mirror) - impact damage
+10. interior (seat (driver)) - damaged
+11. front end (bonnet) - dent(s) under 5cm;scratched
+12. driver side (driver door including window) - scratched
+13. driver side (driver sill panel) - scratched
+14. driver side (quarter panel (rear driver)) - scratched
+15. front end (driver head light) - dent(s) under 5cm
+16. rear end (tail gate / boot lid if the vehicle is a sedan) - dent(s) under 5cm
+interior: spare key requires attention, driver's seat tornexterior: scratches and dents visible around vehicle, lhr guard window smashed, visible chips in paintwindscreen chipped, large dents bonnet, large dent lhf guard, large scuff lhr door plus guard, large scuff rear bumper, water in exterior rear tail lightroof trim missing/damaged"
+interior: spare key requires attention.,interior: spare key requires attention.,Needs AI Analysis review,unclassified,unclassified,,1,1,AI_ANALYSIS_LIVE,2012.0 MITSUBISHI Outlander ls petrol,https://www.grays.com/lot/0046-23500972/motor-vehicles-motor-cycles/2012-mitsubishi-outlander-ls-petrol,"1. passenger side (quarter panel (rear passenger)) - scratched;dent(s) under 5cm
+2. rear end (rear bar) - scratched;misaligned;dent(s) under 5cm
+3. driver side (wheels - driver rear) - scratched
+4. passenger side (near side guard (passenger)) - dent(s) under 5cm;scratched
+5. front end (front bar) - dent(s) under 5cm;scratched
+6. passenger side (passenger door including window) - scratched
+7. passenger side (passenger sill panel) - scratched
+8. driver side (wheels - driver front) - scratched
+9. passenger side (passenger side mirror) - impact damage
+10. interior (seat (driver)) - damaged
+11. front end (bonnet) - dent(s) under 5cm;scratched
+12. driver side (driver door including window) - scratched
+13. driver side (driver sill panel) - scratched
+14. driver side (quarter panel (rear driver)) - scratched
+15. front end (driver head light) - dent(s) under 5cm
+16. rear end (tail gate / boot lid if the vehicle is a sedan) - dent(s) under 5cm
+interior: spare key requires attention, driver's seat tornexterior: scratches and dents visible around vehicle, lhr guard window smashed, visible chips in paintwindscreen chipped, large dents bonnet, large dent lhf guard, large scuff lhr door plus guard, large scuff rear bumper, water in exterior rear tail lightroof trim missing/damaged"
+sunglasses holder requires attention.,sunglasses holder requires attention.,Needs AI Analysis review,unclassified,unclassified,,1,1,AI_ANALYSIS_LIVE,2013.0 HYUNDAI I30 active petrol,https://www.grays.com/lot/0050-23500990/motor-vehicles-motor-cycles/2013-hyundai-i30-active-auto-petrol-hatch,"1. rear end (rear bar) - scratched;dent(s) under 5cm
+2. front end (front bar) - scratched
+3. driver & passenger side wheels - scratched
+4. passenger side (quarter panel (rear passenger)) - scratched
+5. driver side (quarter panel (rear driver)) - scratched;dent(s) under 5cm
+6. driver side driver door - dent(s) under 5cm
+7. driver side (off side guard (driver side)) - scratched
+scratches and dents visible around vehicle, paint fading around vehicle, sunglasses holder requires attention, steering requires attention"
+bonnet doesn't stay up.,bonnet doesn't stay up.,Needs AI Analysis review,unclassified,unclassified,,1,1,AI_ANALYSIS_LIVE,2009.0 TOYOTA Aurion at-x dual fuel,https://www.grays.com/lot/0051-23500894/motor-vehicles-motor-cycles/2009-toyota-aurion-at-x-petrol-and-gas,"1. driver door - scratched; dent(s) under 5cm
+2. driver & passenger side wheels - scratched
+3. driver side (driver sill panel) - scratched
+4. passenger rear door - dent(s) under 5cm
+5. rear end (rear bar) - scratched
+6. front end (front bar) - dent(s) under 5cm
+scratches and dents visible around vehicle, bonnet doesn't stay up."
