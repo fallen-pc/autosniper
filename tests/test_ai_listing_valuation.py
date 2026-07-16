@@ -145,12 +145,15 @@ def test_listing_alert_reports_ai_analysis_buy_action(monkeypatch, tmp_path: Pat
     assert len(sent) == 1
     assert sent[0]["alert_scope"] == "listing_bid_ready"
     assert sent[0]["state_value"] == "ai_analysis_buy"
-    assert "AutoSniper candidate - AI Analysis says BUY" in str(sent[0]["message"])
+    assert "$$$ POTENTIAL BUY ALERT $$$" in str(sent[0]["message"])
+    assert "Alert type: AI Analysis Buy candidate" in str(sent[0]["message"])
+    assert "DEAL NUMBERS\nCurrent bid: $2,500\nProxy max bid: $4,500" in str(sent[0]["message"])
     assert "Why sent: this current active listing is marked Buy in AI Analysis." in str(sent[0]["message"])
     assert "Action: Buy" in str(sent[0]["message"])
-    assert "Profit at current bid:" in str(sent[0]["message"])
-    assert "Open in AutoSniper: https://autosniper.example/AI_ANALYSIS?listing_url=https%3A%2F%2Fexample.com%2Flot%2Fdecision-1" in str(sent[0]["message"])
-    assert "Open on Grays: https://example.com/lot/decision-1" in str(sent[0]["message"])
+    assert "Profit now:" in str(sent[0]["message"])
+    assert "LINKS" in str(sent[0]["message"])
+    assert "AutoSniper page: https://autosniper.example/AI_ANALYSIS?listing_url=https%3A%2F%2Fexample.com%2Flot%2Fdecision-1" in str(sent[0]["message"])
+    assert "Auction page: https://example.com/lot/decision-1" in str(sent[0]["message"])
 
 
 def test_autosniper_listing_url_defaults_to_local_ai_analysis(monkeypatch) -> None:
@@ -235,10 +238,13 @@ def test_listing_alert_sends_when_buy_becomes_not_bid_ready(monkeypatch, tmp_pat
     assert len(sent) == 1
     assert sent[0]["alert_scope"] == "listing_bid_ready"
     assert sent[0]["state_value"] == "ai_analysis_not_buy"
-    assert "AutoSniper update - no longer a Buy" in str(sent[0]["message"])
+    assert "BUY ALERT UPDATE - NO LONGER A BUY" in str(sent[0]["message"])
+    assert "Alert type: Buy status changed" in str(sent[0]["message"])
     assert "Why sent: this listing was previously alerted as Buy, but AI Analysis changed." in str(sent[0]["message"])
+    assert "STATUS" in str(sent[0]["message"])
     assert "Previous action: Buy" in str(sent[0]["message"])
     assert "Current action: Watch" in str(sent[0]["message"])
+    assert "LINKS" in str(sent[0]["message"])
 
 
 def test_listing_alert_sends_not_buy_update_from_alert_state(monkeypatch, tmp_path: Path) -> None:
@@ -272,7 +278,7 @@ def test_listing_alert_sends_not_buy_update_from_alert_state(monkeypatch, tmp_pa
 
     assert len(sent) == 1
     assert sent[0]["state_value"] == "ai_analysis_not_buy"
-    assert "AutoSniper update - no longer a Buy" in str(sent[0]["message"])
+    assert "BUY ALERT UPDATE - NO LONGER A BUY" in str(sent[0]["message"])
     assert "Current action: Avoid" in str(sent[0]["message"])
 
 
@@ -1025,6 +1031,140 @@ def test_curve_analysis_refreshes_cached_row_when_input_hash_changes(monkeypatch
     assert result["valuation_input_hash"] != old_hash
 
 
+def test_curve_analysis_refreshes_cached_row_when_repair_rules_change(monkeypatch) -> None:
+    repair_assessment = RepairAssessment(
+        hard_avoid=False,
+        pills=[],
+        cosmetic_panels=0,
+        glass_cost=0,
+        replacement_cost=0,
+        risk_buffer=0,
+        base_cost=0,
+        severity_level="minor",
+        severity_multiplier=1.0,
+        total_cost=0,
+        reasons=[],
+    )
+    listing = pd.Series(
+        {
+            "url": "test://repair-rules-cache-miss",
+            "price": "$2,000",
+            "make": "Hyundai",
+            "model": "i30",
+            "variant": "Active",
+            "body_type": "Hatch",
+            "transmission": "Auto",
+            "fuel_type": "Petrol",
+            "location": "Melbourne VIC",
+            "rego_state": "VIC",
+            "general_condition": "",
+        }
+    )
+    monkeypatch.setattr(ai_listing_valuation, "_repair_rules_signature", lambda: "old-repair-rules")
+    old_hash = ai_listing_valuation._valuation_input_hash(
+        listing,
+        resale_mid=20_000,
+        comps_median=6_200,
+        comps_count=5,
+        analysis_context="active",
+        km_percentile=None,
+        autotrader_median=None,
+        carsales_estimate=None,
+        listings_cluster_ok=None,
+    )
+    cached_row = {column: "ok" for column in ai_listing_valuation.REQUIRED_COLUMNS}
+    cached_row.update(
+        {
+            "url": "test://repair-rules-cache-miss",
+            "analysis_timestamp": "2026-01-14T00:00:00+00:00",
+            "analysis_context": "active",
+            "expected_auction_price": "$6,200",
+            "expected_auction_bid_basis": "$6,200",
+            "expected_auction_source": "historical_sold_median",
+            "expected_auction_profit": "$9,000",
+            "action_label": "Watch",
+            "current_profit_label": "Good",
+            "discount_used": 0.75,
+            "economic_max_bid": "$3,700",
+            "economic_profit_at_current_bid": "$8,000",
+            "economic_profit_at_current_bid_worst": "$4,000",
+            "bid_status": "Cheap",
+            "valuation_input_hash": old_hash,
+        }
+    )
+
+    monkeypatch.setattr(ai_listing_valuation, "_repair_rules_signature", lambda: "new-repair-rules")
+    monkeypatch.setattr(ai_listing_valuation, "load_cached_results", lambda: pd.DataFrame([cached_row]))
+    monkeypatch.setattr(ai_listing_valuation, "_save_result_row", lambda row: None)
+    monkeypatch.setattr(ai_listing_valuation, "assess_repairs", lambda condition, **_kwargs: repair_assessment)
+
+    result = ai_listing_valuation.run_curve_listing_analysis(
+        listing,
+        resale_mid=20_000,
+        comps_median=6_200,
+        comps_count=5,
+        analysis_context="active",
+    )
+
+    assert result["cached"] is False
+    assert result["analysis_timestamp"] != "2026-01-14T00:00:00+00:00"
+    assert result["valuation_input_hash"] != old_hash
+
+
+def test_curve_analysis_marks_low_expected_finish_profit_as_marginal(monkeypatch) -> None:
+    repair_assessment = RepairAssessment(
+        hard_avoid=False,
+        pills=[],
+        cosmetic_panels=0,
+        glass_cost=0,
+        replacement_cost=0,
+        risk_buffer=0,
+        base_cost=0,
+        severity_level="minor",
+        severity_multiplier=1.0,
+        total_cost=0,
+        reasons=[],
+    )
+    listing = pd.Series(
+        {
+            "url": "test://expected-finish-marginal",
+            "price": "$2,000",
+            "make": "Hyundai",
+            "model": "i30",
+            "variant": "Active",
+            "body_type": "Hatch",
+            "transmission": "Auto",
+            "fuel_type": "Petrol",
+            "location": "Melbourne VIC",
+            "rego_state": "VIC",
+            "general_condition": "",
+            "service_history": "Yes",
+            "owners_manual": "Yes",
+            "key": "Yes",
+            "spare_key": "Yes",
+            "engine_turns_over": "Yes",
+        }
+    )
+
+    monkeypatch.setattr(ai_listing_valuation, "load_cached_results", lambda: pd.DataFrame(columns=ai_listing_valuation.REQUIRED_COLUMNS))
+    monkeypatch.setattr(ai_listing_valuation, "_save_result_row", lambda row: None)
+    monkeypatch.setattr(ai_listing_valuation, "assess_repairs", lambda condition, **_kwargs: repair_assessment)
+
+    result = ai_listing_valuation.run_curve_listing_analysis(
+        listing,
+        resale_mid=20_000,
+        comps_median=16_000,
+        comps_count=5,
+        analysis_context="active",
+        force_refresh=True,
+    )
+
+    assert result["computed_verdict"] == "Marginal (expected finish)"
+    assert result["action_label"] == "Watch"
+    assert result["expected_auction_worst_profit_value"] < ai_listing_valuation.MIN_NET_PROFIT_ABSOLUTE
+    assert result["net_profit_worst_value"] > 0
+
+
 def test_curve_analysis_uses_worst_case_margin_for_profit_percent(monkeypatch) -> None:
     repair_assessment = RepairAssessment(
         hard_avoid=False,
@@ -1336,6 +1476,10 @@ def test_curve_analysis_keeps_repair_estimate_visible_for_hard_avoid(monkeypatch
     assert result["recommended_max_bid"] == "$0"
     assert result["computed_verdict"] == "Avoid"
     assert result["repair_estimate"] == "$10,000"
+    assert result["repair_estimate_low"] == "$10,000"
+    assert result["repair_estimate_high"] == "$10,000"
+    assert result["repair_estimate_low_value"] == 10_000
+    assert result["repair_estimate_high_value"] == 10_000
 
 
 def test_curve_analysis_surfaces_structural_hard_avoid_bucket(monkeypatch) -> None:
@@ -1388,6 +1532,8 @@ def test_curve_analysis_surfaces_structural_hard_avoid_bucket(monkeypatch) -> No
     assert result["recommended_max_bid"] == "$0"
     assert result["computed_verdict"] == "Avoid"
     assert result["repair_estimate"] == "$8,000"
+    assert result["repair_estimate_low"] == "$8,000"
+    assert result["repair_estimate_high"] == "$8,000"
     assert "STRUCTURAL" in result["risk_flags"]
 
 

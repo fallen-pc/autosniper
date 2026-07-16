@@ -250,15 +250,15 @@ def bid_display_parts(row: Mapping[str, Any]) -> dict[str, str]:
         if policy_bid is not None and current_bid is not None:
             room = policy_bid - current_bid
             if room > 0:
-                status_detail = f"Room {_currency_text(room)} to max {_currency_text(policy_bid)}"
+                status_detail = f"Room {_currency_text(room)} to proxy max {_currency_text(policy_bid)}"
             elif room == 0:
-                status_detail = f"At max {_currency_text(policy_bid)}"
+                status_detail = f"At proxy max {_currency_text(policy_bid)}"
             else:
-                status_detail = f"Over max by {_currency_text(abs(room))}"
+                status_detail = f"Over proxy max by {_currency_text(abs(room))}"
         elif policy_bid is not None:
-            status_detail = f"Max {_currency_text(policy_bid)}"
+            status_detail = f"Proxy max {_currency_text(policy_bid)}"
         else:
-            status_detail = "Max bid unavailable"
+            status_detail = "Proxy max bid unavailable"
 
     if policy_gate:
         max_label = "No policy bid"
@@ -269,17 +269,17 @@ def bid_display_parts(row: Mapping[str, Any]) -> dict[str, str]:
         )
     elif policy_bid is None:
         max_label = "N/A"
-        max_detail = "No max bid available"
+        max_detail = "No proxy max bid available"
     else:
         max_label = _currency_text(policy_bid)
         if economics_visible and abs((economic_bid or 0.0) - policy_bid) > 1:
             max_detail = f"Policy cap; economics {_currency_text(economic_bid)}"
         elif current_bid is not None and policy_bid > current_bid:
-            max_detail = f"Economic cap; room {_currency_text(policy_bid - current_bid)}"
+            max_detail = f"Enter as auction-site max; room {_currency_text(policy_bid - current_bid)}"
         elif current_bid is not None and policy_bid <= current_bid:
             max_detail = "No room at current bid"
         else:
-            max_detail = "Economic cap"
+            max_detail = "Enter as auction-site max"
 
     return {
         "status": status,

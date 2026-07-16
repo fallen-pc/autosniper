@@ -216,9 +216,9 @@ def test_bid_display_shows_room_for_live_economic_bid() -> None:
     display = bid_display_parts(row)
 
     assert display["status"] == "Above expected"
-    assert display["status_detail"] == "Room $1,282 to max $7,682"
+    assert display["status_detail"] == "Room $1,282 to proxy max $7,682"
     assert display["max_label"] == "$7,682"
-    assert display["max_detail"] == "Economic cap; room $1,282"
+    assert display["max_detail"] == "Enter as auction-site max; room $1,282"
 
 
 def test_bid_display_treats_missing_policy_gate_as_empty() -> None:
@@ -235,5 +235,5 @@ def test_bid_display_treats_missing_policy_gate_as_empty() -> None:
     display = bid_display_parts(row)
 
     assert display["status"] == "Below expected"
-    assert display["status_detail"] == "Room $2,311 to max $7,121"
+    assert display["status_detail"] == "Room $2,311 to proxy max $7,121"
     assert display["max_label"] == "$7,121"

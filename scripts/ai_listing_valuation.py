@@ -3,6 +3,7 @@ import os
 import re
 import warnings
 from datetime import datetime, timezone
+from functools import lru_cache
 from hashlib import sha256
 from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional
@@ -14,7 +15,7 @@ from scripts.atomic_csv import append_dict_rows_csv_atomic, write_dataframe_csv_
 from shared.auction_model import predict_auction_price
 from shared.data_loader import dataset_path
 from shared.decision_policy import DecisionPolicyInput, derive_action_label, derive_action_label_from_row
-from shared.repair_pricing import assess_repairs, apply_repairs_to_max_bid
+from shared.repair_pricing import V2_DICTIONARY_PATH, assess_repairs, apply_repairs_to_max_bid
 from shared.repair_features import build_repair_features, serialize_tags, REPAIR_CATEGORIES
 from shared.reauction import adjusted_expected_auction_price
 from shared.telegram_alerts import get_alert_state, send_on_state_change
@@ -338,6 +339,24 @@ def _hashable_value(value: Any) -> Any:
     return str(value).strip()
 
 
+@lru_cache(maxsize=1)
+def _repair_rules_signature() -> str:
+    payload: dict[str, Any] = {
+        "repair_pricing_py": None,
+        "condition_dictionary_v2": None,
+    }
+    for key, path in (
+        ("repair_pricing_py", Path(__file__).resolve().parent.parent / "shared" / "repair_pricing.py"),
+        ("condition_dictionary_v2", V2_DICTIONARY_PATH),
+    ):
+        try:
+            payload[key] = sha256(path.read_bytes()).hexdigest()
+        except OSError:
+            payload[key] = "missing"
+    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+    return sha256(encoded.encode("utf-8")).hexdigest()
+
+
 def _valuation_input_hash(
     listing_row: Mapping[str, Any],
     *,
@@ -368,6 +387,7 @@ def _valuation_input_hash(
             key: _hashable_value(value)
             for key, value in (reauction_context or {}).items()
         },
+        "repair_rules_signature": _repair_rules_signature(),
     }
     encoded = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
     return sha256(encoded.encode("utf-8")).hexdigest()
@@ -733,19 +753,26 @@ def _ai_analysis_alert_message(row: Mapping[str, Any], *, title: str, url: str) 
     action_label = _ai_analysis_action(row) or "N/A"
     bid_status = str(row.get("bid_status") or "N/A").strip() or "N/A"
     return (
-        "AutoSniper candidate - AI Analysis says BUY\n"
+        "$$$ POTENTIAL BUY ALERT $$$\n"
+        "Alert type: AI Analysis Buy candidate\n"
         f"Vehicle: {title}\n"
         "Why sent: this current active listing is marked Buy in AI Analysis.\n"
+        "\n"
+        "DEAL NUMBERS\n"
+        f"Current bid: {row.get('current_bid') or row.get('price') or 'N/A'}\n"
+        f"Proxy max bid: {row.get('recommended_max_bid') or 'N/A'}\n"
+        f"Profit now: {row.get('economic_profit_at_current_bid') or 'N/A'}\n"
+        f"Expected auction profit: {row.get('expected_auction_profit') or 'N/A'}\n"
+        "\n"
+        "STATUS\n"
         f"Action: {action_label}\n"
         f"Verdict: {row.get('computed_verdict') or row.get('verdict') or 'N/A'}\n"
         f"Bid position: {bid_status}\n"
-        f"Current bid: {row.get('current_bid') or row.get('price') or 'N/A'}\n"
-        f"Max bid: {row.get('recommended_max_bid') or 'N/A'}\n"
-        f"Profit at current bid: {row.get('economic_profit_at_current_bid') or 'N/A'}\n"
-        f"Expected auction profit: {row.get('expected_auction_profit') or 'N/A'}\n"
         f"Analysed: {row.get('analysis_timestamp') or 'N/A'}\n"
-        f"Open in AutoSniper: {_autosniper_listing_url(url)}\n"
-        f"Open on Grays: {url}"
+        "\n"
+        "LINKS\n"
+        f"AutoSniper page: {_autosniper_listing_url(url)}\n"
+        f"Auction page: {url}"
     )
 
 
@@ -773,18 +800,25 @@ def _maybe_send_listing_alerts(
     elif previous_action == "Buy" or previous_alert_state == "ai_analysis_buy":
         state_value = "ai_analysis_not_buy"
         message = (
-            "AutoSniper update - no longer a Buy\n"
+            "BUY ALERT UPDATE - NO LONGER A BUY\n"
+            "Alert type: Buy status changed\n"
             f"Vehicle: {title}\n"
             "Why sent: this listing was previously alerted as Buy, but AI Analysis changed.\n"
+            "\n"
+            "STATUS\n"
             f"Previous action: {previous_action or 'N/A'}\n"
             f"Current action: {current_action or 'N/A'}\n"
             f"Verdict: {row.get('computed_verdict') or row.get('verdict') or 'N/A'}\n"
             f"Bid position: {row.get('bid_status') or 'N/A'}\n"
+            "\n"
+            "DEAL NUMBERS\n"
             f"Current bid: {row.get('current_bid') or row.get('price') or 'N/A'}\n"
-            f"Max bid: {row.get('recommended_max_bid') or 'N/A'}\n"
+            f"Proxy max bid: {row.get('recommended_max_bid') or 'N/A'}\n"
             f"Analysed: {row.get('analysis_timestamp') or 'N/A'}\n"
-            f"Open in AutoSniper: {_autosniper_listing_url(url)}\n"
-            f"Open on Grays: {url}"
+            "\n"
+            "LINKS\n"
+            f"AutoSniper page: {_autosniper_listing_url(url)}\n"
+            f"Auction page: {url}"
         )
     else:
         return
@@ -2039,6 +2073,9 @@ def run_curve_listing_analysis(
         net_profit_mid_val = 0.0
         net_profit_worst_val = 0.0
 
+    repair_low_val = repair_assessment.total_cost_low or repair_cost_val
+    repair_high_val = repair_assessment.total_cost_high or repair_cost_val
+
     # Keep the legacy expected_profit field tied to the final max-bid basis.
     # Current-bid and expected-finish profit already have dedicated fields.
     expected_profit_val = max_bid_mid_profit_val
@@ -2103,6 +2140,8 @@ def run_curve_listing_analysis(
             return "Not Viable"
         if no_edge_at_current_bid:
             return "Trap"
+        if expected_auction_worst_profit_val is not None and expected_auction_worst_profit_val < MIN_NET_PROFIT_ABSOLUTE:
+            return "Marginal (expected finish)"
         if confidence_val >= 0.70 and net_profit_worst_val >= 3000:
             return "Strong Flip"
         if confidence_val >= 0.55 and net_profit_worst_val > 0:
@@ -2174,10 +2213,10 @@ def run_curve_listing_analysis(
         "roadworthy_estimate": _format_currency(costs_map["roadworthy_estimate"]),
         "prep_estimate": _format_currency(costs_map["prep_estimate"]),
         "repair_estimate": _format_currency(repair_cost_val),
-        "repair_estimate_low": _format_currency(repair_assessment.total_cost_low) if not repair_assessment.hard_avoid else None,
-        "repair_estimate_high": _format_currency(repair_assessment.total_cost_high) if not repair_assessment.hard_avoid else None,
-        "repair_estimate_low_value": repair_assessment.total_cost_low if not repair_assessment.hard_avoid else None,
-        "repair_estimate_high_value": repair_assessment.total_cost_high if not repair_assessment.hard_avoid else None,
+        "repair_estimate_low": _format_currency(repair_low_val),
+        "repair_estimate_high": _format_currency(repair_high_val),
+        "repair_estimate_low_value": repair_low_val,
+        "repair_estimate_high_value": repair_high_val,
         "expected_auction_price": _format_currency(expected_auction_price_val),
         "expected_auction_bid_basis": _format_currency(expected_auction_purchase_basis),
         "expected_auction_profit": _format_currency(expected_auction_profit_val) if expected_auction_profit_val is not None else None,

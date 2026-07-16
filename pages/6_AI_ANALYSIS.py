@@ -80,6 +80,20 @@ if missing:
     st.stop()
 
 
+def _query_param_text(name: str) -> str:
+    try:
+        value = st.query_params.get(name, "")
+    except Exception:
+        return ""
+    if isinstance(value, list):
+        value = value[0] if value else ""
+    return str(value or "").strip()
+
+
+target_listing_url = _query_param_text("listing_url") or _query_param_text("url")
+linked_listing_mode = bool(target_listing_url)
+
+
 SPORT_TRIM_PATTERN = re.compile(r"\b(sport|sports|sx|zr|zrx)\b|sportivo|levin", re.IGNORECASE)
 ENGINE_DEFECT_PATTERN = re.compile(r"engine noise observed|engine idling rough", re.IGNORECASE)
 AUTOTRADER_OUTPUT = Path("autotrader_isolated/output/first_page_results.csv")
@@ -1948,12 +1962,20 @@ def _render_bid_logic_tab(
     expected_finish_detail = f"Scenario profit {expected_profit_display}"
     if expected_profit_label not in ("Unknown", "N/A"):
         expected_finish_detail = f"{expected_finish_detail}; {expected_profit_label.lower()}"
+    expected_finish_source = _safe_text(row.get("expected_auction_source"), "N/A")
+    expected_finish_comps = _safe_text(row.get("expected_auction_comps_count"), "N/A")
+    discount_display = (
+        f"{float(row.get('discount_used') or 0):.0%}"
+        if pd.notna(row.get("discount_used"))
+        else "N/A"
+    )
+    difficulty_reasons = _safe_text(row.get("difficulty_reasons"), "N/A")
 
     metric_rows = [
         ("Resale estimate", _format_currency_value(_compute_resale_value(row))),
-        ("Max bid cap", bid_display["max_label"]),
-        ("Profit at cap", cap_profit_display),
-        ("Current vs cap", bid_display["status"]),
+        ("Proxy max bid", bid_display["max_label"]),
+        ("Worst profit at proxy max", cap_profit_display),
+        ("Current vs proxy max", bid_display["status"]),
         ("Expected finish guide", expected_finish_display),
         ("Scenario profit at expected finish", expected_profit_display),
         ("Current price", _format_price_text(row.get("price"))),
@@ -1976,30 +1998,14 @@ def _render_bid_logic_tab(
         column.metric(label, value)
 
     _render_bullets(
-        "Profit notes",
+        "Bid decision",
         [
-            f"Max bid cap: {bid_display['max_label']} ({bid_display['max_detail']})",
-            f"Profit at cap: {cap_profit_display}",
-            f"Current vs cap: {bid_display['status']} - {bid_display['status_detail']}",
-            f"Discount used: {float(row.get('discount_used') or 0):.0%}" if pd.notna(row.get("discount_used")) else "Discount used: N/A",
-            f"Expected auction finish guide: {_format_price_text(row.get('expected_auction_price'))}",
-            f"Expected finish scenario: {expected_finish_display} ({expected_finish_detail})",
-            f"Expected finish status: {expected_finish_status}",
-            f"Expected finish source: {_safe_text(row.get('expected_auction_source'), 'N/A')}",
-            f"Expected finish comps: {_safe_text(row.get('expected_auction_comps_count'), 'N/A')}",
-            f"Scenario profit at expected finish (mid): {_format_price_text(row.get('expected_auction_profit'))}",
-            f"Scenario profit at expected finish (worst): {_format_price_text(row.get('expected_auction_worst_profit'))}",
-            f"Max-bid safety: {_max_bid_safety_text(row)}",
-            f"Flip difficulty: {_safe_text(row.get('flip_difficulty'), 'N/A')}",
-            f"Difficulty reasons: {_safe_text(row.get('difficulty_reasons'), 'N/A')}",
-            f"Bid status: {_safe_text(row.get('bid_status'), 'N/A')}",
             f"Action: {_display_action_label(row.get('action_label'))}",
-            f"Auction cost total: {_format_currency_value(auction_cost)}",
-            f"Repair/risk likely: {_format_currency_value(repair_deduction)}",
-            f"Max-bid deduction: {max_bid_deduction}",
-            f"Net profit (mid): {_format_price_text(row.get('net_profit_mid'))}",
-            f"Net profit (worst): {_format_price_text(row.get('net_profit_worst'))}",
-            f"Profit margin: {_format_percent(row.get('profit_margin_value'))}",
+            f"{bid_display['status']}: {bid_display['status_detail']}",
+            f"Expected finish: {expected_finish_display} ({expected_finish_detail}; {expected_finish_status})",
+            f"Expected finish evidence: {expected_finish_source}; comps {expected_finish_comps}; discount {discount_display}",
+            f"Costs included: fees {_format_price_text(row.get('fees_estimate'))}, transport {_format_price_text(row.get('transport_estimate'))}, repair/risk {_format_currency_value(repair_deduction)}",
+            f"Flip difficulty: {_safe_text(row.get('flip_difficulty'), 'N/A')} - {difficulty_reasons}",
         ],
     )
     _render_bullets("Top Buy passed", top_buy_passed[:4])
@@ -2788,18 +2794,6 @@ with filter_cols[3]:
     hide_no_max_bid = st.checkbox("Hide listings without max bid", value=True)
 
 
-def _query_param_text(name: str) -> str:
-    try:
-        value = st.query_params.get(name, "")
-    except Exception:
-        return ""
-    if isinstance(value, list):
-        value = value[0] if value else ""
-    return str(value or "").strip()
-
-
-target_listing_url = _query_param_text("listing_url") or _query_param_text("url")
-
 TIME_BUCKETS: dict[str, tuple[Optional[float], Optional[float]]] = {
     "All": (None, None),
     "<24h": (0.0, 24.0),
@@ -3267,16 +3261,19 @@ st.markdown(
 )
 
 filtered = active_df.copy()
-if "hours_remaining" in filtered.columns and (min_hours is not None or max_hours is not None):
-    filtered = filtered[filtered["hours_remaining"].notna()]
-    if min_hours is not None:
-        filtered = filtered[filtered["hours_remaining"] >= min_hours]
-    if max_hours is not None:
-        filtered = filtered[filtered["hours_remaining"] < max_hours]
+if linked_listing_mode and "url" in filtered.columns:
+    filtered = filtered[filtered["url"].astype(str).str.strip() == target_listing_url].copy()
+else:
+    if "hours_remaining" in filtered.columns and (min_hours is not None or max_hours is not None):
+        filtered = filtered[filtered["hours_remaining"].notna()]
+        if min_hours is not None:
+            filtered = filtered[filtered["hours_remaining"] >= min_hours]
+        if max_hours is not None:
+            filtered = filtered[filtered["hours_remaining"] < max_hours]
 
-if group_filter != "All":
-    group_column = "curve_tag" if "curve_tag" in filtered.columns else "canonical_tag"
-    filtered = filtered[filtered[group_column] == group_filter]
+    if group_filter != "All":
+        group_column = "curve_tag" if "curve_tag" in filtered.columns else "canonical_tag"
+        filtered = filtered[filtered[group_column] == group_filter]
 
 if "canonical_tag" not in filtered.columns:
     filtered["canonical_tag"] = ""
@@ -3289,16 +3286,21 @@ if allowed_tags:
 
 no_curve_filtered = no_curve_active_df.copy()
 if not no_curve_filtered.empty:
-    if "hours_remaining" in no_curve_filtered.columns and (min_hours is not None or max_hours is not None):
-        no_curve_filtered = no_curve_filtered[no_curve_filtered["hours_remaining"].notna()]
-        if min_hours is not None:
-            no_curve_filtered = no_curve_filtered[no_curve_filtered["hours_remaining"] >= min_hours]
-        if max_hours is not None:
-            no_curve_filtered = no_curve_filtered[no_curve_filtered["hours_remaining"] < max_hours]
-    if group_filter != "All":
-        group_column = "curve_tag" if "curve_tag" in no_curve_filtered.columns else "canonical_tag"
-        if group_column in no_curve_filtered.columns:
-            no_curve_filtered = no_curve_filtered[no_curve_filtered[group_column] == group_filter]
+    if linked_listing_mode and "url" in no_curve_filtered.columns:
+        no_curve_filtered = no_curve_filtered[
+            no_curve_filtered["url"].astype(str).str.strip() == target_listing_url
+        ].copy()
+    else:
+        if "hours_remaining" in no_curve_filtered.columns and (min_hours is not None or max_hours is not None):
+            no_curve_filtered = no_curve_filtered[no_curve_filtered["hours_remaining"].notna()]
+            if min_hours is not None:
+                no_curve_filtered = no_curve_filtered[no_curve_filtered["hours_remaining"] >= min_hours]
+            if max_hours is not None:
+                no_curve_filtered = no_curve_filtered[no_curve_filtered["hours_remaining"] < max_hours]
+        if group_filter != "All":
+            group_column = "curve_tag" if "curve_tag" in no_curve_filtered.columns else "canonical_tag"
+            if group_column in no_curve_filtered.columns:
+                no_curve_filtered = no_curve_filtered[no_curve_filtered[group_column] == group_filter]
 
 def _render_no_curve_section(no_curve_df: pd.DataFrame) -> None:
     if no_curve_df.empty:
@@ -3335,7 +3337,23 @@ def _render_no_curve_section(no_curve_df: pd.DataFrame) -> None:
             )
 
 if filtered.empty:
-    if no_curve_filtered.empty:
+    if linked_listing_mode:
+        linked_summary_html = clean_html(
+            """
+            <div class="autosniper-section">
+                <div class="section-title">Linked AI Analysis</div>
+                <div class="section-subtitle">Showing this vehicle only from the Telegram alert link.</div>
+            </div>
+            """
+        )
+        st.markdown(linked_summary_html, unsafe_allow_html=True)
+
+    if linked_listing_mode and no_curve_filtered.empty:
+        st.warning("The linked listing is not in the current AI Analysis active set.")
+    elif linked_listing_mode:
+        st.info("The linked listing is active, but it does not currently have enough curve coverage for AI pricing.")
+        _render_no_curve_section(no_curve_filtered)
+    elif no_curve_filtered.empty:
         st.info("No active listings match the current filters.")
     else:
         st.info("No curve-covered listings match the current filters.")
@@ -3673,15 +3691,21 @@ if time_bucket != "All":
 if group_filter != "All":
     active_filter_labels.append("vehicle curve selected")
 active_filter_text = "; ".join(active_filter_labels) if active_filter_labels else "No extra filters active"
+if linked_listing_mode:
+    summary_title = "Linked AI Analysis"
+    summary_subtitle = "Showing this vehicle only from the Telegram alert link."
+else:
+    summary_title = "Active AI Opportunities"
+    summary_subtitle = (
+        f"Showing {len(filtered_output):,} of {len(output):,} curve-covered listing(s). "
+        f"{hidden_count:,} hidden by current filters. {active_filter_text}."
+    )
 
 summary_html = clean_html(
     f"""
     <div class="autosniper-section">
-        <div class="section-title">Active AI Opportunities</div>
-        <div class="section-subtitle">
-            Showing {len(filtered_output):,} of {len(output):,} curve-covered listing(s).
-            {hidden_count:,} hidden by current filters. {active_filter_text}.
-        </div>
+        <div class="section-title">{summary_title}</div>
+        <div class="section-subtitle">{summary_subtitle}</div>
     </div>
     """
 )
@@ -4096,9 +4120,9 @@ def render_listing_card(row: pd.Series) -> None:
             _build_metric_group(
                 "Deal maths",
                 [
-                    _build_metric_item("Max bid cap", max_bid_display, bid_display["max_detail"], "primary"),
-                    _build_metric_item("Profit at cap", cap_profit_display, hard_max_safety),
-                    _build_metric_item("Current vs cap", bid_status, bid_display["status_detail"]),
+                    _build_metric_item("Proxy max bid", max_bid_display, bid_display["max_detail"], "primary"),
+                    _build_metric_item("Worst profit at proxy max", cap_profit_display, hard_max_safety),
+                    _build_metric_item("Current vs proxy max", bid_status, bid_display["status_detail"]),
                     _build_metric_item("Expected finish", expected_auction_display, expected_finish_sub),
                 ],
                 "money-group",
@@ -4200,6 +4224,7 @@ def render_listing_card(row: pd.Series) -> None:
 for _, row in filtered_output.iterrows():
     render_listing_card(row)
 
-_render_no_curve_section(no_curve_filtered)
+if not linked_listing_mode:
+    _render_no_curve_section(no_curve_filtered)
 
 st.caption(f"Last refreshed: {time.strftime('%Y-%m-%d %H:%M:%S')}")
