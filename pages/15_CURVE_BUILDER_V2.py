@@ -700,7 +700,7 @@ total_carsales_rows = len(manual_carsales_subset) + len(carsales_apify_subset)
 if total_carsales_rows > 0:
     st.success(f"This curve is Carsales-led with {total_carsales_rows} total Carsales rows (manual + Apify). Manual Carsales rows take priority; Apify fills gaps. Autotrader is available for comparison/confidence only.")
 else:
-    st.warning("⚠️ No Carsales evidence found for this curve. The proposer requires Carsales data to build prices correctly. Autotrader is NOT used as a fallback — either add manual Carsales evidence or run a new Apify scrape for this tag.")
+    st.warning("[WARNING] No Carsales evidence found for this curve. The proposer requires Carsales data to build prices correctly. Autotrader is NOT used as a fallback -- either add manual Carsales evidence or run a new Apify scrape for this tag.")
 
 section_heading("Matched Evidence Review", "Inspect exactly which sold and Autotrader rows are feeding this base curve before you shape the pricing grid.")
 filter_left, filter_mid, filter_right = st.columns([2, 1, 1])
@@ -916,8 +916,8 @@ if configured_anchor_years and current_editor_years != seed_anchor_years:
     st.session_state[proposal_meta_key] = {}
 
 section_heading("Edit Base Curve Rows", "You are editing V2 base-curve rows, not the original detailed match tags.")
-show_deterministic_proposer = merged_carsales_subset.empty
-if show_deterministic_proposer:
+has_carsales_evidence = len(merged_carsales_subset) > 0
+if has_carsales_evidence:
     action_left, action_mid, action_right = st.columns([1, 1, 3])
 else:
     action_left, action_right = st.columns([1, 4])
@@ -929,7 +929,7 @@ with action_left:
         st.session_state[proposal_meta_key] = {}
         st.rerun()
 reuse_editor_anchor_years = False
-if show_deterministic_proposer:
+if has_carsales_evidence:
     with action_mid:
         reuse_editor_anchor_years = st.checkbox(
             "Reuse editor years",
@@ -974,10 +974,10 @@ with action_right:
         st.caption(f"Configured V2 anchor years: {', '.join(str(value) for value in configured_anchor_years)}")
     else:
         st.caption(f"Suggested V2 anchor years from current evidence: {', '.join(str(value) for value in suggested_anchor_years)}")
-    if show_deterministic_proposer:
+    if has_carsales_evidence:
         st.caption(str(st.session_state.get(proposal_note_key) or seed_message))
     else:
-        st.caption("Carsales evidence is present for this curve, so deterministic proposing is hidden. Edit and save the curve directly against the Carsales rows.")
+        st.caption("[NOTE] No Carsales evidence available. Proposer is disabled. Add manual Carsales evidence or run Apify scrape to enable proposing.")
 if not editor_seed_conflicts.empty:
     st.error("Conflicting legacy rows were found for this base curve. The editor was seeded with a blank grid so you do not silently inherit a mixed curve.")
     editor_conflict_summary = summarize_legacy_curve_conflicts(editor_seed_conflicts)

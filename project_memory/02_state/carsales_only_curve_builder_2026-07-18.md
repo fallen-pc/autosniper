@@ -44,12 +44,25 @@ The proposer would build a curve from Autotrader prices, overwriting the correct
 ### Tests
 - Added 2 new tests in test_curve_builder_v2.py asserting `evidence_source` parameter and Carsales in metadata notes
 
+## Initial Implementation Issue
+Initial commit had inverted logic bug: proposer was shown only when Carsales 
+was ABSENT. This made the Carsales proposer mostly unusable (would pass empty 
+dataframe to proposer and fail).
+
+## Fixed (2026-07-18, second commit)
+- Inverted proposer visibility logic: now shown when Carsales IS present
+- Disabled with clear warning when Carsales is absent
+- Cleaned mojibake characters (⚠️ → [WARNING], em-dash → ASCII --)
+- All tests pass; proposer now functional
+
 ## Result
 ✅ Curves can only be built from Carsales evidence (manual + Apify)
+✅ Proposer is functional when Carsales data exists
+✅ Proposer is disabled with clear messaging when Carsales is absent
 ✅ Autotrader remains visible for validation/confidence only
-✅ No silent fallback; proposer requires Carsales or refuses
+✅ No silent fallback; no Autotrader fallback possible
 ✅ UI clearly distinguishes primary (Carsales) vs. support (Autotrader)
 
 ## Next Steps
 - Backfill any curves that were accidentally corrupted by Autotrader proposals (check git history for proposals > July 2026 without manual evidence)
-- Monitor Page 15 for users attempting to propose without Carsales data
+- Monitor Page 15 for edge cases in proposer behavior
