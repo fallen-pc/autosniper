@@ -164,7 +164,18 @@ def propose_curve_from_evidence(
     sold_df: pd.DataFrame | None = None,
     anchor_years: list[int] | None = None,
     buckets: list[int] | None = None,
+    evidence_source: str = "market evidence",
 ) -> tuple[pd.DataFrame, ProposalMetadata]:
+    """Propose curve from evidence data.
+
+    Args:
+        base_curve_tag: The curve identifier.
+        active_market_df: DataFrame with market evidence (price_numeric, year_numeric, odometer_numeric).
+        sold_df: Optional sold data for coverage reporting (not used for pricing).
+        anchor_years: Override anchor years; if None, auto-detect from data.
+        buckets: Override km buckets; if None, use REQUIRED_KM_BUCKETS.
+        evidence_source: Description of data source (e.g., "Carsales", "Autotrader").
+    """
     bucket_list = buckets or REQUIRED_KM_BUCKETS
     active_rows, trimmed_rows = prepare_active_market_for_proposal(active_market_df)
     sold_rows = _prepare_market_rows(sold_df.copy()) if sold_df is not None and not sold_df.empty else pd.DataFrame()
@@ -201,7 +212,7 @@ def propose_curve_from_evidence(
         combined = pd.DataFrame(columns=list(CURVE_COLUMNS))
 
     notes = (
-        "Deterministic proposal built from recent Autotrader market listing prices. "
+        f"Deterministic proposal built from {evidence_source} market listing prices. "
         "Sold rows were observed for coverage only and do not drive the proposed prices. "
         "Extreme recent-market price outliers were trimmed before fitting."
     )

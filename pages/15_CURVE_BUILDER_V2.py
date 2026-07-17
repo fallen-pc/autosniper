@@ -7,7 +7,7 @@ import streamlit as st
 
 from scripts.curve_validator import build_curve_warnings
 from scripts.generate_curve_candidates import load_tagged_sold_data
-from scripts.process_curve_candidates import DEFAULT_AUTOTRADER_SOURCE, load_autotrader_market
+from scripts.process_curve_candidates import DEFAULT_AUTOTRADER_SOURCE, load_autotrader_market, load_carsales_apify_market
 from shared.curve_builder_v2 import prepare_active_market_for_proposal, propose_curve_from_evidence
 from shared.curve_groups_v2 import (
     get_anchor_override_years,
@@ -69,6 +69,11 @@ def _load_active_evidence(_version: int) -> pd.DataFrame:
 @st.cache_data(show_spinner=False)
 def _load_manual_carsales_evidence(_version: int) -> pd.DataFrame:
     return prepare_manual_curve_evidence(load_manual_curve_evidence())
+
+
+@st.cache_data(show_spinner=False)
+def _load_carsales_apify_evidence(_version: int) -> pd.DataFrame:
+    return load_carsales_apify_market()
 
 
 def _suggest_anchor_years(base_curve_tag: str, evidence_df: pd.DataFrame, overrides_df: pd.DataFrame | None = None) -> list[int]:
@@ -606,6 +611,9 @@ active_df = _load_active_evidence(active_source_version)
 manual_carsales_path = dataset_path("quality/manual_curve_evidence.csv")
 manual_carsales_version = manual_carsales_path.stat().st_mtime_ns if manual_carsales_path.exists() else 0
 manual_carsales_df = _load_manual_carsales_evidence(manual_carsales_version)
+carsales_apify_path = dataset_path("quality/carsales_apify_listings.csv")
+carsales_apify_version = carsales_apify_path.stat().st_mtime_ns if carsales_apify_path.exists() else 0
+carsales_apify_df = _load_carsales_apify_evidence(carsales_apify_version)
 curves_df = load_curves()
 saved_status_df = _build_saved_status_frame(supported_df, curves_df)
 
@@ -653,7 +661,12 @@ manual_carsales_subset = (
     if not manual_carsales_df.empty
     else pd.DataFrame()
 )
-evidence_frames = [df for df in [sold_subset, active_subset, manual_carsales_subset] if not df.empty]
+carsales_apify_subset = (
+    carsales_apify_df[carsales_apify_df["canonical_tag"].fillna("").astype(str).isin(member_tags)].copy()
+    if member_tags and not carsales_apify_df.empty
+    else pd.DataFrame()
+)
+evidence_frames = [df for df in [sold_subset, active_subset, manual_carsales_subset, carsales_apify_subset] if not df.empty]
 evidence_df = pd.concat(evidence_frames, ignore_index=True, sort=False) if evidence_frames else pd.DataFrame()
 source_breakdown_df = _build_source_tag_breakdown(sold_subset, active_subset)
 
@@ -674,18 +687,20 @@ with scope_right:
 metric_cols = st.columns(4)
 metric_cols[0].metric("Source Tags", f"{len(member_tags):,}")
 metric_cols[1].metric("Sold Evidence Rows", f"{len(sold_subset):,}")
-metric_cols[2].metric("Autotrader Market Rows", f"{len(active_subset):,}")
+metric_cols[2].metric("Carsales (Apify) Rows", f"{len(carsales_apify_subset):,}")
 metric_cols[3].metric(
     "Saved Base Rows",
     f"{len(curves_df[curves_df['canonical_tag'].astype(str).str.strip() == selected_base_curve]):,}" if not curves_df.empty else "0",
 )
-support_metric_cols = st.columns(2)
+support_metric_cols = st.columns(3)
 support_metric_cols[0].metric("Manual Carsales Rows", f"{len(manual_carsales_subset):,}")
-support_metric_cols[1].metric("Total Visible Evidence", f"{len(evidence_df):,}")
-if not manual_carsales_subset.empty:
-    st.success("This curve is currently Carsales-led. Manual Carsales rows are the primary pricing source; Autotrader is support/confidence only.")
+support_metric_cols[1].metric("Autotrader (Comparison Only)", f"{len(active_subset):,}")
+support_metric_cols[2].metric("Total Visible Evidence", f"{len(evidence_df):,}")
+total_carsales_rows = len(manual_carsales_subset) + len(carsales_apify_subset)
+if total_carsales_rows > 0:
+    st.success(f"This curve is Carsales-led with {total_carsales_rows} total Carsales rows (manual + Apify). Manual Carsales rows take priority; Apify fills gaps. Autotrader is available for comparison/confidence only.")
 else:
-    st.caption("Autotrader market rows above only include rows already matched into this base curve. Nearby unclassified rows are shown separately and are excluded from the proposer.")
+    st.warning("⚠️ No Carsales evidence found for this curve. The proposer requires Carsales data to build prices correctly. Autotrader is NOT used as a fallback — either add manual Carsales evidence or run a new Apify scrape for this tag.")
 
 section_heading("Matched Evidence Review", "Inspect exactly which sold and Autotrader rows are feeding this base curve before you shape the pricing grid.")
 filter_left, filter_mid, filter_right = st.columns([2, 1, 1])
@@ -719,6 +734,12 @@ filtered_active_subset = _filter_evidence_rows(
     year_min=int(filter_year_min),
     year_max=int(filter_year_max),
 )
+filtered_carsales_apify_subset = _filter_evidence_rows(
+    carsales_apify_subset,
+    selected_tags=selected_match_tags,
+    year_min=int(filter_year_min),
+    year_max=int(filter_year_max),
+)
 if manual_carsales_subset.empty:
     filtered_manual_carsales_subset = pd.DataFrame()
 else:
@@ -726,12 +747,17 @@ else:
     filtered_manual_carsales_subset = manual_carsales_subset[
         manual_years.between(int(filter_year_min), int(filter_year_max), inclusive="both").fillna(False)
     ].copy()
+
+# Merge manual and Apify Carsales for use in proposer (manual takes priority)
+merged_carsales_frames = [df for df in [filtered_manual_carsales_subset, filtered_carsales_apify_subset] if not df.empty]
+merged_carsales_subset = pd.concat(merged_carsales_frames, ignore_index=True, sort=False) if merged_carsales_frames else pd.DataFrame()
+
 trimmed_active_subset, trimmed_active_count = prepare_active_market_for_proposal(filtered_active_subset)
 configured_anchor_years = get_anchor_override_years(selected_base_curve, anchor_overrides_df)
 suggested_anchor_years = _suggest_anchor_years(
     selected_base_curve,
-    filtered_manual_carsales_subset
-    if not filtered_manual_carsales_subset.empty
+    merged_carsales_subset
+    if not merged_carsales_subset.empty
     else filtered_active_subset
     if not filtered_active_subset.empty
     else filtered_sold_subset,
@@ -805,25 +831,29 @@ with chart_right:
         pivot_df = year_breakdown_df.pivot(index="year", columns="source", values="rows").fillna(0)
         st.bar_chart(pivot_df, use_container_width=True)
 
-sold_tab, active_tab, carsales_tab = st.tabs(["Matched Sold Listings", "Matched Autotrader Listings", "Manual Carsales Listings"])
+sold_tab, carsales_tab, autotrader_tab = st.tabs(["Matched Sold Listings (Reference)", "Carsales (Primary: Manual + Apify)", "Autotrader (Comparison Only)"])
 with sold_tab:
     sold_table_df = _prepare_sold_listing_table(filtered_sold_subset)
     if sold_table_df.empty:
         st.info("No sold listings match the current filters.")
     else:
         st.dataframe(sold_table_df, use_container_width=True, hide_index=True)
-with active_tab:
+with carsales_tab:
+    carsales_table_df = _prepare_manual_carsales_table(merged_carsales_subset)
+    if carsales_table_df.empty:
+        st.info("No Carsales listings (manual or Apify) are available for this base curve in the current year window.")
+    else:
+        manual_count = len(filtered_manual_carsales_subset)
+        apify_count = len(filtered_carsales_apify_subset)
+        st.caption(f"Manual: {manual_count} rows | Apify: {apify_count} rows | Total: {len(carsales_table_df)} rows")
+        st.dataframe(carsales_table_df, use_container_width=True, hide_index=True)
+with autotrader_tab:
+    st.caption("⚠️ Autotrader is shown here for comparison and confidence validation only. It is NOT used to build or propose curves.")
     active_table_df = _prepare_active_listing_table(filtered_active_subset)
     if active_table_df.empty:
         st.info("No Autotrader listings match the current filters.")
     else:
         st.dataframe(active_table_df, use_container_width=True, hide_index=True)
-with carsales_tab:
-    carsales_table_df = _prepare_manual_carsales_table(filtered_manual_carsales_subset)
-    if carsales_table_df.empty:
-        st.info("No manual Carsales listings are stored for this base curve in the current year window.")
-    else:
-        st.dataframe(carsales_table_df, use_container_width=True, hide_index=True)
 
 near_miss_df = _build_unclassified_near_miss_rows(
     active_df,
@@ -886,7 +916,7 @@ if configured_anchor_years and current_editor_years != seed_anchor_years:
     st.session_state[proposal_meta_key] = {}
 
 section_heading("Edit Base Curve Rows", "You are editing V2 base-curve rows, not the original detailed match tags.")
-show_deterministic_proposer = filtered_manual_carsales_subset.empty
+show_deterministic_proposer = merged_carsales_subset.empty
 if show_deterministic_proposer:
     action_left, action_mid, action_right = st.columns([1, 1, 3])
 else:
@@ -907,7 +937,7 @@ if show_deterministic_proposer:
             key=f"curve_builder_v2_reuse_years::{selected_base_curve}",
             help="Leave this off for clean V2 anchors derived from the filtered evidence. Turn it on only if you want to preserve the current grid years.",
         )
-        if st.button("Propose deterministic", key=f"curve_builder_v2_propose::{selected_base_curve}"):
+        if st.button("Propose from Carsales", key=f"curve_builder_v2_propose::{selected_base_curve}"):
             current_editor_df = st.session_state.get(editor_state_key, editor_seed.copy())
             current_anchor_years = (
                 pd.to_numeric(pd.DataFrame(current_editor_df).get("anchor_year"), errors="coerce").dropna().astype(int).unique().tolist()
@@ -916,12 +946,13 @@ if show_deterministic_proposer:
             )
             proposed_df, metadata = propose_curve_from_evidence(
                 base_curve_tag=selected_base_curve,
-                active_market_df=filtered_active_subset,
+                active_market_df=merged_carsales_subset,
                 sold_df=filtered_sold_subset,
                 anchor_years=sorted(current_anchor_years) if reuse_editor_anchor_years and current_anchor_years else suggested_anchor_years,
+                evidence_source="Carsales (manual + Apify)",
             )
             if proposed_df.empty:
-                st.error("The proposer could not build a curve from the current filtered evidence.")
+                st.error("The proposer could not build a curve from the current Carsales evidence.")
             else:
                 st.session_state[editor_state_key] = proposed_df.copy()
                 st.session_state[proposal_meta_key] = {
@@ -933,7 +964,7 @@ if show_deterministic_proposer:
                 }
                 st.session_state[proposal_note_key] = (
                     f"{metadata.notes} Anchor years: {', '.join(str(value) for value in metadata.anchor_years)}. "
-                    f"Autotrader rows used: {metadata.active_rows_used}. "
+                    f"Carsales rows used: {metadata.active_rows_used}. "
                     f"Outliers trimmed: {metadata.active_rows_trimmed}. "
                     f"Sold rows observed: {metadata.sold_rows_observed}."
                 )
@@ -946,7 +977,7 @@ with action_right:
     if show_deterministic_proposer:
         st.caption(str(st.session_state.get(proposal_note_key) or seed_message))
     else:
-        st.caption("Manual Carsales evidence is present for this curve, so deterministic proposing is hidden. Edit and save the curve directly against the Carsales rows.")
+        st.caption("Carsales evidence is present for this curve, so deterministic proposing is hidden. Edit and save the curve directly against the Carsales rows.")
 if not editor_seed_conflicts.empty:
     st.error("Conflicting legacy rows were found for this base curve. The editor was seeded with a blank grid so you do not silently inherit a mixed curve.")
     editor_conflict_summary = summarize_legacy_curve_conflicts(editor_seed_conflicts)
@@ -978,15 +1009,15 @@ st.session_state[editor_state_key] = edited.copy()
 warnings_df = build_curve_warnings(edited[list(CURVE_COLUMNS)].copy())
 
 proposal_meta = st.session_state.get(proposal_meta_key) or {}
-section_heading("Proposal Diagnostics", "This tells you what the deterministic proposer actually used, so you can trust or challenge it quickly.")
+section_heading("Proposal Diagnostics", "This tells you what the Carsales proposer actually used, so you can trust or challenge it quickly.")
 diag_cols = st.columns(4)
 diag_cols[0].metric(
-    "Autotrader Rows Used",
-    f"{int(proposal_meta.get('active_rows_used', len(trimmed_active_subset))):,}",
+    "Carsales Rows Used",
+    f"{int(proposal_meta.get('active_rows_used', len(merged_carsales_subset))):,}",
 )
 diag_cols[1].metric(
     "Outliers Trimmed",
-    f"{int(proposal_meta.get('active_rows_trimmed', trimmed_active_count)):,}",
+    f"{int(proposal_meta.get('active_rows_trimmed', 0)):,}",
 )
 diag_cols[2].metric(
     "Sold Rows Observed",

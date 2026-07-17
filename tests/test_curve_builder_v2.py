@@ -122,3 +122,54 @@ def test_propose_curve_from_evidence_derives_default_anchors_and_counts_valid_so
     assert metadata.active_rows_used == 18
     assert metadata.sold_rows_observed == 2
     assert len(proposed_df) == 15
+
+
+def test_propose_curve_from_evidence_respects_evidence_source_parameter():
+    """Verify that evidence_source parameter is reflected in proposal metadata."""
+    base_curve_tag = "test_curve"
+    active_df = pd.DataFrame(
+        {
+            "canonical_tag": [base_curve_tag] * 15,
+            "year_numeric": [2015] * 15,
+            "price_numeric": [20000 - (i * 300) for i in range(15)],
+            "odometer_numeric": [30000 + (i * 10000) for i in range(15)],
+        }
+    )
+
+    # Test with Carsales source
+    proposed_df, metadata = propose_curve_from_evidence(
+        base_curve_tag=base_curve_tag,
+        active_market_df=active_df,
+        evidence_source="Carsales (manual + Apify)",
+    )
+
+    assert "Carsales" in metadata.notes
+    assert "Carsales" in metadata.notes
+    assert len(proposed_df) == 5
+
+
+def test_propose_curve_from_evidence_carsales_source_explicit():
+    """Verify Carsales-specific proposal with explicit source label."""
+    base_curve_tag = "honda_civic_fk2_hatch_auto_petrol"
+    carsales_df = pd.DataFrame(
+        {
+            "canonical_tag": [base_curve_tag] * 24,
+            "year_numeric": ([2014] * 8) + ([2015] * 8) + ([2016] * 8),
+            "price_numeric": [21000 - (i * 100) for i in range(24)],
+            "odometer_numeric": [25000 + (i * 8000) for i in range(24)],
+        }
+    )
+
+    proposed_df, metadata = propose_curve_from_evidence(
+        base_curve_tag=base_curve_tag,
+        active_market_df=carsales_df,
+        evidence_source="Carsales (manual + Apify)",
+    )
+
+    # Verify the proposal is built from Carsales
+    assert "Carsales" in metadata.notes
+    assert metadata.active_rows_used == 24
+    assert len(proposed_df) == 15
+    # Verify prices are reasonable for the input data
+    assert proposed_df["price_mid"].min() >= 19000
+    assert proposed_df["price_mid"].max() <= 21000

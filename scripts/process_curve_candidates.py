@@ -298,6 +298,38 @@ def _build_autotrader_recent_market_from_state(
     return working
 
 
+def load_carsales_apify_market(path: Path | None = None) -> pd.DataFrame:
+    """Load and normalize Carsales Apify listings for curve building."""
+    csv_path = path or dataset_path("quality/carsales_apify_listings.csv")
+    if not csv_path.exists():
+        return pd.DataFrame()
+    try:
+        df = pd.read_csv(csv_path, low_memory=False)
+    except Exception:
+        return pd.DataFrame()
+    if df.empty:
+        return pd.DataFrame()
+    working = df.copy()
+    working = tag_dataframe(working)
+    if "canonical_tag" not in working.columns:
+        return pd.DataFrame()
+    working["canonical_tag"] = working["canonical_tag"].fillna("").astype(str).str.strip()
+    working["curve_tag"] = working["canonical_tag"].apply(resolve_curve_canonical_tag)
+    for target, candidates in {
+        "year_numeric": ["year"],
+        "price_numeric": ["price"],
+        "odometer_numeric": ["odometer"],
+    }.items():
+        resolved = pd.Series(index=working.index, dtype="float64")
+        for column in candidates:
+            if column not in working.columns:
+                continue
+            resolved = resolved.fillna(pd.to_numeric(working[column], errors="coerce"))
+        working[target] = resolved
+    working = working.dropna(subset=["year_numeric", "price_numeric", "odometer_numeric"]).copy()
+    return working
+
+
 def load_autotrader_market(path: Path) -> pd.DataFrame:
     df: pd.DataFrame
     if path.exists():
