@@ -126,7 +126,7 @@ entries:
     category: structural
     severity_hint: high
 
-  - pattern: "\\b(chassis|frame|structural|chassis rail|frame rail|structural rail|cant rail|[abc][ -]?pillar)\\b"
+  - pattern: "\\b(chassis|frame|structural|chassis rail|frame rail|structural rail|cant rail)\\b|\\b[abc][ -]?pillars?\\b(?!\\s+trim)"
     canonical_defect: structural_damage
     category: structural
     severity_hint: high
@@ -171,7 +171,7 @@ entries:
     category: interior
     severity_hint: medium
 
-  - pattern: "\\b(warning light|engine light|abs|airbag).*(on|warning)"
+  - pattern: "\\b(warning lights?|engine lights?|abs|airbag)\\b.*\\b(on|flashing|warning)\\b"
     canonical_defect: warning_light
     category: mechanical
     severity_hint: high

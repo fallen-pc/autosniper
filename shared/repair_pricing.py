@@ -96,7 +96,56 @@ V2_REPLACEMENT_COSTS = {
     "interior_trim_damage": 250,
     "structural_damage": 900,
     "hail_damage": 900,
+    "corrosion_damage": 1200,
 }
+
+REPAIR_PRICING_SCHEDULE_PATH = (
+    Path(__file__).resolve().parent.parent / "CSV_data" / "reports" / "repair_pricing_schedule.csv"
+)
+
+# Schedule rows priced from wrecker listings are part-only (no paint/fitting labour),
+# so they may only raise the hardcoded fitted-cost floor, never lower it. Every other
+# pricing method represents a full-job price and overrides the hardcoded value.
+PART_ONLY_PRICING_METHODS = {"wrecker_part_price"}
+
+# ADAS windscreens add a camera recalibration on top of the glass job.
+WINDSCREEN_ADAS_PREMIUM = WINDSCREEN_ADAS - WINDSCREEN_STD
+
+
+@lru_cache(maxsize=1)
+def _schedule_cost_overrides() -> Dict[str, int]:
+    """canonical_defect -> default_estimate from the curated repair pricing schedule."""
+    try:
+        df = pd.read_csv(REPAIR_PRICING_SCHEDULE_PATH)
+    except Exception:
+        return {}
+    overrides: Dict[str, int] = {}
+    for _, row in df.iterrows():
+        canonical = str(row.get("canonical_defect") or "").strip()
+        method = str(row.get("pricing_method") or "").strip()
+        try:
+            default = float(row.get("default_estimate"))
+        except (TypeError, ValueError):
+            continue
+        if not canonical or not default > 0:
+            continue
+        if method in PART_ONLY_PRICING_METHODS:
+            overrides[canonical] = int(max(V2_REPLACEMENT_COSTS.get(canonical, 0), default))
+        else:
+            overrides[canonical] = int(default)
+    return overrides
+
+
+def _effective_cost(canonical: str, fallback: int) -> int:
+    override = _schedule_cost_overrides().get(canonical)
+    if override is not None:
+        return override
+    return int(V2_REPLACEMENT_COSTS.get(canonical, fallback))
+
+
+def _windscreen_glass_cost(adas_windscreen: bool) -> int:
+    base = _effective_cost("windscreen_damage", WINDSCREEN_STD)
+    return base + WINDSCREEN_ADAS_PREMIUM if adas_windscreen else base
 
 PANEL_LOCATION_TERMS = (
     "door",
@@ -159,6 +208,17 @@ MECH_AVOID_PATTERNS = [
     r"\bengine noise\b",
     r"\bengine idling rough\b",
     r"\bengine lacks power\b",
+    r"\b(engine|motor)\b.*\b(requires attention|needs attention|issues?|tick(?:ing)?)\b",
+    r"\bsteering\b(?!\s+wheel).*\b(requires attention|needs attention|noise|vibration|fault|issues?)\b",
+    r"\bdriveline\b.*\b(attention|fault|issues?|noise)\b",
+    r"\b(gearbox|transmission)\b.*\bshudder",
+    r"\bcoolant\b.*\b(leak|issues?|fault|loss)\b",
+    r"\b(black|white|blue|excessive) smoke\b",
+    r"\bexhaust smoke\b",
+    r"\bsmoke from (?:the )?exhaust\b",
+    r"\bblowing smoke\b",
+    r"\bsmoke (?:evident|visible|observed)\b",
+    r"\bnoise (?:whilst|while|when) driving\b",
     r"\b(vehicle\s+)?stall(?:s|ing|ed)?\b",
     r"\bhead gasket\b",
     r"\btransmission\b.*\b(attention|fault|issue|noise|slip)\b",
@@ -547,6 +607,7 @@ def assess_repairs(
         glass_cost = 0
         replacement_cost = 0
         risk_buffer = 0
+        uncapped_structural_cost = 0
         has_glass = False
         has_replacement = False
         has_unknown = False
@@ -608,7 +669,12 @@ def assess_repairs(
                 line_pills.add("GLASS")
                 line_category = "glass"
                 has_glass = True
-                current_cost = WINDSCREEN_ADAS if adas_windscreen else WINDSCREEN_STD
+                if "window_damage" in canonicals and "windscreen_damage" not in canonicals:
+                    current_cost = _effective_cost("window_damage", WINDSCREEN_STD)
+                elif "window_tint_damage" in canonicals and "windscreen_damage" not in canonicals:
+                    current_cost = _effective_cost("window_tint_damage", WINDSCREEN_STD)
+                else:
+                    current_cost = _windscreen_glass_cost(adas_windscreen)
                 glass_cost += current_cost
                 line_cost += current_cost
                 reason = f"V2_GLASS: {line}"
@@ -621,10 +687,12 @@ def assess_repairs(
                 line_category = "structural"
                 has_replacement = True
                 panel_count = max(2, _panel_equivalent_for_line(line))
-                cosmetic_panels += panel_count
                 _structural_key = "hail_damage" if "hail_damage" in canonicals and "structural_damage" not in canonicals else "structural_damage"
-                current_cost = V2_REPLACEMENT_COSTS.get(_structural_key, 900) + panel_count * PANEL_RATE
-                replacement_cost += V2_REPLACEMENT_COSTS.get(_structural_key, 900)
+                # Hail/structural repair scales with panel count and can far exceed the
+                # cosmetic caps (schedule high end for hail is ~$10k), so this component
+                # bypasses HARD_CAPS instead of being flattened to the $1,500 ceiling.
+                current_cost = _effective_cost(_structural_key, 900) + panel_count * PANEL_RATE
+                uncapped_structural_cost += current_cost
                 line_cost += current_cost
                 reason = f"V2_STRUCTURAL: {line}"
                 reasons.append(reason)
@@ -667,7 +735,7 @@ def assess_repairs(
                 line_category = "replacement"
                 has_replacement = True
                 for hit in replacement_hits:
-                    current_cost = int(V2_REPLACEMENT_COSTS.get(hit.canonical_defect, 600))
+                    current_cost = _effective_cost(hit.canonical_defect, 600)
                     replacement_cost += current_cost
                     line_cost += current_cost
                     reason = f"V2_REPLACEMENT:{hit.canonical_defect}: {line}"
@@ -680,17 +748,34 @@ def assess_repairs(
                 if any(hit.canonical_defect == "seat_damage" for hit in interior_hits):
                     interior_hits = [hit for hit in interior_hits if hit.canonical_defect != "seat_issue"]
                 for hit in interior_hits:
-                    current_cost = int(V2_REPLACEMENT_COSTS.get(hit.canonical_defect, 200))
+                    current_cost = _effective_cost(hit.canonical_defect, 200)
                     replacement_cost += current_cost
                     line_cost += current_cost
                     reason = f"V2_INTERIOR:{hit.canonical_defect}: {line}"
                     reasons.append(reason)
                     line_reasons.append(reason)
 
+            if "corrosion_damage" in canonicals:
+                # Rust repair is body-shop work quoted around $1,000-$1,200 for
+                # panel/sill surface rust, not a $300 panel polish -- price it from
+                # the schedule and let it use the with_replacement cap tier.
+                pills.add("PANEL_REPLACE")
+                line_pills.add("PANEL_REPLACE")
+                if line_category == "matched":
+                    line_category = "cosmetic"
+                has_replacement = True
+                current_cost = _effective_cost("corrosion_damage", 1200)
+                replacement_cost += current_cost
+                line_cost += current_cost
+                reason = f"V2_CORROSION: {line}"
+                reasons.append(reason)
+                line_reasons.append(reason)
+
             cosmetic_hits = [
                 hit
                 for hit in hits
-                if hit.category == "cosmetic" and hit.canonical_defect not in {"body_location_list"}
+                if hit.category == "cosmetic"
+                and hit.canonical_defect not in {"body_location_list", "corrosion_damage"}
             ]
             if replacement_hits or "interior" in categories:
                 cosmetic_hits = [hit for hit in cosmetic_hits if hit.canonical_defect != "generic_damage"]
@@ -741,6 +826,9 @@ def assess_repairs(
             base_total = min(base_total, HARD_CAPS["cosmetic_plus_glass"])
         else:
             base_total = min(base_total, cosmetic_only_cap)
+
+        # Hail/structural repair sits outside the cosmetic cap tiers.
+        base_total += uncapped_structural_cost
 
         if extra_risk_flags:
             for flag in extra_risk_flags:
@@ -807,9 +895,7 @@ def assess_repairs(
         if group == "GLASS":
             has_glass = True
             fixed_cost = int(hit.get("fixed_cost", 0) or 0)
-            glass_cost += fixed_cost if fixed_cost > 0 else (
-                WINDSCREEN_ADAS if adas_windscreen else WINDSCREEN_STD
-            )
+            glass_cost += fixed_cost if fixed_cost > 0 else _windscreen_glass_cost(adas_windscreen)
 
         if group == "PANEL_REPLACE":
             has_replacement = True
@@ -849,7 +935,7 @@ def assess_repairs(
             pills.add("GLASS")
             fallback_pills.add("GLASS")
             has_glass = True
-            current_cost = WINDSCREEN_ADAS if adas_windscreen else WINDSCREEN_STD
+            current_cost = _windscreen_glass_cost(adas_windscreen)
             glass_cost += current_cost
             fallback_cost += current_cost
             fallback_category = "glass"

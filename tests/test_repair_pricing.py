@@ -18,10 +18,11 @@ def test_assess_repairs_glass_case_is_consistent() -> None:
     assert lower.hard_avoid is False
     assert upper.pills == ["GLASS"]
     assert lower.pills == ["GLASS"]
-    assert upper.base_cost == 350
-    assert lower.base_cost == 350
-    assert upper.total_cost == 525
-    assert lower.total_cost == 525
+    # Windscreen replacement priced from repair_pricing_schedule.csv ($500 default).
+    assert upper.base_cost == 500
+    assert lower.base_cost == 500
+    assert upper.total_cost == 750
+    assert lower.total_cost == 750
 
 
 def test_assess_repairs_unknown_boilerplate_not_double_counted() -> None:
@@ -129,8 +130,9 @@ def test_assess_repairs_does_not_treat_interior_damage_as_body_panel() -> None:
     assert assessment.hard_avoid is False
     assert assessment.pills == []
     assert assessment.cosmetic_panels == 0
-    assert assessment.replacement_cost == 250
-    assert assessment.base_cost == 250
+    # seat_damage priced from the schedule's direct supplier quote ($500).
+    assert assessment.replacement_cost == 500
+    assert assessment.base_cost == 500
 
 
 def test_assess_repairs_caps_unknown_photo_risk_after_fragment_split() -> None:
@@ -170,6 +172,90 @@ def test_assess_repairs_head_gasket_language_is_hard_avoid() -> None:
     assert assessment.hard_avoid_reason == "mechanical"
     assert assessment.pills == ["MECHANICAL"]
     assert assessment.total_cost == 10000
+
+
+def test_assess_repairs_engine_requires_attention_is_mechanical_hard_avoid() -> None:
+    for text in (
+        "engine requires attention.",
+        "engine needs attention dents or marks on body.",
+        "engine issues.",
+        "engine tick.",
+        "paint peeling around the car engine ticking noise observed.",
+        "motor requires attention.",
+    ):
+        assessment = assess_repairs(text)
+        assert assessment.hard_avoid is True, text
+        assert assessment.hard_avoid_reason == "mechanical", text
+
+
+def test_assess_repairs_smoke_language_is_mechanical_hard_avoid() -> None:
+    for text in (
+        "black smoke evident.",
+        "exhaust smoke.",
+        "smoke from exhaust paint peeling driver side rear quarter panel.",
+        "blowing smoke.",
+    ):
+        assessment = assess_repairs(text)
+        assert assessment.hard_avoid is True, text
+        assert assessment.hard_avoid_reason == "mechanical", text
+
+
+def test_assess_repairs_driveline_gearbox_coolant_faults_are_mechanical_hard_avoid() -> None:
+    for text in (
+        "driveline requires attention.",
+        "gearbox shudder.",
+        "coolant issue.",
+        "steering requires attention.",
+        "noise whilst driving/steering.",
+    ):
+        assessment = assess_repairs(text)
+        assert assessment.hard_avoid is True, text
+        assert assessment.hard_avoid_reason == "mechanical", text
+
+
+def test_assess_repairs_steering_wheel_wear_is_not_mechanical() -> None:
+    for text in (
+        "steering wheel worn.",
+        "interior: steering wheel requires attention.",
+    ):
+        assessment = assess_repairs(text)
+        assert assessment.hard_avoid is False, text
+
+
+def test_assess_repairs_feature_list_with_airbags_is_not_warning_light_avoid() -> None:
+    # Regression: the v2 warning_light pattern used to match bare "on" inside
+    # words like "front"/"control", hard-avoiding plain equipment lists.
+    for text in (
+        "dual front airbags second row windows.",
+        "abs brakes power windows air conditioning.",
+        "air conditioning cd player central locking driver airbag electric windows park distance control.",
+    ):
+        assessment = assess_repairs(text)
+        assert assessment.hard_avoid is False, text
+
+
+def test_assess_repairs_warning_light_on_still_hard_avoids() -> None:
+    for text in (
+        "airbag warning light on.",
+        "abs light on.",
+        "tyre pressure warning light on.",
+    ):
+        assessment = assess_repairs(text)
+        assert assessment.hard_avoid is True, text
+        assert assessment.hard_avoid_reason == "mechanical", text
+
+
+def test_assess_repairs_pillar_trim_is_not_structural_hard_avoid() -> None:
+    assessment = assess_repairs("drivers side a pillar trim requires attention.")
+
+    assert assessment.hard_avoid is False
+
+
+def test_assess_repairs_pillar_damage_still_structural_hard_avoid() -> None:
+    assessment = assess_repairs("medium dent on passenger a pillar.")
+
+    assert assessment.hard_avoid is True
+    assert assessment.hard_avoid_reason == "structural"
 
 
 def test_assess_repairs_structural_hard_avoid_uses_structural_bucket() -> None:
@@ -250,8 +336,10 @@ def test_assess_repairs_classifies_visible_corrosion_as_body_condition_cost() ->
     records = repair_fragments_to_records(assessment)
 
     assert assessment.hard_avoid is False
-    assert "COSMETIC_PANEL" in assessment.pills
-    assert assessment.total_cost == 300
+    # Corrosion is body-shop work priced from the schedule quote ($1,200), not a
+    # $300 cosmetic panel, and it uses the with_replacement cap tier.
+    assert "PANEL_REPLACE" in assessment.pills
+    assert assessment.total_cost == 1200
     assert records[0]["canonical_defects"] == "body_location_list|corrosion_damage"
 
 
@@ -273,7 +361,9 @@ def test_assess_repairs_classifies_dash_radio_and_corrosion_evident() -> None:
     records = repair_fragments_to_records(assessment)
 
     assert assessment.hard_avoid is False
-    assert assessment.total_cost == 1200
+    # interior_trim $250 + control_damage $900 (schedule quote) + corrosion $1,200
+    # = $2,350, capped at with_replacement $1,500, x1.5 moderate severity.
+    assert assessment.total_cost == 2250
     assert [record["category"] for record in records] == ["interior", "interior", "cosmetic"]
     assert records[0]["canonical_defects"] == "interior_trim_damage"
     assert records[1]["canonical_defects"] == "control_damage"
@@ -381,6 +471,34 @@ def test_assess_repairs_pickles_chassis_corrosion_is_structural_hard_avoid() -> 
     assert assessment.hard_avoid is True
     assert assessment.hard_avoid_reason == "structural"
     assert assessment.pills == ["STRUCTURAL"]
+
+
+def test_assess_repairs_prices_control_damage_from_schedule_quote() -> None:
+    assessment = assess_repairs("sat nav not working.")
+
+    assert assessment.hard_avoid is False
+    # Schedule carries a direct supplier quote of $900 for control/infotainment
+    # repair, overriding the old hardcoded $250.
+    assert assessment.replacement_cost == 900
+
+
+def test_assess_repairs_hail_damage_bypasses_replacement_cap() -> None:
+    assessment = assess_repairs("hail damage visible around vehicle.")
+
+    assert assessment.hard_avoid is False
+    assert "PANEL_REPLACE" in assessment.pills
+    # Hail: $1,000 schedule default + 3 panels x $300, exempt from the $1,500
+    # with_replacement cap that used to flatten it.
+    assert assessment.base_cost == 1900
+    assert assessment.total_cost >= 1900
+
+
+def test_assess_repairs_adas_windscreen_adds_recalibration_premium() -> None:
+    standard = assess_repairs("windscreen cracked.")
+    adas = assess_repairs("windscreen cracked.", adas_windscreen=True)
+
+    assert standard.glass_cost == 500
+    assert adas.glass_cost == 650
 
 
 def test_repair_fragments_preserve_split_items_and_unclassified_status() -> None:
