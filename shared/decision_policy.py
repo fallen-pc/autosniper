@@ -12,8 +12,6 @@ ACTION_WATCH = "Watch"
 ACTION_AVOID = "Avoid"
 ACTION_REVIEW = "Review"
 
-MIN_COMPS_FOR_BUY = 3  # minimum historical sold comps before issuing a BUY
-
 NO_BUY_VERDICTS = {"Avoid", "Trap", "Not Viable"}
 REVIEW_VERDICTS = {"Not Covered", "Not Eligible"}
 BUYABLE_VERDICTS = {"Strong Flip", "Conditional Flip", "Good"}
@@ -50,7 +48,7 @@ class DecisionPolicyInput:
     current_worst_profit: float | None
     hard_max_safety: str
     min_profit: float
-    comps_count: int | None = None  # historical sold comps; BUY blocked if < MIN_COMPS_FOR_BUY
+    comps_count: int | None = None  # historical sold comps; informational only (no hard gate)
 
 
 def derive_action_label(policy_input: DecisionPolicyInput) -> str:
@@ -84,17 +82,15 @@ def derive_action_label(policy_input: DecisionPolicyInput) -> str:
     max_safe = hard_max_safety in ACTIONABLE_HARD_MAX_SAFETY
     bid_actionable = bid_status in ACTIONABLE_BID_STATUSES
 
-    thin_comps = (
-        policy_input.comps_count is not None
-        and policy_input.comps_count < MIN_COMPS_FOR_BUY
-    )
+    # Comps are informational only; they do not gate BUY decisions.
+    # The bid cap (from resale value + downside buffer) protects profit regardless of comps.
+    # Comps indicate what the auction might finish at (confidence), not whether to bid.
     if (
         verdict in BUYABLE_VERDICTS
         and current_viable
         and expected_viable
         and max_safe
         and bid_actionable
-        and not thin_comps
     ):
         return ACTION_BUY
     return ACTION_WATCH

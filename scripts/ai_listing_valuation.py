@@ -1911,6 +1911,16 @@ def run_curve_listing_analysis(
         recommended_max_bid_val = float(adjusted_bid)
     if repair_assessment.hard_avoid:
         recommended_max_bid_val = 0.0
+
+    # Warn when comps data is missing or bid exceeds historical auction prices
+    comps_median_val_float = _parse_currency(comps_median)
+    if comps_count is None or comps_count == 0:
+        if "NO_COMPS" not in risk_flags:
+            risk_flags.append("NO_COMPS")
+    elif comps_median_val_float is not None and recommended_max_bid_val is not None:
+        if recommended_max_bid_val > comps_median_val_float * 1.05:  # 5% tolerance for rounding
+            if "BIDS_ABOVE_COMPS" not in risk_flags:
+                risk_flags.append("BIDS_ABOVE_COMPS")
     repair_cost_val = float(repair_assessment.total_cost or 0.0)
     economic_max_bid_val = recommended_max_bid_val
     economic_cost_basis = economic_max_bid_val
