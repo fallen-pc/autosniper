@@ -98,3 +98,24 @@ holden_cruze_cd_petrol_auto_sedan_jh-series-ii,holden,cruze,sedan,petrol,auto,cd
 hyundai_elantra_active_petrol_auto_sedan_md3,hyundai,elantra,sedan,petrol,auto,active,md3,active,sedan|saloon,manual|diesel|hybrid|hatch|wagon|elite|premium|se|trophy|sr|turbo|sport|go|ad|md2|md
 hyundai_elantra_active_petrol_auto_sedan_ad,hyundai,elantra,sedan,petrol,auto,active,ad,active,sedan|saloon,manual|diesel|hybrid|hatch|wagon|elite|premium|se|trophy|sr|turbo|sport|go|md|md2|md3
 ford_focus_trend_petrol_auto_hatch_lz,ford,focus,hatch,petrol,auto,trend,lz,trend,hatch|hatchback,manual|diesel|hybrid|sedan|wagon|suv|convertible|sport|titanium|ambiente|st|xr5|lw|lv|ls
+toyota_aurion_at-x_petrol_auto_sedan_gsv50r,toyota,aurion,sedan,petrol,auto,at-x,gsv50r,at-x|atx,sedan|saloon,manual|hybrid|lpg|gas|touring|sportivo|sx6|zr6|prodigy|presara|gsv40r|wagon|hatch|suv
+kia_cerato_s_petrol_auto_sedan_bd,kia,cerato,sedan,petrol,auto,s,bd,s,sedan|saloon,manual|diesel|hybrid|hatch|coupe|koup|sport|sport+|sport plus|s premium|premium|si|sli|gt|yd|td|ld
+holden_cruze_equipe_petrol_auto_sedan_jh-series-ii,holden,cruze,sedan,petrol,auto,equipe,jh series ii,equipe,sedan|saloon,manual|diesel|hybrid|hatch|wagon|sri|sri-v|sri v|z-series|z series|cdx|cd |jg|premium
+ford_focus_trend_petrol_auto_hatch_lw-mkii,ford,focus,hatch,petrol,auto,trend,lw,trend,hatch|hatchback,manual|diesel|hybrid|sedan|wagon|suv|convertible|sport|titanium|ambiente|st|xr5|lz|lv|ls
+toyota_aurion_prodigy_petrol_auto_sedan_gsv40r,toyota,aurion,sedan,petrol,auto,prodigy,gsv40r,prodigy,sedan|saloon,manual|hybrid|lpg|gas|at-x|atx|touring|sportivo|sx6|zr6|presara|gsv50r|wagon|hatch|suv
+hyundai_i30_sx_petrol_auto_hatch_fd,hyundai,i30,hatch,petrol,auto,sx,fd,sx,hatch|hatchback,manual|diesel|hybrid|sedan|tourer|wagon|active|elite|premium|trophy|se|sr|sr premium|n line|n-line|gd|pd
+kia_cerato_sport_petrol_auto_sedan_bd,kia,cerato,sedan,petrol,auto,sport,bd,sport,sedan|saloon,manual|diesel|hybrid|hatch|coupe|koup|s premium|premium|si|sli|gt|yd|td|ld
+hyundai_elantra_elite_petrol_auto_sedan_ad,hyundai,elantra,sedan,petrol,auto,elite,ad,elite,sedan|saloon,manual|diesel|hybrid|hatch|wagon|active|premium|se|trophy|sr|turbo|sport|go|md|md2|md3
+ford_focus_sport_petrol_auto_hatch_lw-mkii,ford,focus,hatch,petrol,auto,sport,lw,sport,hatch|hatchback,manual|diesel|hybrid|sedan|wagon|suv|convertible|trend|titanium|ambiente|st|xr5|lz|lv|ls
+holden_barina_cd_petrol_auto_sedan_tm,holden,barina,sedan,petrol,auto,cd,tm,cd,sedan|saloon,manual|diesel|hybrid|hatch|wagon|cdx|rs|spark|tk
+holden_calais_v_petrol_auto_sedan_ve,holden,calais,sedan,petrol,auto,v,ve,v ve|calais v ve,sedan|saloon,manual|diesel|hybrid|lpg|gas|wagon|sportwagon|ute|utility|vf|vz|vy|vx|vt|series ii|redline|international|v8|supercharged
+holden_calais_v_petrol_auto_sedan_ve-series-ii,holden,calais,sedan,petrol,auto,v,ve series ii,v ve series ii|calais v ve series ii,sedan|saloon,manual|diesel|hybrid|lpg|gas|wagon|sportwagon|ute|utility|vf|vz|vy|vx|vt|redline|international|v8|supercharged
+toyota_corolla_ascent-sport_petrol_auto_hatch_zre152r,toyota,corolla,hatch,petrol,auto,ascent sport,zre152r,ascent sport|ascent-sport,hatch|hatchback,manual|hybrid|sedan|conquest|sx|zr|levin|gr|zre172r|zre182r|mzea12r|zwe
+hyundai_i30_trophy_petrol_auto_hatch_gd2,hyundai,i30,hatch,petrol,auto,trophy,gd2,trophy,hatch|hatchback,manual|diesel|hybrid|sedan|tourer|wagon|active|elite|premium|sx|se|sr|n line|n-line|fd|pd
+kia_cerato_gt_petrol_auto_sedan_bd,kia,cerato,sedan,petrol,auto,gt,bd,gt,sedan|saloon,manual|diesel|hybrid|hatch|coupe|koup|s|sport|sport+|sport plus|s premium|premium|si|sli|yd|td|ld
+holden_commodore_sv6_petrol_auto_wagon_ve-series-ii,holden,commodore,wagon,petrol,auto,sv6,ve series ii,sv6,wagon|sportwagon,manual|diesel|hybrid|sedan|saloon|ute|utility|omega|ss|redline|storm|hsv|calais|berlina|evoke|international|lumina|executive|rs|v8|lpg|gas|dual fuel|vf|vz|vy|vx|vt
+nissan_xtrail_st_petrol_auto_suv_t32,nissan,xtrail,suv,petrol,auto,st,t32,st,suv|wagon,manual|diesel|hybrid|st-l|stl|ti|ti-l|ts|tl|n-trek|t30|t31
+isuzu_mux_lsu_diesel_auto_suv_mux-gen2,isuzu,mux,suv,diesel,auto,ls-u,mux,ls-u|lsu,suv|wagon,petrol|manual|ls-m|lsm|ls-t|lst
+isuzu_mux_lst_diesel_auto_suv_mux-gen2,isuzu,mux,suv,diesel,auto,ls-t,mux,ls-t|lst,suv|wagon,petrol|manual|ls-m|lsm|ls-u|lsu
+toyota_kluger_grande_petrol_auto_suv_gsu40r,toyota,kluger,suv,petrol,auto,grande,gsu40r,grande,suv|wagon,manual|diesel|hybrid|kx-r|kxr|kx-s|kxs|altitude|gx|gxl|cv|cvx|mcu28r|gsu45r|gsu50r|gsu55r
+mazda_cx5_grand-touring_petrol_auto_wagon_ke,mazda,cx5,wagon,petrol,auto,grand touring,ke,grand touring,wagon|suv,manual|diesel|maxx|akera

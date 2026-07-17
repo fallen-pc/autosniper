@@ -88,12 +88,12 @@ The curve-candidate scripts are part of the production operator workflow rather 
 
 ```powershell
 python scripts/generate_curve_candidates.py
-python scripts/process_curve_candidates.py --help
 ```
 
 - `generate_curve_candidates.py` ranks sold-data tags into `CSV_data/quality/curve_candidates.csv`.
-- `process_curve_candidates.py` validates AI curve proposals, updates `CSV_data/restricted/curves.csv`,
-  and seeds downstream Autotrader scrape URLs/queue files under `CSV_data/quality/`.
+- Curve prices are edited in Curve Builder V2 only, using Carsales/Apify or manual Carsales evidence.
+- `process_curve_candidates.py` is a legacy AI curve writer and is disabled for curve pricing.
+- Autotrader scrape URLs/queue files under `CSV_data/quality/` are follow-up comparison evidence, not curve-pricing input.
 - Any committed `curves.csv` change should be followed by `python scripts/governance_checks.py check`
   and a fresh `snapshot-curves` entry.
 

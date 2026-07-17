@@ -9,6 +9,7 @@ Use this checklist when adding a new vehicle family, trim, series, fuel, body, o
 - `CSV_data/restricted/curves.csv` stores the saved retail resale curve values. This is the valuation data source.
 - `config/supported_curve_universe_v1.csv` is the approved/selectable V2 base-curve registry used by Curve Builder V2 and curve-contract tests. Despite the `v1` filename, it is not the old valuation path.
 - `CSV_data/restricted/versions/curves_manifest.csv` and `CSV_data/restricted/versions/curves_<version>.csv` version governed curve changes.
+- Curve Builder V2 is the only supported curve-pricing pipeline. Autotrader evidence is comparison/follow-up only and must not fit or overwrite retail resale curve prices.
 
 ## Preflight
 
@@ -16,6 +17,7 @@ Use this checklist when adding a new vehicle family, trim, series, fuel, body, o
 2. Identify the narrow lane: make, model, trim, series/platform, body, fuel, and transmission.
 3. Check that materially different trims, engines, drivetrains, generations, WOVR/repairable rows, and body styles are excluded.
 4. Confirm the retail evidence source. Private Carsales/Apify evidence should set retail curve prices; Grays sold history is buy-side spread and priority evidence, not retail repricing evidence.
+5. Confirm Autotrader evidence, if present, is being used only to check the lane and queue follow-up scrapes, not to price the curve.
 
 ## Implementation Checklist
 

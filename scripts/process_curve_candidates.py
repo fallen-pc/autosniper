@@ -1,4 +1,10 @@
-"""Process ranked curve candidates with AI and enqueue Autotrader scrapes."""
+"""Legacy ranked-curve processor.
+
+Curve pricing is now intentionally centralized in Curve Builder V2, where
+Carsales/manual evidence is the pricing source. This module still exposes
+Autotrader queue/scrape helpers used by the operator pages, but its CLI no
+longer writes curve rows.
+"""
 
 from __future__ import annotations
 
@@ -41,6 +47,10 @@ LEGACY_AUTOTRADER_SOURCE = Path("autotrader_isolated/output/first_page_results_t
 DEFAULT_AUTOTRADER_STATE = Path("autotrader_isolated/output/listing_state.csv")
 DEFAULT_AUTOTRADER_URLS_PATH = Path("autotrader_isolated/output/curve_seed_urls.txt")
 DEFAULT_AUTOTRADER_OUTPUT = Path("autotrader_isolated/output/first_page_results_tagged.csv")
+LEGACY_AI_CURVE_BUILD_DISABLED_MESSAGE = (
+    "Legacy AI curve building is disabled. Use Curve Builder V2 for Carsales/manual "
+    "evidence-backed curve edits; Autotrader remains comparison/scrape follow-up only."
+)
 DEFAULT_SOLD_PATH = dataset_path("sold_cars.csv")
 REQUIRED_KM_BUCKETS = [30000, 60000, 100000, 150000, 200000]
 INACTIVE_AUTOTRADER_STATUSES = {"sold", "expired", "removed"}
@@ -868,8 +878,7 @@ def run_autotrader_scrape(
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
-            "Process ready curve candidates with OpenAI, write validated curves.csv rows, "
-            "and enqueue matching Autotrader scrapes."
+            "Legacy AI curve writer. Disabled by policy; use Curve Builder V2 for curve pricing."
         )
     )
     parser.add_argument("--queue", type=Path, default=DEFAULT_QUEUE_PATH, help="Path to curve_candidates.csv")
@@ -987,6 +996,8 @@ def main() -> None:
     if work_df.empty:
         print("No buildable curve candidates selected.")
         return
+
+    raise SystemExit(LEGACY_AI_CURVE_BUILD_DISABLED_MESSAGE)
 
     sold_tagged_df, _stats = load_tagged_sold_data(args.sold)
     autotrader_df = load_autotrader_market(args.autotrader_source)

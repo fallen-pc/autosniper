@@ -1,12 +1,17 @@
 from __future__ import annotations
 
+import sys
+
 import pandas as pd
+import pytest
 
 from scripts.process_curve_candidates import (
+    LEGACY_AI_CURVE_BUILD_DISABLED_MESSAGE,
     REQUIRED_KM_BUCKETS,
     build_autotrader_seed_url,
     derive_anchor_years,
     load_autotrader_market,
+    main,
     update_autotrader_queue_status,
     validate_curve_response,
 )
@@ -43,6 +48,28 @@ def test_derive_anchor_years_spreads_new_curve_years():
 def test_build_autotrader_seed_url_uses_make_and_model():
     url = build_autotrader_seed_url("toyota_corolla_ascent_petrol_auto_sedan_zre172r", state="vic", city="melbourne")
     assert url == "https://www.autotrader.com.au/for-sale/used/toyota/corolla/vic/melbourne"
+
+
+def test_legacy_ai_curve_build_cli_is_disabled(tmp_path, monkeypatch):
+    queue_path = tmp_path / "curve_candidates.csv"
+    pd.DataFrame(
+        [
+            {
+                "curve_tag": "toyota_corolla_ascent_petrol_auto_hatch_zre152r",
+                "recommended_action": "build_curve",
+                "ready_for_curve": True,
+                "year_min": 2009,
+                "year_max": 2013,
+            }
+        ]
+    ).to_csv(queue_path, index=False)
+
+    monkeypatch.setattr(sys, "argv", ["process_curve_candidates.py", "--queue", str(queue_path)])
+
+    with pytest.raises(SystemExit) as excinfo:
+        main()
+
+    assert LEGACY_AI_CURVE_BUILD_DISABLED_MESSAGE in str(excinfo.value)
 
 
 def test_validate_curve_response_accepts_valid_curve():

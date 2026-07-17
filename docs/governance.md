@@ -16,7 +16,9 @@ python scripts/readiness_smoke.py
 
 ## Curve Versioning
 - `shared.curves.save_curves()` now snapshots `CSV_data/restricted/curves.csv` into `CSV_data/restricted/versions/`.
-- `scripts/generate_curve_candidates.py` and `scripts/process_curve_candidates.py` are the supported operator path for new/refresh curves.
+- Curve Builder V2 is the supported operator path for new/refresh curve pricing, using Carsales/Apify or manual Carsales evidence.
+- `scripts/generate_curve_candidates.py` may still be used to prioritize lanes for review, but it does not set retail curve prices.
+- `scripts/process_curve_candidates.py` is a disabled legacy AI curve writer; Autotrader remains comparison/scrape follow-up only.
 - Every committed `curves.csv` change must include:
   - `CSV_data/restricted/versions/curves_<version>.csv`
   - `CSV_data/restricted/versions/curves_manifest.csv`

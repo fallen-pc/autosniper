@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-07-18
+- Added the July staged Carsales curve batches: twenty-one narrow private-market lanes across Toyota Aurion/Corolla/Kluger, Kia Cerato, Holden Cruze/Barina/Calais/Commodore, Ford Focus, Hyundai i30/Elantra, Nissan X-Trail, Isuzu MU-X, and Mazda CX-5, with governed curve snapshots through `curves_20260717T064125Z.csv`.
+- Consolidated curve pricing onto Curve Builder V2 only. Legacy AI curve writing in `scripts/process_curve_candidates.py` is disabled, and Curve Pipeline now handles candidate queue refresh plus Autotrader follow-up only. Autotrader remains comparison evidence, not a curve-pricing input.
+
 ## 2026-07-01
 - Added thirteen narrow Toyota Kluger, Mitsubishi Outlander, Nissan X-Trail, and Subaru Forester retail curve lanes from private Carsales/Apify evidence, with allowed-variant gates, V2 group mappings, supported-universe rows, and a governed curve snapshot.
 

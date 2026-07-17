@@ -48,3 +48,7 @@ version_id,created_at,source,curve_path,snapshot_path,row_count,canonical_tag_co
 20260703T182049Z,2026-07-03T18:20:49+00:00,manual,CSV_data/restricted/curves.csv,CSV_data/restricted/versions/curves_20260703T182049Z.csv,1743,89,1d683d09848f5a4610c26c96d3cb559c0d56f1200fe4ac7e7fb6294c8d35839e,
 20260711T153232Z,2026-07-11T15:32:32+00:00,manual,CSV_data/restricted/curves.csv,CSV_data/restricted/versions/curves_20260711T153232Z.csv,1820,93,488260345c5ef31be93273ba3229edff50b860b739dc048c886bf2e0c4aff644,
 20260712T193510Z,2026-07-12T19:35:10+00:00,manual,CSV_data/restricted/curves.csv,CSV_data/restricted/versions/curves_20260712T193510Z.csv,1830,94,0597e395d14e34d97e12c02b81a2bc0b35ed4de5eed054bb6d331d65e9dcb320,
+20260716T043303Z,2026-07-16T04:33:03+00:00,manual,CSV_data/restricted/curves.csv,CSV_data/restricted/versions/curves_20260716T043303Z.csv,1920,100,2ea60ce0a1e4cc212b058b1f7ff9cd9bc24bfde77bc61e60052fe09ed91db977,
+20260716T121444Z,2026-07-16T12:14:44+00:00,manual,CSV_data/restricted/curves.csv,CSV_data/restricted/versions/curves_20260716T121444Z.csv,2010,106,cd48ed5d461047cd00abf946314173dd3d4563960c69b6387d636d6aae4b3471,
+20260717T030418Z,2026-07-17T03:04:18+00:00,manual,CSV_data/restricted/curves.csv,CSV_data/restricted/versions/curves_20260717T030418Z.csv,2065,110,d2c2dbe86d1da2f361b30e164c434a98166df1bc5a3cb3a5e6fc4e3cc59667f8,
+20260717T064125Z,2026-07-17T06:41:25+00:00,manual,CSV_data/restricted/curves.csv,CSV_data/restricted/versions/curves_20260717T064125Z.csv,2140,115,fdf8d668b42f930b6b4509e83e6643990cb53dbdddb8a31d585a24f8d5521695,
