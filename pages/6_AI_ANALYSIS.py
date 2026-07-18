@@ -1076,6 +1076,11 @@ def _score_autotrader_matches(
                 "rego": candidate.get("rego"),
                 "url": candidate.get("url"),
                 "price_value": candidate.get("price_value"),
+                "status": candidate.get("status"),
+                "first_seen": candidate.get("first_seen"),
+                "last_seen": candidate.get("last_seen"),
+                "last_price_date": candidate.get("last_price_date"),
+                "sold_date": candidate.get("sold_date"),
                 "match_score": total_score,
                 "match_quality": quality,
             }
@@ -1085,6 +1090,68 @@ def _score_autotrader_matches(
         return pd.DataFrame(), stats
     scored = pd.DataFrame(rows).sort_values(by=["match_score"], ascending=True)
     return scored.head(max(1, int(limit))).reset_index(drop=True), stats
+
+
+def _market_lifecycle_summary(matches: pd.DataFrame, curve_resale: object) -> dict[str, object]:
+    resale_value = parse_currency(curve_resale)
+    if matches.empty or resale_value is None or resale_value <= 0:
+        return {
+            "matched_count": 0,
+            "fast_clear_count": 0,
+            "stale_active_count": 0,
+            "near_curve_count": 0,
+        }
+
+    now_ts = pd.Timestamp.now(tz="UTC")
+    fast_clear_count = 0
+    stale_active_count = 0
+    near_curve_count = 0
+    observed_days: list[float] = []
+    near_prices: list[float] = []
+
+    for _, match in matches.iterrows():
+        price_value = parse_currency(match.get("price_value") or match.get("price"))
+        if price_value is None or price_value <= 0:
+            continue
+        near_curve = abs(price_value - resale_value) / resale_value <= 0.10
+        if not near_curve:
+            continue
+        near_curve_count += 1
+        near_prices.append(float(price_value))
+
+        first_seen = pd.to_datetime(match.get("first_seen"), errors="coerce", utc=True)
+        last_seen = pd.to_datetime(match.get("last_seen"), errors="coerce", utc=True)
+        sold_date = pd.to_datetime(match.get("sold_date"), errors="coerce", utc=True)
+        status = _safe_text(match.get("status"), fallback="").strip().lower()
+
+        end_seen = sold_date if pd.notna(sold_date) else last_seen
+        if pd.notna(first_seen) and pd.notna(end_seen):
+            days_listed = max(0.0, (end_seen - first_seen).total_seconds() / 86400.0)
+            observed_days.append(days_listed)
+            if status in {"sold", "removed", "expired"} and days_listed <= 5:
+                fast_clear_count += 1
+
+        if status in {"", "active"} and pd.notna(first_seen):
+            active_days = max(0.0, (now_ts - first_seen).total_seconds() / 86400.0)
+            observed_days.append(active_days)
+            if active_days >= 30:
+                stale_active_count += 1
+
+    median_days = None
+    if observed_days:
+        median_days = float(pd.Series(observed_days).median())
+    median_near_price = None
+    if near_prices:
+        median_near_price = float(pd.Series(near_prices).median())
+
+    return {
+        "matched_count": int(len(matches)),
+        "fast_clear_count": int(fast_clear_count),
+        "stale_active_count": int(stale_active_count),
+        "near_curve_count": int(near_curve_count),
+        "median_days_listed": median_days,
+        "median_near_curve_price": median_near_price,
+    }
 
 
 def _condition_summary_sections(row: pd.Series) -> tuple[list[dict[str, object]], str]:
@@ -1536,6 +1603,17 @@ def _render_autotrader_confirmation(row: pd.Series) -> None:
         f"{match_count} | Median of matches: {_format_currency_value(median_price)} | "
         f"Delta vs curve: {diff_text} | Confidence: {confidence_signal}"
     )
+    lifecycle = _market_lifecycle_summary(matches, resale_value)
+    if lifecycle.get("near_curve_count"):
+        median_days = lifecycle.get("median_days_listed")
+        median_days_text = f"{float(median_days):.1f}" if median_days is not None else "N/A"
+        st.caption(
+            "Lifecycle signal: "
+            f"{lifecycle.get('near_curve_count', 0)} near-curve match(es), "
+            f"{lifecycle.get('fast_clear_count', 0)} cleared within 5 days, "
+            f"{lifecycle.get('stale_active_count', 0)} active for 30+ days, "
+            f"median days listed {median_days_text}."
+        )
 
     display_cols = [
         "year",
@@ -1545,6 +1623,9 @@ def _render_autotrader_confirmation(row: pd.Series) -> None:
         "price",
         "odometer",
         "location",
+        "first_seen",
+        "last_seen",
+        "sold_date",
         "match_quality",
     ]
     table_df = matches[[col for col in display_cols if col in matches.columns]].copy()
@@ -2346,6 +2427,30 @@ def load_autotrader_data(raw_mtime: float | None = None) -> pd.DataFrame:
     if AUTOTRADER_RECENT_MARKET.exists():
         live_df = pd.read_csv(AUTOTRADER_RECENT_MARKET)
         live_df["source"] = live_df.get("source", "autotrader_recent_market")
+        if AUTOTRADER_STATE.exists() and "url" in live_df.columns:
+            state_df = pd.read_csv(AUTOTRADER_STATE)
+            lifecycle_cols = [
+                "url",
+                "status",
+                "first_seen",
+                "last_seen",
+                "last_price_date",
+                "sold_date",
+            ]
+            state_cols = [col for col in lifecycle_cols if col in state_df.columns]
+            if "url" in state_cols:
+                live_df = live_df.merge(
+                    state_df[state_cols].drop_duplicates("url", keep="last"),
+                    on="url",
+                    how="left",
+                    suffixes=("", "_state"),
+                )
+                if "status_state" in live_df.columns:
+                    if "status" not in live_df.columns:
+                        live_df["status"] = ""
+                    live_status = live_df["status"].fillna("").astype(str).str.strip()
+                    live_df["status"] = live_df["status"].where(live_status.ne(""), live_df["status_state"])
+                    live_df.drop(columns=["status_state"], inplace=True)
     elif AUTOTRADER_OUTPUT.exists():
         live_df = pd.read_csv(tagged_path if use_tagged else AUTOTRADER_OUTPUT)
 
@@ -3406,12 +3511,14 @@ for _, row in filtered.iterrows():
 
     autotrader_median = None
     listings_cluster_ok = False
+    market_lifecycle = None
     curve_tag = _curve_key_for_row(row)
-    at_matches, _ = _score_autotrader_matches(row, curve_tag)
+    at_matches, _ = _score_autotrader_matches(row, curve_tag, limit=50)
     if not at_matches.empty and "price_value" in at_matches.columns:
         price_series = at_matches["price_value"].dropna()
         if not price_series.empty:
             autotrader_median = float(price_series.median())
+    market_lifecycle = _market_lifecycle_summary(at_matches, adjusted_estimate)
     listings_cluster_ok = len(at_matches) >= 3
 
     if adjusted_estimate is None:
@@ -3455,6 +3562,7 @@ for _, row in filtered.iterrows():
         autotrader_median=autotrader_median,
         carsales_estimate=adjusted_estimate,
         listings_cluster_ok=listings_cluster_ok,
+        market_lifecycle=market_lifecycle,
         reauction_context=reauction_context_for_listing(row, sold_df),
         force_refresh=force_refresh_row,
     )

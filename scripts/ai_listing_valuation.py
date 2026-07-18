@@ -203,6 +203,15 @@ STANDARD_UNCERTAINTY_BUFFER = 800
 TOP_BUY_UNCERTAINTY_BUFFER = 400
 WORST_CASE_DOWNSIDE = 0.17  # 17% downside band used for worst-case resale
 NO_EDGE_MESSAGE = "No edge left at current bid — do not bid above {amount}."
+AUTOTRADER_CURVE_WARNING_THRESHOLD = 0.10
+AUTOTRADER_CURVE_WARNING_FLAG = "AUTOTRADER_CURVE_MISMATCH"
+FAST_MARKET_CLEAR_DAYS = 5
+STALE_MARKET_DAYS = 30
+FAST_MARKET_CLEAR_MIN_COUNT = 2
+STALE_MARKET_MIN_COUNT = 3
+FAST_MARKET_CLEAR_CONFIDENCE_BOOST = 0.08
+STALE_MARKET_CONFIDENCE_PENALTY = 0.08
+STALE_MARKET_FLAG = "STALE_RETAIL_MARKET"
 
 
 def _round_to_10(value: Optional[float]) -> Optional[float]:
@@ -368,6 +377,7 @@ def _valuation_input_hash(
     autotrader_median: float | None,
     carsales_estimate: float | None,
     listings_cluster_ok: bool | None,
+    market_lifecycle: Mapping[str, Any] | None = None,
     reauction_context: Mapping[str, Any] | None = None,
 ) -> str:
     payload = {
@@ -383,6 +393,10 @@ def _valuation_input_hash(
         "autotrader_median": _hashable_value(autotrader_median),
         "carsales_estimate": _hashable_value(carsales_estimate),
         "listings_cluster_ok": _hashable_value(listings_cluster_ok),
+        "market_lifecycle": {
+            key: _hashable_value(value)
+            for key, value in (market_lifecycle or {}).items()
+        },
         "reauction_context": {
             key: _hashable_value(value)
             for key, value in (reauction_context or {}).items()
@@ -877,6 +891,45 @@ def _profit_margin_percent_value(
     if profit_value is None or resale_value is None or resale_value <= 0:
         return None
     return (profit_value / resale_value) * 100.0
+
+
+def _market_curve_delta(market_median: Any, curve_estimate: Any) -> Optional[float]:
+    market_value = _parse_currency(market_median)
+    curve_value = _parse_currency(curve_estimate)
+    if market_value is None or curve_value is None or curve_value <= 0:
+        return None
+    return (market_value - curve_value) / curve_value
+
+
+def _apply_market_lifecycle_confidence(
+    confidence: float,
+    risk_flags: list[str],
+    notes: list[str],
+    market_lifecycle: Mapping[str, Any] | None,
+) -> tuple[float, list[str], list[str]]:
+    if not market_lifecycle:
+        return confidence, risk_flags, notes
+
+    fast_clears = _parse_int(market_lifecycle.get("fast_clear_count")) or 0
+    stale_active = _parse_int(market_lifecycle.get("stale_active_count")) or 0
+
+    if fast_clears >= FAST_MARKET_CLEAR_MIN_COUNT:
+        confidence += FAST_MARKET_CLEAR_CONFIDENCE_BOOST
+        notes.append(
+            "Retail liquidity signal: "
+            f"{fast_clears} matched listing(s) disappeared within {FAST_MARKET_CLEAR_DAYS} days near the curve price."
+        )
+
+    if stale_active >= STALE_MARKET_MIN_COUNT:
+        confidence -= STALE_MARKET_CONFIDENCE_PENALTY
+        if STALE_MARKET_FLAG not in risk_flags:
+            risk_flags.append(STALE_MARKET_FLAG)
+        notes.append(
+            "Retail liquidity warning: "
+            f"{stale_active} matched active listing(s) have sat for {STALE_MARKET_DAYS}+ days near the curve price."
+        )
+
+    return max(CONFIDENCE_MIN, min(CONFIDENCE_MAX, confidence)), risk_flags, notes
 
 
 def _parse_int(value: Any) -> Optional[int]:
@@ -1645,6 +1698,7 @@ def run_curve_listing_analysis(
     autotrader_median: float | None = None,
     carsales_estimate: float | None = None,
     listings_cluster_ok: bool | None = None,
+    market_lifecycle: Mapping[str, Any] | None = None,
     reauction_context: Mapping[str, Any] | None = None,
     force_refresh: bool = False,
 ) -> Dict[str, Any]:
@@ -1660,6 +1714,7 @@ def run_curve_listing_analysis(
         autotrader_median=autotrader_median,
         carsales_estimate=carsales_estimate,
         listings_cluster_ok=listings_cluster_ok,
+        market_lifecycle=market_lifecycle,
         reauction_context=reauction_context,
     )
 
@@ -1824,6 +1879,12 @@ def run_curve_listing_analysis(
     downside_pct, confidence_val, risk_flags, notes = apply_platform_risk_adjustments(
         listing_data, downside_pct, confidence_val, risk_flags, notes
     )
+    confidence_val, risk_flags, notes = _apply_market_lifecycle_confidence(
+        confidence_val,
+        risk_flags,
+        notes,
+        market_lifecycle,
+    )
     confidence_val = max(CONFIDENCE_MIN, min(CONFIDENCE_MAX, confidence_val))
 
     resale_low_val = resale_mid * (1.0 - downside_pct)
@@ -1921,6 +1982,18 @@ def run_curve_listing_analysis(
         if recommended_max_bid_val > comps_median_val_float * 1.05:  # 5% tolerance for rounding
             if "BIDS_ABOVE_COMPS" not in risk_flags:
                 risk_flags.append("BIDS_ABOVE_COMPS")
+    autotrader_curve_delta = _market_curve_delta(
+        autotrader_median,
+        carsales_estimate if carsales_estimate is not None else resale_mid_val,
+    )
+    if autotrader_curve_delta is not None and abs(autotrader_curve_delta) > AUTOTRADER_CURVE_WARNING_THRESHOLD:
+        if AUTOTRADER_CURVE_WARNING_FLAG not in risk_flags:
+            risk_flags.append(AUTOTRADER_CURVE_WARNING_FLAG)
+        direction = "above" if autotrader_curve_delta > 0 else "below"
+        notes.append(
+            "Autotrader confirmation warning: median scraped listing price is "
+            f"{abs(autotrader_curve_delta):.1%} {direction} the Carsales curve resale estimate."
+        )
     repair_cost_val = float(repair_assessment.total_cost or 0.0)
     economic_max_bid_val = recommended_max_bid_val
     economic_cost_basis = economic_max_bid_val

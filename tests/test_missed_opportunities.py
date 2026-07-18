@@ -231,7 +231,7 @@ def test_missed_decision_metrics_uses_shared_buy_policy(monkeypatch) -> None:
     assert result["action_label"] == "Buy"
 
 
-def test_missed_decision_metrics_uses_shared_thin_comps_watch_policy(monkeypatch) -> None:
+def test_missed_decision_metrics_keeps_thin_comps_informational(monkeypatch) -> None:
     row = pd.Series(
         {
             "url": "test://missed-thin-comps",
@@ -261,7 +261,7 @@ def test_missed_decision_metrics_uses_shared_thin_comps_watch_policy(monkeypatch
     assert result["computed_verdict"] == "Strong Flip"
     assert result["bid_status"] == "Cheap"
     assert result["hard_max_safety"] == "Strong"
-    assert result["action_label"] == "Watch"
+    assert result["action_label"] == "Buy"
 
 
 def test_missed_decision_metrics_uses_shared_over_max_avoid_policy(monkeypatch) -> None:

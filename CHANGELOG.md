@@ -1,6 +1,7 @@
 # Changelog
 
 ## 2026-07-18
+- Added Autotrader lifecycle confidence signals to AI Analysis: matched listings now retain first/last seen and sold/removed status, fast near-curve removals boost confidence, stale near-curve active listings warn, and Autotrader-vs-Carsales curve mismatches surface as non-blocking risk flags.
 - Removed the hidden legacy Curve Builder page and stripped the old AI/OpenAI/Ollama curve writer internals from `scripts/process_curve_candidates.py`; Curve Builder V2 is now the only save-capable curve-building surface.
 - Added the July staged Carsales curve batches: twenty-one narrow private-market lanes across Toyota Aurion/Corolla/Kluger, Kia Cerato, Holden Cruze/Barina/Calais/Commodore, Ford Focus, Hyundai i30/Elantra, Nissan X-Trail, Isuzu MU-X, and Mazda CX-5, with governed curve snapshots through `curves_20260717T064125Z.csv`.
 - Consolidated curve pricing onto Curve Builder V2 only. Legacy AI curve writing in `scripts/process_curve_candidates.py` is disabled, and Curve Pipeline now handles candidate queue refresh plus Autotrader follow-up only. Autotrader remains comparison evidence, not a curve-pricing input.

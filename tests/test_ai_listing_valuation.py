@@ -404,6 +404,129 @@ def test_curve_analysis_subtracts_repair_cost_from_displayed_profit(monkeypatch)
     assert net_profit_mid == round(expected_profit_without_repair - 1000)
 
 
+def test_curve_analysis_warns_when_autotrader_median_misses_curve_threshold(monkeypatch) -> None:
+    repair_assessment = RepairAssessment(
+        hard_avoid=False,
+        pills=[],
+        cosmetic_panels=0,
+        glass_cost=0,
+        replacement_cost=0,
+        risk_buffer=0,
+        base_cost=0,
+        severity_level="none",
+        severity_multiplier=1.0,
+        total_cost=0,
+        reasons=[],
+    )
+    listing = pd.Series(
+        {
+            "url": "test://autotrader-mismatch",
+            "price": "$5,000",
+            "make": "Toyota",
+            "model": "Corolla",
+            "variant": "Ascent",
+            "body_type": "Hatch",
+            "transmission": "Auto",
+            "fuel_type": "Petrol",
+            "location": "Melbourne VIC",
+            "rego_state": "VIC",
+            "general_condition": "",
+        }
+    )
+
+    monkeypatch.setattr(ai_listing_valuation, "load_cached_results", lambda: pd.DataFrame(columns=ai_listing_valuation.REQUIRED_COLUMNS))
+    monkeypatch.setattr(ai_listing_valuation, "_save_result_row", lambda row: None)
+    monkeypatch.setattr(ai_listing_valuation, "assess_repairs", lambda condition, **_kwargs: repair_assessment)
+
+    result = ai_listing_valuation.run_curve_listing_analysis(
+        listing,
+        resale_mid=20_000,
+        comps_count=5,
+        analysis_context="active",
+        autotrader_median=23_000,
+        carsales_estimate=20_000,
+        listings_cluster_ok=True,
+        force_refresh=True,
+    )
+
+    assert ai_listing_valuation.AUTOTRADER_CURVE_WARNING_FLAG in result["risk_flags"]
+    assert "Autotrader confirmation warning" in str(result["confidence_notes"])
+
+
+def test_curve_analysis_keeps_autotrader_alignment_warning_quiet_within_threshold(monkeypatch) -> None:
+    repair_assessment = RepairAssessment(
+        hard_avoid=False,
+        pills=[],
+        cosmetic_panels=0,
+        glass_cost=0,
+        replacement_cost=0,
+        risk_buffer=0,
+        base_cost=0,
+        severity_level="none",
+        severity_multiplier=1.0,
+        total_cost=0,
+        reasons=[],
+    )
+    listing = pd.Series(
+        {
+            "url": "test://autotrader-aligned",
+            "price": "$5,000",
+            "make": "Toyota",
+            "model": "Corolla",
+            "variant": "Ascent",
+            "body_type": "Hatch",
+            "transmission": "Auto",
+            "fuel_type": "Petrol",
+            "location": "Melbourne VIC",
+            "rego_state": "VIC",
+            "general_condition": "",
+        }
+    )
+
+    monkeypatch.setattr(ai_listing_valuation, "load_cached_results", lambda: pd.DataFrame(columns=ai_listing_valuation.REQUIRED_COLUMNS))
+    monkeypatch.setattr(ai_listing_valuation, "_save_result_row", lambda row: None)
+    monkeypatch.setattr(ai_listing_valuation, "assess_repairs", lambda condition, **_kwargs: repair_assessment)
+
+    result = ai_listing_valuation.run_curve_listing_analysis(
+        listing,
+        resale_mid=20_000,
+        comps_count=5,
+        analysis_context="active",
+        autotrader_median=21_500,
+        carsales_estimate=20_000,
+        listings_cluster_ok=True,
+        force_refresh=True,
+    )
+
+    assert ai_listing_valuation.AUTOTRADER_CURVE_WARNING_FLAG not in result["risk_flags"]
+
+
+def test_market_lifecycle_fast_clear_boosts_confidence() -> None:
+    confidence, risk_flags, notes = ai_listing_valuation._apply_market_lifecycle_confidence(
+        0.70,
+        [],
+        [],
+        {"fast_clear_count": 2, "stale_active_count": 0},
+    )
+
+    assert round(confidence, 2) == 0.78
+    assert risk_flags == []
+    assert "disappeared within 5 days" in notes[0]
+
+
+def test_market_lifecycle_stale_active_warns_and_reduces_confidence() -> None:
+    confidence, risk_flags, notes = ai_listing_valuation._apply_market_lifecycle_confidence(
+        0.70,
+        [],
+        [],
+        {"fast_clear_count": 0, "stale_active_count": 3},
+    )
+
+    assert round(confidence, 2) == 0.62
+    assert ai_listing_valuation.STALE_MARKET_FLAG in risk_flags
+    assert "30+ days" in notes[0]
+
+
 def test_curve_analysis_keeps_moderate_repairs_as_marginal_not_avoid(monkeypatch) -> None:
     repair_assessment = RepairAssessment(
         hard_avoid=False,
