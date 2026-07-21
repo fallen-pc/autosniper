@@ -5,6 +5,7 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
+from shared.calibration import build_calibration_detail, load_calibration_inputs, summarize_calibration
 from shared.data_loader import dataset_path
 from shared.styling import display_banner, inject_global_styles, page_intro, section_heading
 
@@ -72,6 +73,18 @@ def numeric_series(frame: pd.DataFrame, column: str) -> pd.Series:
     if column not in frame.columns:
         return pd.Series(dtype="float64")
     return pd.to_numeric(frame[column], errors="coerce")
+
+
+@st.cache_data(ttl=300)
+def load_calibration(include_repairs: bool, limit: int | None) -> pd.DataFrame:
+    sold_df, group_map_df, curves_df = load_calibration_inputs()
+    return build_calibration_detail(
+        sold_df,
+        group_map_df,
+        curves_df,
+        include_repairs=include_repairs,
+        limit=limit,
+    )
 
 
 def render_status_badge(label: str, tone: str) -> None:
@@ -303,3 +316,114 @@ else:
         width="stretch",
         hide_index=True,
     )
+
+
+section_heading(
+    "Historical Valuation Calibration",
+    "Back-test the current auction-site proxy ceiling and profit rules against restricted sold outcomes.",
+)
+st.caption(
+    "This evidence is read-only. It shows what the current rules would have done historically and does not change bidding rules."
+)
+calibration_controls = st.columns(2)
+include_repairs = calibration_controls[0].checkbox("Include repair and risk costs", value=True)
+fast_sample = calibration_controls[1].checkbox(
+    "Fast 50-row sample",
+    value=True,
+    help="Keeps the proof page responsive. Turn this off when you specifically need the full historical calibration set.",
+)
+calibration_df = load_calibration(include_repairs, 50 if fast_sample else None)
+
+if calibration_df.empty:
+    st.warning("No calibration rows are available. Build restricted sold data and curves first.")
+else:
+    calibration_summary = summarize_calibration(calibration_df)
+    calibration_metrics = st.columns(5)
+    calibration_metrics[0].metric("Rows checked", format_int(calibration_summary.get("total_rows")))
+    calibration_metrics[1].metric("Curve covered", format_int(calibration_summary.get("covered_rows")))
+    calibration_metrics[2].metric(
+        "Profitable within proxy max",
+        format_int(calibration_summary.get("profitable_within_bid_rows")),
+    )
+    calibration_metrics[3].metric("Overbid risk", format_int(calibration_summary.get("overbid_risk_rows")))
+    calibration_metrics[4].metric(
+        "Priced-out winners",
+        format_int(calibration_summary.get("priced_out_profitable_rows")),
+    )
+
+    profit_metrics = st.columns(2)
+    profit_metrics[0].metric(
+        "Theoretical profit within proxy max",
+        format_money(calibration_summary.get("total_profitable_within_bid")),
+    )
+    profit_metrics[1].metric(
+        "Average profit within proxy max",
+        format_money(calibration_summary.get("avg_profit_within_bid")),
+    )
+
+    reason_options = sorted(calibration_df["calibration_reason"].dropna().astype(str).unique().tolist())
+    selected_reasons = st.multiselect("Calibration reason", reason_options, default=reason_options)
+    calibration_view = calibration_df[
+        calibration_df["calibration_reason"].isin(selected_reasons)
+    ].copy() if selected_reasons else calibration_df.copy()
+
+    reason_tab, priced_out_tab, risk_tab, rows_tab = st.tabs(
+        ["Reason Summary", "Priced-Out Winners", "Overbid Risk", "All Rows"]
+    )
+    with reason_tab:
+        reason_summary = (
+            calibration_view.groupby("calibration_reason", dropna=False)
+            .agg(
+                rows=("url", "count"),
+                average_profit=("projected_profit_at_sold", "mean"),
+                average_proxy_gap=("bid_gap", "mean"),
+            )
+            .reset_index()
+            .sort_values("rows", ascending=False)
+        )
+        st.dataframe(reason_summary, width="stretch", hide_index=True)
+
+    calibration_columns = [
+        "year", "make", "model", "variant", "sold_price", "max_bid", "bid_gap",
+        "projected_profit_at_sold", "repair_cost_estimate", "risk_buffer",
+        "calibration_reason", "url",
+    ]
+    calibration_columns = [column for column in calibration_columns if column in calibration_view.columns]
+    calibration_column_config = {
+        "max_bid": st.column_config.NumberColumn("Proxy max", format="$%.0f"),
+        "bid_gap": st.column_config.NumberColumn("Proxy-max gap", format="$%.0f"),
+        "url": st.column_config.LinkColumn("Listing", display_text="Open"),
+    }
+    with priced_out_tab:
+        priced_out_reasons = {"curve too conservative", "bid cap too conservative", "risk deduction too large"}
+        priced_out = calibration_view[calibration_view["calibration_reason"].isin(priced_out_reasons)]
+        st.dataframe(
+            priced_out[calibration_columns],
+            width="stretch",
+            hide_index=True,
+            column_config=calibration_column_config,
+        )
+    with risk_tab:
+        overbid_risk = calibration_view[calibration_view["calibration_reason"] == "overbid risk"]
+        if overbid_risk.empty:
+            st.success("No overbid-risk rows in the current filtered view.")
+        else:
+            st.dataframe(
+                overbid_risk[calibration_columns],
+                width="stretch",
+                hide_index=True,
+                column_config=calibration_column_config,
+            )
+    with rows_tab:
+        st.download_button(
+            "Download filtered calibration CSV",
+            data=calibration_view.to_csv(index=False).encode("utf-8"),
+            file_name="valuation_calibration_filtered.csv",
+            mime="text/csv",
+        )
+        st.dataframe(
+            calibration_view[calibration_columns],
+            width="stretch",
+            hide_index=True,
+            column_config=calibration_column_config,
+        )

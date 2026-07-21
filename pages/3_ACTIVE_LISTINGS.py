@@ -24,7 +24,7 @@ if os.name == "nt":
     asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
 
 
-st.set_page_config(page_title="ACTIVE LISTINGS DASHBOARD", layout="wide")
+st.set_page_config(page_title="Active Inventory", layout="wide")
 inject_global_styles()
 
 display_banner()
@@ -140,8 +140,8 @@ async def run_bid_update(links: list[str] | None = None, limit: int | None = Non
 
 
 refresh_all_clicked = hero_action_card(
-    "ACTIVE LISTINGS DASHBOARD",
-    "Track live auctions in a sortable grid, then refresh bid data before you strike.",
+    "ACTIVE INVENTORY",
+    "Operational listing feed for scraper coverage, status and bid-data checks. Use AI Analysis for daily buying decisions.",
     "Refresh every listing",
     button_key="refresh_all_listings",
 )

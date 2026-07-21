@@ -10,16 +10,18 @@ import re
 import pandas as pd
 import streamlit as st
 
-from shared.csv_utils import read_csv_stable
+from ops.active_monitor import load_ai_analysis_active_df
+from scripts.ai_listing_valuation import MIN_NET_PROFIT_ABSOLUTE
+from shared.decision_policy import action_display_parts
+from shared.csv_utils import count_csv_records, read_csv_stable
 from shared.curves import list_curve_tags, load_curves
 from shared.data_loader import dataset_path, ensure_datasets_available
 from shared.global_filters import apply_global_sidebar_filters, render_global_sidebar_filters
 from shared.styling import clean_html, display_banner, escape_html, inject_global_styles, page_intro, safe_url, section_heading
 from shared.valuation_display import (
-    active_profit_value,
+    build_ai_analysis_summary_rows,
     parse_currency_value,
     parse_percent_value,
-    rank_live_opportunities,
 )
 
 
@@ -28,7 +30,7 @@ render_global_sidebar_filters()
 inject_global_styles()
 display_banner()
 
-page_intro("DASHBOARD", "Monitor live stock, track state changes, and review coverage across the intake feeds.")
+page_intro("DASHBOARD", "Scan the current AI Analysis shortlist and monitor the supporting pipeline.")
 
 missing = ensure_datasets_available(["vehicle_static_details.csv"])
 if missing:
@@ -101,6 +103,19 @@ st.markdown(
             color: var(--autosniper-accent);
             font-size: 0.78rem;
             letter-spacing: 0.08em;
+        }
+        .top-auction-pill[data-action="Buy"] {
+            border: 1px solid rgba(44, 255, 154, 0.6);
+            background: rgba(44, 255, 154, 0.12);
+            color: var(--autosniper-success);
+        }
+        .top-auction-context {
+            margin-top: 0.65rem;
+            padding-top: 0.55rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--autosniper-muted);
+            font-size: 0.82rem;
+            line-height: 1.4;
         }
         .top-auction-metrics {
             display: grid;
@@ -277,17 +292,6 @@ def safe_read_csv(path: "os.PathLike[str] | str", parse_dates: list[str] | None 
         return pd.DataFrame()
 
 
-def count_csv_rows(path: Path) -> int | None:
-    if not path.exists():
-        return None
-    try:
-        with path.open("r", encoding="utf-8", errors="ignore") as handle:
-            row_count = sum(1 for _ in handle)
-        return max(row_count - 1, 0)
-    except OSError:
-        return None
-
-
 def format_currency_value(value: float | None, default: str = "N/A") -> str:
     if value is None:
         return default
@@ -395,7 +399,6 @@ if VALUATIONS_FILE.exists():
                 valuations_df["analysis_timestamp"], errors="coerce"
             )
         valuations_df = valuations_df.sort_values("analysis_timestamp").drop_duplicates("url", keep="last")
-        valuations_df["active_profit_value"] = valuations_df.apply(active_profit_value, axis=1)
         valuations_df["profit_margin_value"] = valuations_df["profit_margin_percent"].apply(parse_percent_value)
         valuations_df["score_value"] = pd.to_numeric(valuations_df.get("score_out_of_10"), errors="coerce")
 
@@ -443,38 +446,69 @@ referred_scope_df = apply_global_sidebar_filters(
     canonical_tag_column="canonical_tag",
     curve_tags=curve_tags,
 )
-section_heading(
-    "Live Opportunities",
-    "Top 5 profitable active vehicles ranked from current AI valuation outputs and live auction status.",
+ai_active_scope_df = load_ai_analysis_active_df()
+ai_summary_df = build_ai_analysis_summary_rows(
+    ai_active_scope_df,
+    valuations_df,
+    min_profit=MIN_NET_PROFIT_ABSOLUTE,
 )
-if valuations_df.empty or active_live_df.empty:
-    st.info("Need both active listings and AI valuations to rank live opportunities. Run the AI pricing analysis once.")
-else:
-    merged_top = rank_live_opportunities(active_scope_df, valuations_df)
-    top_rows = merged_top.head(5)
+ai_summary_df = apply_global_sidebar_filters(
+    ai_summary_df,
+    state_columns=("location_state", "rego_state", "location"),
+    vehicle_type_columns=("body_type", "body"),
+    margin_columns=("margin_value", "profit_margin_percent"),
+    canonical_tag_column="canonical_tag",
+    curve_tags=curve_tags,
+)
 
-    if top_rows.empty:
-        st.info("No active listings currently have a safe worst-case bidding edge.")
+section_heading(
+    "Active AI Analysis",
+    "A condensed view of every actionable or review listing currently shown by AI Analysis. AI Analysis remains the source of truth.",
+)
+if valuations_df.empty or ai_active_scope_df.empty:
+    st.info("No current AI Analysis active set is available. Refresh AI valuations to populate this section.")
+else:
+    if ai_summary_df.empty:
+        st.info("AI Analysis currently has no actionable or review listings with a proxy max bid.")
     else:
-        cards = st.columns(len(top_rows))
-        for idx, (row_index, row) in enumerate(top_rows.iterrows()):
-            with cards[idx]:
+        st.caption(
+            f"Showing {len(ai_summary_df):,} current AI Analysis listing(s) from "
+            f"{len(ai_active_scope_df):,} curve-covered active listing(s). Avoid rows are hidden, matching the AI Analysis default."
+        )
+        summary_rows = list(ai_summary_df.iterrows())
+        for row_offset in range(0, len(summary_rows), 2):
+            cards = st.columns(2, gap="large")
+            for card_index, (row_index, row) in enumerate(summary_rows[row_offset : row_offset + 2]):
+              with cards[card_index]:
                 year = int(row["year"]) if pd.notna(row.get("year")) else ""
                 title_parts = [str(part) for part in [year, row.get("make", ""), row.get("model", "")] if str(part).strip()]
                 title = " ".join(title_parts) or "Unnamed listing"
                 variant = str(row.get("variant", "") or "").strip()
                 location = str(row.get("location", "") or "Unknown location")
                 time_remaining = str(row.get("time_remaining_or_date_sold", "N/A"))
-                max_bid = format_currency_value(row.get("max_bid_value"))
-                resale_estimate = format_currency_value(row.get("resale_mid_value"))
+                current_bid = format_currency_value(row.get("current_price_value"))
+                max_bid = str(row.get("proxy_max_label") or "N/A")
+                resale_estimate = format_currency_value(row.get("resale_value"))
                 profit = format_currency_value(row.get("profit_value"))
                 margin = f"{row['margin_value']:.0f}%" if pd.notna(row.get("margin_value")) else "N/A"
+                confidence = f"{float(row['confidence_value']) * 100:.0f}%" if pd.notna(row.get("confidence_value")) else "N/A"
+                expected_finish = format_currency_value(row.get("expected_finish_value"))
+                expected_profit = format_currency_value(row.get("expected_finish_profit_value"))
+                action = action_display_parts(row.get("action_label"))[0]
+                bid_status = str(row.get("bid_status_display") or "Unknown")
+                bid_detail = str(row.get("bid_status_detail") or "")
+                risk_flags = str(row.get("risk_flags") or "").strip()
+                risk_summary = (
+                    risk_flags.replace("|", ", ")
+                    if risk_flags and risk_flags.lower() not in {"nan", "none"}
+                    else "No stored risk flags"
+                )
                 ai_url = row.get("url", "")
                 st.markdown(
                     clean_html(
                         f"""
                         <div class="top-auction-card">
-                            <div class="top-auction-pill">TOP {idx + 1}</div>
+                            <div class="top-auction-pill" data-action="{escape_html(action)}">{escape_html(action)}</div>
                             <h3>{escape_html(title)}</h3>
                             <div class="autosniper-body">{escape_html(variant) or "Variant unavailable"}</div>
                             <div class="autosniper-body" style="color: var(--autosniper-muted);">
@@ -482,7 +516,11 @@ else:
                             </div>
                             <div class="top-auction-metrics">
                                 <div class="top-auction-metric">
-                                    <span class="top-auction-label">Max bid</span>
+                                    <span class="top-auction-label">Current bid</span>
+                                    <span class="top-auction-value">{escape_html(current_bid)}</span>
+                                </div>
+                                <div class="top-auction-metric">
+                                    <span class="top-auction-label">Proxy max bid</span>
                                     <span class="top-auction-value">{escape_html(max_bid)}</span>
                                 </div>
                                 <div class="top-auction-metric">
@@ -490,7 +528,7 @@ else:
                                     <span class="top-auction-value">{escape_html(resale_estimate)}</span>
                                 </div>
                                 <div class="top-auction-metric">
-                                    <span class="top-auction-label">Worst profit</span>
+                                    <span class="top-auction-label">Worst profit at proxy max</span>
                                     <span class="top-auction-value">{escape_html(profit)}</span>
                                 </div>
                                 <div class="top-auction-metric">
@@ -498,9 +536,18 @@ else:
                                     <span class="top-auction-value">{escape_html(margin)}</span>
                                 </div>
                                 <div class="top-auction-metric">
-                                    <span class="top-auction-label">Time remaining</span>
-                                    <span class="top-auction-value">{escape_html(time_remaining)}</span>
+                                    <span class="top-auction-label">Confidence</span>
+                                    <span class="top-auction-value">{escape_html(confidence)}</span>
                                 </div>
+                                <div class="top-auction-metric">
+                                    <span class="top-auction-label">Expected finish</span>
+                                    <span class="top-auction-value">{escape_html(expected_finish)}</span>
+                                </div>
+                            </div>
+                            <div class="top-auction-context">
+                                <strong>{escape_html(bid_status)}</strong> &mdash; {escape_html(bid_detail)}<br/>
+                                Scenario profit at expected finish: <strong>{escape_html(expected_profit)}</strong><br/>
+                                Risk: {escape_html(risk_summary)} &bull; Time left: {escape_html(time_remaining)}
                             </div>
                             <div class="top-auction-actions">
                                 <a class="ghost-button" href="{safe_url(ai_url)}" target="_blank">Open Listing</a>
@@ -519,12 +566,15 @@ else:
                             st.info("Open the AI Pricing Analysis page from the sidebar to view this listing.")
 
 section_heading("Pipeline Health", "Current processing health across link intake, normalisation, exclusions, and AI analysis.")
-links_count = count_csv_rows(LINKS_FILE)
-raw_count = count_csv_rows(RAW_FILE)
-normalised_count = count_csv_rows(NORMALISED_FILE)
-excluded_count = count_csv_rows(EXCLUDED_FILE)
+links_count = count_csv_records(LINKS_FILE)
+raw_count = count_csv_records(RAW_FILE)
+normalised_count = count_csv_records(NORMALISED_FILE)
+excluded_count = count_csv_records(EXCLUDED_FILE)
 analysed_count = len(valuations_df) if not valuations_df.empty else 0
-analysis_target = len(active_scope_df) if not active_scope_df.empty else 0
+analysis_target = len(ai_active_scope_df) if not ai_active_scope_df.empty else 0
+if analysis_target and not valuations_df.empty:
+    ai_active_urls = set(ai_active_scope_df["url"].dropna().astype(str))
+    analysed_count = int(valuations_df["url"].astype(str).isin(ai_active_urls).sum())
 analysis_ratio = (analysed_count / analysis_target) if analysis_target else None
 
 health_cols = st.columns(4)
@@ -548,11 +598,21 @@ with health_cols[1]:
         normalise_tone,
     )
 with health_cols[2]:
-    exclusion_tone = "green" if EXCLUDED_FILE.exists() else "red"
+    exclusion_last_text, exclusion_last_ts = describe_last_run(EXCLUDED_FILE)
+    exclusion_age_hours = (
+        (datetime.now(timezone.utc) - exclusion_last_ts).total_seconds() / 3600
+        if exclusion_last_ts is not None
+        else None
+    )
+    exclusion_tone = (
+        "green" if exclusion_age_hours is not None and exclusion_age_hours <= 24
+        else "orange" if exclusion_age_hours is not None and exclusion_age_hours <= 48
+        else "red"
+    )
     _render_health_card(
-        "Vehicles excluded",
+        "Exclusion log rows",
         _format_rows(excluded_count),
-        describe_last_run(EXCLUDED_FILE)[0],
+        exclusion_last_text,
         exclusion_tone,
     )
 with health_cols[3]:
@@ -702,7 +762,12 @@ if not active_scope_df.empty:
         transparency_confidence_avg = float(confidence_series.mean())
         transparency_confidence_share = float((confidence_series >= 0.75).mean())
 
-    profit_series = pd.to_numeric(active_scope_df.get("active_profit_value"), errors="coerce")
+    profit_source = (
+        active_scope_df["active_profit_value"]
+        if "active_profit_value" in active_scope_df.columns
+        else pd.Series(index=active_scope_df.index, dtype=float)
+    )
+    profit_series = pd.to_numeric(profit_source, errors="coerce")
     if profit_series.notna().any():
         profit_bands = pd.cut(
             profit_series,

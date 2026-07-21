@@ -747,8 +747,7 @@ _BASE_STYLES = textwrap.dedent(
        mostly dead weight, kept only because a couple of properties they set
        (e.g. margin-bottom, letter-spacing, opacity) aren't touched here and
        still apply. Treat this block, not the original token block above, as
-       the source of truth when styling new pages -- 99_STYLE_GUIDE.py still
-       shows the older palette and should be refreshed to match this one. */
+       the source of truth when styling new pages. */
     .stApp {
         background-color: var(--autosniper-bg) !important;
     }

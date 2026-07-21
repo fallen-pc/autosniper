@@ -230,14 +230,14 @@ flowchart LR
   subgraph S5["5. Decision Policy"]
     P1["Profit bands<br/>low / mid / high resale"]:::ai
     P2["Costs and frictions<br/>fees, transport, rego, RWC, prep, repairs"]:::ai
-    P3["Recommended max bid<br/>economic max + safety buffer"]:::ai
-    P4["Shared action label<br/>Buy / Watch / Avoid / Review"]:::risk
+    P3["Auction-site proxy max<br/>economic ceiling + safety buffer"]:::ai
+    P4["Shared action label<br/>Buy / Avoid / Review"]:::risk
     P5["Top Buy behaviour<br/>extra gate for best opportunities"]:::risk
   end
 
   subgraph S6["6. Operator Surfaces"]
     U1["Dashboard<br/>DASHBOARD.py"]:::ui
-    U2["Radar / Active Listings<br/>pages/00_RADAR.py<br/>pages/3_ACTIVE_LISTINGS.py"]:::ui
+    U2["Active Inventory<br/>operational scraper/status view"]:::ui
     U3["AI Analysis<br/>pages/6_AI_ANALYSIS.py"]:::ui
     U4["Detail transparency<br/>pages/02_DETAIL.py"]:::ui
     U5["Health + Pipeline pages<br/>pages/05_HEALTH.py<br/>pages/12_GRAYS_PIPELINE.py"]:::ui
@@ -245,9 +245,9 @@ flowchart LR
   end
 
   subgraph S7["7. Proof, Learning + Feedback"]
-    F1["Model Proof<br/>pages/17_MODEL_PROOF.py"]:::proof
+    F1["Model Proof + Calibration<br/>pages/17_MODEL_PROOF.py"]:::proof
     F2["Missed Opportunities replay<br/>pages/8_MISSED_OPPORTUNITIES.py"]:::proof
-    F3["Model Accuracy<br/>scored_listings_enriched.csv"]:::proof
+    F3["Historical calibration<br/>restricted sold outcomes"]:::proof
     F4["Retail-median simulation<br/>model_audit outputs"]:::proof
     F5["Repair Review + Pricing<br/>pages/18_REPAIR_REVIEW.py<br/>pages/19_REPAIR_PRICING.py"]:::proof
     F6["Governance checks<br/>readiness smoke, schema, curve validation"]:::proof
@@ -331,7 +331,7 @@ flowchart LR
           <li>Pan left: Grays, bid refreshes, and external market evidence feed the CSV datasets.</li>
           <li>Move to the middle: normalisation, restricted universe, and curves decide what is covered.</li>
           <li>Zoom into valuation: comps, curves, repairs, and auction-price prediction produce profit bands.</li>
-          <li>Move right: shared policy converts numbers into Buy, Watch, Avoid, or Review.</li>
+          <li>Move right: shared policy converts numbers into Buy, Avoid, or Review, with proxy max as the economic safety boundary.</li>
           <li>Finish bottom-right: proof pages, missed opportunities, repair pricing, and governance improve the system.</li>
         </ol>
       </section>
@@ -339,9 +339,9 @@ flowchart LR
       <section class="card">
         <h2>Short Voiceover</h2>
         <ul>
-          <li><code>Buy</code> is not a guess. It requires coverage, profit, bid room, safety, and enough historical comps.</li>
-          <li><code>Watch</code> means the car may become attractive if price, repairs, or confidence improves.</li>
-          <li><code>Avoid</code> blocks cars where price, safety, or policy removes the edge.</li>
+          <li><code>Buy</code> means the current worst-case profit clears the minimum and the current bid remains within a safe auction-site proxy max. Entering that cap cannot produce an above-cap win.</li>
+          <li>Expected finish and historical comps indicate win likelihood and confidence; they do not block an otherwise safe proxy bid.</li>
+          <li><code>Avoid</code> means the current bid crossed proxy max, current worst-case profit is insufficient, or a hard safety/policy condition blocks bidding.</li>
           <li><code>Review</code> means the system needs missing context before it can recommend action.</li>
         </ul>
       </section>

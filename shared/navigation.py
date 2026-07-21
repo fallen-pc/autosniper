@@ -7,13 +7,8 @@ import streamlit as st
 
 NavigationSpec = "OrderedDict[str, list[tuple[str, str, bool]]]"
 
-# Pages kept routable for drill-down links (st.switch_page targets) but
-# hidden from the sidebar after the June 2026 low-confidence page audit.
 HIDDEN_ROUTABLE_GROUP = "_HIDDEN"
-HIDDEN_ROUTABLE_PAGES: list[tuple[str, str, bool]] = [
-    # Exceptions and Listing Detail both switch_page here.
-    ("pages/04_MAPPINGS.py", "Mappings", False),
-]
+HIDDEN_ROUTABLE_PAGES: list[tuple[str, str, bool]] = []
 
 
 def navigation_spec() -> NavigationSpec:
@@ -23,8 +18,7 @@ def navigation_spec() -> NavigationSpec:
                 "SYSTEM",
                 [
                     ("DASHBOARD.py", "Dashboard", True),
-                    ("pages/00_RADAR.py", "Radar", False),
-                    ("pages/3_ACTIVE_LISTINGS.py", "Active Listings", False),
+                    ("pages/3_ACTIVE_LISTINGS.py", "Active Inventory", False),
                     ("pages/01_EXCEPTIONS.py", "Exceptions", False),
                     # Existing drill-down flow relies on this page being routable.
                     ("pages/02_DETAIL.py", "Listing Detail", False),
@@ -56,13 +50,12 @@ def navigation_spec() -> NavigationSpec:
                 "INTELLIGENCE",
                 [
                     ("pages/8_MISSED_OPPORTUNITIES.py", "Missed Opportunities", False),
-                    ("pages/16_VALUATION_CALIBRATION.py", "Valuation Calibration", False),
                     ("pages/18_REPAIR_REVIEW.py", "Repair Review", False),
                     ("pages/19_REPAIR_PRICING.py", "Repair Pricing", False),
                 ],
             ),
             (
-                "COVERAGE",
+                "OPERATIONS",
                 [
                     ("pages/7_AUTOTRADER_SCRAPER.py", "Autotrader Scraper", False),
                 ],

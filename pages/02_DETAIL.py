@@ -183,8 +183,8 @@ with actions_right:
         else:
             st.warning("Canonical tag is missing. Cannot queue.")
 
-section_heading("Quick Links", "Jump to other tools fast.")
-links = st.columns(3)
+section_heading("Quick Links", "Open the listing or its governed valuation curve.")
+links = st.columns(2)
 with links[0]:
     link_button = getattr(st, "link_button", None)
     if callable(link_button):
@@ -198,9 +198,3 @@ with links[1]:
             st.switch_page("pages/03_CURVES.py")
         except Exception:
             st.info("Open the Curves page from the sidebar to view this tag.")
-with links[2]:
-    if st.button("Open mappings", key="detail_open_mappings"):
-        try:
-            st.switch_page("pages/04_MAPPINGS.py")
-        except Exception:
-            st.info("Open the Mappings page from the sidebar to edit rules.")

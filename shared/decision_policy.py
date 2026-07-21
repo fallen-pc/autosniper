@@ -14,20 +14,28 @@ ACTION_REVIEW = "Review"
 
 NO_BUY_VERDICTS = {"Avoid", "Trap", "Not Viable"}
 REVIEW_VERDICTS = {"Not Covered", "Not Eligible"}
-BUYABLE_VERDICTS = {"Strong Flip", "Conditional Flip", "Good"}
-WATCHABLE_VERDICTS = BUYABLE_VERDICTS | {"Marginal (repairs)", "Marginal (expected finish)"}
-ACTIONABLE_BID_STATUSES = {"Cheap", "Below expected", "Open"}
+BUYABLE_VERDICTS = {
+    "Strong Flip",
+    "Conditional Flip",
+    "Good",
+    "Marginal (repairs)",
+    "Marginal (expected finish)",
+}
+ACTIONABLE_BID_STATUSES = {
+    "Cheap",
+    "Below expected",
+    "Above expected",
+    "Open",
+    "Near ceiling",
+    "At ceiling",
+}
 NO_BUY_BID_STATUSES = {"Over max"}
 ACTIONABLE_HARD_MAX_SAFETY = {"Strong", "Conditional"}
 
 ACTION_DISPLAY_COPY = {
     ACTION_BUY: (
         ACTION_BUY,
-        "Bid-ready: profit, bid room, and safety clear.",
-    ),
-    ACTION_WATCH: (
-        ACTION_WATCH,
-        "Watch: viable, but needs price room, repair inspection, or more context.",
+        "Set the auction-site proxy max: current worst profit and the safety ceiling clear.",
     ),
     ACTION_AVOID: (
         ACTION_AVOID,
@@ -54,17 +62,16 @@ class DecisionPolicyInput:
 def derive_action_label(policy_input: DecisionPolicyInput) -> str:
     """Return the operator action label used across buying surfaces.
 
-    Buy means the listing is currently actionable: it has safe coverage, positive
-    current and expected-finish worst-case profit, bid room, and hard-max safety.
-    Watch means the listing is not a hard no, but needs time, price movement, or
-    manual inspection before bidding. Avoid means do not bid. Review is reserved
-    for missing coverage or incomplete valuation context.
+    Buy means the listing is currently actionable: it has safe coverage, enough
+    worst-case profit at the current bid, bid room, and proxy-max safety.
+    Expected auction finish and historical comps are informational only: the
+    auction-site proxy max prevents an unprofitable winning bid. Avoid means do
+    not bid. Review is reserved for missing coverage or incomplete context.
     """
 
     verdict = (policy_input.computed_verdict or "").strip()
     bid_status = (policy_input.bid_status or "").strip()
     hard_max_safety = (policy_input.hard_max_safety or "").strip()
-    expected_profit = policy_input.expected_auction_worst_profit
     current_profit = policy_input.current_worst_profit
     min_profit = float(policy_input.min_profit or 0.0)
 
@@ -74,26 +81,26 @@ def derive_action_label(policy_input: DecisionPolicyInput) -> str:
         return ACTION_REVIEW
     if bid_status in NO_BUY_BID_STATUSES or hard_max_safety == "No edge":
         return ACTION_AVOID
-    if verdict not in WATCHABLE_VERDICTS:
+    if verdict not in BUYABLE_VERDICTS:
         return ACTION_REVIEW
 
     current_viable = current_profit is not None and current_profit >= min_profit
-    expected_viable = expected_profit is not None and expected_profit >= min_profit
     max_safe = hard_max_safety in ACTIONABLE_HARD_MAX_SAFETY
     bid_actionable = bid_status in ACTIONABLE_BID_STATUSES
 
-    # Comps are informational only; they do not gate BUY decisions.
-    # The bid cap (from resale value + downside buffer) protects profit regardless of comps.
-    # Comps indicate what the auction might finish at (confidence), not whether to bid.
+    # Expected finish and comps estimate win likelihood; neither gates the action.
+    # The auction-site proxy max is the economic ceiling, so the bidder either wins
+    # at a safe price or automatically loses once another bidder crosses that ceiling.
     if (
         verdict in BUYABLE_VERDICTS
         and current_viable
-        and expected_viable
         and max_safe
         and bid_actionable
     ):
         return ACTION_BUY
-    return ACTION_WATCH
+    if current_profit is None or hard_max_safety in {"", "Unknown"} or bid_status in {"", "Unknown"}:
+        return ACTION_REVIEW
+    return ACTION_AVOID
 
 
 def _clean_text(value: Any) -> str:
@@ -149,7 +156,8 @@ def derive_action_label_from_row(
     bid_status = _clean_text(row.get("bid_status"))
     hard_max_safety = _clean_text(row.get("hard_max_safety"))
     if not computed_verdict or not bid_status or not hard_max_safety:
-        return _clean_text(fallback) or ACTION_REVIEW
+        fallback_action = _clean_text(fallback) or ACTION_REVIEW
+        return ACTION_REVIEW if fallback_action == ACTION_WATCH else fallback_action
 
     expected_profit = first_numeric_value(
         row.get("expected_auction_worst_profit_value"),
@@ -193,6 +201,8 @@ def action_display_parts(action: object) -> tuple[str, str]:
 
     action_text = str(action or "").strip()
     if not action_text or action_text.lower() in {"nan", "none", "n/a"}:
+        action_text = ACTION_REVIEW
+    if action_text == ACTION_WATCH:
         action_text = ACTION_REVIEW
     return ACTION_DISPLAY_COPY.get(
         action_text,

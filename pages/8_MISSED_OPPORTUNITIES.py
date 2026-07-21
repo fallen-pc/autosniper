@@ -529,7 +529,7 @@ def render_missed_bid_logic_tab(
     sold_vs_cap = sold_vs_cap_text(sold_price, max_bid)
     metric_cols = st.columns(4)
     metric_cols[0].metric("Action", action_label)
-    metric_cols[1].metric("Max bid cap", money(max_bid))
+    metric_cols[1].metric("Proxy max", money(max_bid))
     metric_cols[2].metric("Sold vs cap", sold_vs_cap)
     metric_cols[3].metric("Profit at sold price", money(projected_profit))
     render_detail_grid(
@@ -659,7 +659,7 @@ def render_sold_analysis_card(
                 "Deal maths",
                 [
                     build_metric_item(metric_label, money(metric_value), metric_sub, "primary"),
-                    build_metric_item("Max bid cap", money(max_bid), hard_max_safety),
+                    build_metric_item("Proxy max", money(max_bid), hard_max_safety),
                     build_metric_item("Sold vs cap", sold_vs_cap, bid_status),
                     build_metric_item("Profit at sold price", money(projected_profit), "Realised sold scenario"),
                     build_metric_item("Total costs", money(total_costs)),
@@ -1938,7 +1938,7 @@ sort_choice = st.selectbox(
     "Sort",
     [
         "Profit at sold price (high to low)",
-        "Max bid cap (high to low)",
+        "Proxy max (high to low)",
         "Sold price (low to high)",
         "Odometer (low to high)",
         "Date sold (new to old)",
@@ -1950,7 +1950,7 @@ sort_choice = st.selectbox(
 sort_df = view.copy()
 if sort_choice == "Profit at sold price (high to low)" and "projected_profit_at_sold" in sort_df.columns:
     sort_df = sort_df.sort_values("projected_profit_at_sold", ascending=False, na_position="last")
-elif sort_choice == "Max bid cap (high to low)" and "max_bid" in sort_df.columns:
+elif sort_choice == "Proxy max (high to low)" and "max_bid" in sort_df.columns:
     sort_df = sort_df.sort_values("max_bid", ascending=False, na_position="last")
 elif sort_choice == "Sold price (low to high)" and "sold_price" in sort_df.columns:
     sort_df = sort_df.sort_values("sold_price", ascending=True, na_position="last")

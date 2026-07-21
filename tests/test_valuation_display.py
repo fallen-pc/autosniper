@@ -5,6 +5,7 @@ import pandas as pd
 from shared.valuation_display import (
     active_profit_value,
     bid_display_parts,
+    build_ai_analysis_summary_rows,
     conservative_margin_percent,
     expected_finish_profit_value,
     first_currency_value,
@@ -12,6 +13,49 @@ from shared.valuation_display import (
     recommended_max_bid_value,
     rank_live_opportunities,
 )
+
+
+def test_build_ai_analysis_summary_rows_matches_default_visible_ai_scope() -> None:
+    active_df = pd.DataFrame(
+        [
+            {"url": "buy", "price": "$2,000", "year": 2018, "make": "Toyota", "location": "VIC"},
+            {"url": "watch", "price": "$4,000", "year": 2017, "make": "Mazda", "location": "VIC"},
+            {"url": "avoid", "price": "$5,000", "year": 2016, "make": "Ford", "location": "VIC"},
+        ]
+    )
+    valuations_df = pd.DataFrame(
+        [
+            {
+                "url": "buy", "analysis_timestamp": "2026-07-19T00:00:00Z",
+                "action_label": "Buy", "computed_verdict": "Strong Flip", "bid_status": "Cheap",
+                "hard_max_safety": "Strong", "expected_auction_comps_count": 4,
+                "expected_auction_worst_profit": "$2,000", "profit_at_current_bid_worst": "$3,000",
+                "recommended_max_bid": "$6,000", "net_profit_worst": "$2,500", "resale_mid": "$12,500",
+                "confidence": 0.9,
+            },
+            {
+                "url": "watch", "analysis_timestamp": "2026-07-19T00:00:00Z",
+                "action_label": "Watch", "computed_verdict": "Conditional Flip", "bid_status": "Near ceiling",
+                "hard_max_safety": "Conditional", "expected_auction_comps_count": 4,
+                "expected_auction_worst_profit": "$500", "profit_at_current_bid_worst": "$1,500",
+                "recommended_max_bid": "$4,500", "net_profit_worst": "$1,500", "resale_mid": "$10,000",
+                "confidence": 0.8,
+            },
+            {
+                "url": "avoid", "analysis_timestamp": "2026-07-19T00:00:00Z",
+                "action_label": "Avoid", "computed_verdict": "Avoid", "bid_status": "Over max",
+                "hard_max_safety": "Blocked", "recommended_max_bid": "$0", "net_profit_worst": "$500",
+                "resale_mid": "$8,000", "confidence": 0.7,
+            },
+        ]
+    )
+
+    summary = build_ai_analysis_summary_rows(active_df, valuations_df, min_profit=1000)
+
+    assert summary["url"].tolist() == ["buy", "watch"]
+    assert summary["action_label"].tolist() == ["Buy", "Buy"]
+    assert summary.loc[summary["url"] == "buy", "current_price_value"].item() == 2000
+    assert summary.loc[summary["url"] == "buy", "max_bid_value"].item() == 6000
 
 
 def test_first_currency_value_preserves_zero_before_fallback() -> None:

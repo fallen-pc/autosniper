@@ -8,6 +8,8 @@
 
 - Repair costing is materially stronger than the earlier baseline. Live valuation now uses the richer V2 repair engine, duplicate charging is blocked, punctuation-heavy condition notes are split into repair fragments, mixed cosmetic/replacement damage is costed together, and hard-stop reasons are split into `MECHANICAL` and `STRUCTURAL`. Hard-avoid rows show an explicit repair/risk figure instead of fake `$0`.
 
+- Repair Review can optionally receive conservative OpenAI suggestions for unresolved fragments. The classifier is disabled by default, suggestions only prefill operator fields, and no repair rule is promoted until an operator reviews and saves the decision. Older valuation rows with missing repair low/high fields can be repaired separately with the audited backfill script.
+
 - Unregistered-car costing now matches the owner's workflow better. AutoSniper no longer charges full buyer-side rego in valuation. Unregistered rows keep the `UNREGISTERED` risk signal, show `rego_estimate = $0`, and add a separate `roadworthy_estimate` instead.
 
 - The current non-hard-avoid repair gate is intentionally looser than before. Moderate repair totals can still surface as `Marginal (repairs)` if the flip math works; mechanical and structural hard-stops still force `Avoid`.
@@ -22,12 +24,12 @@
 
 - Current live shortlist state is allowed to be empty. After the shortlist cleanup, the remaining restricted active rows are high-kilometre rows outside current curve bounds, so `0` AI-eligible active rows is currently a valid state rather than a pipeline failure.
 
-- Curve coverage is complete on the current audited mainstream universe. The saved V2/base-curve setup covers all currently observed canonical tags on the last verified governance baseline (`45` observed, `45` covered, `0` missing).
+- Curve coverage is complete on the current audited mainstream universe. The latest verified governance baseline covers `233` observed tags with `0` missing.
 
 - Scheduler logic is in better shape, but unattended operation still has a real Windows-session dependency. The daily/hourly paths have been hardened and overlap handling is better, but reliable Autotrader work still depends on an awake, logged-in session because headless/browser-session stability is not fully solved.
 
 - Runtime artifact handling is now explicit. Generated reports, audits, backups, and output files should remain untracked where safe, while the minimum governed runtime CSV baseline stays tracked for fresh clones and governance checks. For normal source work, use `scripts/git_runtime_quiet.ps1 -Mode quiet` to hide local scraper/pipeline CSV churn; use `-Mode unquiet` before intentional data commits.
 
-- AI Analysis wording is clearer than before. Cards now expose action, bid status, margin, confidence, and risk as separate signal tiles, verdict text is supporting context, and profit wording is framed as margin strength instead of mixing several equally loud judgment labels. Stored action labels now use a shared `Buy` / `Watch` / `Avoid` / `Review` policy instead of mixing `Watch closely` and `Bid carefully` variants. The card title path also preserves merged listing identity fields, so cards should show the vehicle title instead of the generic `Listing` fallback. After validating the fresh 2026-06-08 shortlist, `At ceiling` now resolves to `Watch` rather than `Avoid`, and the page re-resolves cached action labels before display so stale CSV wording does not hide the current policy.
+- AI Analysis is the daily buying screen and Dashboard is its condensed projection. Cards expose action, bid status, margin, confidence, risk, current bid, proxy max, and expected finish as separate signals. The shared action policy now emits `Buy`, `Avoid`, or `Review`: `Buy` is governed by current worst-case profit, remaining room to the auction-site proxy max, and hard-max safety. Expected auction finish and sold-comps count are informational only because the proxy max prevents an unprofitable above-cap win. `Avoid` covers bids over the cap, insufficient current worst-case profit, and hard safety/policy blocks; `Review` covers missing context. Legacy stored `Watch` fallbacks normalize to `Review`.
 
 - The highest-value remaining product work is to validate the new AI Analysis signal strip against real shortlist movement when live candidates return, then tune only the labels or thresholds that prove confusing in daily auction review.

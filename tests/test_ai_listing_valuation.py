@@ -187,7 +187,7 @@ def test_listing_alert_does_not_send_for_watch_only(monkeypatch, tmp_path: Path)
     assert sent == []
 
 
-def test_listing_alert_resolves_stale_buy_label_through_policy(monkeypatch, tmp_path: Path) -> None:
+def test_listing_alert_keeps_at_ceiling_buy_actionable(monkeypatch, tmp_path: Path) -> None:
     _set_alert_dataset_paths(monkeypatch, tmp_path)
     sent: list[object] = []
     monkeypatch.setattr(
@@ -209,7 +209,9 @@ def test_listing_alert_resolves_stale_buy_label_through_policy(monkeypatch, tmp_
         None,
     )
 
-    assert sent == []
+    assert len(sent) == 1
+    assert sent[0][0][0] == "listing_bid_ready"
+    assert sent[0][0][2] == "ai_analysis_buy"
 
 
 def test_listing_alert_sends_when_buy_becomes_not_bid_ready(monkeypatch, tmp_path: Path) -> None:
@@ -231,7 +233,12 @@ def test_listing_alert_sends_when_buy_becomes_not_bid_ready(monkeypatch, tmp_pat
     monkeypatch.setattr(ai_listing_valuation, "send_on_state_change", fake_send_on_state_change)
 
     ai_listing_valuation._maybe_send_listing_alerts(
-        _base_saved_row(action_label="Watch", bid_status="Near ceiling"),
+        _base_saved_row(
+            action_label="Avoid",
+            bid_status="Over max",
+            hard_max_safety="No edge",
+            profit_at_current_bid_worst_value=500.0,
+        ),
         _base_saved_row(action_label="Buy", bid_status="Cheap"),
     )
 
@@ -243,7 +250,7 @@ def test_listing_alert_sends_when_buy_becomes_not_bid_ready(monkeypatch, tmp_pat
     assert "Why sent: this listing was previously alerted as Buy, but AI Analysis changed." in str(sent[0]["message"])
     assert "STATUS" in str(sent[0]["message"])
     assert "Previous action: Buy" in str(sent[0]["message"])
-    assert "Current action: Watch" in str(sent[0]["message"])
+    assert "Current action: Avoid" in str(sent[0]["message"])
     assert "LINKS" in str(sent[0]["message"])
 
 
@@ -578,7 +585,7 @@ def test_curve_analysis_keeps_moderate_repairs_as_marginal_not_avoid(monkeypatch
     )
 
     assert result["computed_verdict"] == "Marginal (repairs)"
-    assert result["action_label"] in {"Watch", "Review"}
+    assert result["action_label"] == "Buy"
     assert result["repair_estimate"] == "$2,250"
 
 
@@ -1283,7 +1290,7 @@ def test_curve_analysis_marks_low_expected_finish_profit_as_marginal(monkeypatch
     )
 
     assert result["computed_verdict"] == "Marginal (expected finish)"
-    assert result["action_label"] == "Watch"
+    assert result["action_label"] == "Buy"
     assert result["expected_auction_worst_profit_value"] < ai_listing_valuation.MIN_NET_PROFIT_ABSOLUTE
     assert result["net_profit_worst_value"] > 0
 

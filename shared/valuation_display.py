@@ -7,6 +7,8 @@ from typing import Any, Mapping
 
 import pandas as pd
 
+from shared.decision_policy import ACTION_AVOID, derive_action_label_from_row
+
 
 UNSAFE_VERDICT_KEYWORDS = (
     "avoid",
@@ -344,6 +346,102 @@ def is_safe_opportunity_row(row: pd.Series, *, edge_buffer_default: float = 50.0
         and has_bid_edge
         and worst_profit is not None
         and worst_profit > 0
+    )
+
+
+def build_ai_analysis_summary_rows(
+    active_df: pd.DataFrame,
+    valuations_df: pd.DataFrame,
+    *,
+    min_profit: float,
+    hide_avoid: bool = True,
+    require_max_bid: bool = True,
+) -> pd.DataFrame:
+    """Build the condensed Dashboard projection of the AI Analysis active set.
+
+    The caller supplies the already-governed AI Analysis active universe. Latest
+    valuation rows remain authoritative for decision fields, while current active
+    rows remain authoritative for live auction identity, price, location and time.
+    """
+    if active_df.empty or valuations_df.empty or "url" not in active_df.columns or "url" not in valuations_df.columns:
+        return pd.DataFrame()
+
+    latest = valuations_df.copy()
+    if "analysis_timestamp" in latest.columns:
+        latest["analysis_timestamp"] = pd.to_datetime(latest["analysis_timestamp"], errors="coerce")
+        latest = latest.sort_values("analysis_timestamp")
+    latest = latest.drop_duplicates("url", keep="last")
+
+    merged = latest.merge(active_df, on="url", how="inner", suffixes=("", "_active"))
+    if merged.empty:
+        return merged
+
+    for column in (
+        "year",
+        "make",
+        "model",
+        "variant",
+        "location",
+        "location_state",
+        "rego_state",
+        "body_type",
+        "body",
+        "canonical_tag",
+        "price",
+        "bids",
+        "time_remaining_or_date_sold",
+        "odometer_reading",
+    ):
+        active_column = f"{column}_active"
+        if active_column in merged.columns:
+            merged[column] = merged[active_column]
+
+    merged["action_label"] = merged.apply(
+        lambda row: derive_action_label_from_row(
+            row,
+            min_profit=min_profit,
+            fallback=row.get("action_label") or "Review",
+        ),
+        axis=1,
+    )
+    merged["current_price_value"] = merged.apply(current_bid_value, axis=1)
+    merged["max_bid_value"] = merged.apply(recommended_max_bid_value, axis=1)
+    merged["resale_value"] = merged.apply(
+        lambda row: first_currency_value(
+            row.get("expected_sale"),
+            row.get("resale_mid_value"),
+            row.get("resale_mid"),
+            row.get("curve_adjusted"),
+        ),
+        axis=1,
+    )
+    merged["profit_value"] = merged.apply(active_profit_value, axis=1)
+    merged["margin_value"] = merged.apply(conservative_margin_percent, axis=1)
+    merged["expected_finish_value"] = merged.apply(
+        lambda row: first_currency_value(
+            row.get("expected_auction_bid_basis"),
+            row.get("expected_auction_price"),
+        ),
+        axis=1,
+    )
+    merged["expected_finish_profit_value"] = merged.apply(expected_finish_profit_value, axis=1)
+    merged["confidence_value"] = pd.to_numeric(merged.get("confidence"), errors="coerce")
+
+    bid_parts = merged.apply(bid_display_parts, axis=1)
+    merged["proxy_max_label"] = bid_parts.map(lambda value: value["max_label"])
+    merged["bid_status_display"] = bid_parts.map(lambda value: value["status"])
+    merged["bid_status_detail"] = bid_parts.map(lambda value: value["status_detail"])
+
+    if hide_avoid:
+        merged = merged[merged["action_label"] != ACTION_AVOID]
+    if require_max_bid:
+        merged = merged[merged["max_bid_value"].notna()]
+
+    merged = merged.drop_duplicates("url", keep="first")
+    return merged.sort_values(
+        by=["margin_value", "max_bid_value"],
+        ascending=[False, False],
+        na_position="last",
     )
 
 

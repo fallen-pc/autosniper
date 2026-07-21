@@ -27,17 +27,19 @@ def test_buy_requires_actionable_profit_bid_room_and_safety() -> None:
     assert derive_action_label(_policy_input()) == ACTION_BUY
 
 
-def test_watch_is_viable_but_not_currently_actionable() -> None:
-    assert derive_action_label(_policy_input(bid_status="Near ceiling")) == ACTION_WATCH
-    assert derive_action_label(_policy_input(bid_status="At ceiling")) == ACTION_WATCH
-    assert derive_action_label(_policy_input(computed_verdict="Marginal (repairs)")) == ACTION_WATCH
-    assert derive_action_label(_policy_input(expected_auction_worst_profit=500.0)) == ACTION_WATCH
+def test_proxy_max_not_expected_finish_is_the_actionable_gate() -> None:
+    assert derive_action_label(_policy_input(bid_status="Near ceiling")) == ACTION_BUY
+    assert derive_action_label(_policy_input(bid_status="At ceiling")) == ACTION_BUY
+    assert derive_action_label(_policy_input(computed_verdict="Marginal (repairs)")) == ACTION_BUY
+    assert derive_action_label(_policy_input(expected_auction_worst_profit=500.0)) == ACTION_BUY
+    assert derive_action_label(_policy_input(expected_auction_worst_profit=-500.0)) == ACTION_BUY
 
 
 def test_avoid_is_reserved_for_no_buy_states() -> None:
     assert derive_action_label(_policy_input(computed_verdict="Avoid")) == ACTION_AVOID
     assert derive_action_label(_policy_input(bid_status="Over max")) == ACTION_AVOID
     assert derive_action_label(_policy_input(hard_max_safety="No edge")) == ACTION_AVOID
+    assert derive_action_label(_policy_input(current_worst_profit=500.0)) == ACTION_AVOID
 
 
 def test_review_is_reserved_for_missing_coverage_or_unknown_verdicts() -> None:
@@ -48,11 +50,11 @@ def test_review_is_reserved_for_missing_coverage_or_unknown_verdicts() -> None:
 def test_action_display_copy_is_short_and_bid_specific() -> None:
     assert action_display_parts(ACTION_BUY) == (
         "Buy",
-        "Bid-ready: profit, bid room, and safety clear.",
+        "Set the auction-site proxy max: current worst profit and the safety ceiling clear.",
     )
     assert action_display_parts(ACTION_WATCH) == (
-        "Watch",
-        "Watch: viable, but needs price room, repair inspection, or more context.",
+        "Review",
+        "Review: missing or incomplete valuation context.",
     )
 
 
@@ -72,4 +74,4 @@ def test_row_action_resolver_prefers_typed_policy_fields() -> None:
 
 
 def test_row_action_resolver_falls_back_when_policy_inputs_are_missing() -> None:
-    assert derive_action_label_from_row({"action_label": "Watch"}, min_profit=1500.0, fallback="Watch") == ACTION_WATCH
+    assert derive_action_label_from_row({"action_label": "Watch"}, min_profit=1500.0, fallback="Watch") == ACTION_REVIEW

@@ -58,10 +58,20 @@ DATASET_CONFIG: dict[str, dict[str, Any]] = {
     "excluded": {
         "path": dataset_path("excluded_listings.csv"),
         "threshold_minutes": 24 * 60,
-        "label": "Excluded",
+        "label": "Exclusion log",
         "allow_zero": True,
     },
 }
+
+
+def friendly_health_failure(job_name: object, error_message: object) -> str:
+    """Convert internal scraper exceptions into safe operator-facing status text."""
+    combined = f"{job_name or ''} {error_message or ''}".lower()
+    if "manheim" in combined:
+        return "The latest Manheim scrape did not complete. Existing data is unchanged and the next scheduled run can retry."
+    if "timeout" in combined or "timed out" in combined:
+        return "The latest scraper run timed out before completion. Existing data is unchanged and the next run can retry."
+    return "The latest automated job did not complete. Existing data is unchanged; review the scheduler logs if it repeats."
 
 
 def _load_csv(path: Path) -> pd.DataFrame:
@@ -183,9 +193,13 @@ def build_scraper_health_snapshot(
             "source": "static",
         },
         "vehicles_excluded": {
-            "label": "Vehicles excluded",
+            "label": "Exclusion log freshness",
             "count": dataset_metrics["excluded"]["count"],
-            "status": dataset_metrics["excluded"]["status"],
+            "status": (
+                "healthy"
+                if dataset_metrics["excluded"]["status"] == "healthy"
+                else "stale"
+            ),
             "source": "excluded",
         },
         "vehicles_analysed": {

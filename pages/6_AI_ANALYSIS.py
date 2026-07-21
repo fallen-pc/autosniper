@@ -1309,7 +1309,7 @@ def _condition_summary_sections(row: pd.Series) -> tuple[list[dict[str, object]]
                 "title": "Repair / risk decision",
                 "bullets": [
                     f"Hard avoid: {hard_reason}.",
-                    "Max bid is blocked rather than reduced by a normal repair allowance.",
+                    "Proxy max is blocked rather than reduced by a normal repair allowance.",
                 ],
                 "cost_line": f"Hard-avoid reserve: ${total_deduction:,}",
             }
@@ -1761,17 +1761,35 @@ def _format_repair_max_bid_deduction(row: pd.Series) -> str:
 
 
 def _render_grays_comparables(row: pd.Series, comps_items: list[str]) -> None:
-    _render_bullets("Comparable sales (Grays)", comps_items)
+    _render_bullets("Auction sold comps (Grays)", comps_items)
+    st.caption(
+        "Auction sold comps support expected auction finish and bid risk. "
+        "They do not set the Carsales resale curve."
+    )
     tag_value = row.get("canonical_tag")
     if not tag_value or (isinstance(tag_value, float) and pd.isna(tag_value)):
         st.info("Vehicle curve tag missing. Historical Grays comparables unavailable.")
         return
 
     listing_year = _safe_int(row.get("year"))
+    curve_key = resolve_curve_canonical_tag(tag_value)
+    all_tag_comps = (
+        sold_df[sold_df["curve_tag"] == curve_key]
+        if "curve_tag" in sold_df.columns
+        else sold_df[sold_df["canonical_tag"] == curve_key]
+    )
+    same_year_count = 0
+    if listing_year is not None and "year_int" in all_tag_comps.columns:
+        same_year_count = int((all_tag_comps["year_int"] == listing_year).sum())
     comps_df = _select_sold_subset(sold_df, tag_value, listing_year).copy()
     if comps_df.empty:
         st.info("No matching Grays sold comparables found for this listing.")
         return
+    if listing_year is not None and same_year_count < 3:
+        st.warning(
+            f"Only {same_year_count} same-year Grays sold comp(s) for {listing_year}; "
+            "showing nearby years from the same curve tag."
+        )
 
     active_profile = build_defect_profile(row.to_dict())
     scores: list[int] = []
@@ -2883,7 +2901,7 @@ filter_cols = st.columns([1.1, 1, 1.2, 1], gap="medium")
 with filter_cols[0]:
     sort_choice = st.selectbox(
         "Sort by",
-        ["Profit %", "Max Bid", "Auction ending soon"],
+        ["Profit %", "Proxy max", "Auction ending soon"],
         index=0,
     )
 with filter_cols[1]:
@@ -3770,7 +3788,7 @@ if sort_choice == "Profit %":
         ascending=[False, False],
         na_position="last",
     )
-elif sort_choice == "Max Bid":
+elif sort_choice == "Proxy max":
     filtered_output = filtered_output.sort_values(
         by=["max_bid_value", "profit_margin_value"],
         ascending=[False, False],

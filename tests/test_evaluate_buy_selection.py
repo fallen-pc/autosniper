@@ -231,7 +231,7 @@ def test_evaluate_buy_selection_can_use_computed_verdict_proxy(tmp_path) -> None
     assert row["recall"] == 0.5
 
 
-def test_evaluate_buy_selection_resolves_action_with_comps_gate(tmp_path) -> None:
+def test_evaluate_buy_selection_keeps_comps_informational(tmp_path) -> None:
     valuations_path = tmp_path / "ai_listing_valuations.csv"
     scored_path = tmp_path / "simulated_sold_outcomes.csv"
     out_dir = tmp_path / "eval"
@@ -265,11 +265,11 @@ def test_evaluate_buy_selection_resolves_action_with_comps_gate(tmp_path) -> Non
         prediction_source="action",
     )
 
-    assert joined.iloc[0]["resolved_action_label"] == "Watch"
-    assert joined.iloc[0]["prediction_label"] == "Watch"
+    assert joined.iloc[0]["resolved_action_label"] == "Buy"
+    assert joined.iloc[0]["prediction_label"] == "Buy"
     assert joined.iloc[0]["policy_resolution_status"] == "resolved_current_policy"
-    assert metrics.iloc[0]["buy_predictions"] == 0
-    assert metrics.iloc[0]["false_negative"] == 1
+    assert metrics.iloc[0]["buy_predictions"] == 1
+    assert metrics.iloc[0]["false_negative"] == 0
 
 
 def test_evaluate_buy_selection_reports_missing_policy_inputs_without_nan_fallback(tmp_path) -> None:
