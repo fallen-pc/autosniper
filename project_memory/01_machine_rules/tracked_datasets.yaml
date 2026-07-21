@@ -47,6 +47,7 @@ named_dataset_paths:
   scrape_failures.csv: scrapers/scrape_failures.csv
   ai_listing_valuations.csv: ai/ai_listing_valuations.csv
   ai_verdicts.csv: ai/ai_verdicts.csv
+  sold_cars_all.csv: scrapers/sold_cars_all.csv
   active_vehicle_details_restricted.csv: restricted/active_vehicle_details_restricted.csv
   sold_cars_restricted.csv: restricted/sold_cars_restricted.csv
   restricted_group_map.csv: restricted/restricted_group_map.csv
