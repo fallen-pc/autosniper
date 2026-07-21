@@ -1,5 +1,6 @@
 import pandas as pd
 
+from shared.repair_ai_classifier import AI_SUGGESTION_COLUMNS, classify_repair_review_queue, load_ai_suggestions
 from shared.repair_review import append_unclassified_condition_lines, repair_mapping_summary
 
 
@@ -130,3 +131,115 @@ def test_append_unclassified_condition_lines_dedupes_by_repair_key(tmp_path) -> 
     assert len(out) == 1
     assert out.iloc[0]["example_vehicles"] == "new example"
     assert out.iloc[0]["example_urls"] == "https://example.com/new"
+
+
+def test_classify_repair_review_queue_writes_ai_suggestions(tmp_path, monkeypatch) -> None:
+    queue_path = tmp_path / "repair_review_live_queue.csv"
+    output_path = tmp_path / "repair_review_ai_suggestions.csv"
+    pd.DataFrame(
+        [
+            {
+                "repair_key": "sunglasses holder requires attention",
+                "repair_item": "sunglasses holder requires attention",
+                "status": "unclassified",
+                "category": "unclassified",
+                "canonical_defects": "",
+                "occurrences": 1,
+                "listing_count": 1,
+                "example_vehicles": "2013 HYUNDAI I30 active petrol",
+                "example_condition_notes": "sunglasses holder requires attention",
+            }
+        ]
+    ).to_csv(queue_path, index=False)
+    monkeypatch.setenv("OPENAI_API_KEY", "present-but-not-used")
+
+    def fake_caller(rows: pd.DataFrame, *, model: str) -> pd.DataFrame:
+        assert model == "test-model"
+        assert rows.iloc[0]["repair_key"] == "sunglasses holder requires attention"
+        return pd.DataFrame(
+            [
+                {
+                    "repair_key": "sunglasses holder requires attention",
+                    "repair_item": "sunglasses holder requires attention",
+                    "ai_decision": "Add dictionary rule",
+                    "ai_target_category": "interior",
+                    "ai_canonical_defect": "interior_trim_damage",
+                    "ai_severity_hint": "medium",
+                    "ai_cost_model": "fixed_replacement",
+                    "ai_confidence": 0.82,
+                    "ai_rationale": "Interior storage/trim component needs attention.",
+                    "model": model,
+                    "suggested_at": "2026-07-21T00:00:00+00:00",
+                }
+            ],
+            columns=AI_SUGGESTION_COLUMNS,
+        )
+
+    result = classify_repair_review_queue(
+        queue_path=queue_path,
+        output_path=output_path,
+        model="test-model",
+        caller=fake_caller,
+    )
+
+    assert result.considered == 1
+    assert result.suggested == 1
+    suggestions = load_ai_suggestions(output_path)
+    assert len(suggestions) == 1
+    row = suggestions.iloc[0]
+    assert row["ai_decision"] == "Add dictionary rule"
+    assert row["ai_target_category"] == "interior"
+    assert row["ai_canonical_defect"] == "interior_trim_damage"
+
+
+def test_classify_repair_review_queue_skips_without_key(tmp_path, monkeypatch) -> None:
+    queue_path = tmp_path / "repair_review_live_queue.csv"
+    pd.DataFrame(
+        [
+            {
+                "repair_key": "unknown fragment",
+                "repair_item": "unknown fragment",
+                "status": "unclassified",
+                "category": "unclassified",
+                "canonical_defects": "",
+            }
+        ]
+    ).to_csv(queue_path, index=False)
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+
+    result = classify_repair_review_queue(queue_path=queue_path, output_path=tmp_path / "out.csv")
+
+    assert result.considered == 0
+    assert result.suggested == 0
+    assert result.skipped_reason == "OPENAI_API_KEY missing"
+
+
+def test_classify_repair_review_queue_fails_closed_on_api_error(tmp_path, monkeypatch) -> None:
+    queue_path = tmp_path / "repair_review_live_queue.csv"
+    output_path = tmp_path / "out.csv"
+    pd.DataFrame(
+        [
+            {
+                "repair_key": "unknown fragment",
+                "repair_item": "unknown fragment",
+                "status": "unclassified",
+                "category": "unclassified",
+                "canonical_defects": "",
+            }
+        ]
+    ).to_csv(queue_path, index=False)
+    monkeypatch.setenv("OPENAI_API_KEY", "present-but-not-used")
+
+    def failing_caller(rows: pd.DataFrame, *, model: str) -> pd.DataFrame:
+        raise RuntimeError("quota exhausted")
+
+    result = classify_repair_review_queue(
+        queue_path=queue_path,
+        output_path=output_path,
+        caller=failing_caller,
+    )
+
+    assert result.considered == 1
+    assert result.suggested == 0
+    assert "quota exhausted" in result.skipped_reason
+    assert not output_path.exists()

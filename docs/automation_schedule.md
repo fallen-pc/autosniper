@@ -16,6 +16,7 @@ This job runs:
 - master database update
 - Pickles, Manheim, and Slattery external auction scrape into `output/external_auction_scrape/daily`
 - full active-listing AI revaluation
+- optional AI suggestions for unresolved Repair Review items (disabled by default)
 
 External auction saved-curve matches are loaded into the same active AI
 revaluation path as Grays restricted active rows, so repair parsing, curve
@@ -41,6 +42,18 @@ AUTOSNIPER_EXTERNAL_MANHEIM_DETAILS=25
 AUTOSNIPER_EXTERNAL_SLATTERY_PAGES=0
 AUTOSNIPER_EXTERNAL_SLATTERY_DETAILS=0
 AUTOSNIPER_EXTERNAL_AUCTIONS_OUTPUT_DIR=output\external_auction_scrape\daily
+AUTOSNIPER_AUTOTRADER_SCRAPE_ENABLED=1
+```
+
+Optional Repair Review suggestions can run after daily and hourly valuation.
+They only prefill the operator review form; they do not write dictionary rules
+or approve repair decisions. Enable them only on a machine with `OPENAI_API_KEY`
+configured:
+
+```text
+AUTOSNIPER_REPAIR_AI_CLASSIFIER=1
+AUTOSNIPER_REPAIR_AI_LIMIT=25
+AUTOSNIPER_REPAIR_AI_MODEL=gpt-4.1-mini
 ```
 
 ## Hourly Active Monitor
@@ -56,6 +69,7 @@ This job runs:
 - change detection on bid, bid count, time remaining, and status
 - AI revaluation for changed listings
 - AI revaluation for listings with stale or missing active analysis
+- optional AI suggestions for unresolved Repair Review items (when enabled)
 
 ## Telegram Alerts
 

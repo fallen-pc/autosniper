@@ -137,6 +137,79 @@ def test_revalue_active_listings_marks_missing_out_of_range_rows(monkeypatch) ->
     assert captured[0]["valuation_input_hash"]
 
 
+def test_revalue_active_listings_queues_unclassified_condition_fragments(monkeypatch) -> None:
+    target_url = "https://example.com/lot/condition-gap"
+    active_df = pd.DataFrame(
+        [
+            {
+                "url": target_url,
+                "canonical_tag": "demo_curve",
+                "canonical_reason": "[OK]",
+                "year": "2020",
+                "year_int": 2020,
+                "make": "Demo",
+                "model": "Car",
+                "variant": "Sport",
+                "location": "Sydney NSW",
+                "price": "$3,000",
+                "odometer_reading": "50,000",
+                "odometer_numeric": 50000.0,
+                "general_condition": "mystery flarbulator noted",
+            }
+        ]
+    )
+    curves_df = pd.DataFrame(
+        [
+            {
+                "canonical_tag": "demo_curve",
+                "anchor_year": 2020,
+                "km_bucket": 30000,
+                "price_low": 10000,
+                "price_mid": 11000,
+                "price_high": 12000,
+            },
+            {
+                "canonical_tag": "demo_curve",
+                "anchor_year": 2020,
+                "km_bucket": 60000,
+                "price_low": 9000,
+                "price_mid": 10000,
+                "price_high": 11000,
+            },
+        ]
+    )
+    queued: list[dict[str, object]] = []
+    analysed: list[dict[str, object]] = []
+
+    monkeypatch.setattr(active_monitor, "_prepare_all_active_rows", lambda: active_df.copy())
+    monkeypatch.setattr(active_monitor, "_prepare_active_scope", lambda: (active_df.copy(), pd.DataFrame(), curves_df.copy()))
+    monkeypatch.setattr(active_monitor, "_prune_inactive_cached_valuations", lambda df: 0)
+    monkeypatch.setattr(active_monitor, "load_cached_results", lambda: pd.DataFrame(columns=active_monitor.REQUIRED_COLUMNS))
+    monkeypatch.setattr(active_monitor, "load_autotrader_market", lambda path: pd.DataFrame())
+    monkeypatch.setattr(
+        active_monitor,
+        "append_live_review_items",
+        lambda records, **kwargs: queued.append({"records": list(records), **kwargs}) or len(list(records)),
+    )
+    monkeypatch.setattr(
+        active_monitor,
+        "run_curve_listing_analysis",
+        lambda row, resale_mid, **kwargs: analysed.append({"url": row.get("url"), "resale_mid": resale_mid, **kwargs}) or {},
+    )
+
+    summary = active_monitor.revalue_active_listings(stale_minutes=60, force_refresh=True)
+
+    assert summary["evaluated"] == 1
+    assert summary["queued_repair_items"] == 1
+    assert analysed and analysed[0]["url"] == target_url
+    assert queued
+    assert queued[0]["source_file"] == "ACTIVE_MONITOR"
+    assert queued[0]["url"] == target_url
+    assert queued[0]["vehicle"] == "2020 Demo Car Sport"
+    assert queued[0]["condition_notes"] == "mystery flarbulator noted"
+    assert queued[0]["records"][0]["status"] == "unclassified"
+
+
 def test_load_ai_analysis_active_df_uses_prepared_scope(monkeypatch) -> None:
     expected_df = pd.DataFrame(
         [

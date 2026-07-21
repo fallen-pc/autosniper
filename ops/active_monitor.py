@@ -17,10 +17,14 @@ from scripts.ai_listing_valuation import (
     upsert_manual_result_row,
 )
 from scripts.atomic_csv import write_dataframe_csv_atomic
-from shared.canonical_tagging import is_canonical_eligible
+from scripts.process_curve_candidates import DEFAULT_AUTOTRADER_SOURCE, load_autotrader_market
+from shared.canonical_tagging import UNCLASSIFIED, is_canonical_eligible
 from shared.comps_engine import parse_currency, parse_numeric
 from shared.curves import interpolate_base_by_year, list_curve_tags, load_curves, resolve_curve_canonical_tag
 from shared.data_loader import dataset_path
+from shared.location_utils import extract_state
+from shared.repair_pricing import assess_repairs, repair_fragments_to_records
+from shared.repair_review import append_live_review_items
 
 
 ACTIVE_RESTRICTED_PATH = dataset_path("active_vehicle_details_restricted.csv")
@@ -34,6 +38,61 @@ WOVR_PATTERN = re.compile(
     r"\bwovr\b|wovr[-\s]*(?:inspected|repairable|statutory)|write[-\s]?off",
     re.IGNORECASE,
 )
+
+
+def _safe_text(value: object) -> str:
+    if value is None or (isinstance(value, float) and pd.isna(value)):
+        return ""
+    text = str(value).strip()
+    if not text or text.lower() == "nan":
+        return ""
+    return text
+
+
+def _norm_key(value: object) -> str:
+    return re.sub(r"[^a-z0-9]+", "", str(value or "").strip().lower())
+
+
+def _token_match(left: object, right: object) -> bool:
+    left_key = _norm_key(left)
+    right_key = _norm_key(right)
+    if not left_key or not right_key:
+        return True
+    return left_key == right_key or left_key in right_key or right_key in left_key
+
+
+def _fuel_match(left: object, right: object) -> bool:
+    def _norm_fuel(value: object) -> str:
+        key = _norm_key(value)
+        if key in {"petrol", "unleaded", "unleadedpetrol", "premium"}:
+            return "petrol"
+        return key
+
+    return _token_match(_norm_fuel(left), _norm_fuel(right))
+
+
+def _trans_match(left: object, right: object) -> bool:
+    def _norm_trans(value: object) -> str:
+        key = _norm_key(value)
+        if key in {"auto", "automatic", "cvt", "sportsautomatic", "sptsauto"}:
+            return "auto"
+        if key == "manual":
+            return "manual"
+        return key
+
+    return _token_match(_norm_trans(left), _norm_trans(right))
+
+
+def _body_match(left: object, right: object) -> bool:
+    def _norm_body(value: object) -> str:
+        key = _norm_key(value)
+        if key in {"suv", "wagon", "stationwagon", "crossover"}:
+            return "suv_wagon"
+        if key in {"hatch", "hatchback"}:
+            return "hatchback"
+        return key
+
+    return _token_match(_norm_body(left), _norm_body(right))
 
 
 def _safe_int(value: object) -> int | None:
@@ -89,6 +148,50 @@ def _load_normalized_conditions() -> pd.DataFrame:
     df["component_normalized"] = df["component_normalized"].astype(str).str.strip()
     df = df[df["component_normalized"] != ""]
     return df
+
+
+def _listing_title(row: pd.Series) -> str:
+    parts = [
+        _safe_text(row.get("year")),
+        _safe_text(row.get("make")),
+        _safe_text(row.get("model")),
+        _safe_text(row.get("variant")),
+    ]
+    return " ".join(part for part in parts if part)
+
+
+def _condition_notes_for_review(row: pd.Series) -> str:
+    normalized = _safe_text(row.get("normalized_condition_text"))
+    if normalized:
+        return normalized
+    return _safe_text(row.get("general_condition"))
+
+
+def _queue_unclassified_condition_fragments(row: pd.Series, *, source_file: str = "ACTIVE_MONITOR") -> int:
+    condition_notes = _condition_notes_for_review(row)
+    if not condition_notes:
+        return 0
+    assessment = assess_repairs(
+        condition_notes,
+        vehicle_value=parse_currency(row.get("resale_mid")) or parse_currency(row.get("carsales_price_estimate")),
+    )
+    records = repair_fragments_to_records(assessment)
+    review_records = [
+        record
+        for record in records
+        if _safe_text(record.get("status")) in {"unclassified", "not_assessed_after_hard_avoid"}
+        or _safe_text(record.get("category")) in {"unclassified", "not_assessed"}
+        or not _safe_text(record.get("canonical_defects"))
+    ]
+    if not review_records:
+        return 0
+    return append_live_review_items(
+        review_records,
+        vehicle=_listing_title(row),
+        url=_safe_text(row.get("url")),
+        condition_notes=condition_notes,
+        source_file=source_file,
+    )
 
 
 def _merge_live_fields(active_df: pd.DataFrame, live_df: pd.DataFrame) -> pd.DataFrame:
@@ -313,6 +416,135 @@ def _build_sold_stats(sold_df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame
     return sold_stats_group, sold_stats_year
 
 
+def _score_autotrader_matches(
+    autotrader_df: pd.DataFrame,
+    listing_row: pd.Series,
+    curve_tag: str,
+    *,
+    limit: int = 50,
+) -> pd.DataFrame:
+    if autotrader_df.empty or not curve_tag:
+        return pd.DataFrame()
+    target_km = parse_numeric(listing_row.get("odometer_reading"))
+    if target_km is None or target_km <= 0:
+        return pd.DataFrame()
+
+    listing_year = _safe_int(listing_row.get("year"))
+    listing_state = extract_state(
+        listing_row.get("location_state")
+        or listing_row.get("rego_state")
+        or listing_row.get("location")
+    )
+    listing_make = _norm_key(listing_row.get("make"))
+    listing_fuel = listing_row.get("fuel_type")
+    listing_trans = listing_row.get("transmission")
+    listing_body = listing_row.get("body_type")
+
+    rows: list[dict[str, object]] = []
+    for _, candidate in autotrader_df.iterrows():
+        if listing_make and _norm_key(candidate.get("make")) != listing_make:
+            continue
+
+        candidate_tag = str(candidate.get("canonical_tag") or "").strip()
+        if candidate_tag == UNCLASSIFIED:
+            continue
+        candidate_tag = resolve_curve_canonical_tag(candidate_tag)
+        if candidate_tag != curve_tag:
+            continue
+
+        if not _fuel_match(listing_fuel, candidate.get("fuel_type")):
+            continue
+        if not _trans_match(listing_trans, candidate.get("transmission")):
+            continue
+        if not _body_match(listing_body, candidate.get("body_type")):
+            continue
+
+        candidate_km = candidate.get("odometer_numeric")
+        if candidate_km is None or pd.isna(candidate_km):
+            continue
+        km_diff = abs(float(candidate_km) - float(target_km))
+        if km_diff > 100000:
+            continue
+
+        state_penalty = 0.0
+        candidate_state = extract_state(candidate.get("location"))
+        if listing_state and candidate_state and listing_state != candidate_state:
+            state_penalty = 0.05
+
+        age_penalty = 0.0
+        candidate_year = candidate.get("year_numeric")
+        if listing_year is not None and candidate_year is not None and not pd.isna(candidate_year):
+            year_diff = abs(int(candidate_year) - listing_year)
+            if year_diff == 1:
+                age_penalty = 0.05
+            elif year_diff > 1:
+                age_penalty = 0.15
+
+        row = candidate.to_dict()
+        row["price_value"] = candidate.get("price_numeric")
+        row["odometer_value"] = candidate.get("odometer_numeric")
+        row["match_score"] = min(km_diff / 100000.0, 1.0) + state_penalty + age_penalty
+        rows.append(row)
+
+    if not rows:
+        return pd.DataFrame()
+    return pd.DataFrame(rows).sort_values("match_score").head(max(1, int(limit))).reset_index(drop=True)
+
+
+def _market_lifecycle_summary(matches: pd.DataFrame, curve_resale: object) -> dict[str, object]:
+    resale_value = parse_currency(curve_resale)
+    if matches.empty or resale_value is None or resale_value <= 0:
+        return {
+            "matched_count": 0,
+            "fast_clear_count": 0,
+            "stale_active_count": 0,
+            "near_curve_count": 0,
+        }
+
+    now_ts = pd.Timestamp.now(tz="UTC")
+    fast_clear_count = 0
+    stale_active_count = 0
+    near_curve_count = 0
+    observed_days: list[float] = []
+    near_prices: list[float] = []
+
+    for _, match in matches.iterrows():
+        price_value = parse_currency(match.get("price_value") or match.get("price_numeric") or match.get("price"))
+        if price_value is None or price_value <= 0:
+            continue
+        if abs(price_value - resale_value) / resale_value > 0.10:
+            continue
+        near_curve_count += 1
+        near_prices.append(float(price_value))
+
+        first_seen = pd.to_datetime(match.get("first_seen"), errors="coerce", utc=True)
+        last_seen = pd.to_datetime(match.get("last_seen"), errors="coerce", utc=True)
+        sold_date = pd.to_datetime(match.get("sold_date"), errors="coerce", utc=True)
+        status = str(match.get("status") or "").strip().lower()
+
+        end_seen = sold_date if pd.notna(sold_date) else last_seen
+        if pd.notna(first_seen) and pd.notna(end_seen):
+            days_listed = max(0.0, (end_seen - first_seen).total_seconds() / 86400.0)
+            observed_days.append(days_listed)
+            if status in {"sold", "removed", "expired"} and days_listed <= 5:
+                fast_clear_count += 1
+
+        if status in {"", "active"} and pd.notna(first_seen):
+            active_days = max(0.0, (now_ts - first_seen).total_seconds() / 86400.0)
+            observed_days.append(active_days)
+            if active_days >= 30:
+                stale_active_count += 1
+
+    return {
+        "matched_count": int(len(matches)),
+        "fast_clear_count": int(fast_clear_count),
+        "stale_active_count": int(stale_active_count),
+        "near_curve_count": int(near_curve_count),
+        "median_days_listed": float(pd.Series(observed_days).median()) if observed_days else None,
+        "median_near_curve_price": float(pd.Series(near_prices).median()) if near_prices else None,
+    }
+
+
 def _stale_or_missing_urls(active_df: pd.DataFrame, stale_minutes: int) -> set[str]:
     cached_df = load_cached_results()
     active_urls = set(active_df["url"].dropna().astype(str).tolist())
@@ -467,6 +699,7 @@ def revalue_active_listings(
     if all_active_df.empty and active_df.empty:
         return {"evaluated": 0, "urls": []}
     pruned_count = _prune_inactive_cached_valuations(all_active_df)
+    autotrader_df = load_autotrader_market(DEFAULT_AUTOTRADER_SOURCE)
 
     sold_stats_group, sold_stats_year = _build_sold_stats(sold_df)
     if target_urls is None:
@@ -490,6 +723,7 @@ def revalue_active_listings(
 
     scoped_df = active_df[active_df["url"].isin(urls_to_process)].copy()
     evaluated_urls: list[str] = []
+    queued_repair_items = 0
     for _, row in scoped_df.iterrows():
         curve_key = resolve_curve_canonical_tag(row.get("canonical_tag"))
         if not curve_key:
@@ -504,14 +738,25 @@ def revalue_active_listings(
             stats = sold_stats_group.loc[curve_key]
         comps_count = int(stats["comps_count"]) if stats is not None else 0
         comps_median = float(stats["comps_median"]) if stats is not None else None
+        autotrader_median = None
+        market_lifecycle = None
+        at_matches = _score_autotrader_matches(autotrader_df, row, curve_key, limit=50)
+        if not at_matches.empty and "price_value" in at_matches.columns:
+            price_series = pd.to_numeric(at_matches["price_value"], errors="coerce").dropna()
+            if not price_series.empty:
+                autotrader_median = float(price_series.median())
+        market_lifecycle = _market_lifecycle_summary(at_matches, base_estimate)
+        queued_repair_items += _queue_unclassified_condition_fragments(row)
         run_curve_listing_analysis(
             row,
             base_estimate,
             comps_median=comps_median,
             comps_count=comps_count,
             analysis_context="active",
+            autotrader_median=autotrader_median,
             carsales_estimate=base_estimate,
             listings_cluster_ok=bool(comps_count >= 3),
+            market_lifecycle=market_lifecycle,
             force_refresh=force_refresh,
         )
         evaluated_urls.append(str(row.get("url")))
@@ -520,6 +765,7 @@ def revalue_active_listings(
         "urls": evaluated_urls,
         "dropped_coverage": dropped_count,
         "pruned_inactive": pruned_count,
+        "queued_repair_items": queued_repair_items,
     }
 
 

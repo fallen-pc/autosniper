@@ -7,6 +7,7 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
+from shared.repair_ai_classifier import AI_SUGGESTIONS_PATH, load_ai_suggestions
 from shared.repair_review import LIVE_QUEUE_PATH
 from shared.styling import clean_html, display_banner, escape_html, inject_global_styles, page_intro
 
@@ -118,6 +119,10 @@ def load_decisions() -> pd.DataFrame:
     return df[REVIEW_COLUMNS]
 
 
+def load_suggestions() -> pd.DataFrame:
+    return load_ai_suggestions(AI_SUGGESTIONS_PATH)
+
+
 def safe_text(value: object) -> str:
     if value is None or (isinstance(value, float) and pd.isna(value)):
         return ""
@@ -169,6 +174,37 @@ def apply_decisions(df: pd.DataFrame, decisions: pd.DataFrame) -> pd.DataFrame:
     return merged
 
 
+def apply_ai_suggestions(df: pd.DataFrame, suggestions: pd.DataFrame) -> pd.DataFrame:
+    if suggestions.empty or "repair_key" not in suggestions.columns:
+        for column in [
+            "ai_decision",
+            "ai_target_category",
+            "ai_canonical_defect",
+            "ai_severity_hint",
+            "ai_cost_model",
+            "ai_confidence",
+            "ai_rationale",
+        ]:
+            df[column] = ""
+        return df
+    latest = suggestions.drop_duplicates(subset=["repair_key"], keep="last")
+    columns = [
+        "repair_key",
+        "ai_decision",
+        "ai_target_category",
+        "ai_canonical_defect",
+        "ai_severity_hint",
+        "ai_cost_model",
+        "ai_confidence",
+        "ai_rationale",
+    ]
+    merged = df.merge(latest[columns], on="repair_key", how="left")
+    for column in columns:
+        if column != "repair_key":
+            merged[column] = merged[column].fillna("")
+    return merged
+
+
 def upsert_decision(record: dict[str, str]) -> None:
     DECISIONS_PATH.parent.mkdir(parents=True, exist_ok=True)
     decisions = load_decisions()
@@ -213,6 +249,11 @@ def suggested_review_defaults(selected: pd.Series, existing: pd.Series) -> dict[
     canonical = safe_text(existing.get("canonical_defect")) or safe_text(selected.get("canonical_defects"))
     severity = safe_text(existing.get("severity_hint"))
     cost_model = safe_text(existing.get("cost_model"))
+    ai_decision = safe_text(selected.get("ai_decision"))
+    ai_category = safe_text(selected.get("ai_target_category"))
+    ai_canonical = safe_text(selected.get("ai_canonical_defect"))
+    ai_severity = safe_text(selected.get("ai_severity_hint"))
+    ai_cost_model = safe_text(selected.get("ai_cost_model"))
 
     if status == "hard_avoid":
         if not severity:
@@ -223,11 +264,12 @@ def suggested_review_defaults(selected: pd.Series, existing: pd.Series) -> dict[
             canonical = canonical_from_repair_key(selected.get("repair_key"))
 
     return {
-        "target_category": safe_text(existing.get("target_category")) or category,
-        "canonical_defect": canonical,
-        "severity_hint": severity,
-        "cost_model": cost_model,
-        "notes": safe_text(existing.get("notes")),
+        "decision": safe_text(existing.get("decision")) or ai_decision,
+        "target_category": safe_text(existing.get("target_category")) or ai_category or category,
+        "canonical_defect": canonical or ai_canonical,
+        "severity_hint": severity or ai_severity,
+        "cost_model": cost_model or ai_cost_model,
+        "notes": safe_text(existing.get("notes")) or safe_text(selected.get("ai_rationale")),
     }
 
 
@@ -334,6 +376,8 @@ lines_df["review_bucket"] = lines_df.apply(review_bucket, axis=1)
 
 decisions_df = load_decisions()
 lines_df = apply_decisions(lines_df, decisions_df)
+suggestions_df = load_suggestions()
+lines_df = apply_ai_suggestions(lines_df, suggestions_df)
 summary = load_summary()
 
 metric_html = "".join(
@@ -342,6 +386,7 @@ metric_html = "".join(
         display_metric("Deduped lines", f'{summary.get("deduped_repair_lines", len(lines_df)):,}', "review universe"),
         display_metric("Unclassified", f'{summary.get("unclassified_lines", 0):,}', "occurrences remaining"),
         display_metric("Decisions", f"{len(decisions_df):,}", "saved review rows"),
+        display_metric("AI suggestions", f"{len(suggestions_df):,}", "pending defaults"),
     ]
 )
 st.markdown(f'<div class="repair-review-grid autosniper-repair-grid">{metric_html}</div>', unsafe_allow_html=True)
@@ -431,6 +476,9 @@ with queue_tab:
         "status",
         "category",
         "canonical_defects",
+        "ai_decision",
+        "ai_canonical_defect",
+        "ai_confidence",
         "decision",
         "target_category",
         "canonical_defect",
@@ -477,6 +525,10 @@ with queue_tab:
                     <div class="repair-review-item">
                       <div class="k">Current parser output</div>
                       <div class="v">status={safe_text(selected.get("status"))} | category={safe_text(selected.get("category"))} | match={safe_text(selected.get("canonical_defects"))}</div>
+                    </div>
+                    <div class="repair-review-item">
+                      <div class="k">AI suggestion</div>
+                      <div class="v">{safe_text(selected.get("ai_decision")) or "No suggestion"} | {safe_text(selected.get("ai_target_category"))} | {safe_text(selected.get("ai_canonical_defect"))} | confidence={safe_text(selected.get("ai_confidence"))}</div>
                     </div>
                     """
                 ),
@@ -559,6 +611,8 @@ with queue_tab:
         else:
             existing = pd.Series(dtype=object)
         defaults = suggested_review_defaults(selected, existing)
+        if defaults["decision"] in decision_options_form:
+            suggested_decision = defaults["decision"]
         category_default = defaults["target_category"]
         severity_default = defaults["severity_hint"]
         cost_default = defaults["cost_model"]

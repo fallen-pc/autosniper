@@ -21,6 +21,7 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 from scripts import extract_links, extract_vehicle_details, scrape_external_auction_sources, update_bids, update_master
+from shared.repair_ai_classifier import classify_repair_review_queue
 from scripts.active_monitor import (
     active_urls_from_frame,
     diff_price_changed_listing_urls,
@@ -29,6 +30,7 @@ from scripts.active_monitor import (
 )
 from scripts.outcome_tracking import compute_outcome_metrics
 from shared.data_loader import dataset_path
+from shared.decision_policy import derive_action_label_from_row
 from shared.governance import write_governance_report_bundle
 from shared.sold_cleaning import is_compliance_slug, normalize_listing_fields
 from shared.scraper_health import write_scraper_health_report
@@ -425,7 +427,7 @@ def _send_job_failure_alert(job: str, detail: str) -> None:
 
 def _action_counts_text(df: pd.DataFrame) -> str:
     counts = df["action_label"].fillna("").astype(str).str.strip().value_counts().to_dict()
-    ordered = ["Buy", "Watch", "Avoid", "Review"]
+    ordered = ["Buy", "Avoid", "Review"]
     parts = [f"{label} {int(counts.get(label, 0))}" for label in ordered]
     other_count = sum(int(count) for label, count in counts.items() if label and label not in ordered)
     if other_count:
@@ -449,6 +451,15 @@ def _load_daily_ai_analysis_frame() -> pd.DataFrame:
     if "analysis_context" in df.columns:
         active_mask = df["analysis_context"].fillna("").astype(str).str.strip().str.lower() == "active"
         df = df[active_mask].copy()
+    if not df.empty:
+        df["action_label"] = df.apply(
+            lambda row: derive_action_label_from_row(
+                row,
+                min_profit=1000.0,
+                fallback=row.get("action_label") or "Review",
+            ),
+            axis=1,
+        )
     active_path = dataset_path("active_vehicle_details.csv")
     if active_path.exists() and "url" in df.columns:
         try:
@@ -631,6 +642,21 @@ def _run_update_bids(urls: Iterable[str], *, skip_master: bool = True) -> None:
     )
 
 
+def _run_repair_ai_classifier_if_enabled() -> None:
+    if not _env_flag_enabled("AUTOSNIPER_REPAIR_AI_CLASSIFIER"):
+        print("Repair AI classifier skipped: AUTOSNIPER_REPAIR_AI_CLASSIFIER is not enabled.")
+        return
+    limit = _env_int("AUTOSNIPER_REPAIR_AI_LIMIT", 25, minimum=1)
+    result = classify_repair_review_queue(limit=limit)
+    if result.skipped_reason:
+        print(f"Repair AI classifier skipped: {result.skipped_reason}.")
+        return
+    print(
+        "Repair AI classifier completed: "
+        f"considered={result.considered}, suggested={result.suggested}, output={result.output_path}."
+    )
+
+
 def run_daily_pipeline() -> None:
     extract_links.extract_all_vehicle_links()
     extract_vehicle_details.main()
@@ -639,6 +665,7 @@ def run_daily_pipeline() -> None:
     update_master.update_master_database()
     _run_external_auction_scrape_if_enabled()
     revalue_active_listings(stale_minutes=0, force_refresh=True)
+    _run_repair_ai_classifier_if_enabled()
     report_bundle = write_governance_report_bundle(GOVERNANCE_REPORT_DIR)
     compute_outcome_metrics()
     coverage_summary = report_bundle["coverage_summary"]
@@ -659,6 +686,7 @@ def run_hourly_monitor() -> None:
     after_df = load_ai_analysis_active_df()
     price_changed_urls = diff_price_changed_listing_urls(before_df, after_df)
     summary = revalue_active_listings(target_urls=price_changed_urls, stale_minutes=60, force_refresh=True)
+    _run_repair_ai_classifier_if_enabled()
     print(
         "Hourly monitor complete: "
         f"{len(price_changed_urls):,} price-changed URLs, {int(summary.get('evaluated', 0)):,} listings revalued."
@@ -685,6 +713,10 @@ def run_vic_refresh_hourly() -> None:
 
 
 def _run_autotrader_scrape(max_pages: int | None = None) -> None:
+    if _env_flag_disabled("AUTOSNIPER_AUTOTRADER_SCRAPE_ENABLED"):
+        print("Autotrader scrape skipped: AUTOSNIPER_AUTOTRADER_SCRAPE_ENABLED is disabled.")
+        return
+
     storage_state = ROOT_DIR / "autotrader_isolated" / "output" / "storage_state.json"
     cookie_file = ROOT_DIR / "autotrader_isolated" / "output" / "autotrader_cookie.txt"
     if not storage_state.exists():

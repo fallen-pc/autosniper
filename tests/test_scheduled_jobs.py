@@ -6,6 +6,7 @@ import subprocess
 import sys
 import time
 from datetime import date, datetime, timezone
+from types import SimpleNamespace
 
 import pandas as pd
 
@@ -168,7 +169,7 @@ def test_daily_ai_analysis_summary_reports_active_action_counts(monkeypatch, tmp
     assert calls[0]["verdict"] == "Buy 1"
     assert "AutoSniper daily status" in str(calls[0]["message"])
     assert "Current active AI rows: 3" in str(calls[0]["message"])
-    assert "AI actions: Buy 1 | Watch 1 | Avoid 1 | Review 0" in str(calls[0]["message"])
+    assert "AI actions: Buy 1 | Avoid 1 | Review 1" in str(calls[0]["message"])
     assert "Bid positions: Cheap 1 | Near ceiling 1 | Over max 1" in str(calls[0]["message"])
     assert "Result: 1 Buy candidate(s). Individual listing alerts are sent separately." in str(calls[0]["message"])
 
@@ -493,6 +494,7 @@ def test_external_auction_daily_scrape_can_be_disabled(monkeypatch) -> None:
 
 
 def test_scheduled_autotrader_uses_seed_urls_file(monkeypatch, tmp_path) -> None:
+    monkeypatch.setenv("AUTOSNIPER_AUTOTRADER_SCRAPE_ENABLED", "1")
     calls: list[list[str]] = []
     storage_state = tmp_path / "autotrader_isolated" / "output" / "storage_state.json"
     cookie_file = tmp_path / "autotrader_isolated" / "output" / "autotrader_cookie.txt"
@@ -521,6 +523,54 @@ def test_scheduled_autotrader_uses_seed_urls_file(monkeypatch, tmp_path) -> None
     assert command[command.index("--urls-file") + 1] == str(seed_urls)
     assert "--max-pages" in command
     assert command[command.index("--max-pages") + 1] == "2"
+
+
+def test_scheduled_autotrader_skips_when_disabled(monkeypatch, tmp_path, capsys) -> None:
+    calls: list[list[str]] = []
+    monkeypatch.setenv("AUTOSNIPER_AUTOTRADER_SCRAPE_ENABLED", "0")
+    monkeypatch.setattr(scheduled_jobs, "ROOT_DIR", tmp_path)
+    monkeypatch.setattr(
+        scheduled_jobs.subprocess,
+        "run",
+        lambda command, check: calls.append(command),
+    )
+
+    scheduled_jobs._run_autotrader_scrape()
+
+    assert calls == []
+    assert "Autotrader scrape skipped" in capsys.readouterr().out
+
+
+def test_repair_ai_classifier_skips_unless_enabled(monkeypatch, capsys) -> None:
+    calls: list[int] = []
+    monkeypatch.delenv("AUTOSNIPER_REPAIR_AI_CLASSIFIER", raising=False)
+    monkeypatch.setattr(
+        scheduled_jobs,
+        "classify_repair_review_queue",
+        lambda *, limit: calls.append(limit),
+    )
+
+    scheduled_jobs._run_repair_ai_classifier_if_enabled()
+
+    assert calls == []
+    assert "not enabled" in capsys.readouterr().out
+
+
+def test_repair_ai_classifier_uses_configured_limit(monkeypatch, capsys) -> None:
+    calls: list[int] = []
+    monkeypatch.setenv("AUTOSNIPER_REPAIR_AI_CLASSIFIER", "1")
+    monkeypatch.setenv("AUTOSNIPER_REPAIR_AI_LIMIT", "7")
+    monkeypatch.setattr(
+        scheduled_jobs,
+        "classify_repair_review_queue",
+        lambda *, limit: calls.append(limit)
+        or SimpleNamespace(considered=7, suggested=5, output_path="suggestions.csv", skipped_reason=""),
+    )
+
+    scheduled_jobs._run_repair_ai_classifier_if_enabled()
+
+    assert calls == [7]
+    assert "considered=7, suggested=5" in capsys.readouterr().out
 
 
 def test_runtime_backup_skips_when_backup_dir_not_configured(monkeypatch) -> None:
