@@ -1,3 +1,5 @@
+import pandas as pd
+
 from shared.canonical_tagging import _load_curve_year_band, assign_canonical_tag
 
 
@@ -64,8 +66,20 @@ def test_assign_canonical_tag_rejects_holden_commodore_vf_gas_only_wagon():
     assert assign_canonical_tag(gas_row, require_price=True)[0] == "UNCLASSIFIED"
 
 
-def test_assign_canonical_tag_accepts_holden_commodore_ve_omega_and_sv6_sedan_and_wagon():
+def test_assign_canonical_tag_accepts_holden_commodore_ve_omega_and_sv6_sedan_and_wagon(monkeypatch):
     _load_curve_year_band.cache_clear()
+    fixture_bands = pd.DataFrame(
+        [
+            {"tag": "holden_commodore_omega_ve_sedan_auto_petrol", "min_year": 2006, "max_year": 2010},
+            {"tag": "holden_commodore_sv6_ve_sedan_auto_petrol", "min_year": 2006, "max_year": 2010},
+            {"tag": "holden_commodore_omega_ve_wagon_auto_petrol", "min_year": 2008, "max_year": 2010},
+            {"tag": "holden_commodore_sv6_ve_wagon_auto_petrol", "min_year": 2008, "max_year": 2010},
+        ]
+    ).set_index("tag")
+    monkeypatch.setattr(
+        "shared.canonical_tagging._load_curve_year_band",
+        lambda: fixture_bands,
+    )
     omega_sedan = {
         "make": "Holden",
         "model": "Commodore",
@@ -171,7 +185,10 @@ def test_assign_canonical_tag_accepts_holden_commodore_ve_series_ii_omega_wagon_
         "holden_commodore_omega_petrol_auto_wagon_ve-series-ii",
         "[OK]",
     )
-    assert assign_canonical_tag(sv6_wagon, require_price=True)[0] == "UNCLASSIFIED"
+    assert assign_canonical_tag(sv6_wagon, require_price=True)[0:2] == (
+        "holden_commodore_sv6_petrol_auto_wagon_ve-series-ii",
+        "[OK]",
+    )
     assert assign_canonical_tag(gas_wagon, require_price=True)[0] == "UNCLASSIFIED"
 
 

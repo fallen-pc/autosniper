@@ -16,6 +16,7 @@ from shared.curve_groups_v2 import load_curve_anchor_overrides_v2, load_curve_gr
 from shared.curves import resolve_curve_canonical_tag
 from shared.data_loader import dataset_path
 from shared.validators import R
+from scripts.atomic_csv import write_dataframe_csv_atomic
 
 UNCLASSIFIED = "UNCLASSIFIED"
 
@@ -33,7 +34,7 @@ ALLOWED_VARIANTS_PATH = CONFIG_DIR / "allowed_variants.csv"
 LEGACY_ALLOWED_VARIANTS_PATH = CONFIG_DIR / "toyota_allowed_variants.csv"
 NORMALISATION_RULES_PATH = CONFIG_DIR / "normalisation_rules.csv"
 LEGACY_NORMALISATION_RULES_PATH = CONFIG_DIR / "toyota_normalisation_rules.csv"
-TAG_LOG_PATH = dataset_path("quality/canonical_tagging_log.csv")
+TAG_LOG_PATH = dataset_path("quality/canonical_tagging_log_latest.csv")
 ELIGIBLE_CANONICAL_REASONS = {"", R.OK, "MATCHED", "NORMALISED_MATCH"}
 
 MAKE_ALIASES = {
@@ -829,12 +830,13 @@ def _snapshot_fields(row: Mapping[str, object]) -> dict[str, object]:
 
 
 def _append_tag_log(rows: Sequence[dict[str, object]]) -> None:
-    if not rows:
-        return
     TAG_LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
-    file_exists = TAG_LOG_PATH.exists()
-    df = pd.DataFrame(rows)
-    df.to_csv(TAG_LOG_PATH, mode="a", header=not file_exists, index=False)
+    columns = ["timestamp", "source", "url", "reason_code", "field_snapshot"]
+    df = pd.DataFrame(rows, columns=columns).drop_duplicates(
+        subset=["source", "url", "reason_code"],
+        keep="last",
+    )
+    write_dataframe_csv_atomic(df, TAG_LOG_PATH, index=False)
 
 
 def tag_dataframe(

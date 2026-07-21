@@ -99,7 +99,7 @@ def test_isuzu_mux_first_generation_2014_rows_map_to_existing_lanes(variant, exp
     assert assign_canonical_tag(row, require_price=True)[0:2] == (expected_tag, "[OK]")
 
 
-def test_isuzu_mux_2021_newer_generation_stays_out_of_first_generation_curve():
+def test_isuzu_mux_2021_newer_generation_maps_to_generation_two_curve():
     _load_curve_year_band.cache_clear()
 
     row = {
@@ -116,5 +116,5 @@ def test_isuzu_mux_2021_newer_generation_stays_out_of_first_generation_curve():
 
     tag, reason = assign_canonical_tag(row, require_price=True)
 
-    assert tag == "UNCLASSIFIED"
-    assert reason == "[OUT_OF_SCOPE_YEAR]"
+    assert tag == "isuzu_mux_lst_diesel_auto_suv_mux-gen2"
+    assert reason == "[OK]"

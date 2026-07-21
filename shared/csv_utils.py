@@ -2,10 +2,23 @@
 
 from __future__ import annotations
 
+import csv
 from pathlib import Path
 from typing import Any
 
 import pandas as pd
+
+
+def count_csv_records(path: Path | str) -> int | None:
+    """Count logical CSV records, including rows with quoted embedded newlines."""
+    file_path = Path(path)
+    if not file_path.exists():
+        return None
+    try:
+        with file_path.open("r", encoding="utf-8", errors="ignore", newline="") as handle:
+            return max(sum(1 for _ in csv.reader(handle)) - 1, 0)
+    except (OSError, csv.Error):
+        return None
 
 
 def read_csv_stable(path: Path | str, **kwargs: Any) -> pd.DataFrame:
