@@ -28,6 +28,13 @@ from shared.curves import (
 from shared.data_loader import dataset_path, ensure_datasets_available
 from shared.decision_policy import action_display_parts, derive_action_label_from_row
 from shared.global_filters import apply_global_sidebar_filters, render_global_sidebar_filters
+from shared.buying_lanes import (
+    ALL_CAPITAL_LANES,
+    CAPITAL_LANE_OPTIONS,
+    HIGHER_CAPITAL_LANE,
+    classify_capital_lane,
+    filter_capital_lane,
+)
 from shared.location_utils import extract_state
 from shared.repair_features import build_repair_features
 from shared.repair_pricing import (
@@ -2871,6 +2878,11 @@ else:
         }
     )
 group_filter = st.sidebar.selectbox("Vehicle curve", ["All"] + group_values)
+capital_lane_filter = st.sidebar.selectbox("Capital lane", CAPITAL_LANE_OPTIONS)
+if capital_lane_filter == HIGHER_CAPITAL_LANE:
+    st.sidebar.caption(
+        "Curve resale $20k-$40k. Normal action, repair, risk and auction-site proxy ceilings still apply."
+    )
 refresh_clicked = st.sidebar.button("Refresh valuations")
 force_refresh = refresh_clicked
 
@@ -3744,6 +3756,7 @@ output = output.copy()
 output["action_label"] = output.apply(_resolve_action_label, axis=1)
 output["profit_margin_value"] = output.apply(_compute_profit_margin_value, axis=1)
 output["resale_value"] = output.apply(_compute_resale_value, axis=1)
+output["capital_lane"] = output["resale_value"].apply(classify_capital_lane)
 output["max_bid_value"] = output.apply(_compute_max_bid_value, axis=1)
 output["score_100_value"] = output.apply(_compute_score_100_value, axis=1)
 output["verdict_label"] = output["computed_verdict"].apply(lambda value: _map_verdict_label(str(value))[0])
@@ -3766,6 +3779,9 @@ else:
     if group_filter != "All":
         group_column = "curve_tag" if "curve_tag" in filtered_output.columns else "canonical_tag"
         filtered_output = filtered_output[filtered_output[group_column] == group_filter]
+
+    if capital_lane_filter != ALL_CAPITAL_LANES:
+        filtered_output = filter_capital_lane(filtered_output, capital_lane_filter)
 
     if hide_avoid:
         filtered_output = filtered_output[filtered_output["action_label"] != "Avoid"]
@@ -4131,6 +4147,9 @@ def render_listing_card(row: pd.Series) -> None:
     )
 
     header_meta_parts = []
+    capital_lane = _safe_text(row.get("capital_lane"), fallback="").strip()
+    if capital_lane:
+        header_meta_parts.append(capital_lane)
     if canonical_tag:
         header_meta_parts.append(f"Tag {canonical_tag}")
     normalized_text = _safe_text(row.get("normalized_condition_text"), fallback="").strip()
