@@ -45,6 +45,37 @@ def test_assign_canonical_tag_accepts_mitsubishi_pajero_glx_nt_nw_diesel_auto_on
     assert assign_canonical_tag(petrol_row, require_price=True)[0] == "UNCLASSIFIED"
 
 
+def test_assign_canonical_tag_keeps_pajero_sport_qe_out_of_pajero_nx_lanes():
+    _load_curve_year_band.cache_clear()
+    base_row = {
+        "make": "Mitsubishi",
+        "model": "Pajero",
+        "body_type": "SUV",
+        "transmission": "Automatic",
+        "fuel_type": "Diesel",
+        "year": "2018",
+        "price": "25000",
+    }
+
+    for badge in ("GLX", "GLS", "Exceed"):
+        sport_row = {
+            **base_row,
+            "variant": f"Pajero Sport {badge} QE diesel automatic SUV",
+            "url": f"https://www.example.com/2018-mitsubishi-pajero-sport-{badge.lower()}-qe",
+        }
+        nx_row = {
+            **base_row,
+            "variant": f"{badge} NX diesel automatic SUV",
+            "url": f"https://www.example.com/2018-mitsubishi-pajero-{badge.lower()}-nx",
+        }
+
+        assert assign_canonical_tag(sport_row, require_price=True)[0] == "UNCLASSIFIED"
+        assert assign_canonical_tag(nx_row, require_price=True)[0:2] == (
+            f"mitsubishi_pajero_{badge.lower()}_diesel_auto_suv_nx",
+            "[OK]",
+        )
+
+
 def test_assign_canonical_tag_accepts_mitsubishi_triton_glx_mn_manual_only():
     _load_curve_year_band.cache_clear()
     glx_manual = {

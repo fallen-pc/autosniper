@@ -68,3 +68,10 @@ Why:
 - `mitsubishi_pajero_glx_nx_suv_auto_diesel` was built or extended from `21` clean private Carsales/Apify same-lane rows spanning `2015`-`2021`. Nearby trim, body, transmission, fuel, and generation lanes remain separate; Grays sold evidence is not used to reprice this retail curve.
 - `mitsubishi_pajero_gls_nx_suv_auto_diesel` was built or extended from `13` clean private Carsales/Apify same-lane rows spanning `2014`-`2020`. Nearby trim, body, transmission, fuel, and generation lanes remain separate; Grays sold evidence is not used to reprice this retail curve.
 - `mitsubishi_pajero_exceed_nx_suv_auto_diesel` was built or extended from `11` clean private Carsales/Apify same-lane rows spanning `2014`-`2020`. Nearby trim, body, transmission, fuel, and generation lanes remain separate; Grays sold evidence is not used to reprice this retail curve.
+
+## Pajero NX High-Km Extension - 2026-07-23
+
+- Added the governed `225000` km bucket to the existing GLX, GLS, and Exceed NX diesel automatic SUV curves.
+- Each extension continues that anchor year's existing `150000` to `200000` depreciation slope for another `25000` km, rounded conservatively to the nearest `$100`.
+- Staged private Carsales evidence contains genuine NX examples above `200000` km in all three trim lanes. The extension preserves the existing retail curve shape rather than refitting the full curve from the thin high-km sample.
+- Pajero Sport/QE is explicitly excluded from all three NX matchers. Grays Pajero Sport rows remain separate buy-side evidence and cannot feed Pajero NX historical comparisons.

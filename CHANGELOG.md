@@ -1,5 +1,8 @@
 # Changelog
 
+## 2026-07-23
+- Kept Pajero Sport/QE rows out of Pajero NX GLX, GLS, and Exceed matching, and added governed `225000` km retail-curve cells for those three NX lanes using the existing same-lane depreciation shape.
+
 ## 2026-07-18
 - Added Autotrader lifecycle confidence signals to AI Analysis: matched listings now retain first/last seen and sold/removed status, fast near-curve removals boost confidence, stale near-curve active listings warn, and Autotrader-vs-Carsales curve mismatches surface as non-blocking risk flags.
 - Removed the hidden legacy Curve Builder page and stripped the old AI/OpenAI/Ollama curve writer internals from `scripts/process_curve_candidates.py`; Curve Builder V2 is now the only save-capable curve-building surface.
