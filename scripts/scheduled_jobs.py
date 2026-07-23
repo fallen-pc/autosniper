@@ -733,6 +733,7 @@ def _run_autotrader_scrape(max_pages: int | None = None) -> None:
         "--playwright-headful",
         "--playwright-browser",
         "chrome",
+        "--playwright-block-resources",
         "--storage-state",
         str(storage_state),
         "--cookie-file",
