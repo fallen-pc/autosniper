@@ -232,7 +232,6 @@ flowchart LR
     P2["Costs and frictions<br/>fees, transport, rego, RWC, prep, repairs"]:::ai
     P3["Auction-site proxy max<br/>economic ceiling + safety buffer"]:::ai
     P4["Shared action label<br/>Buy / Avoid / Review"]:::risk
-    P5["Top Buy behaviour<br/>extra gate for best opportunities"]:::risk
   end
 
   subgraph S6["6. Operator Surfaces"]
@@ -281,9 +280,8 @@ flowchart LR
   P1 --> P2
   P2 --> P3
   P3 --> P4
-  P4 --> P5
   P4 --> U3
-  P5 --> U2
+  P4 --> U2
   D3 --> U1
   D3 --> U2
   D3 --> U4

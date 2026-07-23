@@ -145,7 +145,6 @@ Remove V2/legacy duplication where one path is now canonical (especially curve b
 - `sold_cleaning.py`
 - `state_machine.py`
 - `validators.py`
-- `top_buy.py`
 
 ### Likely UI package candidates
 - `navigation.py`

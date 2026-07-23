@@ -6,7 +6,6 @@ import pandas as pd
 
 from scripts import ai_listing_valuation
 from shared.repair_pricing import RepairAssessment
-from shared.top_buy import TopBuyResult
 
 
 def _base_saved_row(**overrides) -> dict[str, object]:
@@ -1349,75 +1348,6 @@ def test_curve_analysis_uses_worst_case_margin_for_profit_percent(monkeypatch) -
     assert resale_mid is not None and worst_profit is not None and mid_profit is not None
     assert margin_pct == round((worst_profit / resale_mid) * 100.0, 1)
     assert margin_pct != round((mid_profit / resale_mid) * 100.0, 1)
-
-
-def test_curve_analysis_top_buy_gate_uses_worst_case_margin(monkeypatch) -> None:
-    repair_assessment = RepairAssessment(
-        hard_avoid=False,
-        pills=[],
-        cosmetic_panels=0,
-        glass_cost=0,
-        replacement_cost=0,
-        risk_buffer=0,
-        base_cost=0,
-        severity_level="minor",
-        severity_multiplier=1.0,
-        total_cost=0,
-        reasons=[],
-    )
-    listing = pd.Series(
-        {
-            "url": "test://top-buy-margin-basis",
-            "price": "$5,000",
-            "make": "Hyundai",
-            "model": "i30",
-            "variant": "Active",
-            "body_type": "Hatch",
-            "transmission": "Auto",
-            "fuel_type": "Petrol",
-            "location": "Melbourne VIC",
-            "rego_state": "VIC",
-            "general_condition": "",
-        }
-    )
-    captured: dict[str, object] = {}
-
-    monkeypatch.setattr(
-        ai_listing_valuation,
-        "load_cached_results",
-        lambda: pd.DataFrame(columns=ai_listing_valuation.REQUIRED_COLUMNS),
-    )
-    monkeypatch.setattr(ai_listing_valuation, "_save_result_row", lambda row: None)
-    monkeypatch.setattr(ai_listing_valuation, "assess_repairs", lambda condition, **_kwargs: repair_assessment)
-    monkeypatch.setattr(
-        ai_listing_valuation,
-        "top_buy_gate_check",
-        lambda payload: captured.update(payload) or TopBuyResult(False, ["margin"], []),
-    )
-    monkeypatch.setattr(
-        ai_listing_valuation,
-        "apply_top_buy_behavior",
-        lambda base_max_bid, top_buy, standard_uncertainty_buffer, top_buy_uncertainty_buffer=0: (base_max_bid, ""),
-    )
-
-    result = ai_listing_valuation.run_curve_listing_analysis(
-        listing,
-        resale_mid=20_000,
-        comps_count=5,
-        analysis_context="active",
-        force_refresh=True,
-    )
-
-    resale_mid = ai_listing_valuation._parse_currency(result["resale_mid"])
-    recommended_max_bid = ai_listing_valuation._parse_currency(result["recommended_max_bid"])
-    resale_low = ai_listing_valuation._parse_currency(result["resale_low"])
-    assert resale_mid is not None and resale_low is not None and recommended_max_bid is not None
-
-    base_costs_map = ai_listing_valuation._estimate_costs(recommended_max_bid, listing.to_dict())
-    expected_worst_profit = resale_low - sum(base_costs_map.values()) - recommended_max_bid
-    expected_margin = (expected_worst_profit / resale_mid) * 100.0
-
-    assert float(captured["profit_margin_pct"]) == expected_margin
 
 
 def test_curve_analysis_keeps_raw_expected_finish_and_stores_profit_basis(monkeypatch) -> None:

@@ -2043,8 +2043,6 @@ def _render_condition_tab(row: pd.Series, defect_profile: dict[str, object]) -> 
 def _render_bid_logic_tab(
     row: pd.Series,
     *,
-    top_buy_passed: list[str],
-    top_buy_failed: list[str],
     risk_items: list[str],
 ) -> None:
     repair_deduction = _repair_deduction_value(row)
@@ -2114,8 +2112,6 @@ def _render_bid_logic_tab(
             f"Flip difficulty: {_safe_text(row.get('flip_difficulty'), 'N/A')} - {difficulty_reasons}",
         ],
     )
-    _render_bullets("Top Buy passed", top_buy_passed[:4])
-    _render_bullets("Top Buy failed", top_buy_failed[:4])
     _render_bullets("Notes / risks", risk_items[:4])
 
 
@@ -3714,24 +3710,6 @@ def _split_notes(value: object) -> list[str]:
     return [note.strip() for note in text.split(";") if note.strip()]
 
 
-def _parse_reason_list(value: object) -> list[str]:
-    if value is None or (isinstance(value, float) and pd.isna(value)):
-        return []
-    if isinstance(value, list):
-        return [str(item) for item in value if str(item).strip()]
-    text = str(value).strip()
-    if not text:
-        return []
-    if text.startswith("[") and text.endswith("]"):
-        try:
-            parsed = json.loads(text)
-        except json.JSONDecodeError:
-            parsed = None
-        if isinstance(parsed, list):
-            return [str(item) for item in parsed if str(item).strip()]
-    return [item.strip() for item in text.split(";") if item.strip()]
-
-
 def _truthy(value: object) -> bool:
     if value is None or (isinstance(value, float) and pd.isna(value)):
         return False
@@ -4082,14 +4060,6 @@ def render_listing_card(row: pd.Series) -> None:
     verdict_class = _safe_text(row.get("verdict_class"), fallback="verdict-marginal")
     verdict_pill_class = f"{verdict_class}-pill"
     profit_class = _profit_tier_class(row.get("profit_margin_value"))
-    top_buy_badge = _safe_text(row.get("top_buy_badge"), fallback="").strip()
-    if _truthy(row.get("is_top_buy")) and not top_buy_badge:
-        top_buy_badge = "TOP BUY"
-    top_buy_html = (
-        f'<div class="verdict-pill top-buy-pill">{html.escape(top_buy_badge)}</div>'
-        if top_buy_badge and top_buy_badge != "N/A"
-        else ""
-    )
     action_label = _display_action_label(row.get("action_label"))
 
     bid_display = bid_display_parts(row)
@@ -4241,7 +4211,6 @@ def render_listing_card(row: pd.Series) -> None:
             f'<div class="card-top-meta">{html.escape(header_meta)}</div>' if header_meta else "",
             "</div>",
             '<div class="card-top-right">',
-            top_buy_html,
             f'<div class="verdict-pill {verdict_pill_class} support-pill context-pill">{html.escape(verdict_label)}</div>',
             '<div class="card-actions">',
             f'<a href="{html.escape(_safe_text(row.get("url"), fallback=""))}" target="_blank">Open</a>'
@@ -4338,9 +4307,6 @@ def render_listing_card(row: pd.Series) -> None:
     if spec_reason:
         risk_items.append(f"Spec coverage: {spec_reason}")
 
-    top_buy_failed = _parse_reason_list(row.get("top_buy_failed_reasons"))
-    top_buy_passed = _parse_reason_list(row.get("top_buy_passed_reasons"))
-
     overview_tab, curve_tab, comparables_tab, condition_tab, bid_logic_tab = st.tabs(
         ["Overview", "Curve", "Comparables", "Condition", "Bid Logic"]
     )
@@ -4360,8 +4326,6 @@ def render_listing_card(row: pd.Series) -> None:
     with bid_logic_tab:
         _render_bid_logic_tab(
             row,
-            top_buy_passed=top_buy_passed,
-            top_buy_failed=top_buy_failed,
             risk_items=risk_items,
         )
 

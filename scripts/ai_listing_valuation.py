@@ -19,7 +19,6 @@ from shared.repair_pricing import V2_DICTIONARY_PATH, assess_repairs, apply_repa
 from shared.repair_features import build_repair_features, serialize_tags, REPAIR_CATEGORIES
 from shared.reauction import adjusted_expected_auction_price
 from shared.telegram_alerts import get_alert_state, send_on_state_change
-from shared.top_buy import apply_top_buy_behavior, top_buy_gate_check
 
 
 AI_RESULTS_PATH = dataset_path("ai_listing_valuations.csv")
@@ -93,10 +92,6 @@ REQUIRED_COLUMNS = [
     "profit_margin_percent",
     "score_out_of_10",
     "confidence_notes",
-    "is_top_buy",
-    "top_buy_badge",
-    "top_buy_failed_reasons",
-    "top_buy_passed_reasons",
     "current_bid",
     "current_bid_numeric",
     "previous_current_bid",
@@ -198,9 +193,6 @@ FEES_RATE = 0.08
 # Max headroom we give above the current live bid before we cap the recommendation.
 CURRENT_BID_HEADROOM = 3_500.0
 EDGE_BUFFER = 50.0
-TOP_BUY_ENABLE_BUFFER = False
-STANDARD_UNCERTAINTY_BUFFER = 800
-TOP_BUY_UNCERTAINTY_BUFFER = 400
 WORST_CASE_DOWNSIDE = 0.17  # 17% downside band used for worst-case resale
 NO_EDGE_MESSAGE = "No edge left at current bid — do not bid above {amount}."
 AUTOTRADER_CURVE_WARNING_THRESHOLD = 0.10
@@ -997,63 +989,6 @@ def _parse_yes_no(value: Any) -> Optional[bool]:
     return None
 
 
-def _service_is_full(value: Any) -> Optional[bool]:
-    if value is None or (isinstance(value, float) and pd.isna(value)):
-        return None
-    text = str(value).strip().lower()
-    if not text:
-        return None
-    if "partial" in text:
-        return False
-    if text in {"yes", "full", "complete"} or "full" in text:
-        return True
-    if text in {"no", "none"} or text == "no":
-        return False
-    return None
-
-
-def _pill_color_from_bool(value: Optional[bool]) -> str:
-    if value is True:
-        return "green"
-    if value is False:
-        return "red"
-    return "yellow"
-
-
-def _build_pill_summary(listing: Mapping[str, Any]) -> Dict[str, str]:
-    key_status = _parse_yes_no(listing.get("key"))
-    spare_status = _parse_yes_no(listing.get("spare_key"))
-    if key_status is True and spare_status is True:
-        keys_value: Optional[bool] = True
-    elif key_status is False:
-        keys_value = False
-    else:
-        keys_value = None
-    return {
-        "keys": _pill_color_from_bool(keys_value),
-        "manual": _pill_color_from_bool(_parse_yes_no(listing.get("owners_manual"))),
-        "service": _pill_color_from_bool(_service_is_full(listing.get("service_history"))),
-        "rego": _pill_color_from_bool(
-            None if listing is None else (not _is_unregistered(listing))
-        ),
-    }
-
-
-def _normalize_match_rows(raw: Any) -> List[Dict[str, Any]]:
-    if isinstance(raw, list):
-        return [item for item in raw if isinstance(item, dict)]
-    if isinstance(raw, str):
-        text = raw.strip()
-        if text.startswith("[") and text.endswith("]"):
-            try:
-                parsed = json.loads(text)
-            except json.JSONDecodeError:
-                return []
-            if isinstance(parsed, list):
-                return [item for item in parsed if isinstance(item, dict)]
-    return []
-
-
 def _estimate_detailing_cost(listing: Mapping[str, Any]) -> float:
     body_text = " ".join(
         str(listing.get(field) or "")
@@ -1805,10 +1740,6 @@ def run_curve_listing_analysis(
             "edge_note": "",
             "no_edge_at_current_bid": False,
             "edge_buffer": EDGE_BUFFER,
-            "is_top_buy": None,
-            "top_buy_badge": None,
-            "top_buy_failed_reasons": None,
-            "top_buy_passed_reasons": None,
             "current_bid": listing_row.get("price"),
             "current_bid_numeric": _parse_currency(listing_row.get("price")),
             "bids_observed": listing_row.get("bids"),
@@ -2026,88 +1957,6 @@ def run_curve_listing_analysis(
     if "INTERSTATE" in risk_flags:
         recommended_max_bid_val = 0.0
         bid_policy_gate = "INTERSTATE"
-
-    base_max_bid_val = recommended_max_bid_val
-    base_no_edge_at_current_bid = False
-    if base_max_bid_val is not None and current_price_val is not None:
-        base_no_edge_at_current_bid = base_max_bid_val <= current_price_val + EDGE_BUFFER
-
-    base_cost_basis = base_max_bid_val
-    if base_cost_basis is None:
-        base_cost_basis = current_price_val
-    if base_cost_basis is None:
-        base_cost_basis = 0.0
-    base_costs_map = _estimate_costs(base_cost_basis, listing_data)
-
-    base_net_profit_mid = None
-    if base_max_bid_val is not None and resale_mid_val is not None:
-        base_net_profit_mid = resale_mid_val - sum(base_costs_map.values()) - base_max_bid_val - repair_deduction_for_bid
-    base_net_profit_worst = None
-    if base_max_bid_val is not None and resale_low_val is not None:
-        base_net_profit_worst = resale_low_val - sum(base_costs_map.values()) - base_max_bid_val - repair_deduction_for_bid
-    base_margin_value = None
-    if resale_mid_val:
-        base_margin_value = _profit_margin_percent_value(base_net_profit_worst, resale_mid_val)
-        if base_margin_value is None:
-            base_margin_value = _profit_margin_percent_value(base_net_profit_mid, resale_mid_val)
-
-    pill_summary = _build_pill_summary(listing_data)
-    damage_summary = {
-        "cosmetic_panels": repair_assessment.cosmetic_panels,
-        "glass_present": bool(repair_assessment.glass_cost > 0) or "GLASS" in repair_assessment.pills,
-        "replacement_present": bool(repair_assessment.replacement_cost > 0) or "PANEL_REPLACE" in repair_assessment.pills,
-        "unknown_present": "UNKNOWN" in repair_assessment.pills,
-    }
-
-    matches_payload = _normalize_match_rows(historical_matches)
-    if not matches_payload:
-        matches_payload = _normalize_match_rows(listing_data.get("historical_matches_rows"))
-
-    cluster_ok = listings_cluster_ok
-    if cluster_ok is None:
-        cluster_ok = bool((comps_count or 0) >= 3)
-
-    ai_new_risks = [flag for flag in risk_flags if flag]
-    if base_no_edge_at_current_bid and "NO_EDGE" not in ai_new_risks:
-        ai_new_risks.append("NO_EDGE")
-    ai_status = "PASS" if not ai_new_risks else "FAIL"
-
-    curve_resale_estimate = resale_mid_val
-    top_buy_payload = {
-        "pills": pill_summary,
-        "damage": damage_summary,
-        "curve": {
-            "covered": resale_mid_val is not None,
-            "confidence": confidence_val,
-            "km_percentile": km_percentile,
-            "resale_estimate": curve_resale_estimate,
-        },
-        "market": {
-            "autotrader_median": autotrader_median,
-            "carsales_estimate": carsales_estimate,
-            "listings_cluster_ok": bool(cluster_ok),
-        },
-        "historical": {
-            "matches": matches_payload,
-            "match_count": comps_count or len(matches_payload),
-        },
-        "ai_sanity": {"status": ai_status, "new_risks": ai_new_risks},
-        "profit_margin_pct": base_margin_value,
-        "odometer_reading": listing_data.get("odometer_reading"),
-        "resale_estimate": curve_resale_estimate,
-    }
-    top_buy = top_buy_gate_check(top_buy_payload)
-    top_buy_badge = ""
-    if recommended_max_bid_val is not None:
-        standard_buffer = STANDARD_UNCERTAINTY_BUFFER if TOP_BUY_ENABLE_BUFFER else 0
-        top_buy_buffer = TOP_BUY_UNCERTAINTY_BUFFER if TOP_BUY_ENABLE_BUFFER else 0
-        adjusted_bid, top_buy_badge = apply_top_buy_behavior(
-            int(round(recommended_max_bid_val)),
-            top_buy,
-            standard_buffer,
-            top_buy_buffer,
-        )
-        recommended_max_bid_val = float(adjusted_bid)
 
     max_bid_mid_profit_val = None
     max_bid_worst_profit_val = None
@@ -2351,10 +2200,6 @@ def run_curve_listing_analysis(
         "edge_note": edge_note,
         "no_edge_at_current_bid": bool(no_edge_at_current_bid),
         "edge_buffer": EDGE_BUFFER,
-        "is_top_buy": bool(top_buy.is_top_buy),
-        "top_buy_badge": top_buy_badge,
-        "top_buy_failed_reasons": json.dumps(top_buy.reasons_failed, ensure_ascii=True),
-        "top_buy_passed_reasons": json.dumps(top_buy.reasons_passed, ensure_ascii=True),
         "current_bid": listing_row.get("price"),
         "current_bid_numeric": current_price_val,
         "bids_observed": listing_row.get("bids"),
