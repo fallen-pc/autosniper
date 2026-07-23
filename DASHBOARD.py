@@ -648,29 +648,12 @@ tracked_counts = {
     "referred": int(len(referred_scope_df)),
 }
 tracked_total = sum(tracked_counts.values())
-other_total = 0
-status_columns = st.columns(5)
+status_columns = st.columns(4)
 render_metric(status_columns[0], "Visible Listings", tracked_total)
 for idx, (code, label) in enumerate(tracked_statuses, start=1):
     count = tracked_counts.get(code, 0)
     share = (count / tracked_total) if tracked_total else None
     render_metric(status_columns[idx], label, count, share)
-share_other = (other_total / tracked_total) if tracked_total else None
-render_metric(status_columns[-1], "Other / Unknown", other_total, share_other)
-
-status_table = pd.DataFrame(
-    [
-        {"Status": "Active", "Listings": tracked_counts["active"]},
-        {"Status": "Sold", "Listings": tracked_counts["sold"]},
-        {"Status": "Referred", "Listings": tracked_counts["referred"]},
-        {"Status": "Other / Unknown", "Listings": other_total},
-    ]
-).assign(Share=lambda frame: frame["Listings"] / tracked_total if tracked_total else 0)
-status_table["Status"] = status_table["Status"].astype(str).str.replace("_", " ").str.title()
-status_table["Share"] = status_table["Share"].map(lambda value: f"{value:.1%}")
-
-section_heading("Status Breakdown", "All statuses ranked by listing volume.")
-st.dataframe(status_table, width="stretch", hide_index=True)
 
 
 def unique_count(column: str) -> int:
@@ -864,6 +847,3 @@ with transparency_right:
             ]
         )
     )
-
-section_heading("Sample Listings", "Preview the first 10 records from the master file.")
-st.dataframe(df.head(10), width="stretch", hide_index=True)

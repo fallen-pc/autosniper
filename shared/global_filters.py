@@ -147,8 +147,8 @@ def render_global_sidebar_filters() -> None:
         )
 
     st.sidebar.markdown("---")
-    with st.sidebar.expander("Global Filters", expanded=False):
-        st.caption("Applies to dashboard, radar, AI analysis, and missed opportunities.")
+    with st.sidebar.expander("Buying View Filters", expanded=False):
+        st.caption("Applies to Dashboard, AI Analysis, and Missed Opportunities.")
         st.multiselect(
             "State",
             options=state_options,

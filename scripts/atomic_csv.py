@@ -57,7 +57,7 @@ def _csv_write_lock(destination: Path):
             except FileNotFoundError:
                 continue
             if time.monotonic() >= deadline:
-                raise TimeoutError(f"Timed out waiting for CSV write lock: {destination}")
+                raise TimeoutError(f"Timed out waiting for CSV write lock: {destination}") from None
             time.sleep(LOCK_POLL_SECONDS)
     try:
         yield
