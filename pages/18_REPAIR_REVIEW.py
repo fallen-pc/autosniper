@@ -681,6 +681,9 @@ with queue_tab:
         )
 
         if st.button("Save decision", key=widget_key("save_decision", selected_repair_key)):
+            runtime_notes = notes.strip()
+            if "runtime-effective" not in runtime_notes.lower():
+                runtime_notes = f"operator-approved runtime-effective; {runtime_notes}".rstrip("; ")
             record = {
                 "repair_key": selected_repair_key,
                 "repair_item": safe_text(selected.get("repair_item")),
@@ -690,7 +693,7 @@ with queue_tab:
                 "canonical_defect": canonical_defect,
                 "severity_hint": severity_hint,
                 "cost_model": cost_model,
-                "notes": notes,
+                "notes": runtime_notes,
             }
             upsert_decision(record)
             st.cache_data.clear()

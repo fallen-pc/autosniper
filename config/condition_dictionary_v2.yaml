@@ -246,6 +246,21 @@ entries:
     category: replacement
     severity_hint: medium
 
+  - pattern: "\\b(tyre|tire).*(puncture|punctured|pin|nail|screw)|\\b(puncture|punctured|pin|nail|screw).*\\b(tyre|tire)"
+    canonical_defect: tyre_puncture
+    category: replacement
+    severity_hint: low
+
+  - pattern: "\\b(brake light|reversing light|reverse light|fog light|foglight).*(condensation|condensed|crack|cracked|damage|damaged|not working|requires attention)|\\b(condensation|condensed|crack|cracked|damage|damaged).*(brake light|reversing light|reverse light|fog light|foglight)"
+    canonical_defect: lighting_condensation_damage
+    category: replacement
+    severity_hint: medium
+
+  - pattern: "\\b(window).*(won.?t close|will not close|doesn.?t close|not closing|stuck open)"
+    canonical_defect: window_regulator_fault
+    category: replacement
+    severity_hint: medium
+
   - pattern: "\\bwheel\\b.*\\b(missing|requires replacement|needs replacing|damaged)\\b|\\b(missing|requires replacement|needs replacing|damaged)\\b.*\\bwheel\\b"
     canonical_defect: wheel_missing
     category: replacement

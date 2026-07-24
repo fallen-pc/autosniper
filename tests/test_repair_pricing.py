@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import pandas as pd
+
+from shared import repair_pricing
 from shared.repair_pricing import (
     RepairAssessment,
     apply_repairs_to_max_bid,
@@ -8,6 +11,115 @@ from shared.repair_pricing import (
     repair_fragments_to_records,
     split_condition_lines,
 )
+
+
+def _write_review_decisions(path, rows) -> None:
+    pd.DataFrame(rows).to_csv(path, index=False)
+    repair_pricing._review_decision_lookup.cache_clear()
+
+
+def test_assess_repairs_applies_hard_avoid_review_decision(monkeypatch, tmp_path) -> None:
+    decisions_path = tmp_path / "repair_review_decisions.csv"
+    _write_review_decisions(
+        decisions_path,
+        [
+            {
+                "repair_key": "rough idle",
+                "repair_item": "rough idle.",
+                "decision": "Add dictionary rule",
+                "target_category": "mechanical",
+                "canonical_defect": "engine_running_fault",
+                "severity_hint": "high",
+                "cost_model": "hard_avoid",
+                "notes": "operator-approved runtime-effective",
+            }
+        ],
+    )
+    monkeypatch.setattr(repair_pricing, "DECISIONS_PATH", decisions_path)
+
+    assessment = assess_repairs("rough idle.")
+
+    assert assessment.hard_avoid is True
+    assert assessment.reasons == ["REVIEW_DECISION_AVOID: rough idle."]
+
+
+def test_review_decision_matches_normalized_condition_punctuation(monkeypatch, tmp_path) -> None:
+    decisions_path = tmp_path / "repair_review_decisions.csv"
+    _write_review_decisions(
+        decisions_path,
+        [
+            {
+                "repair_key": "engine tapping rattling noise",
+                "repair_item": "engine tapping rattling noise.",
+                "decision": "Add dictionary rule",
+                "target_category": "mechanical",
+                "canonical_defect": "engine_fault",
+                "severity_hint": "high",
+                "cost_model": "hard_avoid",
+                "notes": "operator-approved runtime-effective",
+            }
+        ],
+    )
+    monkeypatch.setattr(repair_pricing, "DECISIONS_PATH", decisions_path)
+
+    assessment = assess_repairs("engine tapping / rattling noise.")
+
+    assert assessment.hard_avoid is True
+    assert assessment.reasons == ["REVIEW_DECISION_AVOID: engine tapping / rattling noise."]
+
+
+def test_assess_repairs_applies_nonmechanical_review_decision(monkeypatch, tmp_path) -> None:
+    decisions_path = tmp_path / "repair_review_decisions.csv"
+    _write_review_decisions(
+        decisions_path,
+        [
+            {
+                "repair_key": "dash screen not working",
+                "repair_item": "dash screen not working.",
+                "decision": "Add dictionary rule",
+                "target_category": "interior",
+                "canonical_defect": "control_damage",
+                "severity_hint": "medium",
+                "cost_model": "fixed_replacement",
+                "notes": "operator-approved runtime-effective",
+            }
+        ],
+    )
+    monkeypatch.setattr(repair_pricing, "DECISIONS_PATH", decisions_path)
+
+    assessment = assess_repairs("dash screen not working.")
+    records = repair_fragments_to_records(assessment)
+
+    assert assessment.hard_avoid is False
+    assert records[0]["status"] == "matched"
+    assert records[0]["canonical_defects"] == "control_damage"
+
+
+def test_reviewed_context_fragment_overrides_generic_body_location_match(monkeypatch, tmp_path) -> None:
+    decisions_path = tmp_path / "repair_review_decisions.csv"
+    _write_review_decisions(
+        decisions_path,
+        [
+            {
+                "repair_key": "lh rear door",
+                "repair_item": "lh rear door.",
+                "decision": "Mark context fragment",
+                "target_category": "context_fragment",
+                "canonical_defect": "body_location_context",
+                "severity_hint": "low",
+                "cost_model": "no_cost",
+                "notes": "operator-approved runtime-effective",
+            }
+        ],
+    )
+    monkeypatch.setattr(repair_pricing, "DECISIONS_PATH", decisions_path)
+
+    assessment = assess_repairs("lh rear door.")
+    records = repair_fragments_to_records(assessment)
+
+    assert assessment.total_cost == 0
+    assert records[0]["status"] == "ignored"
+    assert records[0]["canonical_defects"] == "body_location_context"
 
 
 def test_assess_repairs_glass_case_is_consistent() -> None:
@@ -23,6 +135,36 @@ def test_assess_repairs_glass_case_is_consistent() -> None:
     assert lower.base_cost == 500
     assert upper.total_cost == 750
     assert lower.total_cost == 750
+
+
+def test_assess_repairs_prices_tyre_puncture_as_repairable() -> None:
+    assessment = assess_repairs("comment: one tyre has a pin in it.")
+    records = repair_fragments_to_records(assessment)
+
+    assert assessment.hard_avoid is False
+    assert records[0]["canonical_defects"] == "tyre_puncture"
+    assert records[0]["status"] == "matched"
+    assert assessment.replacement_cost == 80
+
+
+def test_assess_repairs_prices_lamp_damage_and_condensation() -> None:
+    assessment = assess_repairs(
+        "condensation in left brake light. crack in rear right reversing light."
+    )
+    records = repair_fragments_to_records(assessment)
+
+    assert assessment.hard_avoid is False
+    assert all(record["canonical_defects"] == "lighting_condensation_damage" for record in records)
+    assert assessment.replacement_cost == 500
+
+
+def test_assess_repairs_prices_driver_window_not_closing() -> None:
+    assessment = assess_repairs("interior: driver window won't close.")
+    records = repair_fragments_to_records(assessment)
+
+    assert assessment.hard_avoid is False
+    assert records[0]["canonical_defects"] == "window_regulator_fault"
+    assert assessment.replacement_cost == 500
 
 
 def test_assess_repairs_unknown_boilerplate_not_double_counted() -> None:
@@ -526,7 +668,13 @@ def test_numbered_grays_condition_rows_do_not_emit_number_only_fragments() -> No
     assert any(record["repair_key"] == "front end front bar scratched" for record in records)
 
 
-def test_assess_repairs_does_not_price_bare_body_location_without_context() -> None:
+def test_assess_repairs_does_not_price_bare_body_location_without_context(
+    monkeypatch, tmp_path
+) -> None:
+    decisions_path = tmp_path / "repair_review_decisions.csv"
+    _write_review_decisions(decisions_path, [])
+    monkeypatch.setattr(repair_pricing, "DECISIONS_PATH", decisions_path)
+
     assessment = assess_repairs("roof.")
     records = repair_fragments_to_records(assessment)
 

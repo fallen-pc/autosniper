@@ -210,6 +210,29 @@ def test_revalue_active_listings_queues_unclassified_condition_fragments(monkeyp
     assert queued[0]["records"][0]["status"] == "unclassified"
 
 
+def test_active_monitor_does_not_queue_fragments_after_hard_avoid(monkeypatch) -> None:
+    queued: list[dict[str, object]] = []
+    monkeypatch.setattr(
+        active_monitor,
+        "append_live_review_items",
+        lambda records, **kwargs: queued.append({"records": list(records), **kwargs}) or 1,
+    )
+    row = pd.Series(
+        {
+            "general_condition": "engine noise observed. mystery trim note.",
+            "url": "https://example.com/lot/hard-avoid",
+            "year": "2019",
+            "make": "Demo",
+            "model": "Car",
+        }
+    )
+
+    count = active_monitor._queue_unclassified_condition_fragments(row)
+
+    assert count == 0
+    assert queued == []
+
+
 def test_load_ai_analysis_active_df_uses_prepared_scope(monkeypatch) -> None:
     expected_df = pd.DataFrame(
         [

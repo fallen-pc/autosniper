@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Iterable
+import re
 
 import pandas as pd
 
@@ -63,6 +64,11 @@ def review_key(value: object) -> str:
     return text.replace("’", "'").replace("‘", "'")
 
 
+def normalized_review_key(value: object) -> str:
+    text = re.sub(r"[^a-z0-9\s]", " ", review_key(value))
+    return re.sub(r"\s+", " ", text).strip()
+
+
 def load_repair_review_decisions(path: Path = DECISIONS_PATH) -> pd.DataFrame:
     if not path.exists():
         return pd.DataFrame(columns=REVIEW_COLUMNS)
@@ -81,17 +87,22 @@ def latest_decision_lookup(decisions: pd.DataFrame | None = None) -> dict[str, d
     if df.empty or "repair_key" not in df.columns:
         return {}
     latest = df.drop_duplicates(subset=["repair_key"], keep="last")
-    return {
-        review_key(row["repair_key"]): {column: safe_text(row.get(column)) for column in REVIEW_COLUMNS}
-        for _, row in latest.iterrows()
-        if safe_text(row.get("repair_key"))
-    }
+    lookup: dict[str, dict[str, str]] = {}
+    for _, row in latest.iterrows():
+        record = {column: safe_text(row.get(column)) for column in REVIEW_COLUMNS}
+        for value in (row.get("repair_key"), row.get("repair_item")):
+            for key in {review_key(value).rstrip(". "), normalized_review_key(value)}:
+                if key:
+                    lookup[key] = record
+    return lookup
 
 
 def _needs_mapping(record: dict[str, object]) -> bool:
     status = safe_text(record.get("status"))
     category = safe_text(record.get("category"))
     defects = safe_text(record.get("canonical_defects"))
+    if status in {"hard_avoid", "not_assessed_after_hard_avoid"}:
+        return False
     return status in UNMAPPED_STATUSES or category in UNMAPPED_CATEGORIES or not defects
 
 
@@ -105,8 +116,8 @@ def repair_mapping_summary(
     unresolved: list[dict[str, object]] = []
 
     for record in records:
-        repair_key = review_key(record.get("repair_key"))
-        decision = lookup.get(repair_key, {})
+        repair_key = review_key(record.get("repair_key")).rstrip(". ")
+        decision = lookup.get(repair_key, lookup.get(normalized_review_key(record.get("repair_key")), {}))
         decision_label = safe_text(decision.get("decision"))
         if decision_label == "Leave unclassified":
             unresolved.append({**record, "review_decision": decision_label})

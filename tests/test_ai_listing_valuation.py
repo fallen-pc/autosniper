@@ -5,7 +5,7 @@ from pathlib import Path
 import pandas as pd
 
 from scripts import ai_listing_valuation
-from shared.repair_pricing import RepairAssessment
+from shared.repair_pricing import RepairAssessment, RepairFragment
 
 
 def _base_saved_row(**overrides) -> dict[str, object]:
@@ -184,6 +184,34 @@ def test_listing_alert_does_not_send_for_watch_only(monkeypatch, tmp_path: Path)
     )
 
     assert sent == []
+
+
+def test_listing_alert_warns_when_potential_buy_has_unresolved_repairs(monkeypatch, tmp_path: Path) -> None:
+    _set_alert_dataset_paths(monkeypatch, tmp_path)
+    sent: list[tuple[tuple[object, ...], dict[str, object]]] = []
+    monkeypatch.setattr(
+        ai_listing_valuation,
+        "send_on_state_change",
+        lambda *args, **kwargs: sent.append((args, kwargs)),
+    )
+
+    ai_listing_valuation._maybe_send_listing_alerts(
+        _base_saved_row(
+            action_label="Review",
+            computed_verdict="Review (unresolved repairs)",
+            potential_buy_unresolved_repairs=True,
+            unresolved_repair_count=1,
+            unresolved_repairs="rough idle",
+        ),
+        None,
+    )
+
+    assert len(sent) == 1
+    args, _kwargs = sent[0]
+    assert args[2] == "ai_analysis_buy_unresolved_repairs"
+    assert "POTENTIAL BUY - UNRESOLVED REPAIRS" in str(args[3])
+    assert "Unresolved repairs: rough idle" in str(args[3])
+    assert "do not bid until these repairs are classified and repriced" in str(args[3])
 
 
 def test_listing_alert_keeps_at_ceiling_buy_actionable(monkeypatch, tmp_path: Path) -> None:
@@ -586,6 +614,68 @@ def test_curve_analysis_keeps_moderate_repairs_as_marginal_not_avoid(monkeypatch
     assert result["computed_verdict"] == "Marginal (repairs)"
     assert result["action_label"] == "Buy"
     assert result["repair_estimate"] == "$2,250"
+
+
+def test_curve_analysis_forces_review_when_repairs_are_unresolved(monkeypatch) -> None:
+    repair_assessment = RepairAssessment(
+        hard_avoid=False,
+        pills=["COSMETIC_PANEL"],
+        cosmetic_panels=1,
+        glass_cost=0,
+        replacement_cost=0,
+        risk_buffer=0,
+        base_cost=300,
+        severity_level="minor",
+        severity_multiplier=1.0,
+        total_cost=300,
+        reasons=["priced cosmetic repair"],
+        fragments=[
+            RepairFragment(
+                original_text="rough idle.",
+                normalized_text="rough idle",
+                status="unclassified",
+                category="unclassified",
+            )
+        ],
+    )
+    listing = pd.Series(
+        {
+            "url": "test://unresolved-repair",
+            "price": "$1,000",
+            "make": "Ford",
+            "model": "Focus",
+            "variant": "Trend",
+            "body_type": "Hatch",
+            "transmission": "Auto",
+            "fuel_type": "Petrol",
+            "location": "Melbourne VIC",
+            "rego_state": "VIC",
+            "general_condition": "Cosmetic damage, rough idle.",
+        }
+    )
+    monkeypatch.setattr(
+        ai_listing_valuation,
+        "load_cached_results",
+        lambda: pd.DataFrame(columns=ai_listing_valuation.REQUIRED_COLUMNS),
+    )
+    monkeypatch.setattr(ai_listing_valuation, "_save_result_row", lambda row: None)
+    monkeypatch.setattr(ai_listing_valuation, "assess_repairs", lambda condition, **_kwargs: repair_assessment)
+
+    result = ai_listing_valuation.run_curve_listing_analysis(
+        listing,
+        resale_mid=20_000,
+        comps_count=5,
+        analysis_context="active",
+        force_refresh=True,
+    )
+
+    assert result["computed_verdict"] == "Review (unresolved repairs)"
+    assert result["action_label"] == "Review"
+    assert result["potential_buy_unresolved_repairs"] is True
+    assert result["unresolved_repair_count"] == 1
+    assert result["unresolved_repairs"] == "rough idle"
+    assert "UNRESOLVED_REPAIRS" in result["risk_flags"]
+    assert "repair_certainty=0.50" in result["confidence_notes"]
 
 
 def test_estimate_costs_uses_roadworthy_not_full_rego_for_unregistered() -> None:

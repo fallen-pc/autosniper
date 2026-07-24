@@ -3,7 +3,7 @@ from __future__ import annotations
 import pandas as pd
 
 from shared import missed_opportunities
-from shared.repair_pricing import RepairAssessment
+from shared.repair_pricing import RepairAssessment, RepairFragment
 
 
 def _repair_assessment(total_cost: int = 1000, risk_buffer: int = 300) -> RepairAssessment:
@@ -49,6 +49,37 @@ def test_missed_decision_metrics_apply_ai_cap_and_repair_cost(monkeypatch) -> No
     assert result["repair_cost"] == 700
     assert result["risk_buffer"] == 300
     assert result["projected_profit_at_sold"] == 7351
+
+
+def test_missed_decision_metrics_blocks_buy_when_repair_is_unresolved(monkeypatch) -> None:
+    assessment = _repair_assessment(total_cost=300, risk_buffer=0)
+    assessment.fragments = [
+        RepairFragment(
+            original_text="mystery mechanical noise.",
+            normalized_text="mystery mechanical noise",
+            status="unclassified",
+            category="unclassified",
+        )
+    ]
+    row = pd.Series(
+        {
+            "url": "test://missed-unresolved",
+            "price_numeric": 1_000,
+            "price": "$1,000",
+            "body_type": "Hatch",
+            "location": "Melbourne VIC",
+            "rego_state": "VIC",
+            "general_condition": "mystery mechanical noise.",
+        }
+    )
+    monkeypatch.setattr(missed_opportunities, "assess_repairs", lambda condition, **_kwargs: assessment)
+
+    result = missed_opportunities.compute_decision_metrics(row, 20_000, include_repairs=True)
+
+    assert result["computed_verdict"] == "Review (unresolved repairs)"
+    assert result["action_label"] == "Review"
+    assert result["unresolved_repair_count"] == 1
+    assert result["unresolved_repairs"] == "mystery mechanical noise"
 
 
 def test_load_external_auction_sold_rows_keeps_only_settled_price_rows(tmp_path) -> None:

@@ -1653,6 +1653,8 @@ for _, row in sold_df.iterrows():
             "bid_status": decision.get("bid_status"),
             "hard_max_safety": decision.get("hard_max_safety"),
             "action_label": action_label,
+            "unresolved_repair_count": decision.get("unresolved_repair_count", 0),
+            "unresolved_repairs": decision.get("unresolved_repairs", ""),
             "missed": missed,
             "date_sold": row.get("date_sold"),
             "location_state": location_state,

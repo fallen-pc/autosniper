@@ -39,6 +39,23 @@ def test_repair_mapping_needs_review_for_unknown_fragment_without_decision() -> 
     assert summary["needs_review_count"] == 1
 
 
+def test_repair_mapping_does_not_reopen_fragments_after_hard_avoid() -> None:
+    records = [
+        {
+            "repair_key": "later mystery fragment",
+            "status": "not_assessed_after_hard_avoid",
+            "category": "not_assessed",
+            "canonical_defects": "",
+        }
+    ]
+
+    summary = repair_mapping_summary(records, pd.DataFrame())
+
+    assert summary["pass"] is True
+    assert summary["mapped_count"] == 1
+    assert summary["needs_review_count"] == 0
+
+
 def test_repair_mapping_uses_saved_review_decision_as_mapping() -> None:
     records = [
         {
@@ -65,6 +82,31 @@ def test_repair_mapping_uses_saved_review_decision_as_mapping() -> None:
     assert summary["pass"] is True
     assert summary["mapped_count"] == 1
     assert summary["needs_review_count"] == 0
+
+
+def test_repair_mapping_matches_normalized_punctuation() -> None:
+    records = [
+        {
+            "repair_key": "rear end (rear bar) - null.",
+            "status": "unclassified",
+            "category": "unclassified",
+            "canonical_defects": "",
+        }
+    ]
+    decisions = pd.DataFrame(
+        [
+            {
+                "repair_key": "rear end rear bar null",
+                "repair_item": "rear end rear bar null.",
+                "decision": "Mark context fragment",
+            }
+        ]
+    )
+
+    summary = repair_mapping_summary(records, decisions)
+
+    assert summary["pass"] is True
+    assert summary["mapped_count"] == 1
 
 
 def test_repair_mapping_keeps_leave_unclassified_as_unresolved() -> None:

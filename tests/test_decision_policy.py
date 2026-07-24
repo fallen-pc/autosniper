@@ -37,6 +37,7 @@ def test_proxy_max_not_expected_finish_is_the_actionable_gate() -> None:
 
 def test_avoid_is_reserved_for_no_buy_states() -> None:
     assert derive_action_label(_policy_input(computed_verdict="Avoid")) == ACTION_AVOID
+    assert derive_action_label(_policy_input(computed_verdict="Avoid (unresolved repairs)")) == ACTION_AVOID
     assert derive_action_label(_policy_input(bid_status="Over max")) == ACTION_AVOID
     assert derive_action_label(_policy_input(hard_max_safety="No edge")) == ACTION_AVOID
     assert derive_action_label(_policy_input(current_worst_profit=500.0)) == ACTION_AVOID
@@ -44,6 +45,7 @@ def test_avoid_is_reserved_for_no_buy_states() -> None:
 
 def test_review_is_reserved_for_missing_coverage_or_unknown_verdicts() -> None:
     assert derive_action_label(_policy_input(computed_verdict="Not Covered")) == ACTION_REVIEW
+    assert derive_action_label(_policy_input(computed_verdict="Review (unresolved repairs)")) == ACTION_REVIEW
     assert derive_action_label(_policy_input(computed_verdict="Unexpected")) == ACTION_REVIEW
 
 

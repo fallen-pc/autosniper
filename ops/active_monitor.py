@@ -179,9 +179,7 @@ def _queue_unclassified_condition_fragments(row: pd.Series, *, source_file: str 
     review_records = [
         record
         for record in records
-        if _safe_text(record.get("status")) in {"unclassified", "not_assessed_after_hard_avoid"}
-        or _safe_text(record.get("category")) in {"unclassified", "not_assessed"}
-        or not _safe_text(record.get("canonical_defects"))
+        if _safe_text(record.get("status")) == "unclassified"
     ]
     if not review_records:
         return 0

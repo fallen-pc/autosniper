@@ -16,6 +16,7 @@ from shared.auction_model import predict_auction_price
 from shared.data_loader import dataset_path
 from shared.decision_policy import DecisionPolicyInput, derive_action_label, derive_action_label_from_row
 from shared.repair_pricing import V2_DICTIONARY_PATH, assess_repairs, apply_repairs_to_max_bid
+from shared.repair_review import DECISIONS_PATH
 from shared.repair_features import build_repair_features, serialize_tags, REPAIR_CATEGORIES
 from shared.reauction import adjusted_expected_auction_price
 from shared.telegram_alerts import get_alert_state, send_on_state_change
@@ -49,6 +50,9 @@ REQUIRED_COLUMNS = [
     "roadworthy_estimate",
     "prep_estimate",
     "repair_estimate",
+    "unresolved_repair_count",
+    "unresolved_repairs",
+    "potential_buy_unresolved_repairs",
     "expected_auction_price",
     "expected_auction_bid_basis",
     "expected_auction_profit",
@@ -345,10 +349,12 @@ def _repair_rules_signature() -> str:
     payload: dict[str, Any] = {
         "repair_pricing_py": None,
         "condition_dictionary_v2": None,
+        "repair_review_decisions": None,
     }
     for key, path in (
         ("repair_pricing_py", Path(__file__).resolve().parent.parent / "shared" / "repair_pricing.py"),
         ("condition_dictionary_v2", V2_DICTIONARY_PATH),
+        ("repair_review_decisions", DECISIONS_PATH),
     ):
         try:
             payload[key] = sha256(path.read_bytes()).hexdigest()
@@ -394,6 +400,7 @@ def _valuation_input_hash(
             for key, value in (reauction_context or {}).items()
         },
         "repair_rules_signature": _repair_rules_signature(),
+        "valuation_policy_version": "unresolved_repairs_review_v1",
     }
     encoded = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
     return sha256(encoded.encode("utf-8")).hexdigest()
@@ -782,6 +789,34 @@ def _ai_analysis_alert_message(row: Mapping[str, Any], *, title: str, url: str) 
     )
 
 
+def _unresolved_repairs_alert_message(row: Mapping[str, Any], *, title: str, url: str) -> str:
+    unresolved = str(row.get("unresolved_repairs") or "Unclassified condition item").strip()
+    return (
+        "$$$ POTENTIAL BUY - UNRESOLVED REPAIRS $$$\n"
+        "Alert type: Potential buy requiring Repair Review\n"
+        f"Vehicle: {title}\n"
+        "Why sent: the deal numbers may qualify, but unresolved repairs prevent a Buy action.\n"
+        "\n"
+        "REPAIR REVIEW REQUIRED\n"
+        f"Unresolved repairs: {unresolved}\n"
+        "Action: Review - do not bid until these repairs are classified and repriced.\n"
+        "\n"
+        "DEAL NUMBERS\n"
+        f"Current bid: {row.get('current_bid') or row.get('price') or 'N/A'}\n"
+        f"Proxy max bid: {row.get('recommended_max_bid') or 'N/A'}\n"
+        f"Current priced repairs: {row.get('repair_estimate') or 'N/A'}\n"
+        "\n"
+        "STATUS\n"
+        f"Verdict: {row.get('computed_verdict') or row.get('verdict') or 'N/A'}\n"
+        f"Bid position: {row.get('bid_status') or 'N/A'}\n"
+        f"Analysed: {row.get('analysis_timestamp') or 'N/A'}\n"
+        "\n"
+        "LINKS\n"
+        f"AutoSniper page: {_autosniper_listing_url(url)}\n"
+        f"Auction page: {url}"
+    )
+
+
 def _maybe_send_listing_alerts(
     row: Mapping[str, Any],
     existing_row: Mapping[str, Any] | None,
@@ -800,10 +835,17 @@ def _maybe_send_listing_alerts(
     previous_action = _ai_analysis_action(existing_row)
     alert_scope = "listing_bid_ready"
     previous_alert_state = get_alert_state(alert_scope, url)
-    if current_action == "Buy":
+    unresolved_candidate = _parse_yes_no(row.get("potential_buy_unresolved_repairs")) is True
+    if unresolved_candidate:
+        state_value = "ai_analysis_buy_unresolved_repairs"
+        message = _unresolved_repairs_alert_message(row, title=title, url=url)
+    elif current_action == "Buy":
         state_value = "ai_analysis_buy"
         message = _ai_analysis_alert_message(row, title=title, url=url)
-    elif previous_action == "Buy" or previous_alert_state == "ai_analysis_buy":
+    elif previous_action == "Buy" or previous_alert_state in {
+        "ai_analysis_buy",
+        "ai_analysis_buy_unresolved_repairs",
+    }:
         state_value = "ai_analysis_not_buy"
         message = (
             "BUY ALERT UPDATE - NO LONGER A BUY\n"
@@ -1414,6 +1456,11 @@ def _calculate_repair_certainty_score(
         score -= 0.25
     if getattr(repair_assessment, "risk_buffer", 0) > 0:
         score -= 0.10
+    if any(
+        str(getattr(fragment, "status", "")).strip().lower() == "unclassified"
+        for fragment in (getattr(repair_assessment, "fragments", None) or [])
+    ):
+        score = min(score, 0.50)
     return max(0.0, min(1.0, score))
 
 
@@ -1770,7 +1817,17 @@ def run_curve_listing_analysis(
         listing_data["historical_matches_rows"] = comps_count
 
     repair_assessment = assess_repairs(listing_row.get("general_condition", ""), vehicle_value=resale_mid)
+    unresolved_repair_items = sorted(
+        {
+            str(getattr(fragment, "original_text", "")).strip().rstrip(".")
+            for fragment in (getattr(repair_assessment, "fragments", None) or [])
+            if str(getattr(fragment, "status", "")).strip().lower() == "unclassified"
+            and str(getattr(fragment, "original_text", "")).strip()
+        }
+    )
     risk_flags = _detect_risk_flags(listing_data)
+    if unresolved_repair_items and "UNRESOLVED_REPAIRS" not in risk_flags:
+        risk_flags.append("UNRESOLVED_REPAIRS")
 
     # CatBoost model prediction — build repair features for the feature vector
     model_prediction: dict | None = None
@@ -2097,6 +2154,13 @@ def run_curve_listing_analysis(
         hard_max_safety,
         comps_count=_parse_int(expected_auction_comps_count),
     )
+    potential_buy_unresolved_repairs = bool(unresolved_repair_items and action_label == "Buy")
+    if unresolved_repair_items:
+        if action_label == "Avoid":
+            computed_verdict = "Avoid (unresolved repairs)"
+        else:
+            computed_verdict = "Review (unresolved repairs)"
+            action_label = "Review"
     edge_note = ""
     if no_edge_at_current_bid:
         edge_note = NO_EDGE_MESSAGE.format(
@@ -2145,6 +2209,9 @@ def run_curve_listing_analysis(
         "roadworthy_estimate": _format_currency(costs_map["roadworthy_estimate"]),
         "prep_estimate": _format_currency(costs_map["prep_estimate"]),
         "repair_estimate": _format_currency(repair_cost_val),
+        "unresolved_repair_count": len(unresolved_repair_items),
+        "unresolved_repairs": " | ".join(unresolved_repair_items),
+        "potential_buy_unresolved_repairs": potential_buy_unresolved_repairs,
         "repair_estimate_low": _format_currency(repair_low_val),
         "repair_estimate_high": _format_currency(repair_high_val),
         "repair_estimate_low_value": repair_low_val,

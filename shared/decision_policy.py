@@ -12,8 +12,8 @@ ACTION_WATCH = "Watch"
 ACTION_AVOID = "Avoid"
 ACTION_REVIEW = "Review"
 
-NO_BUY_VERDICTS = {"Avoid", "Trap", "Not Viable"}
-REVIEW_VERDICTS = {"Not Covered", "Not Eligible"}
+NO_BUY_VERDICTS = {"Avoid", "Avoid (unresolved repairs)", "Trap", "Not Viable"}
+REVIEW_VERDICTS = {"Not Covered", "Not Eligible", "Review (unresolved repairs)"}
 BUYABLE_VERDICTS = {
     "Strong Flip",
     "Conditional Flip",

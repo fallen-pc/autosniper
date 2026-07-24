@@ -15,6 +15,7 @@ import yaml
 
 from shared.condition_normalizer import estimate_component_count
 from shared.repair_features import build_repair_features
+from shared.repair_review import DECISIONS_PATH, load_repair_review_decisions, review_key, safe_text
 
 
 PANEL_RATE = 300
@@ -89,6 +90,11 @@ V2_REPLACEMENT_COSTS = {
     "sunroof_damage": 600,
     "battery_issue": 300,
     "tyre_replacement": 180,
+    "tyre_puncture": 80,
+    "lighting_condensation_damage": 250,
+    "window_regulator_fault": 500,
+    "service_warning_message": 250,
+    "washer_fluid_warning": 50,
     "wheel_missing": 250,
     "control_damage": 250,
     "seat_damage": 250,
@@ -484,6 +490,39 @@ def _load_v2_entries() -> tuple[V2ConditionEntry, ...]:
     return tuple(parsed)
 
 
+@lru_cache(maxsize=4)
+def _review_decision_lookup(signature: tuple[int, int]) -> dict[str, dict[str, str]]:
+    del signature
+    decisions = load_repair_review_decisions(DECISIONS_PATH)
+    if decisions.empty:
+        return {}
+    latest = decisions.drop_duplicates(subset=["repair_key"], keep="last")
+    lookup: dict[str, dict[str, str]] = {}
+    for _, row in latest.iterrows():
+        record = {column: safe_text(row.get(column)) for column in decisions.columns}
+        if "runtime-effective" not in record.get("notes", "").lower():
+            continue
+        for value in (row.get("repair_key"), row.get("repair_item")):
+            for key in {review_key(value).rstrip(". "), _fragment_key(value)}:
+                if key:
+                    lookup[key] = record
+    return lookup
+
+
+def _current_review_decisions() -> dict[str, dict[str, str]]:
+    try:
+        stat = DECISIONS_PATH.stat()
+        signature = (stat.st_mtime_ns, stat.st_size)
+    except OSError:
+        signature = (0, 0)
+    return _review_decision_lookup(signature)
+
+
+def _review_decision_for_line(line: str) -> dict[str, str]:
+    lookup = _current_review_decisions()
+    return lookup.get(review_key(line).rstrip(". "), lookup.get(_fragment_key(line), {}))
+
+
 def _match_v2_entries(lines: List[str]) -> list[tuple[str, list[V2ConditionEntry]]]:
     entries = _load_v2_entries()
     if not entries:
@@ -496,6 +535,39 @@ def _match_v2_entries(lines: List[str]) -> list[tuple[str, list[V2ConditionEntry
             if entry.pattern.search(line) and entry.canonical_defect not in seen:
                 hits.append(entry)
                 seen.add(entry.canonical_defect)
+        decision = _review_decision_for_line(line)
+        decision_label = safe_text(decision.get("decision"))
+        if decision_label == "Add dictionary rule":
+            canonical = safe_text(decision.get("canonical_defect"))
+            category = safe_text(decision.get("target_category")).lower()
+            if canonical and category and canonical not in seen:
+                hits.append(
+                    V2ConditionEntry(
+                        canonical_defect=canonical,
+                        category=category,
+                        severity_hint=safe_text(decision.get("severity_hint")).lower(),
+                        pattern=re.compile(rf"^{re.escape(line)}$", re.IGNORECASE),
+                    )
+                )
+        elif decision_label in {
+            "Ignore as boilerplate",
+            "Mark feature-list leak",
+            "Mark context fragment",
+            "Mark usage risk",
+        }:
+            canonical = safe_text(decision.get("canonical_defect")) or "boilerplate_review_decision"
+            # An explicit operator no-repair decision takes precedence over broad
+            # dictionary patterns such as bare body-location matches. Otherwise a
+            # reviewed context fragment can remain unresolved merely because an
+            # earlier generic pattern also recognized the same words.
+            hits = [
+                V2ConditionEntry(
+                    canonical_defect=canonical,
+                    category="boilerplate",
+                    severity_hint="low",
+                    pattern=re.compile(rf"^{re.escape(line)}$", re.IGNORECASE),
+                )
+            ]
         if hits:
             grouped.append((line, hits))
     return grouped
@@ -586,6 +658,21 @@ def assess_repairs(
     severity_level = feature_set.severity_level or "minor"
     severity_multiplier = float(SEVERITY_MULTIPLIERS.get(severity_level, 1.0))
     lines = split_condition_lines(general_condition)
+
+    for line in lines:
+        decision = _review_decision_for_line(line)
+        if safe_text(decision.get("decision")) == "Add dictionary rule" and safe_text(
+            decision.get("cost_model")
+        ).lower() == "hard_avoid":
+            return _hard_avoid_assessment(
+                "mechanical",
+                severity_level=severity_level,
+                severity_multiplier=severity_multiplier,
+                trigger_reason=f"REVIEW_DECISION_AVOID: {line}",
+                original_text=str(general_condition or ""),
+                lines=lines,
+                trigger_line=line,
+            )
 
     mechanical_trigger = _mechanical_trigger_line(lines)
     if mechanical_trigger:

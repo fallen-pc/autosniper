@@ -436,6 +436,14 @@ def compute_decision_metrics(
     repair_assessment = assess_repairs(
         listing_data.get("general_condition", ""), vehicle_value=resale_mid_val or resale_mid
     )
+    unresolved_repair_items = sorted(
+        {
+            str(getattr(fragment, "original_text", "")).strip().rstrip(".")
+            for fragment in (getattr(repair_assessment, "fragments", None) or [])
+            if str(getattr(fragment, "status", "")).strip().lower() == "unclassified"
+            and str(getattr(fragment, "original_text", "")).strip()
+        }
+    )
     # Exposed so callers (e.g. the Missed Opportunities table) can show the same
     # vehicle-value-scaled Good/Marginal/Not Viable/Avoid label this function used
     # internally, instead of separately recomputing it against flat dollar gates.
@@ -495,6 +503,9 @@ def compute_decision_metrics(
             min_profit=MIN_NET_PROFIT_ABSOLUTE,
             fallback="Review",
         )
+        if unresolved_repair_items and action_label != "Avoid":
+            computed_verdict = "Review (unresolved repairs)"
+            action_label = "Review"
 
     return {
         "max_bid": max_bid_val,
@@ -512,4 +523,6 @@ def compute_decision_metrics(
         "hard_max_safety": hard_max_safety,
         "computed_verdict": computed_verdict,
         "action_label": action_label,
+        "unresolved_repair_count": len(unresolved_repair_items),
+        "unresolved_repairs": " | ".join(unresolved_repair_items),
     }
