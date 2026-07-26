@@ -378,7 +378,7 @@ def test_classify_miss_reason_splits_over_max_from_price_spike() -> None:
     assert missed_opportunities.classify_miss_reason(row) == "sold above max bid"
 
 
-def test_historical_comps_context_prefers_exact_year_then_group() -> None:
+def test_historical_comps_context_requires_three_exact_year_rows_then_falls_back() -> None:
     sold_df = pd.DataFrame(
         [
             {"canonical_tag": "toyota_corolla_hatch", "year": 2018, "price": "$10,000"},
@@ -401,8 +401,9 @@ def test_historical_comps_context_prefers_exact_year_then_group() -> None:
         group_stats=group_stats,
     )
 
-    assert exact["historical_match_count"] == 2
-    assert exact["historical_price_median"] == 11_000
+    assert exact["historical_match_count"] == 3
+    assert exact["historical_price_median"] == 12_000
+    assert exact["comps_method"] == "tag_year_fallback"
     assert fallback["historical_match_count"] == 3
     assert fallback["historical_price_median"] == 12_000
 
@@ -430,7 +431,56 @@ def test_historical_comps_context_excludes_current_sold_row_by_url() -> None:
         group_stats=group_stats,
     )
 
-    assert exact["historical_match_count"] == 1
-    assert exact["historical_price_median"] == 12_000
+    assert exact["historical_match_count"] == 2
+    assert exact["historical_price_median"] == 13_000
     assert fallback["historical_match_count"] == 2
     assert fallback["historical_price_median"] == 11_000
+
+
+def test_historical_comps_context_uses_same_km_selector_as_ai_analysis() -> None:
+    sold_df = pd.DataFrame(
+        [
+            {
+                "url": "test://68k",
+                "canonical_tag": "ford_focus_hatch",
+                "year": 2013,
+                "odometer_reading": "68,000 km",
+                "price": "$9,400",
+            },
+            {
+                "url": "test://80k",
+                "canonical_tag": "ford_focus_hatch",
+                "year": 2013,
+                "odometer_reading": "80,000 km",
+                "price": "$5,000",
+            },
+            {
+                "url": "test://110k",
+                "canonical_tag": "ford_focus_hatch",
+                "year": 2013,
+                "odometer_reading": "110,000 km",
+                "price": "$3,550",
+            },
+            {
+                "url": "test://285k",
+                "canonical_tag": "ford_focus_hatch",
+                "year": 2013,
+                "odometer_reading": "285,000 km",
+                "price": "$809",
+            },
+        ]
+    )
+    group_stats, year_stats = missed_opportunities.build_historical_comps_stats(sold_df)
+
+    context = missed_opportunities.historical_comps_for_row(
+        {"year": 2013, "odometer_reading": "75,000 km"},
+        curve_tag="ford_focus_hatch",
+        year_stats=year_stats,
+        group_stats=group_stats,
+    )
+
+    assert context["historical_match_count"] == 3
+    assert context["historical_price_median"] == 5_000
+    assert context["comps_method"] == "nearest_km"
+    assert context["comps_km_min"] == 68_000
+    assert context["comps_km_max"] == 110_000

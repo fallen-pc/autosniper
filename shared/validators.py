@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import date, datetime, timedelta
 from typing import Dict, Optional, Tuple
 
 import pandas as pd
@@ -22,6 +22,7 @@ TIME_TOKEN_PATTERN = re.compile(
 DATE_SOLD_HINT = re.compile(r"\b\d{1,2}\s+[A-Za-z]+\s+\d{4}\b|\b\d{4}-\d{2}-\d{2}\b")
 ISO_DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 AU_TZINFOS = {"AEST": 10 * 3600, "AEDT": 11 * 3600}
+FUTURE_SOLD_DATE_TOLERANCE_DAYS = 1
 
 
 class R:
@@ -66,6 +67,7 @@ class R:
     BAD_PRICE = "[BAD_PRICE]"
     NO_DATE_SOLD = "[NO_DATE_SOLD]"
     BAD_DATE_SOLD = "[BAD_DATE_SOLD]"
+    FUTURE_DATE_SOLD = "[FUTURE_DATE_SOLD]"
     BAD_BIDS = "[BAD_BIDS]"
 
     # Non-vehicle / scope filters
@@ -96,6 +98,15 @@ class ValidatorConfig:
 
 def _s(value: object) -> str:
     return "" if value is None else str(value).strip()
+
+
+def _is_future_sold_date(value: object, *, today: date | None = None) -> bool:
+    parsed = _parse_date_iso(value)
+    if parsed is None:
+        return False
+    parsed_date = date.fromisoformat(parsed)
+    current_date = today or datetime.now().astimezone().date()
+    return parsed_date > current_date + timedelta(days=FUTURE_SOLD_DATE_TOLERANCE_DAYS)
 
 
 def _upper(value: object) -> str:
@@ -351,6 +362,8 @@ def validate_sold_row(row: Dict[str, object], cfg: ValidatorConfig) -> tuple[boo
     date_sold = _parse_date_iso(date_candidate)
     if date_sold is None:
         return False, R.BAD_DATE_SOLD, clean
+    if _is_future_sold_date(date_sold):
+        return False, R.FUTURE_DATE_SOLD, clean
     clean["date_sold"] = date_sold
 
     bids_text = _s(clean.get("bids"))
@@ -487,6 +500,7 @@ def validate_sold_cars_df(
     )
 
     invalid_mask = price_series.isna() | date_series.isna() | odo_series.isna()
+    invalid_mask |= date_series.apply(_is_future_sold_date)
     invalid_mask |= (price_series <= 0)
     invalid_mask |= (odo_series < 1000) | (odo_series > 700000)
     if bids_series is not None:

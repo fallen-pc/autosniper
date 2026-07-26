@@ -24,17 +24,18 @@ from scripts.ai_listing_valuation import (
     _solve_max_bid,
     apply_platform_risk_adjustments,
 )
-from shared.comps_engine import parse_currency
+from shared.comps_engine import parse_currency, parse_numeric
 from shared.decision_policy import derive_action_label_from_row
 from shared.curves import resolve_curve_canonical_tag
 from shared.repair_pricing import assess_repairs, apply_repairs_to_max_bid, repair_decision_label
+from shared.sold_comparables import select_km_aware_comparables
 
 # Profit threshold that upgrades a replay verdict from "Conditional Flip" to "Strong Flip".
 # Distinct from MIN_NET_PROFIT_ABSOLUTE (the minimum required for any BUY decision).
 STRONG_FLIP_PROFIT_THRESHOLD = 3_000
 
 COMPS_STATS_COLUMNS = ["comps_count", "comps_median", "comps_mean", "comps_min", "comps_max"]
-COMPS_STATS_INTERNAL_COLUMNS = ["comps_prices", "comps_urls"]
+COMPS_STATS_INTERNAL_COLUMNS = ["comps_prices", "comps_urls", "comps_odometers"]
 EXTERNAL_AUCTION_MATCHES_FILENAME = "external_auction_curve_matches.csv"
 EXTERNAL_SETTLED_STATUSES = {"sold", "closed", "ended", "complete", "completed"}
 
@@ -163,6 +164,14 @@ def _to_int(value: Any) -> int | None:
         return None
 
 
+def _parse_odometer_value(value: Any) -> float | None:
+    parsed = parse_numeric(value)
+    if parsed is not None:
+        return float(parsed)
+    text = _clean_text(value).lower().replace(",", "").replace("km", "").strip()
+    return _to_float(text)
+
+
 def _empty_comps_stats() -> pd.DataFrame:
     return pd.DataFrame(columns=COMPS_STATS_COLUMNS + COMPS_STATS_INTERNAL_COLUMNS)
 
@@ -181,7 +190,12 @@ def build_historical_comps_stats(sold_df: pd.DataFrame) -> tuple[pd.DataFrame, p
         working["year_int"] = working.get("year", pd.Series(index=working.index)).apply(_to_int)
     if "price_numeric" not in working.columns:
         working["price_numeric"] = working.get("price", pd.Series(index=working.index)).apply(parse_currency)
+    if "odometer_numeric" not in working.columns:
+        working["odometer_numeric"] = working.get(
+            "odometer_reading", pd.Series(index=working.index)
+        ).apply(_parse_odometer_value)
     working["price_numeric"] = pd.to_numeric(working["price_numeric"], errors="coerce")
+    working["odometer_numeric"] = pd.to_numeric(working["odometer_numeric"], errors="coerce")
     valid = working.dropna(subset=["curve_tag", "price_numeric"]).copy()
     valid = valid[valid["price_numeric"] > 0]
     if "url" in valid.columns:
@@ -204,6 +218,7 @@ def build_historical_comps_stats(sold_df: pd.DataFrame) -> tuple[pd.DataFrame, p
             comps_max=("price_numeric", "max"),
             comps_prices=("price_numeric", list),
             comps_urls=("comps_url", list),
+            comps_odometers=("odometer_numeric", list),
         )
     )
     year_stats = (
@@ -217,25 +232,30 @@ def build_historical_comps_stats(sold_df: pd.DataFrame) -> tuple[pd.DataFrame, p
             comps_max=("price_numeric", "max"),
             comps_prices=("price_numeric", list),
             comps_urls=("comps_url", list),
+            comps_odometers=("odometer_numeric", list),
         )
     )
     return group_stats, year_stats
 
 
-def _stats_count_median_without_current(stats: pd.Series, current_url: str) -> tuple[int, float | None]:
+def _stats_rows_without_current(stats: pd.Series, current_url: str) -> pd.DataFrame:
     prices = stats.get("comps_prices")
     urls = stats.get("comps_urls")
-    if isinstance(prices, list) and isinstance(urls, list) and len(prices) == len(urls) and current_url:
-        filtered_prices = [
-            _to_float(price)
-            for price, url in zip(prices, urls)
-            if str(url or "").strip() != current_url
-        ]
-        valid_prices = [price for price in filtered_prices if price is not None and price > 0]
-        if not valid_prices:
-            return 0, None
-        return len(valid_prices), float(pd.Series(valid_prices).median())
-    return _to_int(stats.get("comps_count")) or 0, _to_float(stats.get("comps_median"))
+    odometers = stats.get("comps_odometers")
+    if not isinstance(prices, list) or not isinstance(urls, list) or len(prices) != len(urls):
+        return pd.DataFrame(columns=["price_numeric", "odometer_numeric", "url"])
+    if not isinstance(odometers, list) or len(odometers) != len(prices):
+        odometers = [None] * len(prices)
+    rows = pd.DataFrame(
+        {
+            "price_numeric": prices,
+            "odometer_numeric": odometers,
+            "url": urls,
+        }
+    )
+    if current_url:
+        rows = rows[rows["url"].fillna("").astype(str).str.strip() != current_url]
+    return rows.reset_index(drop=True)
 
 
 def historical_comps_for_row(
@@ -247,30 +267,40 @@ def historical_comps_for_row(
 ) -> dict[str, object]:
     """Return live-style sold-comps context for a replay row."""
 
-    stats = None
+    pool = pd.DataFrame()
     year_val = _to_int(row.get("year"))
     current_url = str(row.get("url") or "").strip()
     if year_val is not None and not year_stats.empty and (curve_tag, year_val) in year_stats.index:
         year_candidate = year_stats.loc[(curve_tag, year_val)]
-        if _stats_count_median_without_current(year_candidate, current_url)[0] > 0:
-            stats = year_candidate
-    if stats is None and curve_tag and not group_stats.empty and curve_tag in group_stats.index:
+        year_pool = _stats_rows_without_current(year_candidate, current_url)
+        if len(year_pool) >= 3:
+            pool = year_pool
+    if pool.empty and curve_tag and not group_stats.empty and curve_tag in group_stats.index:
         group_candidate = group_stats.loc[curve_tag]
-        if _stats_count_median_without_current(group_candidate, current_url)[0] > 0:
-            stats = group_candidate
-    if stats is None:
+        pool = _stats_rows_without_current(group_candidate, current_url)
+    if pool.empty:
         return {
             "historical_match_count": 0,
             "historical_price_median": None,
             "comps_count": 0,
             "comps_median": None,
+            "comps_method": "none",
         }
-    count, median = _stats_count_median_without_current(stats, current_url)
+    target_km = _to_float(
+        row.get("odometer_numeric")
+        if row.get("odometer_numeric") is not None
+        else _parse_odometer_value(row.get("odometer_reading"))
+    )
+    _, stats = select_km_aware_comparables(pool, target_km)
     return {
-        "historical_match_count": count,
-        "historical_price_median": median,
-        "comps_count": count,
-        "comps_median": median,
+        "historical_match_count": stats.count,
+        "historical_price_median": stats.median,
+        "comps_count": stats.count,
+        "comps_median": stats.median,
+        "comps_method": stats.method,
+        "comps_km_min": stats.km_min,
+        "comps_km_max": stats.km_max,
+        "comps_km_distance_median": stats.km_distance_median,
     }
 
 

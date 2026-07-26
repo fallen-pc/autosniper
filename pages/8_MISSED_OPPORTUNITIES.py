@@ -26,6 +26,7 @@ from shared.repair_pricing import (
 )
 from shared.reauction import collapse_reauction_lifecycles
 from shared.styling import clean_html, display_banner, inject_global_styles, page_intro
+from shared.validators import validate_sold_cars_df
 from shared.missed_opportunities import (
     build_historical_comps_stats,
     classify_miss_reason,
@@ -834,6 +835,7 @@ def enrich_repair_estimates(df: pd.DataFrame, include_cost: bool) -> pd.DataFram
 def load_sold_data() -> pd.DataFrame:
     sold_path = dataset_path("sold_cars_restricted.csv")
     df = pd.read_csv(sold_path)
+    df, _ = validate_sold_cars_df(df)
     df["url"] = df["url"].astype(str).str.strip()
     df["odometer_numeric"] = df["odometer_reading"].apply(parse_numeric)
     df["price_numeric"] = df["price"].apply(parse_currency)
@@ -1638,6 +1640,10 @@ for _, row in sold_df.iterrows():
             "repair_decision": decision.get("repair_decision") if include_repairs else None,
             "historical_match_count": comps_context.get("historical_match_count"),
             "historical_price_median": comps_context.get("historical_price_median"),
+            "comps_method": comps_context.get("comps_method"),
+            "comps_km_min": comps_context.get("comps_km_min"),
+            "comps_km_max": comps_context.get("comps_km_max"),
+            "comps_km_distance_median": comps_context.get("comps_km_distance_median"),
             "net_delta": net_delta,
             "max_bid": max_bid,
             "underbid_pct": underbid_pct,

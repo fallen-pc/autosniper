@@ -51,7 +51,9 @@ from shared.repair_review import (
     repair_mapping_summary,
 )
 from shared.reauction import collapse_reauction_lifecycles, reauction_context_for_listing
+from shared.sold_comparables import select_km_aware_comparables
 from shared.styling import clean_html, display_banner, inject_global_styles, page_intro
+from shared.validators import validate_sold_cars_df
 from shared.valuation_display import (
     bid_display_parts,
     conservative_margin_percent,
@@ -2330,6 +2332,7 @@ def load_group_map() -> pd.DataFrame:
 def load_sold_data() -> pd.DataFrame:
     sold_path = dataset_path("sold_cars_restricted.csv")
     df = pd.read_csv(sold_path)
+    df, _ = validate_sold_cars_df(df)
     df["url"] = df["url"].astype(str).str.strip()
     df["odometer_numeric"] = df["odometer_reading"].apply(parse_numeric)
     df["price_numeric"] = df["price"].apply(parse_currency)
@@ -2830,37 +2833,6 @@ if "curve_tag" not in sold_df.columns:
     sold_df["curve_tag"] = sold_df["canonical_tag"].apply(resolve_curve_canonical_tag)
 
 curve_key_col = "curve_tag"
-
-sold_stats_group = (
-    sold_df.dropna(subset=[curve_key_col, "price_numeric"])
-    .groupby(curve_key_col)["price_numeric"]
-    .agg(["count", "median", "mean", "min", "max"])
-    .rename(
-        columns={
-            "count": "comps_count",
-            "median": "comps_median",
-            "mean": "comps_mean",
-            "min": "comps_min",
-            "max": "comps_max",
-        }
-    )
-)
-
-sold_stats_year = (
-    sold_df.dropna(subset=[curve_key_col, "price_numeric", "year_int"])
-    .groupby([curve_key_col, "year_int"])["price_numeric"]
-    .agg(["count", "median", "mean", "min", "max"])
-    .rename(
-        columns={
-            "count": "comps_count",
-            "median": "comps_median",
-            "mean": "comps_mean",
-            "min": "comps_min",
-            "max": "comps_max",
-        }
-    )
-)
-
 
 st.sidebar.header("Filters")
 if allowed_tags:
@@ -3512,23 +3484,19 @@ for _, row in filtered.iterrows():
         base_estimate = interpolate_base_by_year(curves_df, curve_key, year_val, odo_val)
     trim_multiplier = None
     adjusted_estimate = base_estimate
-    stats = None
-    if year_val is not None and (curve_key, year_val) in sold_stats_year.index:
-        stats = sold_stats_year.loc[(curve_key, year_val)]
-    elif curve_key in sold_stats_group.index:
-        stats = sold_stats_group.loc[curve_key]
-    comps_count = int(stats["comps_count"]) if stats is not None else 0
-    comps_median = float(stats["comps_median"]) if stats is not None else None
-    comps_mean = float(stats["comps_mean"]) if stats is not None else None
-    comps_min = float(stats["comps_min"]) if stats is not None else None
-    comps_max = float(stats["comps_max"]) if stats is not None else None
+    sold_subset = _select_sold_subset(sold_df, curve_key, year_val)
+    sold_subset, comp_stats = select_km_aware_comparables(sold_subset, odo_val)
+    comps_count = comp_stats.count
+    comps_median = comp_stats.median
+    comps_mean = comp_stats.mean
+    comps_min = comp_stats.minimum
+    comps_max = comp_stats.maximum
     expected_sale, expected_sale_note = _estimate_expected_sale(
         adjusted_estimate,
         comps_median,
         comps_count,
     )
 
-    sold_subset = _select_sold_subset(sold_df, curve_key, year_val)
     km_percentile = None
     historical_matches = []
     if not sold_subset.empty:
@@ -3566,6 +3534,10 @@ for _, row in filtered.iterrows():
                 "comps_mean": comps_mean,
                 "comps_min": comps_min,
                 "comps_max": comps_max,
+                "comps_method": comp_stats.method,
+                "comps_km_min": comp_stats.km_min,
+                "comps_km_max": comp_stats.km_max,
+                "comps_km_distance_median": comp_stats.km_distance_median,
                 "expected_sale": expected_sale,
                 "expected_sale_note": expected_sale_note or "No curve / Not eligible",
             }
@@ -3600,6 +3572,10 @@ for _, row in filtered.iterrows():
     analysis["comps_mean"] = comps_mean
     analysis["comps_min"] = comps_min
     analysis["comps_max"] = comps_max
+    analysis["comps_method"] = comp_stats.method
+    analysis["comps_km_min"] = comp_stats.km_min
+    analysis["comps_km_max"] = comp_stats.km_max
+    analysis["comps_km_distance_median"] = comp_stats.km_distance_median
     analysis["expected_sale"] = expected_sale
     analysis["expected_sale_note"] = expected_sale_note
     analysis["spec_reason"] = spec_reason or ""
