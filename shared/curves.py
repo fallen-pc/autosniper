@@ -221,6 +221,10 @@ def save_curves(df: pd.DataFrame, path: Path | None = None) -> None:
     load_saved_curve_tags.cache_clear()
     append_audit_snapshot(working, curve_path)
     snapshot_curve_version(curve_path, source="save_curves")
+    if path is None:
+        from scripts.build_restricted_datasets import build_restricted_datasets
+
+        build_restricted_datasets()
 
 
 def get_curve_points(
