@@ -2,6 +2,7 @@ name: Governance
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
   push:
     branches:
       - main
@@ -43,6 +44,13 @@ jobs:
       - name: Run project memory checks
         run: |
           python scripts/project_memory.py check
+
+      - name: Validate project memory PR changes
+        if: github.event_name == 'pull_request'
+        env:
+          AUTOSNIPER_MEMORY_WRITE_APPROVED: ${{ contains(github.event.pull_request.labels.*.name, 'protected-memory-approved') && '1' || '0' }}
+        run: |
+          python scripts/project_memory.py check --base-ref "${{ github.event.pull_request.base.sha }}" --head-ref "${{ github.event.pull_request.head.sha }}"
 
       - name: Run governed checks
         env:

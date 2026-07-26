@@ -16,6 +16,12 @@ Before non-trivial work:
 3. If doing normal upkeep, only update `project_memory/02_state/`
 4. If changing constitution, machine rules, decisions, or the manifest, do it intentionally and set `AUTOSNIPER_MEMORY_WRITE_APPROVED=1`
 
+For pull requests, CI validates the complete base-to-head diff. Protected-memory
+changes remain blocked unless a maintainer applies the
+`protected-memory-approved` label; adding or removing that label reruns the
+governance workflow. Repository branch protection should require that workflow
+before merge.
+
 ## Source Of Truth Order
 
 1. Explicit user instruction in the current conversation
