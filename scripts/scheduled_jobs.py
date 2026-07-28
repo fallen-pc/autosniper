@@ -4,6 +4,7 @@ import argparse
 import asyncio
 import json
 import os
+import shutil
 import sys
 import time
 from datetime import date, datetime, time as dt_time, timedelta, timezone
@@ -724,15 +725,19 @@ def _run_autotrader_scrape(max_pages: int | None = None) -> None:
     if not cookie_file.exists():
         raise FileNotFoundError(f"Missing Autotrader cookie file: {cookie_file}")
 
+    browser_name = os.getenv("AUTOSNIPER_AUTOTRADER_BROWSER", "").strip()
+    if not browser_name:
+        browser_name = "chrome" if os.name == "nt" else "chromium"
+    headed = not _env_flag_disabled("AUTOSNIPER_AUTOTRADER_HEADED")
+
     command = [
         sys.executable,
         "autotrader_isolated/scrape_first_page.py",
         "--urls-file",
         str(AUTOTRADER_SEED_URLS_PATH),
         "--all-pages",
-        "--playwright-headful",
         "--playwright-browser",
-        "chrome",
+        browser_name,
         "--playwright-block-resources",
         "--storage-state",
         str(storage_state),
@@ -743,8 +748,15 @@ def _run_autotrader_scrape(max_pages: int | None = None) -> None:
         "--page-retry-delay",
         "10",
     ]
+    if headed:
+        command.append("--playwright-headful")
     if max_pages is not None and max_pages > 0:
         command.extend(["--max-pages", str(max_pages)])
+    if headed and os.name != "nt" and not os.getenv("DISPLAY"):
+        xvfb_run = shutil.which("xvfb-run")
+        if not xvfb_run:
+            raise FileNotFoundError("Autotrader headed mode requires xvfb-run when DISPLAY is unset.")
+        command = [xvfb_run, "-a", *command]
     subprocess.run(command, check=True)
     print("Autotrader scrape completed.")
 

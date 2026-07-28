@@ -495,6 +495,8 @@ def test_external_auction_daily_scrape_can_be_disabled(monkeypatch) -> None:
 
 def test_scheduled_autotrader_uses_seed_urls_file(monkeypatch, tmp_path) -> None:
     monkeypatch.setenv("AUTOSNIPER_AUTOTRADER_SCRAPE_ENABLED", "1")
+    monkeypatch.setenv("AUTOSNIPER_AUTOTRADER_BROWSER", "chromium")
+    monkeypatch.setenv("AUTOSNIPER_AUTOTRADER_HEADED", "0")
     calls: list[list[str]] = []
     storage_state = tmp_path / "autotrader_isolated" / "output" / "storage_state.json"
     cookie_file = tmp_path / "autotrader_isolated" / "output" / "autotrader_cookie.txt"
@@ -523,6 +525,35 @@ def test_scheduled_autotrader_uses_seed_urls_file(monkeypatch, tmp_path) -> None
     assert command[command.index("--urls-file") + 1] == str(seed_urls)
     assert "--max-pages" in command
     assert command[command.index("--max-pages") + 1] == "2"
+    assert command[command.index("--playwright-browser") + 1] == "chromium"
+    assert "--playwright-headful" not in command
+
+
+def test_scheduled_autotrader_wraps_headed_linux_run_with_xvfb(monkeypatch, tmp_path) -> None:
+    monkeypatch.setenv("AUTOSNIPER_AUTOTRADER_SCRAPE_ENABLED", "1")
+    monkeypatch.setenv("AUTOSNIPER_AUTOTRADER_BROWSER", "chromium")
+    monkeypatch.setenv("AUTOSNIPER_AUTOTRADER_HEADED", "1")
+    monkeypatch.delenv("DISPLAY", raising=False)
+    storage_state = tmp_path / "autotrader_isolated" / "output" / "storage_state.json"
+    cookie_file = tmp_path / "autotrader_isolated" / "output" / "autotrader_cookie.txt"
+    seed_urls = tmp_path / "autotrader_isolated" / "seed_urls.txt"
+    storage_state.parent.mkdir(parents=True)
+    seed_urls.parent.mkdir(parents=True, exist_ok=True)
+    storage_state.write_text("{}", encoding="utf-8")
+    cookie_file.write_text("cookie=value", encoding="utf-8")
+    seed_urls.write_text("https://www.autotrader.com.au/for-sale/used/vic/melbourne\n", encoding="utf-8")
+    calls: list[list[str]] = []
+
+    monkeypatch.setattr(scheduled_jobs, "ROOT_DIR", tmp_path)
+    monkeypatch.setattr(scheduled_jobs, "AUTOTRADER_SEED_URLS_PATH", seed_urls)
+    monkeypatch.setattr(scheduled_jobs.os, "name", "posix")
+    monkeypatch.setattr(scheduled_jobs.shutil, "which", lambda name: "/usr/bin/xvfb-run")
+    monkeypatch.setattr(scheduled_jobs.subprocess, "run", lambda command, check: calls.append(command))
+
+    scheduled_jobs._run_autotrader_scrape(max_pages=1)
+
+    assert calls[0][:2] == ["/usr/bin/xvfb-run", "-a"]
+    assert "--playwright-headful" in calls[0]
 
 
 def test_scheduled_autotrader_skips_when_disabled(monkeypatch, tmp_path, capsys) -> None:

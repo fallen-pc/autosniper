@@ -18,6 +18,7 @@ $requiredLocalPaths = @(
     "requirements.txt",
     ".streamlit\config.toml",
     "assets",
+    "autotrader_isolated",
     "config",
     "governance",
     "jobs",
@@ -90,7 +91,7 @@ if (-not $SkipLocalValidation) {
     Push-Location $repoRoot
     try {
         Invoke-CheckedCommand -Label "Local Python validation" -Command {
-            & $pythonPath -m compileall -q app.py pages shared scripts ops jobs governance
+            & $pythonPath -m compileall -q app.py pages shared scripts ops jobs governance autotrader_isolated
         }
     } finally {
         Pop-Location
@@ -117,6 +118,7 @@ try {
         "--exclude=*.log",
         "--exclude=.pytest_cache",
         "--exclude=.ruff_cache",
+        "--exclude=autotrader_isolated/output",
         "-C", $repoRoot
     ) + $deployPaths
     Invoke-CheckedCommand -Label "Archive creation" -Command {
@@ -165,7 +167,8 @@ tar -xzf "$archive" -C "$stage"
     "$stage/scripts" \
     "$stage/ops" \
     "$stage/jobs" \
-    "$stage/governance"
+    "$stage/governance" \
+    "$stage/autotrader_isolated"
 
 tar \
     --exclude='./.venv' \
