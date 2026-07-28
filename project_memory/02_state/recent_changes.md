@@ -341,3 +341,4 @@
 # 2026-07-28
 
 - Enabled unattended Autotrader scraping on the DigitalOcean VPS. The guarded deployment now includes `autotrader_isolated` source while excluding its authenticated runtime output, and the scheduler selects Chromium on Linux and wraps headed runs with `xvfb-run` when no display is present. A production-path one-page VPS proof collected 26 Melbourne/VIC listings without a 403 and wrote `autotrader_isolated/output/first_page_results.csv`; the VPS environment now enables the daily Autotrader stage.
+- Tightened VPS publishing into an explicit code-sync workflow. `scripts/deploy_vps.ps1` now refuses ambiguous dirty deployments by default, packages the exact current Git commit rather than arbitrary working-tree contents, records that commit on the VPS after health verification, and supports `-Push` for a single deploy-and-sync operation. Runtime scraper data and authenticated browser state remain VPS-owned and protected.

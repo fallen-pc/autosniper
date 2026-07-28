@@ -5,6 +5,8 @@ param(
     [string]$RemoteRoot = "/opt/autosniper",
     [switch]$DryRun,
     [switch]$SkipLocalValidation,
+    [switch]$DeployCommittedHead,
+    [switch]$Push,
     [switch]$Force
 )
 
@@ -76,9 +78,24 @@ foreach ($relativePath in $optionalLocalPaths) {
         $deployPaths += $relativePath
     }
 }
+$gitDeployPaths = @($deployPaths | ForEach-Object { $_ -replace "\\", "/" })
+$commitSha = (& git -C $repoRoot rev-parse HEAD).Trim()
+if ($LASTEXITCODE -ne 0 -or $commitSha -notmatch "^[0-9a-f]{40}$") {
+    throw "Unable to resolve the current Git commit."
+}
+$dirtyDeployPaths = @(& git -C $repoRoot status --porcelain -- @gitDeployPaths)
+if ($LASTEXITCODE -ne 0) {
+    throw "Unable to inspect the deployment working tree."
+}
+if ($dirtyDeployPaths.Count -gt 0 -and -not $DeployCommittedHead) {
+    Write-Host "Uncommitted deployable files:"
+    $dirtyDeployPaths | ForEach-Object { Write-Host "  $_" }
+    throw "Commit the intended application changes before deployment. Use -DeployCommittedHead only to deploy HEAD while intentionally ignoring these working-tree edits."
+}
 
 Write-Host "AutoSniper VPS code deployment"
 Write-Host "  Source: $repoRoot"
+Write-Host "  Commit: $commitSha"
 Write-Host "  Target: ${VpsUser}@${VpsHost}:$RemoteRoot"
 Write-Host "  Included: $($deployPaths -join ', ')"
 Write-Host "  Protected: CSV_data, curves, artifacts, logs, output, outputs, status, and virtual environments"
@@ -110,19 +127,16 @@ $target = "${VpsUser}@${VpsHost}"
 
 try {
     Write-Host "Packaging code-only deployment archive..."
-    $tarArguments = @(
-        "-czf", $archivePath,
-        "--exclude=__pycache__",
-        "--exclude=*.pyc",
-        "--exclude=*.pyo",
-        "--exclude=*.log",
-        "--exclude=.pytest_cache",
-        "--exclude=.ruff_cache",
-        "--exclude=autotrader_isolated/output",
-        "-C", $repoRoot
-    ) + $deployPaths
+    $archiveArguments = @(
+        "-C", $repoRoot,
+        "archive",
+        "--format=tar.gz",
+        "--output=$archivePath",
+        "HEAD",
+        "--"
+    ) + $gitDeployPaths
     Invoke-CheckedCommand -Label "Archive creation" -Command {
-        & tar.exe @tarArguments
+        & git @archiveArguments
     }
 
     $archiveSizeMb = [math]::Round((Get-Item -LiteralPath $archivePath).Length / 1MB, 2)
@@ -138,6 +152,7 @@ archive="$1"
 root="$2"
 deploy_id="$3"
 force="$4"
+commit_sha="$5"
 stage="/tmp/autosniper-stage-$deploy_id"
 backup_dir="/opt/autosniper-deploy-backups"
 backup="$backup_dir/pre-$deploy_id.tar.gz"
@@ -216,6 +231,10 @@ if [[ "$healthy" != "1" ]]; then
     exit 22
 fi
 
+mkdir -p "$root/status"
+printf '%s\n' "$commit_sha" > "$root/status/deployed_commit.txt"
+chown autosniper:autosniper "$root/status/deployed_commit.txt"
+
 find "$backup_dir" -maxdepth 1 -type f -name 'pre-*.tar.gz' -printf '%T@ %p\n' \
     | sort -nr \
     | tail -n +6 \
@@ -223,13 +242,14 @@ find "$backup_dir" -maxdepth 1 -type f -name 'pre-*.tar.gz' -printf '%T@ %p\n' \
     | xargs -r rm -f
 
 echo "DEPLOY_OK $deploy_id"
+echo "Commit: $commit_sha"
 echo "Health: $(curl -fsS http://127.0.0.1:8501/_stcore/health)"
 echo "Service: $(systemctl is-active autosniper)"
 '@
 
     $remoteScriptBase64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($remoteScript))
     $forceFlag = if ($Force) { "1" } else { "0" }
-    $remoteCommand = "echo '$remoteScriptBase64' | base64 -d | bash -s -- '$remoteArchive' '$RemoteRoot' '$deployId' '$forceFlag'"
+    $remoteCommand = "echo '$remoteScriptBase64' | base64 -d | bash -s -- '$remoteArchive' '$RemoteRoot' '$deployId' '$forceFlag' '$commitSha'"
 
     Write-Host "Validating and activating the staged deployment..."
     Invoke-CheckedCommand -Label "Remote deployment" -Command {
@@ -238,6 +258,12 @@ echo "Service: $(systemctl is-active autosniper)"
 
     Write-Host "Deployment completed successfully."
     Write-Host "Live AI Analysis: http://$VpsHost/AI_ANALYSIS"
+    if ($Push) {
+        Write-Host "Pushing the deployed commit to the configured upstream..."
+        Invoke-CheckedCommand -Label "Git push" -Command {
+            & git -C $repoRoot push
+        }
+    }
 } finally {
     if (Test-Path -LiteralPath $archivePath) {
         Remove-Item -LiteralPath $archivePath -Force
