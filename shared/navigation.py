@@ -17,7 +17,8 @@ def navigation_spec() -> NavigationSpec:
             (
                 "SYSTEM",
                 [
-                    ("DASHBOARD.py", "Dashboard", True),
+                    ("pages/00_SCRAPER_OPERATIONS.py", "Scraper Operations", True),
+                    ("DASHBOARD.py", "Dashboard", False),
                     ("pages/3_ACTIVE_LISTINGS.py", "Active Inventory", False),
                     ("pages/01_EXCEPTIONS.py", "Exceptions", False),
                     # Existing drill-down flow relies on this page being routable.

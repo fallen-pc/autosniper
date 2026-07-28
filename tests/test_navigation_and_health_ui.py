@@ -25,12 +25,15 @@ def test_navigation_exposes_only_current_workflow_surfaces() -> None:
     titles = {title for _path, title, _default in pages}
 
     assert "pages/6_AI_ANALYSIS.py" in paths
+    assert "pages/00_SCRAPER_OPERATIONS.py" in paths
     assert "pages/17_MODEL_PROOF.py" in paths
     assert paths.isdisjoint(RETIRED_PAGE_PATHS)
     assert all(not Path(path).exists() for path in RETIRED_PAGE_PATHS)
     assert "Active Inventory" in titles
     assert "COVERAGE" not in spec
     assert any(title == "Autotrader Scraper" for _path, title, _default in spec["OPERATIONS"])
+    defaults = [path for path, _title, is_default in pages if is_default]
+    assert defaults == ["pages/00_SCRAPER_OPERATIONS.py"]
     assert HIDDEN_ROUTABLE_PAGES == []
 
 
