@@ -262,14 +262,20 @@ def parse_args() -> argparse.Namespace:
                    help="Skip repair enrichment (faster iteration).")
     p.add_argument("--min-comps-count", type=int, default=3,
                    help="Min samples in baseline source per curve_tag to include a training row (default 3).")
+    p.add_argument("--train-cutoff-date", type=str, default=None,
+                   help="Baseline stats cutoff date (format YYYY-MM-DD). Rows sold after this are excluded from baseline to prevent self-inclusion.")
     return p.parse_args()
 
 
-def _load_baseline_stats(baseline_path: Path, group_map_path: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
+def _load_baseline_stats(baseline_path: Path, group_map_path: Path, train_cutoff_date: str | None = None) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Compute groupby-median stats from the restricted source (mirrors live page).
 
     Returns (stats_group, stats_year) indexed by curve_tag and (curve_tag, year_int).
     The restricted CSV has no canonical_tag, so we join the group map first.
+
+    If train_cutoff_date is provided (format 'YYYY-MM-DD'), only rows sold on or before
+    that date are used to compute baseline stats. This prevents evaluation rows from
+    inflating the baseline medians (self-inclusion leak).
     """
     print(f"Loading baseline source: {baseline_path}")
     bdf = pd.read_csv(baseline_path, low_memory=False)
@@ -291,6 +297,16 @@ def _load_baseline_stats(baseline_path: Path, group_map_path: Path) -> tuple[pd.
 
     valid = bdf.dropna(subset=["curve_tag", "price_numeric"])
     valid = valid[valid["price_numeric"] > 0]
+
+    # Filter to train-only period if cutoff provided (prevents self-inclusion)
+    if train_cutoff_date is not None:
+        date_col = next((c for c in ("date_sold", "sold_date", "auction_end") if c in valid.columns), None)
+        if date_col:
+            valid["_date_parsed"] = pd.to_datetime(valid[date_col], errors="coerce")
+            before_cutoff = valid["_date_parsed"] <= train_cutoff_date
+            print(f"  Filtering to train-only period (<= {train_cutoff_date}): {before_cutoff.sum():,} of {len(valid):,} rows")
+            valid = valid[before_cutoff].copy()
+            valid = valid.drop(columns=["_date_parsed"])
 
     stats_group = (
         valid.groupby("curve_tag")["price_numeric"]
@@ -316,7 +332,7 @@ def main() -> None:
     if not args.baseline_source.exists():
         print(f"ERROR: baseline source not found: {args.baseline_source}")
         sys.exit(1)
-    stats_group, stats_year = _load_baseline_stats(args.baseline_source, args.group_map)
+    stats_group, stats_year = _load_baseline_stats(args.baseline_source, args.group_map, train_cutoff_date=args.train_cutoff_date)
 
     # ------------------------------------------------------------------
     # 2. Load training rows
