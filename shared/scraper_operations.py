@@ -96,6 +96,13 @@ def _present_count(frame: pd.DataFrame, column: str) -> int:
     )
 
 
+def _audit_text(value: object) -> str:
+    if value is None or pd.isna(value):
+        return ""
+    text = str(value).strip()
+    return "" if text.lower() == "nan" else text
+
+
 def _status_for_file(
     path: Path,
     *,
@@ -165,6 +172,7 @@ def build_scraper_operations_snapshot(
     external_links_path = external_dir / "external_auction_links.csv"
     external_all_path = external_dir / "external_auction_listings_all.csv"
     external_matches_path = external_dir / "external_auction_curve_matches.csv"
+    external_audit_path = external_dir / "external_auction_scrape_audit.csv"
 
     grays_links = _read_csv(grays_links_path)
     grays_active = _read_csv(grays_active_path)
@@ -173,6 +181,7 @@ def build_scraper_operations_snapshot(
     external_links = _read_csv(external_links_path)
     external_all = _read_csv(external_all_path)
     external_matches = _read_csv(external_matches_path)
+    external_audit = _read_csv(external_audit_path)
 
     source_rows: list[dict[str, Any]] = []
 
@@ -243,6 +252,10 @@ def build_scraper_operations_snapshot(
         source_links = external_links.loc[link_mask] if len(link_mask) else pd.DataFrame()
         source_details = external_all.loc[all_mask] if len(all_mask) else pd.DataFrame()
         source_matches = external_matches.loc[match_mask] if len(match_mask) else pd.DataFrame()
+        source_audit = pd.DataFrame()
+        if not external_audit.empty and "source" in external_audit.columns:
+            audit_mask = external_audit["source"].astype(str).str.lower().eq(source_name)
+            source_audit = external_audit.loc[audit_mask].tail(1)
         scrape_status = source_details.get("scrape_status", pd.Series(dtype=str)).fillna("").astype(str)
         errors = int(scrape_status.str.startswith("error:", na=False).sum())
         forbidden = int(scrape_status.str.contains("403", case=False, na=False).sum())
@@ -252,7 +265,20 @@ def build_scraper_operations_snapshot(
             rows=len(source_details),
             now=current_time,
         )
-        if source_name == "manheim" and forbidden:
+        if not source_audit.empty:
+            audit_row = source_audit.iloc[0]
+            completeness_status = _audit_text(audit_row.get("completeness_status")).lower()
+            discovery_status = _audit_text(audit_row.get("discovery_status")).lower()
+            audit_notes = _audit_text(audit_row.get("notes"))
+            if completeness_status == "complete":
+                detail = "Pagination exhausted; every selected curve candidate was detail-scraped"
+            elif discovery_status == "blocked":
+                status = "Blocked"
+                detail = audit_notes or "Listing discovery is blocked"
+            else:
+                status = "Degraded"
+                detail = audit_notes or "External auction completeness was not proved"
+        elif source_name == "manheim" and forbidden:
             status = "Blocked"
             detail = "Manheim returned HTTP 403 from the VPS"
         elif errors:

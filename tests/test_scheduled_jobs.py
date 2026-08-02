@@ -425,6 +425,15 @@ def test_external_auction_daily_scrape_uses_source_specific_caps(monkeypatch, tm
         return (
             pd.DataFrame([{"source": source, "url": f"https://example.test/{source}"}]),
             pd.DataFrame([{"source": source, "url": f"https://example.test/{source}"}]),
+            pd.DataFrame(
+                [
+                    {
+                        "source": source,
+                        "completeness_status": "complete",
+                        "notes": "",
+                    }
+                ]
+            ),
         )
 
     def fake_write_outputs(raw_df, links_df, output_dir):
@@ -440,13 +449,18 @@ def test_external_auction_daily_scrape_uses_source_specific_caps(monkeypatch, tm
     monkeypatch.setenv("AUTOSNIPER_EXTERNAL_AUCTIONS_OUTPUT_DIR", str(tmp_path / "daily"))
     monkeypatch.setattr(scheduled_jobs.scrape_external_auction_sources, "scrape_sources", fake_scrape_sources)
     monkeypatch.setattr(scheduled_jobs.scrape_external_auction_sources, "write_outputs", fake_write_outputs)
+    monkeypatch.setattr(
+        scheduled_jobs.scrape_external_auction_sources,
+        "write_scrape_audit",
+        lambda audit_df, output_dir: tmp_path / "external_auction_scrape_audit.csv",
+    )
 
     scheduled_jobs._run_external_auction_scrape_if_enabled()
 
     assert calls == [
         {
             "source": "pickles",
-            "max_list_pages_per_source": 20,
+            "max_list_pages_per_source": 0,
             "max_details_per_source": 0,
             "headless": True,
             "prefilter_list_to_curves": True,
@@ -455,8 +469,8 @@ def test_external_auction_daily_scrape_uses_source_specific_caps(monkeypatch, tm
         },
         {
             "source": "manheim",
-            "max_list_pages_per_source": 1,
-            "max_details_per_source": 25,
+            "max_list_pages_per_source": 0,
+            "max_details_per_source": 0,
             "headless": True,
             "prefilter_list_to_curves": True,
             "detail_timeout_ms": 12000,

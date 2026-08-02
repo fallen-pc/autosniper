@@ -764,12 +764,12 @@ def _run_autotrader_scrape(max_pages: int | None = None) -> None:
 def _external_auction_daily_plan() -> dict[str, dict[str, int]]:
     return {
         "pickles": {
-            "max_list_pages_per_source": _env_int("AUTOSNIPER_EXTERNAL_PICKLES_PAGES", 20),
+            "max_list_pages_per_source": _env_int("AUTOSNIPER_EXTERNAL_PICKLES_PAGES", 0),
             "max_details_per_source": _env_int("AUTOSNIPER_EXTERNAL_PICKLES_DETAILS", 0),
         },
         "manheim": {
-            "max_list_pages_per_source": _env_int("AUTOSNIPER_EXTERNAL_MANHEIM_PAGES", 1),
-            "max_details_per_source": _env_int("AUTOSNIPER_EXTERNAL_MANHEIM_DETAILS", 25),
+            "max_list_pages_per_source": _env_int("AUTOSNIPER_EXTERNAL_MANHEIM_PAGES", 0),
+            "max_details_per_source": _env_int("AUTOSNIPER_EXTERNAL_MANHEIM_DETAILS", 0),
         },
         "slattery": {
             "max_list_pages_per_source": _env_int("AUTOSNIPER_EXTERNAL_SLATTERY_PAGES", 0),
@@ -829,8 +829,9 @@ def _run_external_auction_scrape_if_enabled() -> None:
 
     raw_frames: list[pd.DataFrame] = []
     link_frames: list[pd.DataFrame] = []
+    audit_frames: list[pd.DataFrame] = []
     for source, limits in _external_auction_daily_plan().items():
-        raw_df, links_df = asyncio.run(
+        raw_df, links_df, audit_df = asyncio.run(
             scrape_external_auction_sources.scrape_sources(
                 [source],
                 max_list_pages_per_source=limits["max_list_pages_per_source"],
@@ -844,17 +845,27 @@ def _run_external_auction_scrape_if_enabled() -> None:
         )
         raw_frames.append(raw_df)
         link_frames.append(links_df)
+        audit_frames.append(audit_df)
 
     raw_df = pd.concat(raw_frames, ignore_index=True, sort=False) if raw_frames else pd.DataFrame()
     links_df = pd.concat(link_frames, ignore_index=True, sort=False) if link_frames else pd.DataFrame()
+    audit_df = pd.concat(audit_frames, ignore_index=True, sort=False) if audit_frames else pd.DataFrame()
     links_path, all_path, matched_path = scrape_external_auction_sources.write_outputs(raw_df, links_df, output_dir)
+    audit_path = scrape_external_auction_sources.write_scrape_audit(audit_df, output_dir)
     matched_df = pd.read_csv(matched_path) if matched_path.exists() else pd.DataFrame()
     print(
         "External auction scrape completed: "
         f"{len(links_df):,} discovered links, {len(raw_df):,} detail rows, "
         f"{len(matched_df):,} saved-curve matches. "
-        f"Outputs: {links_path}, {all_path}, {matched_path}"
+        f"Outputs: {links_path}, {all_path}, {matched_path}, {audit_path}"
     )
+    if not audit_df.empty:
+        for _, audit_row in audit_df.iterrows():
+            print(
+                "External auction coverage: "
+                f"{audit_row.get('source')}={audit_row.get('completeness_status')} "
+                f"({audit_row.get('notes') or 'all selected curve candidates scraped'})."
+            )
 
 
 def run_daily_smoke() -> None:

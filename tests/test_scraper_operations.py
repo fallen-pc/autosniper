@@ -53,6 +53,29 @@ def _write_runtime(root: Path) -> None:
         external_dir / "external_auction_curve_matches.csv",
         [{"source": "pickles", "url": "p1"}],
     )
+    _write_csv(
+        external_dir / "external_auction_scrape_audit.csv",
+        [
+            {
+                "source": "pickles",
+                "discovery_status": "complete",
+                "completeness_status": "complete",
+                "notes": "",
+            },
+            {
+                "source": "slattery",
+                "discovery_status": "complete",
+                "completeness_status": "complete",
+                "notes": "",
+            },
+            {
+                "source": "manheim",
+                "discovery_status": "blocked",
+                "completeness_status": "incomplete",
+                "notes": "listing discovery blocked by HTTP access response",
+            },
+        ],
+    )
 
     status_dir = root / "status"
     status_dir.mkdir(parents=True)
@@ -96,8 +119,9 @@ def test_snapshot_reports_healthy_sources_and_manheim_block(tmp_path: Path) -> N
     assert by_source["Grays"]["status"] == "Healthy"
     assert by_source["Autotrader"]["status"] == "Healthy"
     assert by_source["Pickles"]["priced"] == 1
+    assert "every selected curve candidate" in by_source["Pickles"]["detail"]
     assert by_source["Manheim"]["status"] == "Blocked"
-    assert "403" in by_source["Manheim"]["detail"]
+    assert "blocked" in by_source["Manheim"]["detail"]
 
 
 def test_snapshot_surfaces_disabled_autotrader(tmp_path: Path) -> None:

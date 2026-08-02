@@ -43,6 +43,26 @@ LISTING_COLUMNS = list(
     )
 )
 
+AUDIT_COLUMNS = [
+    "source",
+    "scraped_at",
+    "discovery_status",
+    "completeness_status",
+    "list_pages_planned",
+    "list_pages_visited",
+    "pagination_exhausted",
+    "page_cap_reached",
+    "blocked_pages",
+    "discovered_links",
+    "selected_for_detail",
+    "detail_cap_reached",
+    "selected_details_scraped",
+    "selected_details_missing",
+    "detail_errors",
+    "seed_details_scraped",
+    "notes",
+]
+
 LINK_COLUMNS = [
     "source",
     "discovered_at",
@@ -209,6 +229,16 @@ class BrowserListing:
     title_hint: str = ""
 
 
+@dataclass(frozen=True)
+class DiscoveryResult:
+    listings: list[BrowserListing]
+    pages_planned: int
+    pages_visited: int
+    pagination_exhausted: bool
+    page_cap_reached: bool
+    blocked_pages: int
+
+
 def _with_query_params(url: str, **updates: object) -> str:
     parts = urlsplit(url)
     query = dict(parse_qsl(parts.query, keep_blank_values=True))
@@ -228,8 +258,11 @@ def build_source_list_urls(source: str, max_list_pages: int) -> list[str]:
             urls.append(_with_query_params(base, page=page))
         return urls
     if source == "manheim":
-        for base in SOURCE_URLS[source]:
-            for page in range(1, page_count + 1):
+        # Interleave locations by page so pagination exhaustion is assessed
+        # across both Sydney and Melbourne rather than stopping after the
+        # first location's empty tail.
+        for page in range(1, page_count + 1):
+            for base in SOURCE_URLS[source]:
                 urls.append(
                     _with_query_params(
                         base,
@@ -762,7 +795,7 @@ async def scrape_sources(
     detail_timeout_ms: int,
     detail_wait_ms: int,
     seed_listings: Iterable[BrowserListing] = (),
-) -> tuple[pd.DataFrame, pd.DataFrame]:
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     try:
         from playwright.async_api import async_playwright
     except ImportError as exc:  # pragma: no cover
@@ -770,6 +803,7 @@ async def scrape_sources(
 
     records: list[dict[str, object]] = []
     link_frames: list[pd.DataFrame] = []
+    audit_rows: list[dict[str, object]] = []
     seeds_by_source: dict[str, list[BrowserListing]] = {}
     for listing in seed_listings:
         seeds_by_source.setdefault(listing.source, []).append(listing)
@@ -784,12 +818,13 @@ async def scrape_sources(
             locale="en-AU",
         )
         for source in sources:
-            listings = await discover_source_links(
+            discovery = await discover_source_links(
                 context,
                 source,
                 build_source_list_urls(source, max_list_pages_per_source),
                 max_details=0,
             )
+            listings = discovery.listings
             links_df = tag_discovered_links(listings)
             link_frames.append(links_df)
             selected_listings = listings
@@ -801,6 +836,8 @@ async def scrape_sources(
                     .tolist()
                 )
                 selected_listings = [listing for listing in listings if listing.url in selected_urls]
+            selected_from_discovery = list(selected_listings)
+            detail_cap_reached = max_details_per_source > 0 and len(selected_listings) > max_details_per_source
             if max_details_per_source > 0:
                 selected_listings = selected_listings[:max_details_per_source]
             seen_selected = {listing.url for listing in selected_listings}
@@ -824,17 +861,91 @@ async def scrape_sources(
                 records.append(row)
                 title = _clean_text(row.get("title", ""))
                 print(f"  parsed {source}: {title[:90] or listing.url}", flush=True)
+            source_records = [row for row in records if str(row.get("source", "")) == source]
+            selected_urls = {listing.url for listing in selected_from_discovery}
+            scraped_selected_urls = {
+                str(row.get("url", ""))
+                for row in source_records
+                if str(row.get("url", "")) in selected_urls
+            }
+            detail_errors = sum(
+                str(row.get("scrape_status", "")).startswith("error:")
+                or str(row.get("scrape_status", "")) in {"parsed_http_401", "parsed_http_403", "parsed_http_429"}
+                for row in source_records
+                if str(row.get("url", "")) in selected_urls
+            )
+            selected_missing = max(0, len(selected_urls - scraped_selected_urls))
+            discovery_status = "blocked" if discovery.blocked_pages else "complete"
+            incomplete_reasons: list[str] = []
+            if discovery_status == "blocked":
+                incomplete_reasons.append("listing discovery blocked by HTTP access response")
+            if discovery.page_cap_reached:
+                incomplete_reasons.append("configured page safety cap reached before pagination exhaustion")
+            if detail_cap_reached:
+                incomplete_reasons.append("configured detail cap omitted selected listings")
+            if selected_missing:
+                incomplete_reasons.append(f"{selected_missing} selected listing(s) were not detail-scraped")
+            if detail_errors:
+                incomplete_reasons.append(f"{detail_errors} selected detail scrape(s) failed")
+            audit_rows.append(
+                {
+                    "source": source,
+                    "scraped_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                    "discovery_status": discovery_status,
+                    "completeness_status": "incomplete" if incomplete_reasons else "complete",
+                    "list_pages_planned": discovery.pages_planned,
+                    "list_pages_visited": discovery.pages_visited,
+                    "pagination_exhausted": "1" if discovery.pagination_exhausted else "0",
+                    "page_cap_reached": "1" if discovery.page_cap_reached else "0",
+                    "blocked_pages": discovery.blocked_pages,
+                    "discovered_links": len(listings),
+                    "selected_for_detail": len(selected_from_discovery),
+                    "detail_cap_reached": "1" if detail_cap_reached else "0",
+                    "selected_details_scraped": len(scraped_selected_urls),
+                    "selected_details_missing": selected_missing,
+                    "detail_errors": detail_errors,
+                    "seed_details_scraped": max(0, len(source_records) - len(scraped_selected_urls)),
+                    "notes": "; ".join(incomplete_reasons),
+                }
+            )
         await context.close()
         await browser.close()
     raw_df = pd.DataFrame(records).reindex(columns=LISTING_COLUMNS, fill_value="") if records else pd.DataFrame(columns=LISTING_COLUMNS)
     links_df = pd.concat(link_frames, ignore_index=True, sort=False).reindex(columns=LINK_COLUMNS, fill_value="") if link_frames else pd.DataFrame(columns=LINK_COLUMNS)
-    return raw_df, links_df
+    audit_df = pd.DataFrame(audit_rows).reindex(columns=AUDIT_COLUMNS, fill_value="")
+    return raw_df, links_df, audit_df
 
 
-async def discover_source_links(context: object, source: str, urls: Iterable[str], *, max_details: int) -> list[BrowserListing]:
+async def _discover_list_page(
+    context: object,
+    url: str,
+) -> tuple[int, list[list[str]], str]:
+    """Load one listing page; callers combine several pages in bounded batches."""
+    page = await context.new_page()
+    try:
+        response = await page.goto(url, wait_until="domcontentloaded", timeout=45_000)
+        await page.wait_for_timeout(2_500)
+        await auto_scroll(page, max_rounds=6, delay_ms=500)
+        anchors = await page.eval_on_selector_all(
+            "a[href]",
+            "els => els.map(a => [a.href, (a.innerText || '').trim()])",
+        )
+        content = await page.content()
+        return (int(response.status) if response is not None else 0, anchors, content)
+    finally:
+        await page.close()
+
+
+async def discover_source_links(context: object, source: str, urls: Iterable[str], *, max_details: int) -> DiscoveryResult:
     pattern = DETAIL_PATTERNS[source]
     fallback_pattern = DETAIL_URL_FALLBACKS[source]
     listings_by_url: dict[str, BrowserListing] = {}
+    list_urls = list(urls)
+    pages_visited = 0
+    blocked_pages = 0
+    consecutive_stale_pages = 0
+    stale_page_limit = max(2, len(SOURCE_URLS[source]) * 2)
+    pagination_exhausted = source == "slattery"
 
     def add_listing(clean_url: str, title: str = "") -> None:
         title_hint = _clean_text(title)
@@ -847,16 +958,16 @@ async def discover_source_links(context: object, source: str, urls: Iterable[str
         if title_hint and (not existing.title_hint or (new_has_year and not existing_has_year) or len(title_hint) > len(existing.title_hint)):
             listings_by_url[clean_url] = BrowserListing(source=source, url=clean_url, title_hint=title_hint)
 
-    for url in urls:
-        page = await context.new_page()
-        try:
-            await page.goto(url, wait_until="domcontentloaded", timeout=45_000)
-            await page.wait_for_timeout(5_000)
-            await auto_scroll(page)
-            anchors = await page.eval_on_selector_all(
-                "a[href]",
-                "els => els.map(a => [a.href, (a.innerText || '').trim()])",
-            )
+    batch_size = 5 if len(list_urls) > 20 else max(1, len(SOURCE_URLS[source]))
+    stop_discovery = False
+    for batch_start in range(0, len(list_urls), batch_size):
+        batch_urls = list_urls[batch_start : batch_start + batch_size]
+        page_results = await asyncio.gather(*(_discover_list_page(context, url) for url in batch_urls))
+        pages_visited += len(page_results)
+        for status_code, anchors, content in page_results:
+            before_count = len(listings_by_url)
+            if status_code in {401, 403, 429}:
+                blocked_pages += 1
             for href, title in anchors:
                 clean_url = _normalise_url(href)
                 if not clean_url:
@@ -865,8 +976,14 @@ async def discover_source_links(context: object, source: str, urls: Iterable[str
                     continue
                 add_listing(clean_url, title)
                 if max_details > 0 and len(listings_by_url) >= max_details:
-                    return list(listings_by_url.values())
-            content = await page.content()
+                    return DiscoveryResult(
+                        listings=list(listings_by_url.values()),
+                        pages_planned=len(list_urls),
+                        pages_visited=pages_visited,
+                        pagination_exhausted=False,
+                        page_cap_reached=False,
+                        blocked_pages=blocked_pages,
+                    )
             for match in fallback_pattern.finditer(content):
                 clean_url = _normalise_url(match.group(0))
                 if clean_url.startswith("/"):
@@ -877,19 +994,47 @@ async def discover_source_links(context: object, source: str, urls: Iterable[str
                     continue
                 add_listing(clean_url)
                 if max_details > 0 and len(listings_by_url) >= max_details:
-                    return list(listings_by_url.values())
-        finally:
-            await page.close()
-    return list(listings_by_url.values())
+                    return DiscoveryResult(
+                        listings=list(listings_by_url.values()),
+                        pages_planned=len(list_urls),
+                        pages_visited=pages_visited,
+                        pagination_exhausted=False,
+                        page_cap_reached=False,
+                        blocked_pages=blocked_pages,
+                    )
+            if len(listings_by_url) == before_count:
+                consecutive_stale_pages += 1
+            else:
+                consecutive_stale_pages = 0
+            if source != "slattery" and consecutive_stale_pages >= stale_page_limit:
+                pagination_exhausted = True
+                stop_discovery = True
+                break
+        print(
+            f"{source}: discovery visited {pages_visited}/{len(list_urls)} list page(s); "
+            f"found {len(listings_by_url)} unique detail URL(s)",
+            flush=True,
+        )
+        if stop_discovery:
+            break
+    page_cap_reached = source != "slattery" and not pagination_exhausted and pages_visited >= len(list_urls)
+    return DiscoveryResult(
+        listings=list(listings_by_url.values()),
+        pages_planned=len(list_urls),
+        pages_visited=pages_visited,
+        pagination_exhausted=pagination_exhausted,
+        page_cap_reached=page_cap_reached,
+        blocked_pages=blocked_pages,
+    )
 
 
-async def auto_scroll(page: object, *, max_rounds: int = 12) -> None:
+async def auto_scroll(page: object, *, max_rounds: int = 12, delay_ms: int = 900) -> None:
     previous_height = 0
     stable_rounds = 0
     for _ in range(max_rounds):
         height = await page.evaluate("document.body.scrollHeight")
         await page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
-        await page.wait_for_timeout(900)
+        await page.wait_for_timeout(delay_ms)
         if height == previous_height:
             stable_rounds += 1
         else:
@@ -970,6 +1115,13 @@ def write_outputs(raw_df: pd.DataFrame, links_df: pd.DataFrame, output_dir: Path
     return links_path, all_path, matched_path
 
 
+def write_scrape_audit(audit_df: pd.DataFrame, output_dir: Path) -> Path:
+    output_dir.mkdir(parents=True, exist_ok=True)
+    audit_path = output_dir / "external_auction_scrape_audit.csv"
+    write_dataframe_csv_atomic(audit_df.reindex(columns=AUDIT_COLUMNS, fill_value=""), audit_path, index=False)
+    return audit_path
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Scrape Pickles, Manheim, and Slattery listings into an isolated curve-matched evidence CSV."
@@ -1002,7 +1154,7 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
     sources = tuple(args.source or DEFAULT_SOURCES)
-    raw_df, links_df = asyncio.run(
+    raw_df, links_df, audit_df = asyncio.run(
         scrape_sources(
             sources,
             max_list_pages_per_source=args.max_list_pages_per_source,
@@ -1014,11 +1166,13 @@ def main() -> None:
         )
     )
     links_path, all_path, matched_path = write_outputs(raw_df, links_df, args.output_dir)
+    audit_path = write_scrape_audit(audit_df, args.output_dir)
     matched_df = pd.read_csv(matched_path) if matched_path.exists() else pd.DataFrame()
     links_df = pd.read_csv(links_path) if links_path.exists() else pd.DataFrame()
     print(f"Wrote {len(links_df)} discovered external link row(s): {links_path}", flush=True)
     print(f"Wrote {len(raw_df)} raw external listing row(s): {all_path}", flush=True)
     print(f"Wrote {len(matched_df)} saved-curve match row(s): {matched_path}", flush=True)
+    print(f"Wrote {len(audit_df)} source completeness row(s): {audit_path}", flush=True)
     if not matched_df.empty and "source" in matched_df.columns:
         print("Curve matches by source:", flush=True)
         print(matched_df["source"].value_counts().to_string(), flush=True)

@@ -1,7 +1,10 @@
+import asyncio
+
 import pandas as pd
 
 from scripts.scrape_external_auction_sources import (
     build_source_list_urls,
+    discover_source_links,
     extract_label_values,
     filter_curve_supported,
     parse_listing_text,
@@ -11,6 +14,87 @@ from scripts.scrape_external_auction_sources import (
     tag_with_curve_support,
     BrowserListing,
 )
+
+
+class _FakeResponse:
+    def __init__(self, status: int = 200):
+        self.status = status
+
+
+class _FakeListPage:
+    def __init__(self, *, anchors=None, status: int = 200):
+        self.anchors = anchors or []
+        self.status = status
+
+    async def goto(self, *_args, **_kwargs):
+        return _FakeResponse(self.status)
+
+    async def wait_for_timeout(self, *_args, **_kwargs):
+        return None
+
+    async def evaluate(self, script):
+        return 100 if script == "document.body.scrollHeight" else None
+
+    async def eval_on_selector_all(self, *_args, **_kwargs):
+        return self.anchors
+
+    async def content(self):
+        return ""
+
+    async def close(self):
+        return None
+
+
+class _FakeListContext:
+    def __init__(self, pages):
+        self.pages = iter(pages)
+
+    async def new_page(self):
+        return next(self.pages)
+
+
+def test_discovery_stops_after_pagination_is_exhausted():
+    detail_url = "https://www.pickles.com.au/used/details/cars/2019-toyota-hilux/62341652"
+    context = _FakeListContext(
+        [
+            _FakeListPage(anchors=[[detail_url, "2019 Toyota Hilux"]]),
+            _FakeListPage(),
+            _FakeListPage(),
+        ]
+    )
+
+    result = asyncio.run(
+        discover_source_links(
+            context,
+            "pickles",
+            build_source_list_urls("pickles", 10),
+            max_details=0,
+        )
+    )
+
+    assert len(result.listings) == 1
+    assert result.pages_visited == 3
+    assert result.pagination_exhausted is True
+    assert result.page_cap_reached is False
+
+
+def test_manheim_block_is_counted_across_both_locations():
+    context = _FakeListContext([_FakeListPage(status=403) for _ in range(4)])
+
+    result = asyncio.run(
+        discover_source_links(
+            context,
+            "manheim",
+            build_source_list_urls("manheim", 10),
+            max_details=0,
+        )
+    )
+
+    assert result.listings == []
+    assert result.pages_visited == 4
+    assert result.blocked_pages == 4
+    assert result.pagination_exhausted is True
+    assert result.page_cap_reached is False
 
 
 def test_parse_pickles_detail_text_extracts_grays_like_fields():
@@ -394,6 +478,16 @@ def test_build_source_list_urls_expands_pickles_pages():
     assert len(urls) == 3
     assert "page=1" in urls[0]
     assert "page=3" in urls[2]
+
+
+def test_build_source_list_urls_interleaves_manheim_locations_by_page():
+    urls = build_source_list_urls("manheim", 2)
+
+    assert len(urls) == 4
+    assert "sydney" in urls[0] and "page=1" in urls[0]
+    assert "melbourne" in urls[1] and "page=1" in urls[1]
+    assert "sydney" in urls[2] and "page=2" in urls[2]
+    assert "melbourne" in urls[3] and "page=2" in urls[3]
 
 
 def test_tag_discovered_links_prefers_saved_curve_titles():
