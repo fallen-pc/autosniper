@@ -10,29 +10,29 @@ import re
 import pandas as pd
 
 from scripts.ai_listing_valuation import (
+    EDGE_BUFFER,
+    MIN_EXPECTED_PROFIT_VIABILITY,
     MIN_NET_PROFIT_ABSOLUTE,
     MIN_NET_PROFIT_RATIO,
     _interstate_purchase_blocked,
     _calculate_confidence,
     _calculate_downside_percent,
     _detect_risk_flags,
-    _discounted_bid_cap,
-    _discounted_resale_cap_price,
+    _bid_status_label,
     _estimate_costs,
     _expected_auction_estimate,
+    _hard_max_safety_label,
+    _net_profit_value,
     _round_to_10,
     _solve_max_bid,
     apply_platform_risk_adjustments,
 )
 from shared.comps_engine import parse_currency, parse_numeric
+from shared.decision_economics import calculate_curve_decision_economics, derive_curve_verdict
 from shared.decision_policy import derive_action_label_from_row
 from shared.curves import resolve_curve_canonical_tag
-from shared.repair_pricing import assess_repairs, apply_repairs_to_max_bid, repair_decision_label
+from shared.repair_pricing import assess_repairs, repair_decision_label, vehicle_class_for_listing
 from shared.sold_comparables import select_km_aware_comparables
-
-# Profit threshold that upgrades a replay verdict from "Conditional Flip" to "Strong Flip".
-# Distinct from MIN_NET_PROFIT_ABSOLUTE (the minimum required for any BUY decision).
-STRONG_FLIP_PROFIT_THRESHOLD = 3_000
 
 COMPS_STATS_COLUMNS = ["comps_count", "comps_median", "comps_mean", "comps_min", "comps_max"]
 COMPS_STATS_INTERNAL_COLUMNS = ["comps_prices", "comps_urls", "comps_odometers"]
@@ -304,43 +304,6 @@ def historical_comps_for_row(
     }
 
 
-def _bid_status_for_replay(
-    sold_price: float | None,
-    expected_auction_price: float | None,
-    max_bid: float | None,
-) -> str:
-    if sold_price is None:
-        return ""
-    if max_bid is not None and sold_price > max_bid:
-        return "Over max"
-    if expected_auction_price is not None and expected_auction_price > 0:
-        if sold_price <= expected_auction_price * 0.80:
-            return "Cheap"
-        if sold_price <= expected_auction_price:
-            return "Below expected"
-    return "Open"
-
-
-def _hard_max_safety_for_replay(max_bid: float | None, projected_profit: float | None) -> str:
-    if max_bid is None or max_bid <= 0:
-        return "No edge"
-    if projected_profit is not None and projected_profit >= STRONG_FLIP_PROFIT_THRESHOLD:
-        return "Strong"
-    return "Conditional"
-
-
-def _computed_verdict_for_replay(projected_profit: float | None, *, forced_avoid: bool) -> str:
-    if forced_avoid:
-        return "Avoid"
-    if projected_profit is None:
-        return "Review"
-    if projected_profit <= 0:
-        return "Avoid"
-    if projected_profit >= STRONG_FLIP_PROFIT_THRESHOLD:
-        return "Strong Flip"
-    return "Conditional Flip"
-
-
 def classify_miss_reason(row: Mapping[str, Any] | pd.Series) -> str:
     """Bucket a historical replay row into a useful missed-opportunity signal."""
     spec_reason = _clean_text(row.get("spec_reason"))
@@ -410,32 +373,46 @@ def compute_decision_metrics(
     """Rebuild the live AI buy/no-buy math for a historical sold listing.
 
     The default Missed Opportunities view uses this with ``include_repairs=True``.
-    That path mirrors the curve-first AI Analysis decision: solve the worst-case
-    max bid, apply the expected-auction cap, then apply repair deductions.
+    That path mirrors the curve-first AI Analysis decision: solve the downside
+    resale proxy max, apply repair deductions, and keep expected auction finish
+    as informational win-likelihood context rather than a second bid cap.
     """
     if resale_mid is None or resale_mid <= 0:
         return _blank_decision()
 
     listing_data = dict(row)
-    risk_flags = _detect_risk_flags(listing_data)
-    downside_pct = _calculate_downside_percent(risk_flags)
-    confidence_val = _calculate_confidence(listing_data, risk_flags)
-    notes: list[str] = []
-    downside_pct, confidence_val, risk_flags, notes = apply_platform_risk_adjustments(
-        listing_data,
-        downside_pct,
-        confidence_val,
-        risk_flags,
-        notes,
-    )
-
     resale_mid_val = _round_to_10(resale_mid)
-    resale_low_val = _round_to_10(resale_mid * (1.0 - downside_pct))
-    min_net_profit = max(
-        MIN_NET_PROFIT_ABSOLUTE,
-        MIN_NET_PROFIT_RATIO * (resale_low_val or resale_mid),
+    repair_assessment = assess_repairs(
+        listing_data.get("general_condition", ""),
+        vehicle_value=resale_mid,
+        vehicle_class=vehicle_class_for_listing(listing_data),
     )
-    max_bid_val = _solve_max_bid(resale_low_val, min_net_profit, listing_data)
+    unresolved_repair_items = sorted(
+        {
+            str(getattr(fragment, "original_text", "")).strip().rstrip(".")
+            for fragment in (getattr(repair_assessment, "fragments", None) or [])
+            if str(getattr(fragment, "status", "")).strip().lower() == "unclassified"
+            and str(getattr(fragment, "original_text", "")).strip()
+        }
+    )
+    risk_flags = _detect_risk_flags(listing_data)
+    if unresolved_repair_items and "UNRESOLVED_REPAIRS" not in risk_flags:
+        risk_flags.append("UNRESOLVED_REPAIRS")
+    if repair_assessment.pricing_class_uncertain and "REPAIR_PRICING_CLASS_UNCERTAIN" not in risk_flags:
+        risk_flags.append("REPAIR_PRICING_CLASS_UNCERTAIN")
+    downside_pct = _calculate_downside_percent(risk_flags)
+    confidence_result = _calculate_confidence(
+        listing_data,
+        risk_flags,
+        resale_mid=resale_mid_val,
+        repair_assessment=repair_assessment,
+    )
+    confidence_val, notes = confidence_result
+    downside_pct, confidence_val, risk_flags, notes = apply_platform_risk_adjustments(
+        listing_data, downside_pct, confidence_val, risk_flags, notes
+    )
+    resale_low_val = _round_to_10(resale_mid * (1.0 - downside_pct))
+    min_net_profit = max(MIN_NET_PROFIT_ABSOLUTE, MIN_NET_PROFIT_RATIO * (resale_low_val or resale_mid))
     comps_median = _first_present(
         listing_data,
         "comps_median",
@@ -453,57 +430,37 @@ def compute_decision_metrics(
         comps_median=comps_median,
         comps_count=comps_count,
     )
-    discounted_bid_cap = _discounted_bid_cap(
-        _discounted_resale_cap_price(resale_mid_val),
-        repair_cost=0.0,
-        margin=min_net_profit,
-    )
-    if discounted_bid_cap is not None and max_bid_val is not None:
-        max_bid_val = min(max_bid_val, discounted_bid_cap)
-    elif discounted_bid_cap is not None:
-        max_bid_val = discounted_bid_cap
-
-    repair_assessment = assess_repairs(
-        listing_data.get("general_condition", ""), vehicle_value=resale_mid_val or resale_mid
-    )
-    unresolved_repair_items = sorted(
-        {
-            str(getattr(fragment, "original_text", "")).strip().rstrip(".")
-            for fragment in (getattr(repair_assessment, "fragments", None) or [])
-            if str(getattr(fragment, "status", "")).strip().lower() == "unclassified"
-            and str(getattr(fragment, "original_text", "")).strip()
-        }
-    )
     # Exposed so callers (e.g. the Missed Opportunities table) can show the same
     # vehicle-value-scaled Good/Marginal/Not Viable/Avoid label this function used
     # internally, instead of separately recomputing it against flat dollar gates.
     repair_decision = repair_decision_label(repair_assessment, vehicle_value=resale_mid_val or resale_mid)
-    repair_cost_total = float(repair_assessment.total_cost or 0.0) if include_repairs else 0.0
+    sold_price = _to_float(listing_data.get("price_numeric"))
+    economics = calculate_curve_decision_economics(
+        listing_data,
+        resale_mid=resale_mid_val,
+        resale_low=resale_low_val,
+        observed_price=sold_price,
+        min_net_profit=min_net_profit,
+        repair_assessment=repair_assessment,
+        solve_max_bid=_solve_max_bid,
+        estimate_costs=_estimate_costs,
+        include_repairs=include_repairs,
+        policy_blocked=_interstate_purchase_blocked(listing_data),
+    )
+    max_bid_val = economics.proxy_max_bid
+    repair_cost_total = economics.repair_cost_mid
     risk_buffer = float(repair_assessment.risk_buffer or 0.0) if include_repairs else 0.0
     repair_cost = max(0.0, repair_cost_total - risk_buffer)
-
-    if include_repairs and max_bid_val is not None:
-        adjusted_bid, _ = apply_repairs_to_max_bid(
-            int(round(max_bid_val)),
-            repair_assessment,
-            vehicle_value=resale_mid_val or resale_mid,
-        )
-        max_bid_val = float(adjusted_bid)
-    if include_repairs and repair_assessment.hard_avoid:
-        max_bid_val = 0.0
-    if _interstate_purchase_blocked(listing_data):
-        max_bid_val = 0.0
-
-    sold_price = _to_float(listing_data.get("price_numeric"))
     platform_fees = transport = admin_costs = total_costs = None
     projected_profit = None
+    projected_profit_worst = None
     profit_margin = None
     bid_status = ""
     hard_max_safety = "No edge" if max_bid_val == 0.0 else ""
     computed_verdict = "Review"
     action_label = "Review"
     if sold_price is not None:
-        costs_map = _estimate_costs(float(sold_price), listing_data)
+        costs_map = economics.observed_costs
         platform_fees = float(costs_map.get("fees_estimate", 0.0))
         transport = float(costs_map.get("transport_estimate", 0.0))
         admin_costs = float(costs_map.get("rego_estimate", 0.0)) + float(
@@ -512,21 +469,43 @@ def compute_decision_metrics(
             costs_map.get("prep_estimate", 0.0)
         )
         total_costs = platform_fees + transport + admin_costs + repair_cost + risk_buffer
-        projected_profit = resale_mid - sold_price - total_costs
+        projected_profit = economics.observed_profit_mid
+        projected_profit_worst = economics.observed_profit_worst
         if resale_mid:
             profit_margin = (projected_profit / resale_mid) * 100
-        bid_status = _bid_status_for_replay(sold_price, expected_auction_price, max_bid_val)
-        hard_max_safety = _hard_max_safety_for_replay(max_bid_val, projected_profit)
-        computed_verdict = _computed_verdict_for_replay(
-            projected_profit,
-            forced_avoid=bool(max_bid_val == 0.0),
+        bid_status = _bid_status_label(sold_price, expected_auction_price, max_bid_val)
+        hard_max_safety = _hard_max_safety_label(economics.proxy_profit_worst)
+        no_edge_at_sold = max_bid_val is not None and max_bid_val <= sold_price + EDGE_BUFFER
+        profit_at_basis_worst = projected_profit_worst if no_edge_at_sold else economics.proxy_profit_worst
+        expected_basis = max(sold_price, expected_auction_price) if expected_auction_price is not None else None
+        expected_worst_profit = (
+            _net_profit_value(resale_low_val or resale_mid, expected_basis, listing_data) - repair_cost_total
+            if expected_basis is not None
+            else None
         )
+        computed_verdict = derive_curve_verdict(
+            policy_blocked=_interstate_purchase_blocked(listing_data),
+            has_resale_low=resale_low_val is not None,
+            profit_at_basis_worst=profit_at_basis_worst,
+            proxy_profit_mid=economics.proxy_profit_mid,
+            proxy_profit_worst=economics.proxy_profit_worst,
+            no_edge_at_observed_price=no_edge_at_sold,
+            expected_finish_worst_profit=expected_worst_profit,
+            min_net_profit=MIN_NET_PROFIT_ABSOLUTE,
+            min_expected_profit_viability=MIN_EXPECTED_PROFIT_VIABILITY,
+        )
+        if include_repairs and repair_assessment.hard_avoid:
+            computed_verdict = "Avoid"
+        elif economics.repair_verdict in {"Avoid", "Not Viable"}:
+            computed_verdict = "Avoid"
+        elif economics.repair_verdict == "Marginal" and computed_verdict not in {"Avoid", "Trap", "Not Viable"}:
+            computed_verdict = "Marginal (repairs)"
         action_label = derive_action_label_from_row(
             {
                 "computed_verdict": computed_verdict,
                 "bid_status": bid_status,
-                "expected_auction_worst_profit_value": projected_profit,
-                "profit_at_current_bid_worst_value": projected_profit,
+                "expected_auction_worst_profit_value": expected_worst_profit,
+                "profit_at_current_bid_worst_value": projected_profit_worst,
                 "hard_max_safety": hard_max_safety,
                 "expected_auction_comps_count": comps_count,
             },
@@ -536,10 +515,14 @@ def compute_decision_metrics(
         if unresolved_repair_items and action_label != "Avoid":
             computed_verdict = "Review (unresolved repairs)"
             action_label = "Review"
+        elif repair_assessment.pricing_class_uncertain and action_label != "Avoid":
+            computed_verdict = "Review (repair pricing evidence)"
+            action_label = "Review"
 
     return {
         "max_bid": max_bid_val,
         "projected_profit_at_sold": projected_profit,
+        "projected_profit_worst_at_sold": projected_profit_worst if sold_price is not None else None,
         "profit_margin_pct": profit_margin,
         "total_costs": total_costs,
         "platform_fees": platform_fees,
@@ -555,4 +538,9 @@ def compute_decision_metrics(
         "action_label": action_label,
         "unresolved_repair_count": len(unresolved_repair_items),
         "unresolved_repairs": " | ".join(unresolved_repair_items),
+        "repair_pricing_vehicle_class": repair_assessment.pricing_vehicle_class,
+        "repair_pricing_class_uncertain": repair_assessment.pricing_class_uncertain,
+        "repair_pricing_incompatible_canonicals": "|".join(
+            repair_assessment.pricing_incompatible_canonicals
+        ),
     }

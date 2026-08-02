@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import pandas as pd
 
+from scripts import ai_listing_valuation
 from shared import missed_opportunities
 from shared.repair_pricing import RepairAssessment, RepairFragment
 
@@ -22,7 +23,7 @@ def _repair_assessment(total_cost: int = 1000, risk_buffer: int = 300) -> Repair
     )
 
 
-def test_missed_decision_metrics_apply_ai_cap_and_repair_cost(monkeypatch) -> None:
+def test_missed_decision_metrics_uses_curve_proxy_and_repair_cost(monkeypatch) -> None:
     row = pd.Series(
         {
             "url": "test://missed",
@@ -35,7 +36,6 @@ def test_missed_decision_metrics_apply_ai_cap_and_repair_cost(monkeypatch) -> No
         }
     )
 
-    monkeypatch.setattr(missed_opportunities, "_solve_max_bid", lambda resale_low, min_profit, listing: 20_000)
     monkeypatch.setattr(missed_opportunities, "assess_repairs", lambda condition, **_kwargs: _repair_assessment())
 
     result = missed_opportunities.compute_decision_metrics(
@@ -45,7 +45,7 @@ def test_missed_decision_metrics_apply_ai_cap_and_repair_cost(monkeypatch) -> No
     )
 
     assert result["expected_auction_price"] == 15_000
-    assert result["max_bid"] == 12_440
+    assert result["max_bid"] == 11_214
     assert result["repair_cost"] == 700
     assert result["risk_buffer"] == 300
     assert result["projected_profit_at_sold"] == 7351
@@ -80,6 +80,33 @@ def test_missed_decision_metrics_blocks_buy_when_repair_is_unresolved(monkeypatc
     assert result["action_label"] == "Review"
     assert result["unresolved_repair_count"] == 1
     assert result["unresolved_repairs"] == "mystery mechanical noise"
+
+
+def test_missed_decision_metrics_blocks_buy_when_repair_quote_class_is_incompatible(monkeypatch) -> None:
+    assessment = _repair_assessment(total_cost=300, risk_buffer=0)
+    assessment.pricing_vehicle_class = "medium_suv"
+    assessment.pricing_class_uncertain = True
+    assessment.pricing_incompatible_canonicals = ["cosmetic_surface_damage"]
+    row = pd.Series(
+        {
+            "url": "test://missed-pricing-class-gap",
+            "price_numeric": 1_000,
+            "price": "$1,000",
+            "body_type": "SUV",
+            "location": "Melbourne VIC",
+            "rego_state": "VIC",
+            "general_condition": "Front guard scratched.",
+        }
+    )
+    monkeypatch.setattr(missed_opportunities, "assess_repairs", lambda condition, **_kwargs: assessment)
+
+    result = missed_opportunities.compute_decision_metrics(row, 20_000, include_repairs=True)
+
+    assert result["computed_verdict"] == "Review (repair pricing evidence)"
+    assert result["action_label"] == "Review"
+    assert result["repair_pricing_vehicle_class"] == "medium_suv"
+    assert result["repair_pricing_class_uncertain"] is True
+    assert result["repair_pricing_incompatible_canonicals"] == "cosmetic_surface_damage"
 
 
 def test_load_external_auction_sold_rows_keeps_only_settled_price_rows(tmp_path) -> None:
@@ -158,7 +185,6 @@ def test_missed_decision_metrics_can_run_no_repair_hypothesis(monkeypatch) -> No
         }
     )
 
-    monkeypatch.setattr(missed_opportunities, "_solve_max_bid", lambda resale_low, min_profit, listing: 20_000)
     monkeypatch.setattr(missed_opportunities, "assess_repairs", lambda condition, **_kwargs: _repair_assessment())
 
     result = missed_opportunities.compute_decision_metrics(
@@ -167,7 +193,7 @@ def test_missed_decision_metrics_can_run_no_repair_hypothesis(monkeypatch) -> No
         include_repairs=False,
     )
 
-    assert result["max_bid"] == 13_440
+    assert round(result["max_bid"]) == 12_214
     assert result["repair_cost"] == 0
     assert result["risk_buffer"] == 0
     assert result["projected_profit_at_sold"] == 8351
@@ -213,7 +239,6 @@ def test_missed_decision_metrics_keeps_historical_median_context_without_capping
         }
     )
 
-    monkeypatch.setattr(missed_opportunities, "_solve_max_bid", lambda resale_low, min_profit, listing: 20_000)
     monkeypatch.setattr(
         missed_opportunities,
         "assess_repairs",
@@ -227,7 +252,7 @@ def test_missed_decision_metrics_keeps_historical_median_context_without_capping
     )
 
     assert result["expected_auction_price"] == 12_300
-    assert result["max_bid"] == 13_440
+    assert result["max_bid"] == 12_214
 
 
 def test_missed_decision_metrics_uses_shared_buy_policy(monkeypatch) -> None:
@@ -243,7 +268,6 @@ def test_missed_decision_metrics_uses_shared_buy_policy(monkeypatch) -> None:
         }
     )
 
-    monkeypatch.setattr(missed_opportunities, "_solve_max_bid", lambda resale_low, min_profit, listing: 20_000)
     monkeypatch.setattr(
         missed_opportunities,
         "assess_repairs",
@@ -256,9 +280,9 @@ def test_missed_decision_metrics_uses_shared_buy_policy(monkeypatch) -> None:
         include_repairs=True,
     )
 
-    assert result["computed_verdict"] == "Strong Flip"
+    assert result["computed_verdict"] == "Marginal (expected finish)"
     assert result["bid_status"] == "Cheap"
-    assert result["hard_max_safety"] == "Strong"
+    assert result["hard_max_safety"] == "Conditional"
     assert result["action_label"] == "Buy"
 
 
@@ -276,7 +300,6 @@ def test_missed_decision_metrics_keeps_thin_comps_informational(monkeypatch) -> 
         }
     )
 
-    monkeypatch.setattr(missed_opportunities, "_solve_max_bid", lambda resale_low, min_profit, listing: 20_000)
     monkeypatch.setattr(
         missed_opportunities,
         "assess_repairs",
@@ -289,9 +312,9 @@ def test_missed_decision_metrics_keeps_thin_comps_informational(monkeypatch) -> 
         include_repairs=True,
     )
 
-    assert result["computed_verdict"] == "Strong Flip"
+    assert result["computed_verdict"] == "Marginal (expected finish)"
     assert result["bid_status"] == "Cheap"
-    assert result["hard_max_safety"] == "Strong"
+    assert result["hard_max_safety"] == "Conditional"
     assert result["action_label"] == "Buy"
 
 
@@ -308,7 +331,6 @@ def test_missed_decision_metrics_uses_shared_over_max_avoid_policy(monkeypatch) 
         }
     )
 
-    monkeypatch.setattr(missed_opportunities, "_solve_max_bid", lambda resale_low, min_profit, listing: 20_000)
     monkeypatch.setattr(
         missed_opportunities,
         "assess_repairs",
@@ -321,9 +343,64 @@ def test_missed_decision_metrics_uses_shared_over_max_avoid_policy(monkeypatch) 
         include_repairs=True,
     )
 
-    assert result["max_bid"] == 13_440
+    assert result["max_bid"] == 12_214
     assert result["bid_status"] == "Over max"
     assert result["action_label"] == "Avoid"
+
+
+def test_live_and_missed_surfaces_use_identical_curve_economics(monkeypatch) -> None:
+    repair_assessment = _repair_assessment(total_cost=0, risk_buffer=0)
+    row = pd.Series(
+        {
+            "url": "test://cross-surface-parity",
+            "price": "$2,000",
+            "price_numeric": 2_000,
+            "make": "Hyundai",
+            "model": "i30",
+            "variant": "Active",
+            "body_type": "Hatch",
+            "transmission": "Auto",
+            "fuel_type": "Petrol",
+            "location": "Melbourne VIC",
+            "rego_state": "VIC",
+            "key": "Yes",
+            "spare_key": "Yes",
+            "owners_manual": "Yes",
+            "service_history": "Full",
+            "general_condition": "",
+            "historical_price_median": 6_200,
+            "historical_match_count": 5,
+        }
+    )
+    monkeypatch.setattr(
+        ai_listing_valuation,
+        "load_cached_results",
+        lambda: pd.DataFrame(columns=ai_listing_valuation.REQUIRED_COLUMNS),
+    )
+    monkeypatch.setattr(ai_listing_valuation, "_save_result_row", lambda _row: None)
+    monkeypatch.setattr(ai_listing_valuation, "assess_repairs", lambda condition, **_kwargs: repair_assessment)
+    monkeypatch.setattr(missed_opportunities, "assess_repairs", lambda condition, **_kwargs: repair_assessment)
+
+    live = ai_listing_valuation.run_curve_listing_analysis(
+        row,
+        resale_mid=20_000,
+        comps_median=6_200,
+        comps_count=5,
+        analysis_context="active",
+        force_refresh=True,
+    )
+    missed = missed_opportunities.compute_decision_metrics(row, 20_000, include_repairs=True)
+
+    live_max = ai_listing_valuation._parse_currency(live["recommended_max_bid"])
+    assert live_max == missed["max_bid"] == 13_714
+    assert live_max > missed["expected_auction_price"]
+    assert ai_listing_valuation._parse_currency(live["profit_at_current_bid_worst"]) == round(
+        missed["projected_profit_worst_at_sold"]
+    )
+    assert live["computed_verdict"] == missed["computed_verdict"] == "Conditional Flip"
+    assert live["bid_status"] == missed["bid_status"] == "Cheap"
+    assert live["hard_max_safety"] == missed["hard_max_safety"] == "Conditional"
+    assert live["action_label"] == missed["action_label"] == "Buy"
 
 
 def test_classify_miss_reason_splits_buy_miss_headroom() -> None:

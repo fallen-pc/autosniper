@@ -13,7 +13,12 @@ ACTION_AVOID = "Avoid"
 ACTION_REVIEW = "Review"
 
 NO_BUY_VERDICTS = {"Avoid", "Avoid (unresolved repairs)", "Trap", "Not Viable"}
-REVIEW_VERDICTS = {"Not Covered", "Not Eligible", "Review (unresolved repairs)"}
+REVIEW_VERDICTS = {
+    "Not Covered",
+    "Not Eligible",
+    "Review (unresolved repairs)",
+    "Review (repair pricing evidence)",
+}
 BUYABLE_VERDICTS = {
     "Strong Flip",
     "Conditional Flip",

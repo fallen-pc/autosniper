@@ -14,8 +14,14 @@ import pandas as pd
 from scripts.atomic_csv import append_dict_rows_csv_atomic, write_dataframe_csv_atomic
 from shared.auction_model import predict_auction_price
 from shared.data_loader import dataset_path
+from shared.decision_economics import calculate_curve_decision_economics, derive_curve_verdict
 from shared.decision_policy import DecisionPolicyInput, derive_action_label, derive_action_label_from_row
-from shared.repair_pricing import V2_DICTIONARY_PATH, assess_repairs, apply_repairs_to_max_bid
+from shared.repair_pricing import (
+    REPAIR_PRICING_SCHEDULE_PATH,
+    V2_DICTIONARY_PATH,
+    assess_repairs,
+    vehicle_class_for_listing,
+)
 from shared.repair_review import DECISIONS_PATH
 from shared.repair_features import build_repair_features, serialize_tags, REPAIR_CATEGORIES
 from shared.reauction import adjusted_expected_auction_price
@@ -53,6 +59,10 @@ REQUIRED_COLUMNS = [
     "unresolved_repair_count",
     "unresolved_repairs",
     "potential_buy_unresolved_repairs",
+    "repair_pricing_vehicle_class",
+    "repair_pricing_class_uncertain",
+    "repair_pricing_incompatible_canonicals",
+    "potential_buy_repair_pricing_uncertain",
     "expected_auction_price",
     "expected_auction_bid_basis",
     "expected_auction_profit",
@@ -344,17 +354,18 @@ def _hashable_value(value: Any) -> Any:
     return str(value).strip()
 
 
-@lru_cache(maxsize=1)
 def _repair_rules_signature() -> str:
     payload: dict[str, Any] = {
         "repair_pricing_py": None,
         "condition_dictionary_v2": None,
         "repair_review_decisions": None,
+        "repair_pricing_schedule": None,
     }
     for key, path in (
         ("repair_pricing_py", Path(__file__).resolve().parent.parent / "shared" / "repair_pricing.py"),
         ("condition_dictionary_v2", V2_DICTIONARY_PATH),
         ("repair_review_decisions", DECISIONS_PATH),
+        ("repair_pricing_schedule", REPAIR_PRICING_SCHEDULE_PATH),
     ):
         try:
             payload[key] = sha256(path.read_bytes()).hexdigest()
@@ -400,7 +411,7 @@ def _valuation_input_hash(
             for key, value in (reauction_context or {}).items()
         },
         "repair_rules_signature": _repair_rules_signature(),
-        "valuation_policy_version": "unresolved_repairs_review_v1",
+        "valuation_policy_version": "class_aware_repair_pricing_v2",
     }
     encoded = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
     return sha256(encoded.encode("utf-8")).hexdigest()
@@ -1233,30 +1244,6 @@ def _expected_auction_price(
     return estimate
 
 
-def _discounted_resale_cap_price(resale_value: Optional[float]) -> Optional[float]:
-    if resale_value is None or resale_value <= 0:
-        return None
-    return _round_to_10(resale_value * DEFAULT_DISCOUNT)
-
-
-def _profit_at_purchase_price(
-    resale_mid: Optional[float],
-    resale_low: Optional[float],
-    purchase_price: Optional[float],
-    listing: Mapping[str, Any],
-    repair_cost: float,
-) -> tuple[Optional[float], Optional[float]]:
-    if purchase_price is None:
-        return None, None
-    mid_profit = None
-    worst_profit = None
-    if resale_mid is not None:
-        mid_profit = _net_profit_value(resale_mid, purchase_price, listing) - repair_cost
-    if resale_low is not None:
-        worst_profit = _net_profit_value(resale_low, purchase_price, listing) - repair_cost
-    return mid_profit, worst_profit
-
-
 def _profit_score(profit_worst: Optional[float], resale_mid: Optional[float]) -> Optional[float]:
     if profit_worst is None or resale_mid is None or resale_mid <= 0:
         return None
@@ -1381,17 +1368,6 @@ def _action_label(
             comps_count=comps_count,
         )
     )
-
-
-def _discounted_bid_cap(
-    expected_auction_price: Optional[float],
-    *,
-    repair_cost: float = 0.0,
-    margin: float,
-) -> Optional[float]:
-    if expected_auction_price is None:
-        return None
-    return max(0.0, expected_auction_price - max(0.0, float(repair_cost)) - max(0.0, float(margin)))
 
 
 def _detect_risk_flags(listing: Mapping[str, Any]) -> list[str]:
@@ -1711,7 +1687,10 @@ def run_curve_listing_analysis(
         else:
             if analysis_context and not existing.get("analysis_context"):
                 existing["analysis_context"] = analysis_context
-            repair_assessment = assess_repairs(listing_row.get("general_condition", ""))
+            repair_assessment = assess_repairs(
+                listing_row.get("general_condition", ""),
+                vehicle_class=vehicle_class_for_listing(listing_row),
+            )
             if repair_assessment.hard_avoid:
                 existing["recommended_max_bid"] = _format_currency(0)
                 existing["computed_verdict"] = "Avoid"
@@ -1816,7 +1795,11 @@ def run_curve_listing_analysis(
         listing_data["historical_match_count"] = comps_count
         listing_data["historical_matches_rows"] = comps_count
 
-    repair_assessment = assess_repairs(listing_row.get("general_condition", ""), vehicle_value=resale_mid)
+    repair_assessment = assess_repairs(
+        listing_row.get("general_condition", ""),
+        vehicle_value=resale_mid,
+        vehicle_class=vehicle_class_for_listing(listing_data),
+    )
     unresolved_repair_items = sorted(
         {
             str(getattr(fragment, "original_text", "")).strip().rstrip(".")
@@ -1828,6 +1811,8 @@ def run_curve_listing_analysis(
     risk_flags = _detect_risk_flags(listing_data)
     if unresolved_repair_items and "UNRESOLVED_REPAIRS" not in risk_flags:
         risk_flags.append("UNRESOLVED_REPAIRS")
+    if repair_assessment.pricing_class_uncertain and "REPAIR_PRICING_CLASS_UNCERTAIN" not in risk_flags:
+        risk_flags.append("REPAIR_PRICING_CLASS_UNCERTAIN")
 
     # CatBoost model prediction — build repair features for the feature vector
     model_prediction: dict | None = None
@@ -1904,18 +1889,18 @@ def run_curve_listing_analysis(
         )
 
     min_net_profit = max(MIN_NET_PROFIT_ABSOLUTE, MIN_NET_PROFIT_RATIO * (resale_low_val or resale_mid))
-    recommended_max_bid_val = _solve_max_bid(resale_low_val, min_net_profit, listing_data)
-    discounted_bid_cap = _discounted_bid_cap(
-        expected_auction_price_val,
-        repair_cost=0.0,
-        margin=min_net_profit,
-    )
-    if discounted_bid_cap is not None and recommended_max_bid_val is not None:
-        recommended_max_bid_val = min(recommended_max_bid_val, discounted_bid_cap)
-    elif discounted_bid_cap is not None:
-        recommended_max_bid_val = discounted_bid_cap
-
     current_price_val = _parse_currency(listing_row.get("price"))
+    economics = calculate_curve_decision_economics(
+        listing_data,
+        resale_mid=resale_mid_val,
+        resale_low=resale_low_val,
+        observed_price=current_price_val,
+        min_net_profit=min_net_profit,
+        repair_assessment=repair_assessment,
+        solve_max_bid=_solve_max_bid,
+        estimate_costs=_estimate_costs,
+    )
+    recommended_max_bid_val = economics.proxy_max_bid
     if (
         expected_auction_price_val is not None
         and current_price_val is not None
@@ -1929,7 +1914,7 @@ def run_curve_listing_analysis(
     ):
         pass
 
-    repair_verdict = None
+    repair_verdict = economics.repair_verdict
     if repair_assessment.hard_avoid:
         hard_avoid_flag = {
             "mechanical": "MECHANICAL",
@@ -1938,29 +1923,6 @@ def run_curve_listing_analysis(
         }.get(getattr(repair_assessment, "hard_avoid_reason", None), "MECHANICAL")
         if hard_avoid_flag not in risk_flags:
             risk_flags.append(hard_avoid_flag)
-    # How much apply_repairs_to_max_bid actually deducted from the bid ceiling
-    # (mirrors its own high-estimate-first fallback in shared/repair_pricing.py so
-    # this always matches, whichever branch it took). Any profit figure that uses a
-    # repair-ADJUSTED bid as its cost basis must subtract this same amount -- not
-    # repair_cost_val (the plain mid estimate) -- or the two numbers mismatch and
-    # profit stops tracking repair severity consistently. Figures that use a bid
-    # basis which was never repair-adjusted (current price, expected auction price)
-    # should keep using repair_cost_val, since nothing has deducted repairs from
-    # those numbers yet.
-    repair_deduction_for_bid = 0.0
-    if recommended_max_bid_val is not None:
-        repair_deduction_for_bid = float(
-            repair_assessment.total_cost_high if repair_assessment.total_cost_high > 0 else repair_assessment.total_cost
-        )
-        adjusted_bid, repair_verdict = apply_repairs_to_max_bid(
-            int(round(recommended_max_bid_val)),
-            repair_assessment,
-            vehicle_value=resale_mid_val or resale_mid,
-        )
-        recommended_max_bid_val = float(adjusted_bid)
-    if repair_assessment.hard_avoid:
-        recommended_max_bid_val = 0.0
-
     # Warn when comps data is missing or bid exceeds historical auction prices
     comps_median_val_float = _parse_currency(comps_median)
     if comps_count is None or comps_count == 0:
@@ -1982,48 +1944,19 @@ def run_curve_listing_analysis(
             "Autotrader confirmation warning: median scraped listing price is "
             f"{abs(autotrader_curve_delta):.1%} {direction} the Carsales curve resale estimate."
         )
-    repair_cost_val = float(repair_assessment.total_cost or 0.0)
+    repair_cost_val = economics.repair_cost_mid
     economic_max_bid_val = recommended_max_bid_val
-    economic_cost_basis = economic_max_bid_val
-    if economic_cost_basis is None:
-        economic_cost_basis = current_price_val
-    if economic_cost_basis is None:
-        economic_cost_basis = 0.0
-    economic_costs_map = _estimate_costs(economic_cost_basis, listing_data)
-    economic_profit_mid_val = None
-    if economic_max_bid_val is not None and resale_mid_val is not None and not repair_assessment.hard_avoid:
-        economic_profit_mid_val = (
-            resale_mid_val - sum(economic_costs_map.values()) - economic_max_bid_val - repair_deduction_for_bid
-        )
-    economic_profit_worst_val = None
-    if economic_max_bid_val is not None and resale_low_val is not None and not repair_assessment.hard_avoid:
-        economic_profit_worst_val = (
-            resale_low_val - sum(economic_costs_map.values()) - economic_max_bid_val - repair_deduction_for_bid
-        )
-    economic_current_profit_val, economic_current_worst_profit_val = _profit_at_purchase_price(
-        resale_mid_val or resale_mid,
-        resale_low_val or resale_mid,
-        current_price_val,
-        listing_data,
-        repair_cost_val,
-    )
-    if repair_assessment.hard_avoid:
-        economic_current_profit_val = 0.0
-        economic_current_worst_profit_val = 0.0
+    economic_profit_mid_val = economics.proxy_profit_mid
+    economic_profit_worst_val = economics.proxy_profit_worst
+    economic_current_profit_val = economics.observed_profit_mid
+    economic_current_worst_profit_val = economics.observed_profit_worst
     bid_policy_gate = ""
     if "INTERSTATE" in risk_flags:
         recommended_max_bid_val = 0.0
         bid_policy_gate = "INTERSTATE"
 
-    max_bid_mid_profit_val = None
-    max_bid_worst_profit_val = None
-    if recommended_max_bid_val is not None and not repair_assessment.hard_avoid:
-        max_bid_mid_profit_val = (
-            _net_profit_value(resale_mid_val or resale_mid, recommended_max_bid_val, listing_data) - repair_deduction_for_bid
-        )
-        max_bid_worst_profit_val = (
-            _net_profit_value(resale_low_val or resale_mid, recommended_max_bid_val, listing_data) - repair_deduction_for_bid
-        )
+    max_bid_mid_profit_val = economics.proxy_profit_mid
+    max_bid_worst_profit_val = economics.proxy_profit_worst
     if "INTERSTATE" in risk_flags:
         max_bid_mid_profit_val = 0.0
         max_bid_worst_profit_val = 0.0
@@ -2032,32 +1965,15 @@ def run_curve_listing_analysis(
     if recommended_max_bid_val is not None and current_price_val is not None:
         no_edge_at_current_bid = recommended_max_bid_val <= current_price_val + EDGE_BUFFER
 
-    # profit_bid_basis is recommended_max_bid_val (repair-adjusted) UNLESS the listing
-    # has no bidding edge, in which case it falls back to current_price_val, which was
-    # never repair-adjusted. Match the repair deduction to whichever basis is in use.
-    profit_bid_basis = recommended_max_bid_val
-    profit_bid_basis_is_repair_adjusted = True
-    if (
-        current_price_val is not None
-        and profit_bid_basis is not None
-        and profit_bid_basis <= current_price_val + EDGE_BUFFER
-    ):
+    if no_edge_at_current_bid:
         profit_bid_basis = current_price_val
-        profit_bid_basis_is_repair_adjusted = False
-
-    cost_basis = profit_bid_basis if profit_bid_basis is not None else 0.0
-    costs_map = _estimate_costs(cost_basis, listing_data)
-
-    net_profit_mid_val = None
-    net_profit_worst_val = None
-    if profit_bid_basis is not None and not repair_assessment.hard_avoid:
-        repair_deduction_for_basis = repair_deduction_for_bid if profit_bid_basis_is_repair_adjusted else repair_cost_val
-        net_profit_mid_val = (
-            _net_profit_value(resale_mid_val or resale_mid, profit_bid_basis, listing_data) - repair_deduction_for_basis
-        )
-        net_profit_worst_val = (
-            _net_profit_value(resale_low_val or resale_mid, profit_bid_basis, listing_data) - repair_deduction_for_basis
-        )
+        net_profit_mid_val = economics.observed_profit_mid
+        net_profit_worst_val = economics.observed_profit_worst
+    else:
+        profit_bid_basis = recommended_max_bid_val
+        net_profit_mid_val = economics.proxy_profit_mid
+        net_profit_worst_val = economics.proxy_profit_worst
+    costs_map = _estimate_costs(profit_bid_basis if profit_bid_basis is not None else 0.0, listing_data)
     if "INTERSTATE" in risk_flags:
         net_profit_mid_val = 0.0
         net_profit_worst_val = 0.0
@@ -2092,13 +2008,8 @@ def run_curve_listing_analysis(
         expected_auction_profit_val = 0.0
         expected_auction_worst_profit_val = 0.0
 
-    current_profit_val, current_worst_profit_val = _profit_at_purchase_price(
-        resale_mid_val or resale_mid,
-        resale_low_val or resale_mid,
-        current_price_val,
-        listing_data,
-        repair_cost_val,
-    )
+    current_profit_val = economics.observed_profit_mid
+    current_worst_profit_val = economics.observed_profit_worst
     if repair_assessment.hard_avoid or ("INTERSTATE" in risk_flags):
         current_profit_val = 0.0
         current_worst_profit_val = 0.0
@@ -2118,26 +2029,17 @@ def run_curve_listing_analysis(
         or _profit_margin_percent_value(expected_profit_val, resale_mid_val)
     )
 
-    def _derive_verdict() -> str:
-        if "INTERSTATE" in risk_flags:
-            return "Avoid"
-        if resale_low_val is None:
-            return "Not Covered"
-        if net_profit_worst_val is None or net_profit_worst_val <= 0:
-            return "Avoid"
-        if expected_profit_val is not None and expected_profit_val < MIN_EXPECTED_PROFIT_VIABILITY:
-            return "Not Viable"
-        if no_edge_at_current_bid:
-            return "Trap"
-        if expected_auction_worst_profit_val is not None and expected_auction_worst_profit_val < MIN_NET_PROFIT_ABSOLUTE:
-            return "Marginal (expected finish)"
-        if confidence_val >= 0.70 and net_profit_worst_val >= 3000:
-            return "Strong Flip"
-        if confidence_val >= 0.55 and net_profit_worst_val > 0:
-            return "Conditional Flip"
-        return "Trap"
-
-    computed_verdict = _derive_verdict()
+    computed_verdict = derive_curve_verdict(
+        policy_blocked="INTERSTATE" in risk_flags,
+        has_resale_low=resale_low_val is not None,
+        profit_at_basis_worst=net_profit_worst_val,
+        proxy_profit_mid=expected_profit_val,
+        proxy_profit_worst=max_bid_worst_profit_val,
+        no_edge_at_observed_price=no_edge_at_current_bid,
+        expected_finish_worst_profit=expected_auction_worst_profit_val,
+        min_net_profit=MIN_NET_PROFIT_ABSOLUTE,
+        min_expected_profit_viability=MIN_EXPECTED_PROFIT_VIABILITY,
+    )
     if repair_assessment.hard_avoid:
         computed_verdict = "Avoid"
     elif repair_verdict == "Avoid":
@@ -2155,12 +2057,16 @@ def run_curve_listing_analysis(
         comps_count=_parse_int(expected_auction_comps_count),
     )
     potential_buy_unresolved_repairs = bool(unresolved_repair_items and action_label == "Buy")
+    potential_buy_pricing_uncertain = bool(repair_assessment.pricing_class_uncertain and action_label == "Buy")
     if unresolved_repair_items:
         if action_label == "Avoid":
             computed_verdict = "Avoid (unresolved repairs)"
         else:
             computed_verdict = "Review (unresolved repairs)"
             action_label = "Review"
+    elif repair_assessment.pricing_class_uncertain and action_label != "Avoid":
+        computed_verdict = "Review (repair pricing evidence)"
+        action_label = "Review"
     edge_note = ""
     if no_edge_at_current_bid:
         edge_note = NO_EDGE_MESSAGE.format(
@@ -2212,6 +2118,12 @@ def run_curve_listing_analysis(
         "unresolved_repair_count": len(unresolved_repair_items),
         "unresolved_repairs": " | ".join(unresolved_repair_items),
         "potential_buy_unresolved_repairs": potential_buy_unresolved_repairs,
+        "repair_pricing_vehicle_class": repair_assessment.pricing_vehicle_class,
+        "repair_pricing_class_uncertain": repair_assessment.pricing_class_uncertain,
+        "repair_pricing_incompatible_canonicals": "|".join(
+            repair_assessment.pricing_incompatible_canonicals
+        ),
+        "potential_buy_repair_pricing_uncertain": potential_buy_pricing_uncertain,
         "repair_estimate_low": _format_currency(repair_low_val),
         "repair_estimate_high": _format_currency(repair_high_val),
         "repair_estimate_low_value": repair_low_val,

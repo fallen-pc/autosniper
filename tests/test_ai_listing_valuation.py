@@ -678,6 +678,62 @@ def test_curve_analysis_forces_review_when_repairs_are_unresolved(monkeypatch) -
     assert "repair_certainty=0.50" in result["confidence_notes"]
 
 
+def test_curve_analysis_forces_review_when_repair_quote_class_is_incompatible(monkeypatch) -> None:
+    repair_assessment = RepairAssessment(
+        hard_avoid=False,
+        pills=["COSMETIC_PANEL"],
+        cosmetic_panels=1,
+        glass_cost=0,
+        replacement_cost=0,
+        risk_buffer=0,
+        base_cost=300,
+        severity_level="minor",
+        severity_multiplier=1.0,
+        total_cost=300,
+        reasons=["fallback repair price"],
+        pricing_vehicle_class="medium_suv",
+        pricing_class_uncertain=True,
+        pricing_incompatible_canonicals=["cosmetic_surface_damage"],
+    )
+    listing = pd.Series(
+        {
+            "url": "test://repair-pricing-class-gap",
+            "price": "$1,000",
+            "make": "Ford",
+            "model": "Territory",
+            "variant": "Trend",
+            "body_type": "SUV",
+            "transmission": "Auto",
+            "fuel_type": "Petrol",
+            "location": "Melbourne VIC",
+            "rego_state": "VIC",
+            "general_condition": "Front guard scratched.",
+        }
+    )
+    monkeypatch.setattr(
+        ai_listing_valuation,
+        "load_cached_results",
+        lambda: pd.DataFrame(columns=ai_listing_valuation.REQUIRED_COLUMNS),
+    )
+    monkeypatch.setattr(ai_listing_valuation, "_save_result_row", lambda row: None)
+    monkeypatch.setattr(ai_listing_valuation, "assess_repairs", lambda condition, **_kwargs: repair_assessment)
+
+    result = ai_listing_valuation.run_curve_listing_analysis(
+        listing,
+        resale_mid=20_000,
+        comps_count=5,
+        analysis_context="active",
+        force_refresh=True,
+    )
+
+    assert result["computed_verdict"] == "Review (repair pricing evidence)"
+    assert result["action_label"] == "Review"
+    assert result["potential_buy_repair_pricing_uncertain"] is True
+    assert result["repair_pricing_vehicle_class"] == "medium_suv"
+    assert result["repair_pricing_incompatible_canonicals"] == "cosmetic_surface_damage"
+    assert "REPAIR_PRICING_CLASS_UNCERTAIN" in result["risk_flags"]
+
+
 def test_estimate_costs_uses_roadworthy_not_full_rego_for_unregistered() -> None:
     listing = {
         "body_type": "Hatch",
@@ -912,7 +968,8 @@ def test_curve_analysis_uses_historical_sold_median_for_expected_auction(monkeyp
     assert result["expected_auction_source"] == "historical_sold_median"
     assert result["expected_auction_comps_count"] == 5
     assert ai_listing_valuation._parse_currency(result["expected_auction_profit"]) == round(expected_profit)
-    assert ai_listing_valuation._parse_currency(result["recommended_max_bid"]) == 4_460
+    assert ai_listing_valuation._parse_currency(result["recommended_max_bid"]) == 13_714
+    assert ai_listing_valuation._parse_currency(result["recommended_max_bid"]) > 6_200
     assert result["current_profit_label"] == "Strong"
     assert result["expected_auction_profit_label"] in {"Good", "Strong"}
     assert result["hard_max_safety"] in {"Conditional", "Strong"}
@@ -983,7 +1040,7 @@ def test_curve_analysis_caps_expected_auction_for_reauction_context(monkeypatch)
     assert ai_listing_valuation._parse_currency(result["expected_auction_profit"]) == round(expected_profit)
 
 
-def test_curve_analysis_caps_pajero_like_listing_by_historical_auction_comps(monkeypatch) -> None:
+def test_curve_analysis_keeps_pajero_like_historical_comps_informational(monkeypatch) -> None:
     repair_assessment = RepairAssessment(
         hard_avoid=False,
         pills=["GLASS"],
@@ -1030,10 +1087,11 @@ def test_curve_analysis_caps_pajero_like_listing_by_historical_auction_comps(mon
 
     assert result["expected_auction_price"] == "$6,200"
     assert result["expected_auction_source"] == "historical_sold_median"
-    assert ai_listing_valuation._parse_currency(result["recommended_max_bid"]) < 4_900
-    assert result["bid_status"] == "Over max"
-    assert result["action_label"] == "Avoid"
-    assert result["computed_verdict"] == "Trap"
+    assert ai_listing_valuation._parse_currency(result["recommended_max_bid"]) == 10_716
+    assert ai_listing_valuation._parse_currency(result["recommended_max_bid"]) > 6_200
+    assert result["bid_status"] == "Cheap"
+    assert result["action_label"] == "Buy"
+    assert result["computed_verdict"] == "Conditional Flip"
 
 
 def test_curve_analysis_refreshes_cached_rows_missing_display_fields(monkeypatch) -> None:
