@@ -21,8 +21,10 @@ from shared.decision_policy import action_display_parts
 from shared.global_filters import apply_global_sidebar_filters, render_global_sidebar_filters
 from shared.repair_pricing import (
     assess_repairs,
+    repair_pricing_signature,
     repair_decision_label,
     serialize_repair_fragments,
+    vehicle_class_for_listing,
 )
 from shared.reauction import collapse_reauction_lifecycles
 from shared.styling import clean_html, display_banner, inject_global_styles, page_intro
@@ -810,12 +812,20 @@ def compute_underbid_pct(sold_price: object, max_bid: object) -> float | None:
 
 
 @st.cache_data(ttl=300)
-def enrich_repair_estimates(df: pd.DataFrame, include_cost: bool) -> pd.DataFrame:
+def enrich_repair_estimates(
+    df: pd.DataFrame,
+    include_cost: bool,
+    pricing_signature: str,
+) -> pd.DataFrame:
+    del pricing_signature  # Explicit Streamlit cache key; calculations read the live schedule.
     if df.empty:
         return df
     records = []
     for _, row in df.iterrows():
-        assessment = assess_repairs(row.get("general_condition"))
+        assessment = assess_repairs(
+            row.get("general_condition"),
+            vehicle_class=vehicle_class_for_listing(row),
+        )
         repair_cost = float(assessment.total_cost or 0.0) if include_cost else None
         fragment_detail = serialize_repair_fragments(assessment)
         records.append(
@@ -1513,7 +1523,11 @@ if not allow_repairs:
     )
 
 if allow_repairs:
-    sold_df = enrich_repair_estimates(sold_df, include_cost=include_repairs)
+    sold_df = enrich_repair_estimates(
+        sold_df,
+        include_cost=include_repairs,
+        pricing_signature=repair_pricing_signature(),
+    )
     major_mask = sold_df["repair_tags"].fillna("").str.contains(
         "MECHANICAL|STRUCTURAL", case=False, na=False
     )

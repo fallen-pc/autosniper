@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import os
+
 import pandas as pd
 
 from shared import repair_pricing
@@ -10,6 +12,7 @@ from shared.repair_pricing import (
     repair_decision_label,
     repair_fragments_to_records,
     split_condition_lines,
+    vehicle_class_for_listing,
 )
 
 
@@ -138,13 +141,19 @@ def test_assess_repairs_glass_case_is_consistent() -> None:
 
 
 def test_assess_repairs_prices_tyre_puncture_as_repairable() -> None:
-    assessment = assess_repairs("comment: one tyre has a pin in it.")
+    assessment = assess_repairs(
+        "comment: one tyre has a pin in it.",
+        vehicle_class="small_hatch",
+    )
     records = repair_fragments_to_records(assessment)
 
     assert assessment.hard_avoid is False
     assert records[0]["canonical_defects"] == "tyre_puncture"
     assert records[0]["status"] == "matched"
-    assert assessment.replacement_cost == 80
+    assert assessment.replacement_cost == 40
+    assert assessment.total_cost_low == 40
+    assert assessment.total_cost_high == 40
+    assert assessment.pricing_class_uncertain is False
 
 
 def test_assess_repairs_prices_lamp_damage_and_condensation() -> None:
@@ -267,7 +276,10 @@ def test_assess_repairs_does_not_add_cosmetic_panel_for_single_replacement_item(
 
 
 def test_assess_repairs_does_not_treat_interior_damage_as_body_panel() -> None:
-    assessment = assess_repairs("interior damage: drivers seat slight tear.")
+    assessment = assess_repairs(
+        "interior damage: drivers seat slight tear.",
+        vehicle_class="small_hatch",
+    )
 
     assert assessment.hard_avoid is False
     assert assessment.pills == []
@@ -616,7 +628,7 @@ def test_assess_repairs_pickles_chassis_corrosion_is_structural_hard_avoid() -> 
 
 
 def test_assess_repairs_prices_control_damage_from_schedule_quote() -> None:
-    assessment = assess_repairs("sat nav not working.")
+    assessment = assess_repairs("sat nav not working.", vehicle_class="small_hatch")
 
     assert assessment.hard_avoid is False
     # Schedule carries a direct supplier quote of $900 for control/infotainment
@@ -625,7 +637,7 @@ def test_assess_repairs_prices_control_damage_from_schedule_quote() -> None:
 
 
 def test_assess_repairs_hail_damage_bypasses_replacement_cap() -> None:
-    assessment = assess_repairs("hail damage visible around vehicle.")
+    assessment = assess_repairs("hail damage visible around vehicle.", vehicle_class="small_hatch")
 
     assert assessment.hard_avoid is False
     assert "PANEL_REPLACE" in assessment.pills
@@ -680,6 +692,91 @@ def test_assess_repairs_does_not_price_bare_body_location_without_context(
 
     assert assessment.total_cost == 0
     assert records[0]["status"] == "unclassified"
+
+
+def test_vehicle_class_mapping_is_shared_for_listing_body_types() -> None:
+    assert vehicle_class_for_listing({"body_type": "Hatchback"}) == "small_hatch"
+    assert vehicle_class_for_listing({"body_type": "Sedan"}) == "small_sedan"
+    assert vehicle_class_for_listing({"body_type": "SUV"}) == "medium_suv"
+    assert vehicle_class_for_listing({"body_type": "Wagon"}) == ""
+    assert vehicle_class_for_listing({"body_type": "Dual Cab Ute"}) == "ute"
+    assert vehicle_class_for_listing({"body_type": "People Mover"}) == "van"
+    assert vehicle_class_for_listing({"vehicle_class": "large_suv", "body_type": "Wagon"}) == "large_suv"
+
+
+def test_class_specific_schedule_band_wins_and_incompatible_class_fails_closed() -> None:
+    hatch = assess_repairs("sat nav not working.", vehicle_class="small_hatch")
+    suv = assess_repairs("sat nav not working.", vehicle_class="medium_suv")
+
+    assert (hatch.total_cost_low, hatch.total_cost, hatch.total_cost_high) == (600, 900, 1200)
+    assert hatch.pricing_class_uncertain is False
+    assert suv.replacement_cost == 250
+    assert suv.pricing_class_uncertain is True
+    assert suv.pricing_incompatible_canonicals == ["control_damage"]
+    assert repair_decision_label(suv) == "REVIEW (repair pricing evidence)"
+
+
+def test_generic_schedule_band_is_valid_for_every_vehicle_class() -> None:
+    assessment = assess_repairs("windscreen cracked.", vehicle_class="medium_suv")
+
+    assert (assessment.total_cost_low, assessment.total_cost, assessment.total_cost_high) == (450, 750, 1500)
+    assert assessment.pricing_class_uncertain is False
+
+
+def test_schedule_loader_reloads_when_file_changes(monkeypatch, tmp_path) -> None:
+    schedule_path = tmp_path / "repair_pricing_schedule.csv"
+    columns = [
+        "canonical_defect",
+        "vehicle_class",
+        "pricing_method",
+        "default_estimate",
+        "low_estimate",
+        "high_estimate",
+    ]
+    pd.DataFrame(
+        [["control_damage", "small_hatch", "repair_quote", 600, 400, 800]],
+        columns=columns,
+    ).to_csv(schedule_path, index=False)
+    original_stat = schedule_path.stat()
+    monkeypatch.setattr(repair_pricing, "REPAIR_PRICING_SCHEDULE_PATH", schedule_path)
+    repair_pricing._load_schedule_cost_bands.cache_clear()
+
+    first = assess_repairs("sat nav not working.", vehicle_class="small_hatch")
+    pd.DataFrame(
+        [["control_damage", "small_hatch", "repair_quote", 700, 500, 900]],
+        columns=columns,
+    ).to_csv(schedule_path, index=False)
+    os.utime(schedule_path, ns=(original_stat.st_atime_ns, original_stat.st_mtime_ns))
+    second = assess_repairs("sat nav not working.", vehicle_class="small_hatch")
+
+    assert first.replacement_cost == 600
+    assert second.replacement_cost == 700
+    assert second.total_cost_high == 900
+
+
+def test_specific_panels_suppress_duplicate_around_vehicle_summary() -> None:
+    assessment = assess_repairs(
+        "Rear quarter panel dent(s) under 5cm. Front guard dent(s) under 5cm. "
+        "Scratches and dents visible around vehicle.",
+        vehicle_class="small_hatch",
+        vehicle_value=18_380,
+    )
+
+    duplicate_fragments = [fragment for fragment in assessment.fragments if fragment.category == "duplicate_summary"]
+    assert assessment.cosmetic_panels == 2
+    assert len(duplicate_fragments) == 1
+    assert duplicate_fragments[0].status == "ignored"
+
+
+def test_glued_engine_sound_is_split_and_hard_avoided() -> None:
+    assessment = assess_repairs(
+        "paint peeling on various panelsunusual sound from engine bay when on",
+        vehicle_class="small_sedan",
+    )
+
+    assert assessment.hard_avoid is True
+    assert assessment.hard_avoid_reason == "mechanical"
+    assert any("unusual sound from engine" in line.lower() for line in split_condition_lines(assessment.original_text))
 
 
 def test_apply_repairs_to_max_bid_keeps_moderate_repairs_marginal() -> None:

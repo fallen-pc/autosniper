@@ -202,7 +202,9 @@ with needs_tab:
                 "labour_required": "no" if pricing_method == "wrecker_part_price" else "yes",
                 "notes": notes,
             }
-            updated = pricing_df[pricing_df["canonical_defect"] != selected_item].copy()
+            same_defect = pricing_df["canonical_defect"].map(safe_text) == selected_item
+            same_class = pricing_df["vehicle_class"].map(safe_text) == vehicle_class
+            updated = pricing_df[~(same_defect & same_class)].copy()
             updated = pd.concat([updated, pd.DataFrame([new_row], columns=PRICING_COLUMNS)], ignore_index=True)
             save_pricing_schedule(updated)
             st.cache_data.clear()
@@ -229,6 +231,7 @@ with schedule_tab:
         )
         if st.button("Save edited pricing schedule"):
             save_pricing_schedule(edited)
+            st.cache_data.clear()
             st.success("Pricing schedule saved.")
             st.rerun()
         st.download_button(
@@ -378,7 +381,10 @@ with responses_tab:
                     st.metric("High", money(parsed_row["high_estimate"]))
                 if st.button("Promote quote to pricing schedule"):
                     canonical = safe_text(parsed_row.get("canonical_defect"))
-                    updated_pricing = pricing_df[pricing_df["canonical_defect"] != canonical].copy()
+                    quote_vehicle_class = safe_text(parsed_row.get("vehicle_class")) or "generic"
+                    same_defect = pricing_df["canonical_defect"].map(safe_text) == canonical
+                    same_class = pricing_df["vehicle_class"].map(safe_text) == quote_vehicle_class
+                    updated_pricing = pricing_df[~(same_defect & same_class)].copy()
                     updated_pricing = pd.concat(
                         [updated_pricing, pd.DataFrame([parsed_row], columns=PRICING_COLUMNS)],
                         ignore_index=True,
@@ -390,6 +396,7 @@ with responses_tab:
                     ] = "priced"
                     save_pricing_schedule(updated_pricing)
                     save_quote_requests(updated_quotes)
+                    st.cache_data.clear()
                     st.success(f"Promoted `{canonical}` into the pricing schedule.")
                     st.rerun()
             else:

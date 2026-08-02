@@ -242,12 +242,55 @@ def load_pricing_schedule(path: Path = PRICING_SCHEDULE_PATH) -> pd.DataFrame:
     return df[PRICING_COLUMNS]
 
 
+def validate_pricing_schedule(df: pd.DataFrame) -> list[str]:
+    """Validate quote-backed schedule rows before replacing the live file."""
+    out = df.copy()
+    for column in PRICING_COLUMNS:
+        if column not in out.columns:
+            out[column] = ""
+    errors: list[str] = []
+    keys = out[["canonical_defect", "vehicle_class"]].fillna("").astype(str).apply(lambda col: col.str.strip())
+    duplicate_mask = keys.duplicated(keep=False)
+    if duplicate_mask.any():
+        duplicate_keys = sorted(
+            f"{row.canonical_defect}|{row.vehicle_class}"
+            for row in keys.loc[duplicate_mask].drop_duplicates().itertuples(index=False)
+        )
+        errors.append(f"Duplicate canonical defect/vehicle class rows: {', '.join(duplicate_keys)}")
+    invalid_classes = sorted(set(keys.loc[~keys["vehicle_class"].isin(VEHICLE_CLASSES), "vehicle_class"]) - {""})
+    if invalid_classes:
+        errors.append(f"Unsupported vehicle classes: {', '.join(invalid_classes)}")
+    for index, row in out.iterrows():
+        canonical = safe_text(row.get("canonical_defect"))
+        vehicle_class = safe_text(row.get("vehicle_class"))
+        row_label = f"row {index + 2} ({canonical or 'blank'}|{vehicle_class or 'blank'})"
+        if not canonical:
+            errors.append(f"{row_label}: canonical_defect is required")
+        if vehicle_class not in VEHICLE_CLASSES:
+            errors.append(f"{row_label}: vehicle_class must use the governed class list")
+        try:
+            low = float(row.get("low_estimate"))
+            default = float(row.get("default_estimate"))
+            high = float(row.get("high_estimate"))
+        except (TypeError, ValueError):
+            errors.append(f"{row_label}: low/default/high estimates must be numeric")
+            continue
+        if not (0 < low <= default <= high):
+            errors.append(f"{row_label}: estimates must satisfy 0 < low <= default <= high")
+        if not safe_text(row.get("evidence_source")):
+            errors.append(f"{row_label}: evidence_source is required; do not invent class multipliers")
+    return errors
+
+
 def save_pricing_schedule(df: pd.DataFrame, path: Path = PRICING_SCHEDULE_PATH) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     out = df.copy()
     for column in PRICING_COLUMNS:
         if column not in out.columns:
             out[column] = ""
+    errors = validate_pricing_schedule(out)
+    if errors:
+        raise ValueError("Invalid repair pricing schedule: " + "; ".join(errors))
     out[PRICING_COLUMNS].to_csv(path, index=False)
 
 

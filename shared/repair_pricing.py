@@ -4,8 +4,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from functools import lru_cache
+from hashlib import sha256
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Mapping, Optional, Tuple
 import html
 import json
 import re
@@ -118,40 +119,142 @@ PART_ONLY_PRICING_METHODS = {"wrecker_part_price"}
 WINDSCREEN_ADAS_PREMIUM = WINDSCREEN_ADAS - WINDSCREEN_STD
 
 
-@lru_cache(maxsize=1)
-def _schedule_cost_overrides() -> Dict[str, int]:
-    """canonical_defect -> default_estimate from the curated repair pricing schedule."""
+@dataclass(frozen=True)
+class RepairCostBand:
+    low: int
+    default: int
+    high: int
+    vehicle_class: str = ""
+    from_schedule: bool = False
+    compatible: bool = True
+
+
+def _schedule_signature() -> tuple[str, str]:
+    """Return a content key that changes whenever the schedule file changes."""
+    try:
+        content_hash = sha256(REPAIR_PRICING_SCHEDULE_PATH.read_bytes()).hexdigest()
+        return (str(REPAIR_PRICING_SCHEDULE_PATH.resolve()), content_hash)
+    except OSError:
+        return (str(REPAIR_PRICING_SCHEDULE_PATH), "missing")
+
+
+def repair_pricing_signature() -> str:
+    """Public cache key for long-running screens and services."""
+    return "|".join(_schedule_signature())
+
+
+@lru_cache(maxsize=4)
+def _load_schedule_cost_bands(_path: str, _content_hash: str) -> Dict[tuple[str, str], RepairCostBand]:
+    """Load class-specific low/default/high estimates for one file signature."""
     try:
         df = pd.read_csv(REPAIR_PRICING_SCHEDULE_PATH)
     except Exception:
         return {}
-    overrides: Dict[str, int] = {}
+    overrides: Dict[tuple[str, str], RepairCostBand] = {}
     for _, row in df.iterrows():
         canonical = str(row.get("canonical_defect") or "").strip()
+        vehicle_class = str(row.get("vehicle_class") or "generic").strip().lower() or "generic"
         method = str(row.get("pricing_method") or "").strip()
         try:
             default = float(row.get("default_estimate"))
+            low = float(row.get("low_estimate"))
+            high = float(row.get("high_estimate"))
         except (TypeError, ValueError):
             continue
-        if not canonical or not default > 0:
+        if not canonical or not (0 < low <= default <= high):
             continue
         if method in PART_ONLY_PRICING_METHODS:
-            overrides[canonical] = int(max(V2_REPLACEMENT_COSTS.get(canonical, 0), default))
-        else:
-            overrides[canonical] = int(default)
+            fitted_floor = float(V2_REPLACEMENT_COSTS.get(canonical, 0))
+            low = max(low, fitted_floor)
+            default = max(default, fitted_floor)
+            high = max(high, fitted_floor)
+        overrides[(canonical, vehicle_class)] = RepairCostBand(
+            low=int(round(low)),
+            default=int(round(default)),
+            high=int(round(high)),
+            vehicle_class=vehicle_class,
+            from_schedule=True,
+        )
     return overrides
 
 
-def _effective_cost(canonical: str, fallback: int) -> int:
-    override = _schedule_cost_overrides().get(canonical)
-    if override is not None:
-        return override
-    return int(V2_REPLACEMENT_COSTS.get(canonical, fallback))
+def _schedule_cost_overrides() -> Dict[tuple[str, str], RepairCostBand]:
+    """Return current schedule bands, automatically reloading after a file change."""
+    return _load_schedule_cost_bands(*_schedule_signature())
 
 
-def _windscreen_glass_cost(adas_windscreen: bool) -> int:
-    base = _effective_cost("windscreen_damage", WINDSCREEN_STD)
-    return base + WINDSCREEN_ADAS_PREMIUM if adas_windscreen else base
+def infer_vehicle_class(body_type: object) -> str:
+    """Map source body labels to the repair schedule's stable class vocabulary."""
+    body = re.sub(r"[^a-z0-9]+", " ", str(body_type or "").lower()).strip()
+    if not body:
+        return ""
+    if any(token in body for token in ("ute", "pickup", "pick up", "cab chassis", "dual cab", "single cab")):
+        return "ute"
+    if any(token in body for token in ("van", "bus", "people mover")):
+        return "van"
+    if "hatch" in body:
+        return "small_hatch"
+    if any(token in body for token in ("sedan", "coupe", "convertible")):
+        return "small_sedan"
+    if any(token in body for token in ("suv", "crossover", "4x4", "4wd")):
+        return "medium_suv"
+    return ""
+
+
+def vehicle_class_for_listing(row: Mapping[str, object]) -> str:
+    explicit = str(row.get("repair_vehicle_class") or row.get("vehicle_class") or "").strip().lower()
+    if explicit:
+        return explicit
+    return infer_vehicle_class(row.get("body_type") or row.get("body"))
+
+
+def _fallback_cost_band(canonical: str, fallback: int) -> RepairCostBand:
+    default = int(V2_REPLACEMENT_COSTS.get(canonical, fallback))
+    return RepairCostBand(
+        low=int(round(default * REPAIR_COST_LOW_MULTIPLIER)),
+        default=default,
+        high=int(round(default * REPAIR_COST_HIGH_MULTIPLIER)),
+    )
+
+
+def _effective_cost_band(canonical: str, fallback: int, vehicle_class: str = "") -> RepairCostBand:
+    schedule = _schedule_cost_overrides()
+    requested_class = str(vehicle_class or "").strip().lower()
+    exact = schedule.get((canonical, requested_class)) if requested_class else None
+    if exact is not None:
+        return exact
+    generic = schedule.get((canonical, "generic"))
+    if generic is not None:
+        return generic
+
+    available_classes = sorted({key[1] for key in schedule if key[0] == canonical})
+    fallback_band = _fallback_cost_band(canonical, fallback)
+    if available_classes:
+        return RepairCostBand(**{**fallback_band.__dict__, "compatible": False})
+    return fallback_band
+
+
+def _effective_cost(canonical: str, fallback: int, vehicle_class: str = "") -> int:
+    return _effective_cost_band(canonical, fallback, vehicle_class).default
+
+
+def _windscreen_glass_band(adas_windscreen: bool, vehicle_class: str = "") -> RepairCostBand:
+    base = _effective_cost_band("windscreen_damage", WINDSCREEN_STD, vehicle_class)
+    if not adas_windscreen:
+        return base
+    premium = _fallback_cost_band("", WINDSCREEN_ADAS_PREMIUM)
+    return RepairCostBand(
+        low=base.low + premium.low,
+        default=base.default + premium.default,
+        high=base.high + premium.high,
+        vehicle_class=base.vehicle_class,
+        from_schedule=base.from_schedule,
+        compatible=base.compatible,
+    )
+
+
+def _windscreen_glass_cost(adas_windscreen: bool, vehicle_class: str = "") -> int:
+    return _windscreen_glass_band(adas_windscreen, vehicle_class).default
 
 PANEL_LOCATION_TERMS = (
     "door",
@@ -185,6 +288,10 @@ CONDITION_SECTION_BOUNDARY_RE = re.compile(
     r"(?<=[a-z0-9])(?=(?:interior|exterior|mechanical|engine|transmission|body|paint|glass|windscreen):)",
     re.IGNORECASE,
 )
+CONDITION_MECHANICAL_BOUNDARY_RE = re.compile(
+    r"(?<=[a-z])(?=(?:unusual sound from (?:the )?engine|engine noise|engine requires attention))",
+    re.IGNORECASE,
+)
 BODY_LOCATION_FRAGMENT_RE = re.compile(
     r"^(?:(?:front|rear|left|right|lhr|rhr|lh|rh|driver'?s?|passenger(?: side)?)\s+)*"
     r"(?:roof|bonnet|bumper|bar|door|doors|boot|bootlid|tailgate|guard|panel|quarter|mirror|"
@@ -212,6 +319,7 @@ MECH_AVOID_PATTERNS = [
     r"\btraction control light on\b",
     r"\bcheck engine\b",
     r"\bengine noise\b",
+    r"\bunusual sound from (?:the )?engine\b",
     r"\bengine idling rough\b",
     r"\bengine lacks power\b",
     r"\b(engine|motor)\b.*\b(requires attention|needs attention|issues?|tick(?:ing)?)\b",
@@ -277,6 +385,7 @@ def split_condition_lines(text: str) -> List[str]:
         return []
     decoded_text = _decode_condition_entities(str(text))
     normalized_text = CONDITION_SECTION_BOUNDARY_RE.sub(". ", decoded_text)
+    normalized_text = CONDITION_MECHANICAL_BOUNDARY_RE.sub(". ", normalized_text)
     parts = CONDITION_FRAGMENT_RE.split(normalized_text)
     out: List[str] = []
     last_location_context = ""
@@ -303,6 +412,32 @@ def split_condition_lines(text: str) -> List[str]:
             seen.add(key)
             deduped.append(line)
     return deduped
+
+
+BROAD_COSMETIC_SUMMARY_RE = re.compile(
+    r"\b(?:scratches?\s+and\s+dents?|dents?\s+and\s+scratches?)\b.*\b(?:around|throughout)\s+(?:the\s+)?vehicle\b",
+    re.IGNORECASE,
+)
+
+
+def _dedupe_broad_cosmetic_summaries(lines: List[str]) -> tuple[List[str], List[str]]:
+    """Drop broad summary pricing when two or more specific damaged panels are enumerated."""
+    summary_lines = [line for line in lines if BROAD_COSMETIC_SUMMARY_RE.search(line)]
+    if not summary_lines:
+        return lines, []
+    specific_count = 0
+    for line in lines:
+        if line in summary_lines:
+            continue
+        lower = line.lower()
+        if any(term in lower for term in PANEL_LOCATION_TERMS) and re.search(
+            r"\b(?:scratch(?:ed|es)?|scuff(?:ed|s)?|dent(?:s)?|damage(?:d)?|chip(?:ped|s)?)\b",
+            lower,
+        ):
+            specific_count += 1
+    if specific_count < 2:
+        return lines, []
+    return [line for line in lines if line not in summary_lines], summary_lines
 
 
 @dataclass(frozen=True)
@@ -348,6 +483,34 @@ REPAIR_COST_HIGH_MULTIPLIER = 1.60  # median of high_estimate/default_estimate f
 
 
 @dataclass
+class _RepairRangeAccumulator:
+    low: float = 0.0
+    default: float = 0.0
+    high: float = 0.0
+    incompatible_canonicals: set[str] = field(default_factory=set)
+
+    def add(self, canonical: str, band: RepairCostBand, multiplier: float = 1.0) -> None:
+        self.low += band.low * multiplier
+        self.default += band.default * multiplier
+        self.high += band.high * multiplier
+        if not band.compatible:
+            self.incompatible_canonicals.add(canonical)
+
+    def totals_for(self, capped_default_total: int) -> tuple[int, int]:
+        if self.default <= 0:
+            return (
+                int(round(capped_default_total * REPAIR_COST_LOW_MULTIPLIER)),
+                int(round(capped_default_total * REPAIR_COST_HIGH_MULTIPLIER)),
+            )
+        low_ratio = max(0.0, self.low / self.default)
+        high_ratio = max(1.0, self.high / self.default)
+        return (
+            int(round(capped_default_total * low_ratio)),
+            int(round(capped_default_total * high_ratio)),
+        )
+
+
+@dataclass
 class RepairAssessment:
     hard_avoid: bool
     pills: List[str]
@@ -365,6 +528,9 @@ class RepairAssessment:
     fragments: List[RepairFragment] = field(default_factory=list)
     total_cost_low: int = 0   # optimistic estimate (low repair scenario)
     total_cost_high: int = 0  # pessimistic estimate (used for bid deduction)
+    pricing_vehicle_class: str = ""
+    pricing_class_uncertain: bool = False
+    pricing_incompatible_canonicals: List[str] = field(default_factory=list)
 
 
 HARD_AVOID_BUCKETS = {
@@ -650,7 +816,9 @@ def assess_repairs(
     adas_windscreen: bool = False,
     extra_risk_flags: Optional[List[str]] = None,
     vehicle_value: Optional[float] = None,
+    vehicle_class: str = "",
 ) -> RepairAssessment:
+    vehicle_class = str(vehicle_class or "").strip().lower()
     cosmetic_only_cap = HARD_CAPS["cosmetic_only"]
     if vehicle_value and vehicle_value > 0:
         cosmetic_only_cap = min(cosmetic_only_cap, vehicle_value * COSMETIC_CAP_PCT_OF_VALUE)
@@ -686,11 +854,13 @@ def assess_repairs(
             trigger_line=mechanical_trigger,
         )
 
-    grouped_v2_hits = _match_v2_entries(lines)
+    pricing_lines, duplicate_summary_lines = _dedupe_broad_cosmetic_summaries(lines)
+    grouped_v2_hits = _match_v2_entries(pricing_lines)
     if grouped_v2_hits:
         pills: set[str] = set()
         reasons: List[str] = []
         cosmetic_panels = 0
+        cosmetic_cost = 0
         glass_cost = 0
         replacement_cost = 0
         risk_buffer = 0
@@ -699,7 +869,18 @@ def assess_repairs(
         has_replacement = False
         has_unknown = False
         fragments: list[RepairFragment] = []
-        matched_lines: set[str] = set()
+        matched_lines: set[str] = set(duplicate_summary_lines)
+        range_costs = _RepairRangeAccumulator()
+        for summary_line in duplicate_summary_lines:
+            fragments.append(
+                RepairFragment(
+                    original_text=summary_line,
+                    normalized_text=_fragment_key(summary_line),
+                    status="ignored",
+                    category="duplicate_summary",
+                    reasons=["DUPLICATE_BROAD_COSMETIC_SUMMARY"],
+                )
+            )
 
         for line, hits in grouped_v2_hits:
             matched_lines.add(line)
@@ -746,6 +927,10 @@ def assess_repairs(
                 if not has_unknown:
                     risk_buffer += RISK_BUFFERS["unknown_photos"]
                     line_cost += RISK_BUFFERS["unknown_photos"]
+                    range_costs.add(
+                        "unknown_photos",
+                        _fallback_cost_band("", RISK_BUFFERS["unknown_photos"]),
+                    )
                     has_unknown = True
                 reason = f"V2_UNKNOWN: {line}"
                 reasons.append(reason)
@@ -757,13 +942,18 @@ def assess_repairs(
                 line_category = "glass"
                 has_glass = True
                 if "window_damage" in canonicals and "windscreen_damage" not in canonicals:
-                    current_cost = _effective_cost("window_damage", WINDSCREEN_STD)
+                    cost_band = _effective_cost_band("window_damage", WINDSCREEN_STD, vehicle_class)
                 elif "window_tint_damage" in canonicals and "windscreen_damage" not in canonicals:
-                    current_cost = _effective_cost("window_tint_damage", WINDSCREEN_STD)
+                    cost_band = _effective_cost_band("window_tint_damage", WINDSCREEN_STD, vehicle_class)
                 else:
-                    current_cost = _windscreen_glass_cost(adas_windscreen)
+                    cost_band = _windscreen_glass_band(adas_windscreen, vehicle_class)
+                current_cost = cost_band.default
                 glass_cost += current_cost
                 line_cost += current_cost
+                range_costs.add(
+                    "window_damage" if "window_damage" in canonicals else "windscreen_damage",
+                    cost_band,
+                )
                 reason = f"V2_GLASS: {line}"
                 reasons.append(reason)
                 line_reasons.append(reason)
@@ -778,9 +968,13 @@ def assess_repairs(
                 # Hail/structural repair scales with panel count and can far exceed the
                 # cosmetic caps (schedule high end for hail is ~$10k), so this component
                 # bypasses HARD_CAPS instead of being flattened to the $1,500 ceiling.
-                current_cost = _effective_cost(_structural_key, 900) + panel_count * PANEL_RATE
+                structural_band = _effective_cost_band(_structural_key, 900, vehicle_class)
+                panel_band = _fallback_cost_band("", PANEL_RATE)
+                current_cost = structural_band.default + panel_count * panel_band.default
                 uncapped_structural_cost += current_cost
                 line_cost += current_cost
+                range_costs.add(_structural_key, structural_band)
+                range_costs.add("structural_panels", panel_band, panel_count)
                 reason = f"V2_STRUCTURAL: {line}"
                 reasons.append(reason)
                 line_reasons.append(reason)
@@ -822,9 +1016,11 @@ def assess_repairs(
                 line_category = "replacement"
                 has_replacement = True
                 for hit in replacement_hits:
-                    current_cost = _effective_cost(hit.canonical_defect, 600)
+                    cost_band = _effective_cost_band(hit.canonical_defect, 600, vehicle_class)
+                    current_cost = cost_band.default
                     replacement_cost += current_cost
                     line_cost += current_cost
+                    range_costs.add(hit.canonical_defect, cost_band)
                     reason = f"V2_REPLACEMENT:{hit.canonical_defect}: {line}"
                     reasons.append(reason)
                     line_reasons.append(reason)
@@ -835,9 +1031,11 @@ def assess_repairs(
                 if any(hit.canonical_defect == "seat_damage" for hit in interior_hits):
                     interior_hits = [hit for hit in interior_hits if hit.canonical_defect != "seat_issue"]
                 for hit in interior_hits:
-                    current_cost = _effective_cost(hit.canonical_defect, 200)
+                    cost_band = _effective_cost_band(hit.canonical_defect, 200, vehicle_class)
+                    current_cost = cost_band.default
                     replacement_cost += current_cost
                     line_cost += current_cost
+                    range_costs.add(hit.canonical_defect, cost_band)
                     reason = f"V2_INTERIOR:{hit.canonical_defect}: {line}"
                     reasons.append(reason)
                     line_reasons.append(reason)
@@ -851,9 +1049,11 @@ def assess_repairs(
                 if line_category == "matched":
                     line_category = "cosmetic"
                 has_replacement = True
-                current_cost = _effective_cost("corrosion_damage", 1200)
+                cost_band = _effective_cost_band("corrosion_damage", 1200, vehicle_class)
+                current_cost = cost_band.default
                 replacement_cost += current_cost
                 line_cost += current_cost
+                range_costs.add("corrosion_damage", cost_band)
                 reason = f"V2_CORROSION: {line}"
                 reasons.append(reason)
                 line_reasons.append(reason)
@@ -873,7 +1073,21 @@ def assess_repairs(
                     line_category = "cosmetic"
                 panel_count = _panel_equivalent_for_line(line)
                 cosmetic_panels += panel_count
-                line_cost += panel_count * PANEL_RATE
+                cosmetic_bands = [
+                    (
+                        hit.canonical_defect,
+                        _effective_cost_band(hit.canonical_defect, PANEL_RATE, vehicle_class),
+                    )
+                    for hit in cosmetic_hits
+                ]
+                cosmetic_canonical, cosmetic_band = max(
+                    cosmetic_bands,
+                    key=lambda item: item[1].default,
+                )
+                current_cost = panel_count * cosmetic_band.default
+                cosmetic_cost += current_cost
+                line_cost += current_cost
+                range_costs.add(cosmetic_canonical, cosmetic_band, panel_count)
                 reason = f"V2_COSMETIC: {line}"
                 reasons.append(reason)
                 line_reasons.append(reason)
@@ -904,7 +1118,6 @@ def assess_repairs(
             )
 
         cosmetic_panels = min(cosmetic_panels, PANEL_CAP)
-        cosmetic_cost = cosmetic_panels * PANEL_RATE
         base_total = cosmetic_cost + glass_cost + replacement_cost + risk_buffer
 
         if has_replacement:
@@ -919,9 +1132,19 @@ def assess_repairs(
 
         if extra_risk_flags:
             for flag in extra_risk_flags:
-                base_total += RISK_BUFFERS.get(flag, 0)
+                flag_cost = RISK_BUFFERS.get(flag, 0)
+                base_total += flag_cost
+                if flag_cost:
+                    range_costs.add(flag, _fallback_cost_band("", flag_cost))
 
         total = int(round(base_total * severity_multiplier))
+        total_low, total_high = range_costs.totals_for(total)
+        incompatible = sorted(range_costs.incompatible_canonicals)
+        if incompatible:
+            reasons.extend(
+                f"PRICING_CLASS_UNCERTAIN:{canonical}:{vehicle_class or 'unknown'}"
+                for canonical in incompatible
+            )
         return RepairAssessment(
             hard_avoid=False,
             hard_avoid_reason=None,
@@ -934,11 +1157,14 @@ def assess_repairs(
             severity_level=severity_level,
             severity_multiplier=severity_multiplier,
             total_cost=total,
-            total_cost_low=int(total * REPAIR_COST_LOW_MULTIPLIER),
-            total_cost_high=int(total * REPAIR_COST_HIGH_MULTIPLIER),
+            total_cost_low=total_low,
+            total_cost_high=total_high,
             reasons=reasons,
             original_text=str(general_condition or ""),
             fragments=fragments + _unclassified_fragments(lines, matched_lines),
+            pricing_vehicle_class=vehicle_class,
+            pricing_class_uncertain=bool(incompatible),
+            pricing_incompatible_canonicals=incompatible,
         )
 
     cd = ConditionDictionary(dict_csv_path)
@@ -1120,6 +1346,8 @@ def repair_decision_label(assessment: RepairAssessment, vehicle_value: Optional[
     if assessment.hard_avoid:
         reason = (assessment.hard_avoid_reason or "condition").replace("_", " ")
         return f"HARD AVOID ({reason})"
+    if assessment.pricing_class_uncertain:
+        return "REVIEW (repair pricing evidence)"
     good_max, marginal_max, not_viable_max = _repair_gate_thresholds(vehicle_value)
     if assessment.total_cost <= good_max:
         return "GOOD (repairs)"

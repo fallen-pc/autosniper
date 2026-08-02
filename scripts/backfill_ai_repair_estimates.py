@@ -25,7 +25,7 @@ if __package__ in (None, ""):
 from scripts.atomic_csv import write_dataframe_csv_atomic
 from shared.comps_engine import parse_currency
 from shared.data_loader import dataset_path
-from shared.repair_pricing import assess_repairs
+from shared.repair_pricing import assess_repairs, vehicle_class_for_listing
 
 
 DEFAULT_VALUATIONS_PATH = dataset_path("ai_listing_valuations.csv")
@@ -115,7 +115,11 @@ def _repair_from_condition(row: pd.Series, condition_by_url: dict[str, str]) -> 
     condition = condition_by_url.get(url)
     if _is_blank(condition):
         return None
-    assessment = assess_repairs(str(condition), vehicle_value=_vehicle_value(row))
+    assessment = assess_repairs(
+        str(condition),
+        vehicle_value=_vehicle_value(row),
+        vehicle_class=vehicle_class_for_listing(row),
+    )
     low = assessment.total_cost_low
     high = assessment.total_cost_high
     if low is None or pd.isna(low):

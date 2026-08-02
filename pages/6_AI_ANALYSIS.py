@@ -44,6 +44,7 @@ from shared.repair_pricing import (
     WINDSCREEN_STD,
     assess_repairs,
     repair_fragments_to_records,
+    vehicle_class_for_listing,
 )
 from shared.repair_review import (
     append_live_review_items,
@@ -779,7 +780,10 @@ def build_defect_profile(row: dict[str, object]) -> dict[str, object]:
         row.get("adas_windscreen") or row.get("windscreen_adas") or row.get("windshield_adas")
     )
     assessment = assess_repairs(
-        notes, adas_windscreen=adas_windscreen, vehicle_value=_resale_value_for_repairs(row)
+        notes,
+        adas_windscreen=adas_windscreen,
+        vehicle_value=_resale_value_for_repairs(row),
+        vehicle_class=vehicle_class_for_listing(row),
     )
     bucket_lines = {
         "cosmetic": [],
@@ -1170,7 +1174,10 @@ def _condition_summary_sections(row: pd.Series) -> tuple[list[dict[str, object]]
         row.get("adas_windscreen") or row.get("windscreen_adas") or row.get("windshield_adas")
     )
     assessment = assess_repairs(
-        display_notes, adas_windscreen=adas_windscreen, vehicle_value=_resale_value_for_repairs(row)
+        display_notes,
+        adas_windscreen=adas_windscreen,
+        vehicle_value=_resale_value_for_repairs(row),
+        vehicle_class=vehicle_class_for_listing(row),
     )
     _, bucket_lines, _ = _bucket_details_from_notes(display_notes)
     sections: list[dict[str, object]] = []
@@ -1430,7 +1437,10 @@ def _render_condition_summary(row: pd.Series) -> None:
         row.get("adas_windscreen") or row.get("windscreen_adas") or row.get("windshield_adas")
     )
     assessment = assess_repairs(
-        display_notes, adas_windscreen=adas_windscreen, vehicle_value=_resale_value_for_repairs(row)
+        display_notes,
+        adas_windscreen=adas_windscreen,
+        vehicle_value=_resale_value_for_repairs(row),
+        vehicle_class=vehicle_class_for_listing(row),
     )
     st.markdown("**Condition summary**")
     for section in sections:
@@ -1758,7 +1768,10 @@ def _repair_assessment_for_row(row: pd.Series):
         row.get("adas_windscreen") or row.get("windscreen_adas") or row.get("windshield_adas")
     )
     return assess_repairs(
-        display_notes, adas_windscreen=adas_windscreen, vehicle_value=_resale_value_for_repairs(row)
+        display_notes,
+        adas_windscreen=adas_windscreen,
+        vehicle_value=_resale_value_for_repairs(row),
+        vehicle_class=vehicle_class_for_listing(row),
     )
 
 

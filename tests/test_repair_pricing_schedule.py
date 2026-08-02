@@ -1,4 +1,5 @@
 import pandas as pd
+import pytest
 
 from shared.repair_pricing_schedule import (
     EXCLUDED_PRICING_CANONICALS,
@@ -18,7 +19,44 @@ from shared.repair_pricing_schedule import (
     is_hard_avoid_pricing_candidate,
     suggest_pricing_method,
     suggest_supplier_type,
+    save_pricing_schedule,
+    validate_pricing_schedule,
 )
+
+
+def _pricing_row(vehicle_class: str = "small_hatch", *, evidence_source: str = "Supplier email") -> dict[str, object]:
+    return {
+        "canonical_defect": "panel_damage",
+        "vehicle_class": vehicle_class,
+        "pricing_method": "repair_quote",
+        "low_estimate": 500,
+        "default_estimate": 700,
+        "high_estimate": 900,
+        "evidence_source": evidence_source,
+    }
+
+
+def test_pricing_schedule_allows_evidenced_class_specific_rows() -> None:
+    schedule = pd.DataFrame([_pricing_row("small_hatch"), _pricing_row("medium_suv")])
+
+    assert validate_pricing_schedule(schedule) == []
+
+
+def test_pricing_schedule_rejects_duplicate_class_rows_and_missing_evidence(tmp_path) -> None:
+    schedule = pd.DataFrame(
+        [
+            _pricing_row("small_hatch"),
+            _pricing_row("small_hatch", evidence_source=""),
+        ]
+    )
+
+    errors = validate_pricing_schedule(schedule)
+    assert any("Duplicate canonical defect/vehicle class" in error for error in errors)
+    assert any("evidence_source is required" in error for error in errors)
+    output_path = tmp_path / "repair_pricing_schedule.csv"
+    with pytest.raises(ValueError, match="Invalid repair pricing schedule"):
+        save_pricing_schedule(schedule, output_path)
+    assert not output_path.exists()
 
 
 def test_reviewed_pricing_candidate_is_included_with_dictionary_candidates() -> None:
