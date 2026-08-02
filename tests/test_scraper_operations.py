@@ -60,6 +60,7 @@ def _write_runtime(root: Path) -> None:
                 "source": "pickles",
                 "discovery_status": "complete",
                 "completeness_status": "complete",
+                "selected_details_unavailable": 1,
                 "notes": "",
             },
             {
@@ -120,6 +121,7 @@ def test_snapshot_reports_healthy_sources_and_manheim_block(tmp_path: Path) -> N
     assert by_source["Autotrader"]["status"] == "Healthy"
     assert by_source["Pickles"]["priced"] == 1
     assert "every selected curve candidate" in by_source["Pickles"]["detail"]
+    assert "1 became unavailable" in by_source["Pickles"]["detail"]
     assert by_source["Manheim"]["status"] == "Blocked"
     assert "blocked" in by_source["Manheim"]["detail"]
 

@@ -9,6 +9,7 @@ from scripts.scrape_external_auction_sources import (
     filter_curve_supported,
     parse_listing_text,
     parse_title_parts,
+    scrape_detail,
     split_detail_lines,
     tag_discovered_links,
     tag_with_curve_support,
@@ -19,6 +20,9 @@ from scripts.scrape_external_auction_sources import (
 class _FakeResponse:
     def __init__(self, status: int = 200):
         self.status = status
+
+    async def text(self):
+        return ""
 
 
 class _FakeListPage:
@@ -53,6 +57,40 @@ class _FakeListContext:
         return next(self.pages)
 
 
+class _FakeDetailLocator:
+    def __init__(self, text: str = ""):
+        self.text = text
+        self.first = self
+
+    async def count(self):
+        return 0
+
+    async def inner_text(self, **_kwargs):
+        return self.text
+
+
+class _FakeUnavailableDetailPage:
+    url = "https://www.pickles.com.au/services/item-not-available?errorcode=20"
+
+    async def goto(self, *_args, **_kwargs):
+        return _FakeResponse(200)
+
+    async def wait_for_timeout(self, *_args, **_kwargs):
+        return None
+
+    async def title(self):
+        return "Page not found - Pickles"
+
+    def locator(self, selector):
+        return _FakeDetailLocator("Page not found" if selector == "body" else "")
+
+    async def content(self):
+        return "<html><body>Page not found</body></html>"
+
+    async def close(self):
+        return None
+
+
 def test_discovery_stops_after_pagination_is_exhausted():
     detail_url = "https://www.pickles.com.au/used/details/cars/2019-toyota-hilux/62341652"
     context = _FakeListContext(
@@ -76,6 +114,23 @@ def test_discovery_stops_after_pagination_is_exhausted():
     assert result.pages_visited == 3
     assert result.pagination_exhausted is True
     assert result.page_cap_reached is False
+
+
+def test_unavailable_pickles_redirect_keeps_discovered_url_for_reconciliation():
+    requested_url = "https://www.pickles.com.au/used/details/cars/1970-ford-falcon/62227656"
+    context = _FakeListContext([_FakeUnavailableDetailPage()])
+
+    row = asyncio.run(
+        scrape_detail(
+            context,
+            BrowserListing(source="pickles", url=requested_url, title_hint="1970 Ford Falcon"),
+            detail_timeout_ms=5_000,
+            detail_wait_ms=0,
+        )
+    )
+
+    assert row["url"] == requested_url
+    assert row["scrape_status"] == "unavailable_redirect"
 
 
 def test_manheim_block_is_counted_across_both_locations():

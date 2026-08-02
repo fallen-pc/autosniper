@@ -272,6 +272,12 @@ def build_scraper_operations_snapshot(
             audit_notes = _audit_text(audit_row.get("notes"))
             if completeness_status == "complete":
                 detail = "Pagination exhausted; every selected curve candidate was detail-scraped"
+                try:
+                    unavailable = int(float(_audit_text(audit_row.get("selected_details_unavailable")) or "0"))
+                except ValueError:
+                    unavailable = 0
+                if unavailable:
+                    detail += f" ({unavailable} became unavailable during the crawl)"
             elif discovery_status == "blocked":
                 status = "Blocked"
                 detail = audit_notes or "Listing discovery is blocked"

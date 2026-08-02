@@ -58,6 +58,7 @@ AUDIT_COLUMNS = [
     "detail_cap_reached",
     "selected_details_scraped",
     "selected_details_missing",
+    "selected_details_unavailable",
     "detail_errors",
     "seed_details_scraped",
     "notes",
@@ -92,6 +93,7 @@ MAX_AUTO_LIST_PAGES: dict[str, int] = {
     "manheim": 20,
     "slattery": 1,
 }
+DETAIL_BATCH_SIZE = 4
 
 DETAIL_PATTERNS: dict[str, re.Pattern[str]] = {
     "pickles": re.compile(r"/used/details/cars/[^/?#]+/\d+", re.IGNORECASE),
@@ -851,16 +853,23 @@ async def scrape_sources(
                 f"selected {len(selected_listings)} for detail scrape",
                 flush=True,
             )
-            for listing in selected_listings:
-                row = await scrape_detail(
-                    context,
-                    listing,
-                    detail_timeout_ms=detail_timeout_ms,
-                    detail_wait_ms=detail_wait_ms,
+            for batch_start in range(0, len(selected_listings), DETAIL_BATCH_SIZE):
+                detail_batch = selected_listings[batch_start : batch_start + DETAIL_BATCH_SIZE]
+                detail_rows = await asyncio.gather(
+                    *(
+                        scrape_detail(
+                            context,
+                            listing,
+                            detail_timeout_ms=detail_timeout_ms,
+                            detail_wait_ms=detail_wait_ms,
+                        )
+                        for listing in detail_batch
+                    )
                 )
-                records.append(row)
-                title = _clean_text(row.get("title", ""))
-                print(f"  parsed {source}: {title[:90] or listing.url}", flush=True)
+                for listing, row in zip(detail_batch, detail_rows):
+                    records.append(row)
+                    title = _clean_text(row.get("title", ""))
+                    print(f"  parsed {source}: {title[:90] or listing.url}", flush=True)
             source_records = [row for row in records if str(row.get("source", "")) == source]
             selected_urls = {listing.url for listing in selected_from_discovery}
             scraped_selected_urls = {
@@ -871,6 +880,11 @@ async def scrape_sources(
             detail_errors = sum(
                 str(row.get("scrape_status", "")).startswith("error:")
                 or str(row.get("scrape_status", "")) in {"parsed_http_401", "parsed_http_403", "parsed_http_429"}
+                for row in source_records
+                if str(row.get("url", "")) in selected_urls
+            )
+            unavailable_details = sum(
+                str(row.get("scrape_status", "")) == "unavailable_redirect"
                 for row in source_records
                 if str(row.get("url", "")) in selected_urls
             )
@@ -903,6 +917,7 @@ async def scrape_sources(
                     "detail_cap_reached": "1" if detail_cap_reached else "0",
                     "selected_details_scraped": len(scraped_selected_urls),
                     "selected_details_missing": selected_missing,
+                    "selected_details_unavailable": unavailable_details,
                     "detail_errors": detail_errors,
                     "seed_details_scraped": max(0, len(source_records) - len(scraped_selected_urls)),
                     "notes": "; ".join(incomplete_reasons),
@@ -1069,7 +1084,19 @@ async def scrape_detail(
                 response_text = ""
             _apply_pickles_terminal_fields(row, _extract_pickles_terminal_fields(page.url, f"{html_text}\n{response_text}"))
         status_code = response.status if response is not None else ""
-        row["scrape_status"] = f"parsed_http_{status_code}" if status_code else "parsed"
+        resolved_url = str(page.url or "")
+        unavailable = listing.source == "pickles" and (
+            "item-not-available" in resolved_url.lower()
+            or "page not found" in str(title or "").lower()
+        )
+        # Preserve the discovered URL as the stable reconciliation key even if
+        # the auction site redirects a withdrawn lot to a generic terminal page.
+        row["url"] = listing.url
+        row["scrape_status"] = (
+            "unavailable_redirect"
+            if unavailable
+            else (f"parsed_http_{status_code}" if status_code else "parsed")
+        )
         return row
     except Exception as exc:
         row = {column: "" for column in LISTING_COLUMNS}
