@@ -2,7 +2,9 @@
 
 - AutoSniper is a private owner-operated buying tool. Audit and prioritization should follow safe private-use fitness, not commercial SaaS standards; see [DEC-009](../03_decisions/DEC-009-audit-for-private-owner-use.md).
 
-- The repo is broadly stable for active product work. Latest local validation for the active-pipeline contract changes: focused pytest for link extraction, detail extraction, and readiness smoke tests passed; `python scripts/readiness_smoke.py`, `python scripts/governance_checks.py check`, and `python scripts/project_memory.py check` passed. The full pytest suite was attempted but timed out at 5 minutes and was stopped before completion.
+- The DigitalOcean VPS at `/opt/autosniper` is the live production runtime and owns scraper output, scheduler state, logs, browser sessions, health reports, and generated CSV data. The laptop checkout is the development workspace; disabled laptop Task Scheduler jobs and stale local runtime CSVs are not evidence of a production outage. For any freshness, scraper, scheduler, active-listing, or valuation-runtime audit, inspect the VPS first through read-only Scraper Operations or read-only SSH checks. See `docs/vps_sync_workflow.md` and `project_memory/02_state/vps_runtime_authority_2026-08-02.md`.
+
+- The 2026-08-03 audit branch passes its full committed test suite (`590 passed`), readiness smoke, governance, and project-memory validation from a separate clean checkout. A replay against the fresh VPS snapshot checked 2,503 curve-covered sold rows with zero mismatches between AI Analysis and Missed Opportunities for proxy max bid, downside profit, hard-safety state, or action.
 
 - The valuation path is now curve-first only. The old non-curve LLM pricing path has been removed, and current AI pricing behavior depends on saved curve coverage plus the active buying rules.
 
@@ -26,7 +28,7 @@
 
 - Curve coverage is complete on the current audited mainstream universe. The latest verified governance baseline covers `233` observed tags with `0` missing.
 
-- Scheduler logic is in better shape, but unattended operation still has a real Windows-session dependency. The daily/hourly paths have been hardened and overlap handling is better, but reliable Autotrader work still depends on an awake, logged-in session because headless/browser-session stability is not fully solved.
+- Production scheduling is now unattended on the DigitalOcean VPS through enabled systemd daily and hourly timers. Linux Chromium plus `xvfb-run` has a successful production-path Autotrader proof. Laptop Windows tasks should remain disabled unless the VPS is deliberately taken out of service and a single-writer fallback is explicitly chosen.
 
 - Runtime artifact handling is now explicit. Generated reports, audits, backups, and output files should remain untracked where safe, while the minimum governed runtime CSV baseline stays tracked for fresh clones and governance checks. For normal source work, use `scripts/git_runtime_quiet.ps1 -Mode quiet` to hide local scraper/pipeline CSV churn; use `-Mode unquiet` before intentional data commits.
 
