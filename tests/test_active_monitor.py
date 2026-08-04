@@ -487,6 +487,48 @@ def test_prepare_active_scope_includes_external_auction_curve_matches(monkeypatc
     assert all_active_df["url"].tolist() == [external_url]
 
 
+def test_external_blank_status_requires_current_rediscovery(monkeypatch, tmp_path) -> None:
+    rediscovered_url = "https://www.pickles.com.au/used/details/cars/2019-hyundai-i30/current"
+    seed_only_url = "https://www.pickles.com.au/used/details/cars/2022-toyota-hilux/old-seed"
+    matches_path = tmp_path / "external_auction_curve_matches.csv"
+    links_path = tmp_path / "external_auction_links.csv"
+    pd.DataFrame(
+        [
+            {"source": "pickles", "url": rediscovered_url, "status": "", "price": "$17,990"},
+            {"source": "pickles", "url": seed_only_url, "status": "", "price": "$23,420"},
+        ]
+    ).to_csv(matches_path, index=False)
+    pd.DataFrame([{"source": "pickles", "url": rediscovered_url}]).to_csv(links_path, index=False)
+
+    monkeypatch.setattr(active_monitor, "_external_auction_matches_path", lambda: matches_path)
+    monkeypatch.setattr(active_monitor, "_external_auction_links_path", lambda: links_path)
+
+    result = active_monitor._load_external_auction_active_rows()
+
+    assert result["url"].tolist() == [rediscovered_url]
+    assert result.iloc[0]["status"] == "Active"
+
+
+def test_external_blank_status_fails_closed_without_discovery_output(monkeypatch, tmp_path) -> None:
+    matches_path = tmp_path / "external_auction_curve_matches.csv"
+    missing_links_path = tmp_path / "missing_external_auction_links.csv"
+    pd.DataFrame(
+        [
+            {
+                "source": "pickles",
+                "url": "https://www.pickles.com.au/used/details/cars/2022-toyota-hilux/old-seed",
+                "status": "",
+                "price": "$23,420",
+            }
+        ]
+    ).to_csv(matches_path, index=False)
+
+    monkeypatch.setattr(active_monitor, "_external_auction_matches_path", lambda: matches_path)
+    monkeypatch.setattr(active_monitor, "_external_auction_links_path", lambda: missing_links_path)
+
+    assert active_monitor._load_external_auction_active_rows().empty
+
+
 def test_diff_price_changed_listing_urls_ignores_timer_changes() -> None:
     before_df = pd.DataFrame(
         [

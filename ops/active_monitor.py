@@ -33,6 +33,7 @@ GROUP_MAP_PATH = dataset_path("restricted_group_map.csv")
 SOLD_RESTRICTED_PATH = dataset_path("sold_cars_restricted.csv")
 NORMALIZED_CONDITIONS_PATH = Path("CSV_data/reports/normalized_conditions.csv")
 EXTERNAL_AUCTION_MATCHES_FILENAME = "external_auction_curve_matches.csv"
+EXTERNAL_AUCTION_LINKS_FILENAME = "external_auction_links.csv"
 COMPLETED_STATUSES = {"sold", "referred", "canceled", "cancelled", "closed"}
 WOVR_PATTERN = re.compile(
     r"\bwovr\b|wovr[-\s]*(?:inspected|repairable|statutory)|write[-\s]?off",
@@ -115,6 +116,11 @@ def _external_auction_matches_path() -> Path:
     return output_dir / EXTERNAL_AUCTION_MATCHES_FILENAME
 
 
+def _external_auction_links_path() -> Path:
+    output_dir = Path(os.getenv("AUTOSNIPER_EXTERNAL_AUCTIONS_OUTPUT_DIR") or "output/external_auction_scrape/daily")
+    return output_dir / EXTERNAL_AUCTION_LINKS_FILENAME
+
+
 def _load_external_auction_active_rows() -> pd.DataFrame:
     df = _load_csv(_external_auction_matches_path())
     if df.empty:
@@ -129,7 +135,22 @@ def _load_external_auction_active_rows() -> pd.DataFrame:
         return working
     if "source" not in working.columns:
         working["source"] = "external_auction"
-    working["status"] = working["status"].fillna("").astype(str).str.strip().replace("", "Active")
+    working["status"] = working["status"].fillna("").astype(str).str.strip()
+    blank_status = working["status"].eq("")
+    if blank_status.any():
+        links_df = _load_csv(_external_auction_links_path())
+        rediscovered_urls: set[str] = set()
+        if not links_df.empty and "url" in links_df.columns:
+            rediscovered_urls = set(
+                links_df["url"]
+                .fillna("")
+                .astype(str)
+                .str.strip()
+                .loc[lambda values: values.str.startswith("http", na=False)]
+            )
+        rediscovered = working["url"].isin(rediscovered_urls)
+        working = working[~blank_status | rediscovered].copy()
+        working.loc[blank_status & rediscovered, "status"] = "Active"
     working["canonical_tag"] = working["canonical_tag"].fillna("").astype(str).str.strip()
     working["canonical_reason"] = working["canonical_reason"].fillna("").astype(str).str.strip()
     return working
