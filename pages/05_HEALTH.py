@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pandas as pd
 import streamlit as st
+from shared.navigation import render_sidebar_navigation
 
 from shared.csv_utils import read_csv_or_empty
 from shared.data_loader import dataset_path
@@ -12,6 +13,7 @@ from shared.styling import display_banner, inject_global_styles, page_intro, sec
 
 
 st.set_page_config(page_title="Health - Pipeline", layout="wide")
+render_sidebar_navigation()
 inject_global_styles()
 display_banner()
 page_intro("PIPELINE HEALTH", "Counts, freshness, and error signals.", show_logo=False)

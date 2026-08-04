@@ -1,5 +1,6 @@
 import pandas as pd
 import streamlit as st
+from shared.navigation import render_sidebar_navigation
 
 from shared.csv_utils import read_csv_or_empty
 from shared.curves import list_curve_tags, resolve_curve_canonical_tag
@@ -10,6 +11,7 @@ from shared.styling import display_banner, inject_global_styles, page_intro, sec
 
 
 st.set_page_config(page_title="Curves - Builder", layout="wide")
+render_sidebar_navigation()
 inject_global_styles()
 display_banner()
 page_intro("CURVES LIBRARY", "Coverage, gaps, and quick links into the curve editor.", show_logo=False)

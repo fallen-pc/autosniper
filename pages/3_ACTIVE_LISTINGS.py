@@ -5,6 +5,7 @@ import textwrap
 
 import pandas as pd
 import streamlit as st
+from shared.navigation import render_sidebar_navigation
 
 from scripts.update_bids import update_bids
 from shared.data_loader import dataset_path, ensure_datasets_available
@@ -25,6 +26,7 @@ if os.name == "nt":
 
 
 st.set_page_config(page_title="Active Inventory", layout="wide")
+render_sidebar_navigation()
 inject_global_styles()
 
 display_banner()

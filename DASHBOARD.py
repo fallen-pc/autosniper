@@ -9,6 +9,7 @@ import re
 
 import pandas as pd
 import streamlit as st
+from shared.navigation import render_sidebar_navigation
 
 from ops.active_monitor import load_ai_analysis_active_df
 from scripts.ai_listing_valuation import MIN_NET_PROFIT_ABSOLUTE
@@ -26,6 +27,7 @@ from shared.valuation_display import (
 
 
 st.set_page_config(page_title="AutoSniper - Dashboard", layout="wide")
+render_sidebar_navigation()
 render_global_sidebar_filters()
 inject_global_styles()
 display_banner()

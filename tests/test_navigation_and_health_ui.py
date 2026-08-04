@@ -19,13 +19,13 @@ RETIRED_PAGE_PATHS = {
 
 
 def test_navigation_exposes_only_current_workflow_surfaces() -> None:
-    spec = navigation_spec()
+    spec = navigation_spec(vps_mode=False)
     pages = [entry for entries in spec.values() for entry in entries]
     paths = {path for path, _title, _default in pages}
     titles = {title for _path, title, _default in pages}
 
     assert "pages/6_AI_ANALYSIS.py" in paths
-    assert "pages/00_SCRAPER_OPERATIONS.py" in paths
+    assert "pages/00_SCRAPER_OPERATIONS.py" not in paths
     assert "pages/17_MODEL_PROOF.py" in paths
     assert paths.isdisjoint(RETIRED_PAGE_PATHS)
     assert all(not Path(path).exists() for path in RETIRED_PAGE_PATHS)
@@ -33,8 +33,18 @@ def test_navigation_exposes_only_current_workflow_surfaces() -> None:
     assert "COVERAGE" not in spec
     assert any(title == "Autotrader Scraper" for _path, title, _default in spec["OPERATIONS"])
     defaults = [path for path, _title, is_default in pages if is_default]
-    assert defaults == ["pages/00_SCRAPER_OPERATIONS.py"]
+    assert defaults == ["DASHBOARD.py"]
     assert HIDDEN_ROUTABLE_PAGES == []
+
+
+def test_vps_navigation_uses_scraper_operations_landing_page() -> None:
+    spec = navigation_spec(vps_mode=True)
+    pages = [entry for entries in spec.values() for entry in entries]
+    paths = {path for path, _title, _default in pages}
+    defaults = [path for path, _title, is_default in pages if is_default]
+
+    assert "pages/00_SCRAPER_OPERATIONS.py" in paths
+    assert defaults == ["pages/00_SCRAPER_OPERATIONS.py"]
 
 
 def test_health_failure_summary_does_not_expose_raw_exception() -> None:

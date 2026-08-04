@@ -11,6 +11,7 @@ from typing import Any, Dict, Optional
 
 import pandas as pd
 import streamlit as st
+from shared.navigation import render_sidebar_navigation
 
 from scripts.ai_listing_valuation import MIN_NET_PROFIT_ABSOLUTE, load_cached_results, run_curve_listing_analysis
 from scripts.ai_price_analysis import _extract_hours_remaining
@@ -64,6 +65,7 @@ from shared.valuation_display import (
 
 
 st.set_page_config(page_title="AI Analysis (Curve)", layout="wide")
+render_sidebar_navigation()
 render_global_sidebar_filters()
 inject_global_styles()
 display_banner()

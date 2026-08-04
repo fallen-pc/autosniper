@@ -4,6 +4,7 @@ from datetime import date
 
 import pandas as pd
 import streamlit as st
+from shared.navigation import render_sidebar_navigation
 
 from shared.repair_pricing_schedule import (
     PRICING_COLUMNS,
@@ -28,6 +29,7 @@ from shared.styling import clean_html, display_banner, escape_html, inject_globa
 
 
 st.set_page_config(page_title="Repair Pricing", layout="wide")
+render_sidebar_navigation()
 inject_global_styles()
 display_banner()
 page_intro(

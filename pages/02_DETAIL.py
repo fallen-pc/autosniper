@@ -1,5 +1,6 @@
 import pandas as pd
 import streamlit as st
+from shared.navigation import render_sidebar_navigation
 
 from shared.ops_utils import (
     append_curve_queue,
@@ -18,6 +19,7 @@ from shared.styling import display_banner, inject_global_styles, page_intro, sec
 
 
 st.set_page_config(page_title="Detail - QA", layout="wide")
+render_sidebar_navigation()
 inject_global_styles()
 display_banner()
 page_intro("DETAIL", "Full transparency for a single URL.", show_logo=False)

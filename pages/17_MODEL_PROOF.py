@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pandas as pd
 import streamlit as st
+from shared.navigation import render_sidebar_navigation
 
 from shared.calibration import build_calibration_detail, load_calibration_inputs, summarize_calibration
 from shared.data_loader import dataset_path
@@ -11,6 +12,7 @@ from shared.styling import display_banner, inject_global_styles, page_intro, sec
 
 
 st.set_page_config(page_title="Model Proof", layout="wide")
+render_sidebar_navigation()
 inject_global_styles()
 display_banner()
 page_intro(

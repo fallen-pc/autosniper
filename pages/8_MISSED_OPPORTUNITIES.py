@@ -6,6 +6,7 @@ import re
 
 import pandas as pd
 import streamlit as st
+from shared.navigation import render_sidebar_navigation
 
 from shared.comps_engine import parse_currency, parse_numeric
 from shared.canonical_tagging import is_canonical_eligible
@@ -39,6 +40,7 @@ from shared.missed_opportunities import (
 
 
 st.set_page_config(page_title="MISSED OPPORTUNITIES", layout="wide")
+render_sidebar_navigation()
 render_global_sidebar_filters()
 inject_global_styles()
 display_banner()

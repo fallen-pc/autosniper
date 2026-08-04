@@ -1,6 +1,10 @@
 from __future__ import annotations
 
 from collections import OrderedDict
+import html
+import os
+from pathlib import Path
+import re
 
 import streamlit as st
 
@@ -11,19 +15,31 @@ HIDDEN_ROUTABLE_GROUP = "_HIDDEN"
 HIDDEN_ROUTABLE_PAGES: list[tuple[str, str, bool]] = []
 
 
-def navigation_spec() -> NavigationSpec:
+def _is_vps_runtime() -> bool:
+    explicit = os.getenv("AUTOSNIPER_VPS_MODE", "").strip().lower()
+    if explicit:
+        return explicit in {"1", "true", "yes", "on"}
+    return Path(__file__).resolve().parents[1] == Path("/opt/autosniper")
+
+
+def navigation_spec(*, vps_mode: bool | None = None) -> NavigationSpec:
+    if vps_mode is None:
+        vps_mode = _is_vps_runtime()
+    system_pages = [
+        ("DASHBOARD.py", "Dashboard", not vps_mode),
+        ("pages/3_ACTIVE_LISTINGS.py", "Active Inventory", False),
+        ("pages/01_EXCEPTIONS.py", "Exceptions", False),
+        # Existing drill-down flow relies on this page being routable.
+        ("pages/02_DETAIL.py", "Listing Detail", False),
+    ]
+    if vps_mode:
+        system_pages.insert(0, ("pages/00_SCRAPER_OPERATIONS.py", "Scraper Operations", True))
+
     return OrderedDict(
         [
             (
                 "SYSTEM",
-                [
-                    ("pages/00_SCRAPER_OPERATIONS.py", "Scraper Operations", True),
-                    ("DASHBOARD.py", "Dashboard", False),
-                    ("pages/3_ACTIVE_LISTINGS.py", "Active Inventory", False),
-                    ("pages/01_EXCEPTIONS.py", "Exceptions", False),
-                    # Existing drill-down flow relies on this page being routable.
-                    ("pages/02_DETAIL.py", "Listing Detail", False),
-                ],
+                system_pages,
             ),
             (
                 "PIPELINE",
@@ -80,7 +96,7 @@ def build_navigation() -> "OrderedDict[str, list[st.Page]]":
     return pages
 
 
-def render_sidebar_navigation(pages: "OrderedDict[str, list[st.Page]]") -> None:
+def render_sidebar_navigation() -> None:
     st.sidebar.markdown(
         """
         <style>
@@ -92,17 +108,28 @@ def render_sidebar_navigation(pages: "OrderedDict[str, list[st.Page]]") -> None:
             text-transform: uppercase;
             color: rgba(229, 229, 229, 0.52);
         }
-        section[data-testid="stSidebar"] [data-testid="stPageLink"] a {
+        .autosniper-nav-link {
+            display: block;
             padding: 0.32rem 0.52rem;
             border-radius: 8px;
+            color: inherit !important;
+            text-decoration: none !important;
+        }
+        .autosniper-nav-link:hover {
+            background: rgba(31, 166, 255, 0.10);
         }
         </style>
         """,
         unsafe_allow_html=True,
     )
-    for group, entries in pages.items():
-        if group == HIDDEN_ROUTABLE_GROUP:
-            continue
+    for group, entries in navigation_spec().items():
         st.sidebar.markdown(f"<div class='autosniper-nav-group'>{group}</div>", unsafe_allow_html=True)
-        for page in entries:
-            st.sidebar.page_link(page, label=page.title)
+        for path, title, is_default in entries:
+            filename = path.replace("\\", "/").rsplit("/", 1)[-1].rsplit(".", 1)[0]
+            url_path = re.sub(r"^\d+_?", "", filename)
+            href = "/" if is_default else f"/{url_path}"
+            st.sidebar.markdown(
+                f'<a class="autosniper-nav-link" href="{html.escape(href, quote=True)}" '
+                f'target="_self">{html.escape(title)}</a>',
+                unsafe_allow_html=True,
+            )

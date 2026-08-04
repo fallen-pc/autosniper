@@ -1,5 +1,6 @@
 import pandas as pd
 import streamlit as st
+from shared.navigation import render_sidebar_navigation
 
 from shared.ops_utils import (
     apply_global_filters,
@@ -22,6 +23,7 @@ from shared.styling import display_banner, inject_global_styles, page_intro, sec
 
 
 st.set_page_config(page_title="Exceptions - Ops", layout="wide")
+render_sidebar_navigation()
 inject_global_styles()
 display_banner()
 page_intro("EXCEPTIONS", "Ruthless list of everything broken or incomplete.", show_logo=False)

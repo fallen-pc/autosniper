@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from matplotlib import colors as mcolors
 import pandas as pd
 import streamlit as st
+from shared.navigation import render_sidebar_navigation
 
 from scripts.curve_validator import build_curve_warnings
 from scripts.generate_curve_candidates import load_tagged_sold_data
@@ -31,6 +32,7 @@ REQUIRED_KM = [30000, 60000, 100000, 150000, 200000]
 
 
 st.set_page_config(page_title="Curve Builder V2", layout="wide")
+render_sidebar_navigation()
 inject_global_styles()
 display_banner()
 page_intro(

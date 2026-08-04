@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pandas as pd
 import streamlit as st
+from shared.navigation import render_sidebar_navigation
 
 from scripts.process_curve_candidates import (
     DEFAULT_AUTOTRADER_SOURCE,
@@ -19,6 +20,7 @@ from shared.styling import display_banner, hero_action_card, inject_global_style
 
 
 st.set_page_config(page_title="Curve Pipeline", layout="wide")
+render_sidebar_navigation()
 inject_global_styles()
 display_banner()
 page_intro(

@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pandas as pd
 import streamlit as st
+from shared.navigation import render_sidebar_navigation
 
 from shared.repair_ai_classifier import AI_SUGGESTIONS_PATH, load_ai_suggestions
 from shared.repair_review import LIVE_QUEUE_PATH
@@ -13,6 +14,7 @@ from shared.styling import clean_html, display_banner, escape_html, inject_globa
 
 
 st.set_page_config(page_title="Repair Review", layout="wide")
+render_sidebar_navigation()
 inject_global_styles()
 display_banner()
 page_intro(
