@@ -663,6 +663,7 @@ def run_daily_pipeline() -> None:
     extract_vehicle_details.main()
     asyncio.run(update_bids.update_bids(skip_master=True))
     _run_autotrader_scrape()
+    _run_autotrader_exit_poll_if_enabled()
     update_master.update_master_database()
     _run_external_auction_scrape_if_enabled()
     revalue_active_listings(stale_minutes=0, force_refresh=True)
@@ -759,6 +760,43 @@ def _run_autotrader_scrape(max_pages: int | None = None) -> None:
         command = [xvfb_run, "-a", *command]
     subprocess.run(command, check=True)
     print("Autotrader scrape completed.")
+
+
+def _run_autotrader_exit_poll_if_enabled() -> None:
+    """Poll individual listing URLs for a definitive live/gone signal.
+
+    Independent of the search-scope-based `sold` flag in listing_state.csv, which
+    is unreliable: absence from a search page is produced by scope and pagination
+    churn as often as by a real market exit. Results land in listing_exit_state.csv.
+
+    Off by default until the gone-detection patterns have been calibrated against
+    real responses (see poll_listing_status.py --probe). Enable with
+    AUTOSNIPER_AUTOTRADER_EXIT_POLL=1.
+    """
+    if not _env_flag_enabled("AUTOSNIPER_AUTOTRADER_EXIT_POLL"):
+        print("Autotrader exit poll skipped: AUTOSNIPER_AUTOTRADER_EXIT_POLL is not enabled.")
+        return
+
+    cookie_file = ROOT_DIR / "autotrader_isolated" / "output" / "autotrader_cookie.txt"
+    command = [
+        sys.executable,
+        "autotrader_isolated/poll_listing_status.py",
+        "--active-only",
+        "--concurrency",
+        str(_env_int("AUTOSNIPER_AUTOTRADER_EXIT_POLL_CONCURRENCY", 4) or 4),
+        "--delay",
+        os.getenv("AUTOSNIPER_AUTOTRADER_EXIT_POLL_DELAY", "0.5"),
+    ]
+    if cookie_file.exists():
+        command.extend(["--cookie-file", str(cookie_file)])
+    max_listings = _env_int("AUTOSNIPER_AUTOTRADER_EXIT_POLL_MAX", 0)
+    if max_listings > 0:
+        command.extend(["--max-listings", str(max_listings)])
+    if _env_flag_enabled("AUTOSNIPER_AUTOTRADER_EXIT_POLL_TAGGED_ONLY"):
+        command.append("--tagged-only")
+
+    subprocess.run(command, check=True)
+    print("Autotrader exit poll completed.")
 
 
 def _external_auction_daily_plan() -> dict[str, dict[str, int]]:
