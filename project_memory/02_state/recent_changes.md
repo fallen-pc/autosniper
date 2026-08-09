@@ -1,5 +1,7 @@
 # Recent Changes
 
+- 2026-08-09: Cleared draft PR #10's GitHub Governance lint failure by removing five Ruff-confirmed unused imports from two governed curve builders and the legacy classification-reference PDF generator. This is import-only cleanup with no runtime, curve, or dataset behavior change.
+
 - 2026-08-09: Closed two integration regressions exposed while publishing the second Apify curve batch. Curve builders now preserve repeated allowlist tags by `(canonical_tag, series)` so the shared Pajero GLX NT/NW tag keeps both generation rows, and explicit curve aliases resolve through their target group before falling back to a source tag's live group. The curve-version manifest also stores repository-owned paths relatively instead of leaking a machine-specific checkout path. Final integrated validation passed `730` tests, readiness, governance (`402/402` observed tags covered, zero monotonicity errors), and project-memory checks.
 
 - 2026-08-09: Added a second evidence-backed continuation from private Carsales Apify run `7WqoauuNvqzoVM5jO`: BMW X5 xDrive30d F15 (`49` exact retail rows used after `12` outliers; `20` unique live Grays vehicles), Audi A4 1.8 TFSI B8 CVT (`12` / `2`; `27`), Mazda 3 Neo BL (`12` / `3`; `14`), Jeep Cherokee Sport 4x2 KL9 (`15` / `0`; `14`), and Nissan Micra K12 (`6` / `0`; `13`). The batch input and reusable builder are preserved with the governed curve/config snapshot; adjacent generations, trims, powertrains, and drivetrains remain separate.
