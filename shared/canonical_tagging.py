@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime, timezone
 import json
+import logging
 import re
 from functools import lru_cache
 from pathlib import Path
@@ -12,11 +13,14 @@ from typing import Iterable, Mapping, Sequence, Tuple
 
 import pandas as pd
 
+from shared.csv_utils import CSV_READ_ERRORS
 from shared.curve_groups_v2 import load_curve_anchor_overrides_v2, load_curve_groups_v2
 from shared.curves import resolve_curve_canonical_tag
 from shared.data_loader import dataset_path
 from shared.validators import R
 from scripts.atomic_csv import write_dataframe_csv_atomic
+
+logger = logging.getLogger(__name__)
 
 UNCLASSIFIED = "UNCLASSIFIED"
 
@@ -509,7 +513,13 @@ def _load_curve_year_band() -> pd.DataFrame | None:
     if curve_path.exists():
         try:
             curves_df = pd.read_csv(curve_path)
-        except Exception:
+        except CSV_READ_ERRORS as exc:
+            logger.error(
+                "Unreadable curve file %s (%s: %s); year bands will be missing.",
+                curve_path,
+                type(exc).__name__,
+                exc,
+            )
             curves_df = pd.DataFrame()
         if "canonical_tag" in curves_df.columns and "anchor_year" in curves_df.columns:
             curve_band = (
@@ -527,7 +537,12 @@ def _load_curve_year_band() -> pd.DataFrame | None:
     try:
         overrides_df = load_curve_anchor_overrides_v2()
         groups_df = load_curve_groups_v2()
-    except Exception:
+    except (OSError, ValueError) as exc:
+        logger.error(
+            "Could not load curve group config (%s: %s); anchor overrides will be ignored.",
+            type(exc).__name__,
+            exc,
+        )
         overrides_df = pd.DataFrame()
         groups_df = pd.DataFrame()
 

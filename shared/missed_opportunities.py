@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Any, Mapping
+import logging
 import os
 import re
 
@@ -28,11 +29,14 @@ from scripts.ai_listing_valuation import (
     apply_platform_risk_adjustments,
 )
 from shared.comps_engine import parse_currency, parse_numeric
+from shared.csv_utils import CSV_READ_ERRORS
 from shared.decision_economics import calculate_curve_decision_economics, derive_curve_verdict
 from shared.decision_policy import derive_action_label_from_row
 from shared.curves import resolve_curve_canonical_tag
 from shared.repair_pricing import assess_repairs, repair_decision_label, vehicle_class_for_listing
 from shared.sold_comparables import select_km_aware_comparables
+
+logger = logging.getLogger(__name__)
 
 COMPS_STATS_COLUMNS = ["comps_count", "comps_median", "comps_mean", "comps_min", "comps_max"]
 COMPS_STATS_INTERNAL_COLUMNS = ["comps_prices", "comps_urls", "comps_odometers"]
@@ -92,7 +96,13 @@ def load_external_auction_sold_rows(path: Path | None = None) -> pd.DataFrame:
         return pd.DataFrame()
     try:
         df = pd.read_csv(source_path, low_memory=False)
-    except Exception:
+    except CSV_READ_ERRORS as exc:
+        logger.warning(
+            "Unreadable external auction matches %s (%s: %s); missed opportunities will be incomplete.",
+            source_path,
+            type(exc).__name__,
+            exc,
+        )
         return pd.DataFrame()
     if df.empty or "url" not in df.columns:
         return pd.DataFrame()

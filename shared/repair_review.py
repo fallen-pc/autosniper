@@ -2,9 +2,14 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Iterable
+import logging
 import re
 
 import pandas as pd
+
+from shared.csv_utils import CSV_READ_ERRORS
+
+logger = logging.getLogger(__name__)
 
 
 REPORT_DIR = Path("CSV_data/reports")
@@ -74,7 +79,13 @@ def load_repair_review_decisions(path: Path = DECISIONS_PATH) -> pd.DataFrame:
         return pd.DataFrame(columns=REVIEW_COLUMNS)
     try:
         df = pd.read_csv(path).fillna("")
-    except Exception:
+    except CSV_READ_ERRORS as exc:
+        logger.warning(
+            "Unreadable repair review decisions %s (%s: %s); treating them as empty.",
+            path,
+            type(exc).__name__,
+            exc,
+        )
         return pd.DataFrame(columns=REVIEW_COLUMNS)
     for column in REVIEW_COLUMNS:
         if column not in df.columns:

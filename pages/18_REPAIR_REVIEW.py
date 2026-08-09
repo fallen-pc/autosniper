@@ -8,6 +8,7 @@ import pandas as pd
 import streamlit as st
 from shared.navigation import render_sidebar_navigation
 
+from shared.csv_utils import CSV_READ_ERRORS
 from shared.repair_ai_classifier import AI_SUGGESTIONS_PATH, load_ai_suggestions
 from shared.repair_review import LIVE_QUEUE_PATH
 from shared.styling import clean_html, display_banner, escape_html, inject_global_styles, page_intro
@@ -113,7 +114,8 @@ def load_decisions() -> pd.DataFrame:
         return pd.DataFrame(columns=REVIEW_COLUMNS)
     try:
         df = pd.read_csv(DECISIONS_PATH).fillna("")
-    except Exception:
+    except CSV_READ_ERRORS as exc:
+        st.warning(f"Could not read {DECISIONS_PATH}: {type(exc).__name__}: {exc}")
         return pd.DataFrame(columns=REVIEW_COLUMNS)
     for column in REVIEW_COLUMNS:
         if column not in df.columns:

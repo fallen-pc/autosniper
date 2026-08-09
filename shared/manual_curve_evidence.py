@@ -1,11 +1,15 @@
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 from typing import Sequence
 
 import pandas as pd
 
+from shared.csv_utils import CSV_READ_ERRORS
 from shared.data_loader import dataset_path
+
+logger = logging.getLogger(__name__)
 
 
 MANUAL_CURVE_EVIDENCE_PATH = dataset_path("quality/manual_curve_evidence.csv")
@@ -31,7 +35,13 @@ def load_manual_curve_evidence(path: Path | None = None) -> pd.DataFrame:
         return pd.DataFrame(columns=list(MANUAL_CURVE_EVIDENCE_COLUMNS))
     try:
         df = pd.read_csv(csv_path, low_memory=False)
-    except Exception:
+    except CSV_READ_ERRORS as exc:
+        logger.warning(
+            "Unreadable manual curve evidence %s (%s: %s); continuing without it.",
+            csv_path,
+            type(exc).__name__,
+            exc,
+        )
         return pd.DataFrame(columns=list(MANUAL_CURVE_EVIDENCE_COLUMNS))
     for column in MANUAL_CURVE_EVIDENCE_COLUMNS:
         if column not in df.columns:

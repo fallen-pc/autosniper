@@ -1,13 +1,17 @@
 from __future__ import annotations
 
 from datetime import date
+import logging
 import re
 from pathlib import Path
 
 import pandas as pd
 import yaml
 
+from shared.csv_utils import CSV_READ_ERRORS
 from shared.repair_review import DECISIONS_PATH, load_repair_review_decisions, safe_text
+
+logger = logging.getLogger(__name__)
 
 
 REPORT_DIR = Path("CSV_data/reports")
@@ -234,7 +238,13 @@ def load_pricing_schedule(path: Path = PRICING_SCHEDULE_PATH) -> pd.DataFrame:
         return _blank_pricing_frame()
     try:
         df = pd.read_csv(path).fillna("")
-    except Exception:
+    except CSV_READ_ERRORS as exc:
+        logger.warning(
+            "Unreadable pricing schedule %s (%s: %s); starting from a blank schedule.",
+            path,
+            type(exc).__name__,
+            exc,
+        )
         return _blank_pricing_frame()
     for column in PRICING_COLUMNS:
         if column not in df.columns:
@@ -299,7 +309,13 @@ def load_quote_requests(path: Path = QUOTE_REQUESTS_PATH) -> pd.DataFrame:
         return _blank_quote_frame()
     try:
         df = pd.read_csv(path).fillna("")
-    except Exception:
+    except CSV_READ_ERRORS as exc:
+        logger.warning(
+            "Unreadable quote requests %s (%s: %s); starting from a blank quote list.",
+            path,
+            type(exc).__name__,
+            exc,
+        )
         return _blank_quote_frame()
     for column in QUOTE_COLUMNS:
         if column not in df.columns:
@@ -528,7 +544,13 @@ def dictionary_pricing_candidates(path: Path = DICTIONARY_PATH) -> pd.DataFrame:
         return pd.DataFrame(columns=["canonical_defect", "category", "examples", "decision_count"])
     try:
         payload = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
-    except Exception:
+    except (OSError, yaml.YAMLError) as exc:
+        logger.warning(
+            "Unreadable condition dictionary %s (%s: %s); no pricing candidates derived.",
+            path,
+            type(exc).__name__,
+            exc,
+        )
         return pd.DataFrame(columns=["canonical_defect", "category", "examples", "decision_count"])
 
     rows: list[dict[str, object]] = []

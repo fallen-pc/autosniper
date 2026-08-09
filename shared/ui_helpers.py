@@ -13,7 +13,8 @@ def display_profit_bar(profit_str: str, verdict: str) -> None:
     """
     try:
         percent = float(str(profit_str).strip('%'))
-        st.markdown(f"**Profit Margin: {profit_str} — Verdict: {verdict}**")
-        st.progress(min(percent / 100, 1.0))
-    except Exception:
-        st.warning("⚠️ Could not parse profit margin.")
+    except (TypeError, ValueError):
+        st.warning(f"⚠️ Could not parse profit margin from {profit_str!r}.")
+        return
+    st.markdown(f"**Profit Margin: {profit_str} — Verdict: {verdict}**")
+    st.progress(min(percent / 100, 1.0))

@@ -12,6 +12,7 @@ import pandas as pd
 
 from scripts.atomic_csv import append_dict_rows_csv_atomic, write_dataframe_csv_atomic
 from shared.auction_model import predict_auction_price
+from shared.csv_utils import CSV_READ_ERRORS
 from shared.data_loader import dataset_path
 from shared.decision_economics import calculate_curve_decision_economics, derive_curve_verdict
 from shared.decision_policy import DecisionPolicyInput, derive_action_label, derive_action_label_from_row
@@ -266,7 +267,7 @@ def load_cached_results() -> pd.DataFrame:
         return pd.DataFrame(columns=REQUIRED_COLUMNS)
     try:
         df = pd.read_csv(AI_RESULTS_PATH)
-    except Exception as exc:
+    except CSV_READ_ERRORS as exc:
         print(f"WARNING: could not read cached AI results {AI_RESULTS_PATH}: {type(exc).__name__}: {exc}")
         return pd.DataFrame(columns=REQUIRED_COLUMNS)
     missing = [column for column in REQUIRED_COLUMNS if column not in df.columns]
@@ -732,7 +733,8 @@ def _dataset_contains_url(path: Path, url: str) -> bool:
         return False
     try:
         df = pd.read_csv(path, usecols=["url"], low_memory=False)
-    except Exception:
+    except CSV_READ_ERRORS as exc:
+        print(f"WARNING: could not read {path} while checking for {url} ({type(exc).__name__}: {exc}).")
         return False
     if df.empty or "url" not in df.columns:
         return False
@@ -1556,7 +1558,7 @@ def apply_platform_risk_adjustments(
 
     try:
         year = int(float(year_raw)) if year_raw not in (None, "") else None
-    except Exception:
+    except (TypeError, ValueError):
         year = None
 
     def add_flag(flag: str) -> None:

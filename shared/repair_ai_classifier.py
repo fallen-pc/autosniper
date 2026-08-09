@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import os
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -10,7 +11,10 @@ from typing import Any, Iterable
 import pandas as pd
 import yaml
 
+from shared.csv_utils import CSV_READ_ERRORS
 from shared.repair_review import LIVE_QUEUE_PATH, safe_text
+
+logger = logging.getLogger(__name__)
 
 
 REPORT_DIR = Path("CSV_data/reports")
@@ -71,7 +75,13 @@ def load_ai_suggestions(path: Path = AI_SUGGESTIONS_PATH) -> pd.DataFrame:
         return pd.DataFrame(columns=AI_SUGGESTION_COLUMNS)
     try:
         df = pd.read_csv(path).fillna("")
-    except Exception:
+    except CSV_READ_ERRORS as exc:
+        logger.warning(
+            "Unreadable repair AI suggestions %s (%s: %s); previous suggestions will be ignored.",
+            path,
+            type(exc).__name__,
+            exc,
+        )
         return pd.DataFrame(columns=AI_SUGGESTION_COLUMNS)
     for column in AI_SUGGESTION_COLUMNS:
         if column not in df.columns:
@@ -104,7 +114,13 @@ def _dictionary_vocab(path: Path = DICTIONARY_PATH) -> dict[str, list[str]]:
         return {"categories": CATEGORY_OPTIONS, "canonical_defects": []}
     try:
         payload = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
-    except Exception:
+    except (OSError, yaml.YAMLError) as exc:
+        logger.warning(
+            "Unreadable condition dictionary %s (%s: %s); falling back to default vocabulary.",
+            path,
+            type(exc).__name__,
+            exc,
+        )
         return {"categories": CATEGORY_OPTIONS, "canonical_defects": []}
     entries = payload.get("entries") or []
     defects = sorted(
@@ -299,7 +315,8 @@ def classify_repair_review_queue(
     model_name = model or os.getenv("AUTOSNIPER_REPAIR_AI_MODEL", "gpt-4.1-mini")
     try:
         new_suggestions = caller(pending, model=model_name) if caller is not None else _call_openai(pending, model=model_name)
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 - reported to the caller via skipped_reason
+        logger.error("Repair AI classification call failed (%s: %s).", type(exc).__name__, exc)
         return ClassifierResult(
             len(pending),
             0,

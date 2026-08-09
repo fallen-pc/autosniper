@@ -1,3 +1,4 @@
+import logging
 import re
 from dataclasses import dataclass
 from typing import Iterable, List, Optional
@@ -7,7 +8,10 @@ import pandas as pd
 from difflib import SequenceMatcher
 from pathlib import Path
 
+from shared.csv_utils import CSV_READ_ERRORS
 from shared.data_loader import dataset_path
+
+logger = logging.getLogger(__name__)
 
 
 ACTIVE_PRIMARY_PATH = dataset_path("active_vehicle_details.csv")
@@ -184,7 +188,7 @@ def _infer_make_model_from_url(url_value: object) -> tuple[Optional[str], Option
         return None, None
     try:
         parsed = urlparse(str(url_value).strip())
-    except Exception:
+    except ValueError:
         return None, None
     slug = parsed.path.rstrip("/").split("/")[-1]
     if not slug:
@@ -322,9 +326,15 @@ def load_historical_sales(
     for source in extra_sources:
         try:
             normalised = _normalise_sold_dataframe(pd.read_csv(source))
-            dataframes.append(normalised)
-        except Exception:
+        except CSV_READ_ERRORS as exc:
+            logger.warning(
+                "Skipping unreadable sold history source %s (%s: %s); comps may be incomplete.",
+                source,
+                type(exc).__name__,
+                exc,
+            )
             continue
+        dataframes.append(normalised)
 
     if not dataframes:
         return pd.DataFrame()
@@ -872,7 +882,7 @@ def _prepare_match_rows(
     if "url" in df.columns:
         try:
             source_urls = df.loc[subset.index, "url"]
-        except Exception:  # noqa: BLE001
+        except KeyError:
             source_urls = df["url"].head(limit)
 
     def format_price(val):
@@ -880,7 +890,7 @@ def _prepare_match_rows(
             return "—"
         try:
             return f"${float(val):,.0f}"
-        except Exception:
+        except (TypeError, ValueError):
             return str(val)
 
     def format_odometer(val):
@@ -888,7 +898,7 @@ def _prepare_match_rows(
             return "—"
         try:
             return f"{int(round(float(val))):,} km"
-        except Exception:
+        except (TypeError, ValueError):
             text = str(val).strip()
             if not text:
                 return "—"
@@ -900,7 +910,7 @@ def _prepare_match_rows(
         try:
             base_year = int(round(float(year_val)))
             base_text = str(base_year)
-        except Exception:
+        except (TypeError, ValueError):
             base_text = str(year_val).strip() or "—"
         if not include_year_delta:
             return base_text
@@ -908,7 +918,7 @@ def _prepare_match_rows(
             return f"{base_text} (+/-1y fallback)"
         try:
             delta_int = int(round(float(delta_val)))
-        except Exception:
+        except (TypeError, ValueError):
             return f"{base_text} (+/-1y fallback)"
         if delta_int == 0:
             return f"{base_text} (+/-1y fallback)"
@@ -937,7 +947,7 @@ def _prepare_match_rows(
             return ""
         try:
             return int(round(float(value)))
-        except Exception:
+        except (TypeError, ValueError):
             return str(value)
 
     if "reauction_group_size" in subset.columns:

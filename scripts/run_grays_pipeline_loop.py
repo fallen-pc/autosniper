@@ -13,8 +13,10 @@ import pandas as pd
 
 if __package__ in (None, ""):
     sys.path.append(str(Path(__file__).resolve().parent.parent))
+    from shared.csv_utils import CSV_READ_ERRORS
     from shared.data_loader import dataset_path
 else:  # pragma: no cover
+    from shared.csv_utils import CSV_READ_ERRORS
     from shared.data_loader import dataset_path
 
 
@@ -53,7 +55,8 @@ def _read_row_count(path: Path) -> int:
         return 0
     try:
         df = pd.read_csv(path, low_memory=False)
-    except Exception:
+    except CSV_READ_ERRORS as exc:
+        print(f"WARNING: could not count rows in {path} ({type(exc).__name__}: {exc}); treating as 0.")
         return 0
     return len(df)
 

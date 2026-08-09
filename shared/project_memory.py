@@ -221,7 +221,7 @@ def _extract_pipeline_stage_choices(root: Path = REPO_ROOT) -> list[str]:
                 continue
             try:
                 value = ast.literal_eval(keyword.value)
-            except Exception:
+            except ValueError:
                 continue
             if isinstance(value, (list, tuple)) and all(isinstance(item, str) for item in value):
                 discovered = list(value)
