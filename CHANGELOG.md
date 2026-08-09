@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-08-09
+- Reconciled the accumulated July/August governed curve campaign into source control: the saved curve set grows from 115 to 191 canonical tags, with its manifest-linked snapshots, matcher/config support, exact-lane regression coverage, and durable accepted/rejected decision records.
+- Hardened Carsales/Apify ingestion for exact URL batches and the alternate flat actor schema, including per-target paid-scrape preflight, deferred imports for non-terminal runs, stable identified-row merging, and hybrid/series normalization.
+- Added reusable Grays-first curve worklists/builders and split vehicle/repair classification PDF generators, while keeping paid-run JSON, backup CSVs, model-training outputs, and live runtime queues outside the governed commit.
+- Passed vehicle class into repair assessment from monitoring/training paths and simplified AI Analysis cards so the listing identity remains visible above the tabbed detail content.
+
 ## 2026-07-23
 - Kept Pajero Sport/QE rows out of Pajero NX GLX, GLS, and Exceed matching, and added governed `225000` km retail-curve cells for those three NX lanes using the existing same-lane depreciation shape.
 
