@@ -33,6 +33,7 @@ $argsList = @(
     "--all-pages",
     "--playwright-headful",
     "--playwright-browser", "chrome",
+    "--playwright-block-resources",
     "--storage-state", $storageState,
     "--cookie-file", $cookieFile,
     "--page-retries", "3",

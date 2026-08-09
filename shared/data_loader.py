@@ -61,18 +61,19 @@ DATASET_PATHS: dict[str, Path] = {
     "scrape_failures.csv": Path("scrapers") / "scrape_failures.csv",
     "ai_listing_valuations.csv": Path("ai") / "ai_listing_valuations.csv",
     "ai_verdicts.csv": Path("ai") / "ai_verdicts.csv",
+    "sold_cars_all.csv": Path("scrapers") / "sold_cars_all.csv",
     "active_vehicle_details_restricted.csv": Path("restricted") / "active_vehicle_details_restricted.csv",
     "sold_cars_restricted.csv": Path("restricted") / "sold_cars_restricted.csv",
     "restricted_group_map.csv": Path("restricted") / "restricted_group_map.csv",
     "curves.csv": Path("restricted") / "curves.csv",
     "scored_listings.csv": Path("model_audit") / "scored_listings.csv",
     "scored_listings_enriched.csv": Path("model_audit") / "scored_listings_enriched.csv",
+    "simulated_sold_outcomes.csv": Path("model_audit") / "simulated_sold_outcomes.csv",
     "model_accuracy_weekly.csv": Path("model_audit") / "model_accuracy_weekly.csv",
     "model_accuracy_by_tier.csv": Path("model_audit") / "model_accuracy_by_tier.csv",
     "sold_cars_historical.csv": Path("archives") / "sold_cars_historical.csv",
     "sold_cars_rescraped.csv": Path("archives") / "sold_cars_rescraped.csv",
     "ai_analysis_ready": Path("archives") / "ai_analysis_ready",
-    "repair_estimates.csv": Path("repairs") / "repair_estimates.csv",
 }
 
 REQUIRED_FILES: List[str] = [

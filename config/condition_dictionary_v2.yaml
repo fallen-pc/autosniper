@@ -56,12 +56,42 @@ entries:
     category: boilerplate
     severity_hint: low
 
+  - pattern: "^\\s*(key|spare key|owners manual|service history|engine turns over)\\s*:\\s*(yes|no|partial|digital|unknown|n/?a)\\.?\\s*$"
+    canonical_defect: boilerplate_vehicle_metadata
+    category: boilerplate
+    severity_hint: low
+
+  - pattern: "\\b(security interest|ppsr check|business days|registration to be removed|monies are cleared)\\b"
+    canonical_defect: boilerplate_ppsr_security_interest
+    category: boilerplate
+    severity_hint: low
+
+  - pattern: "\\b(ppsr attached|state-based road authority|roadworthy condition|salvage auction|as is|where is|mechanical inspection|grays does not conduct|repairs or maintenance|inspection is highly recommended|extra parts not listed|jump pack to start on collection)\\b"
+    canonical_defect: boilerplate_salvage_wovr_disclaimer
+    category: boilerplate
+    severity_hint: low
+
+  - pattern: "\\b(a?salvage auction|public liability certificate|workers compensation certificate|high risk license|swms|legislative requirements|released gasses|therefore|stored\\.?$|new south wales)\\b"
+    canonical_defect: boilerplate_safety_removal_disclaimer
+    category: boilerplate
+    severity_hint: low
+
+  - pattern: "\\b(mine site vehicle|ex[- ]?rental|taxi|police vehicle)\\b"
+    canonical_defect: usage_risk_history
+    category: boilerplate
+    severity_hint: low
+
+  - pattern: "^\\s*(and|or|therefore)\\.?\\s*$"
+    canonical_defect: boilerplate_joiner_noise
+    category: boilerplate
+    severity_hint: low
+
   - pattern: "\\b(crash test|ancap)\\b"
     canonical_defect: boilerplate_crash_rating
     category: boilerplate
     severity_hint: low
 
-  - pattern: "\\b(air conditioning|cd player|central locking|power steering|driver airbag|park distance control)\\b"
+  - pattern: "\\b(air conditioning|cd player|central locking|power steering|driver airbag|park distance control|electric windows|multi function steering wheel|abs brakes|hill holder system|alloy wheels|leather trim)\\b"
     canonical_defect: boilerplate_feature_list
     category: boilerplate
     severity_hint: low
@@ -71,22 +101,37 @@ entries:
     category: glass
     severity_hint: medium
 
+  - pattern: "\\b(crack|cracked|chip|chipped).*(windscreen|windshield)"
+    canonical_defect: windscreen_damage
+    category: glass
+    severity_hint: medium
+
+  - pattern: "\\b(windscreen|windshield).*(pitting|pit|pitted)"
+    canonical_defect: windscreen_damage
+    category: glass
+    severity_hint: low
+
   - pattern: "\\b(window|glass).*(crack|cracked|chip|chipped|broken)"
     canonical_defect: window_damage
     category: glass
     severity_hint: medium
+
+  - pattern: "\\b(tint).*(requires attention|peel|peeling|damage|damaged|bubbling)"
+    canonical_defect: window_tint_damage
+    category: glass
+    severity_hint: low
 
   - pattern: "\\b(hail)\\b"
     canonical_defect: hail_damage
     category: structural
     severity_hint: high
 
-  - pattern: "\\b(chassis|frame|rail|pillar|structural)\\b"
+  - pattern: "\\b(chassis|frame|structural|chassis rail|frame rail|structural rail|cant rail)\\b|\\b[abc][ -]?pillars?\\b(?!\\s+trim)"
     canonical_defect: structural_damage
     category: structural
     severity_hint: high
 
-  - pattern: "\\b(engine).*(rattle|knock|smoke|leak|overheat|overheating)"
+  - pattern: "\\b(engine).*(rattle|knock|smoke|leak|overheat|overheating|idling rough|lacks power)"
     canonical_defect: engine_fault
     category: mechanical
     severity_hint: high
@@ -101,12 +146,32 @@ entries:
     category: mechanical
     severity_hint: medium
 
+  - pattern: "\\bbattery\\b.*\\b(flat|requires attention|missing|dead)\\b"
+    canonical_defect: battery_issue
+    category: mechanical
+    severity_hint: medium
+
   - pattern: "\\b(controls broken|heater control|heater broken)\\b"
     canonical_defect: control_damage
     category: interior
     severity_hint: medium
 
-  - pattern: "\\b(warning light|engine light|abs|airbag).*(on|warning)"
+  - pattern: "\\b(controls? inoperable|climate controls?).*"
+    canonical_defect: control_damage
+    category: interior
+    severity_hint: medium
+
+  - pattern: "\\b(radio|stereo|infotainment|sat nav|navigation|a/c|air conditioning).*(not working|inoperative|fault|faulty|broken)"
+    canonical_defect: control_damage
+    category: interior
+    severity_hint: medium
+
+  - pattern: "\\b(odometer).*(not working|inaccurate|fault|faulty|inoperative)"
+    canonical_defect: control_damage
+    category: interior
+    severity_hint: medium
+
+  - pattern: "\\b(warning lights?|engine lights?|abs|airbag)\\b.*\\b(on|flashing|warning)\\b"
     canonical_defect: warning_light
     category: mechanical
     severity_hint: high
@@ -121,7 +186,17 @@ entries:
     category: interior
     severity_hint: low
 
-  - pattern: "\\b(steering wheel|gear knob).*(worn|broken|missing)"
+  - pattern: "\\b(steering wheel|steering|gear knob|centre console|center console|roof lining|rooflining).*(worn|broken|missing|sagging|requires attention)"
+    canonical_defect: interior_trim_damage
+    category: interior
+    severity_hint: low
+
+  - pattern: "\\b(dash|dashboard).*(torn|cracked|crack|damage|damaged)"
+    canonical_defect: interior_trim_damage
+    category: interior
+    severity_hint: low
+
+  - pattern: "\\b(door card|carpet|hood lining|headlining).*(worn|sagging|marks|stain|stained|requires attention)"
     canonical_defect: interior_trim_damage
     category: interior
     severity_hint: low
@@ -131,13 +206,63 @@ entries:
     category: replacement
     severity_hint: medium
 
-  - pattern: "\\b(mirror|headlight|head light).*(crack|cracked|broken|missing|damaged)"
+  - pattern: "\\b(?:(mirror|headlight|head light).*(crack|cracked|broken|missing|damaged|requires attention)|(crack|cracked|broken|missing|damaged).*\\b(mirror|headlight|head light))"
     canonical_defect: mirror_light_damage
+    category: replacement
+    severity_hint: medium
+
+  - pattern: "\\b(?:(headlights?|head lights?).*(hazed|faded|cloudy)|(hazed|faded|cloudy).*\\b(headlights?|head lights?))"
+    canonical_defect: lighting_damage
+    category: replacement
+    severity_hint: medium
+
+  - pattern: "\\bdoor handle\\b.*\\b(not working|broken|missing|damaged|requires attention|worn)"
+    canonical_defect: door_handle_damage
+    category: replacement
+    severity_hint: medium
+
+  - pattern: "\\b(fuel flap|fuel door).*(broken|missing|damaged|requires attention)"
+    canonical_defect: fuel_flap_damage
+    category: replacement
+    severity_hint: medium
+
+  - pattern: "\\b(sunroof).*(not working|inoperative|requires attention|broken|fault|faulty)"
+    canonical_defect: sunroof_damage
+    category: replacement
+    severity_hint: medium
+
+  - pattern: "\\b(handbrake|seatbelt|window).*(not working|inoperative|requires attention|broken|fault|faulty)"
+    canonical_defect: replacement_required
     category: replacement
     severity_hint: medium
 
   - pattern: "\\b(bumper|bar).*(crack|cracked|broken|torn|missing|damaged)"
     canonical_defect: bumper_damage
+    category: replacement
+    severity_hint: medium
+
+  - pattern: "\\btyres?\\b.*\\b(missing|requires replacement|needs replacing|bald|flat|worn)\\b|\\b(missing|requires replacement|needs replacing|bald|flat|worn)\\b.*\\btyres?\\b"
+    canonical_defect: tyre_replacement
+    category: replacement
+    severity_hint: medium
+
+  - pattern: "\\b(tyre|tire).*(puncture|punctured|pin|nail|screw)|\\b(puncture|punctured|pin|nail|screw).*\\b(tyre|tire)"
+    canonical_defect: tyre_puncture
+    category: replacement
+    severity_hint: low
+
+  - pattern: "\\b(brake light|reversing light|reverse light|fog light|foglight).*(condensation|condensed|crack|cracked|damage|damaged|not working|requires attention)|\\b(condensation|condensed|crack|cracked|damage|damaged).*(brake light|reversing light|reverse light|fog light|foglight)"
+    canonical_defect: lighting_condensation_damage
+    category: replacement
+    severity_hint: medium
+
+  - pattern: "\\b(window).*(won.?t close|will not close|doesn.?t close|not closing|stuck open)"
+    canonical_defect: window_regulator_fault
+    category: replacement
+    severity_hint: medium
+
+  - pattern: "\\bwheel\\b.*\\b(missing|requires replacement|needs replacing|damaged)\\b|\\b(missing|requires replacement|needs replacing|damaged)\\b.*\\bwheel\\b"
+    canonical_defect: wheel_missing
     category: replacement
     severity_hint: medium
 
@@ -151,12 +276,27 @@ entries:
     category: cosmetic
     severity_hint: low
 
+  - pattern: "\\b(corrosion|rust).*(visible|evident|panel|panels|tub|bonnet|area|areas|vehicle|roof)|\\b(visible|evident|under[- ]?body|surface|exterior).*\\b(corrosion|rust)"
+    canonical_defect: corrosion_damage
+    category: cosmetic
+    severity_hint: high
+
+  - pattern: "\\b(misaligned).*(bumper|bar|panel|door|bonnet|boot)|\\b(bumper|bar|panel|door|bonnet|boot).*\\b(misaligned|requires attention)"
+    canonical_defect: panel_alignment_damage
+    category: cosmetic
+    severity_hint: low
+
+  - pattern: "\\bwear and tear (?:on body )?consistent with age and kilometres"
+    canonical_defect: cosmetic_surface_damage
+    category: cosmetic
+    severity_hint: low
+
   - pattern: "\\b(bubbling|peeling all over|peeling various panels)\\b"
     canonical_defect: paint_surface_issue
     category: cosmetic
     severity_hint: low
 
-  - pattern: "\\b(dent|dented|scratch|scratched|scuff|scuffed|mark|marks|chip|chipped)"
+  - pattern: "\\b(dent|dented|scratch|scratched|scrape|scraped|scuff|scuffed|mark|marks|chip|chipped)"
     canonical_defect: cosmetic_surface_damage
     category: cosmetic
     severity_hint: low

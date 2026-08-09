@@ -19,11 +19,10 @@ if __package__ in (None, ""):
     sys.path.append(str(Path(__file__).resolve().parent.parent))
     from scripts.atomic_csv import append_dataframe_csv_atomic, write_dataframe_csv_atomic
     from shared.data_loader import dataset_path
-    from shared.schema import SOLD_RAW_SCRAPE_COLUMNS, STATIC_VEHICLE_SCHEMA
+    from shared.schema import ACTIVE_DETAIL_SCHEMA, SOLD_RAW_SCRAPE_COLUMNS, STATIC_VEHICLE_SCHEMA
     from shared.sold_cleaning import (
         drop_invalid_odometer_rows,
         drop_invalid_years,
-        drop_sparse_rows,
         normalize_listing_fields,
         remove_compliance_markers,
     )
@@ -34,11 +33,10 @@ if __package__ in (None, ""):
 else:
     from scripts.atomic_csv import append_dataframe_csv_atomic, write_dataframe_csv_atomic
     from shared.data_loader import dataset_path
-    from shared.schema import SOLD_RAW_SCRAPE_COLUMNS, STATIC_VEHICLE_SCHEMA
+    from shared.schema import ACTIVE_DETAIL_SCHEMA, SOLD_RAW_SCRAPE_COLUMNS, STATIC_VEHICLE_SCHEMA
     from shared.sold_cleaning import (
         drop_invalid_odometer_rows,
         drop_invalid_years,
-        drop_sparse_rows,
         normalize_listing_fields,
         remove_compliance_markers,
     )
@@ -119,6 +117,16 @@ CONDITION_METADATA_FIELDS = {
     "service history",
     "engine turns over",
 }
+CONDITION_ASSESSMENT_RE = re.compile(
+    r"condition assessment is the opinion of .*?staff",
+    re.IGNORECASE,
+)
+CONDITION_ASSESSMENT_ROW_RE = re.compile(r"^\d{1,2}\.\s+.+?\s+-\s+.+")
+CONDITION_ASSESSMENT_STOP_RE = re.compile(
+    r"^(?:features|location|key no|vin|motor dealer|inspection|conditions of sale|"
+    r"description and photos|bid history|bidding history)\b",
+    re.IGNORECASE,
+)
 
 ALLOWED_BODY_TYPES = {
     "Wagon",
@@ -548,6 +556,40 @@ def filter_condition_entries(entries: Iterable[str]) -> list[str]:
     return filtered
 
 
+def extract_numbered_condition_assessment(soup: BeautifulSoup) -> list[str]:
+    lines = [line.strip() for line in soup.get_text("\n", strip=True).splitlines() if line.strip()]
+    start_index: int | None = None
+    for index, line in enumerate(lines):
+        if CONDITION_ASSESSMENT_RE.search(line):
+            start_index = index + 1
+            break
+    if start_index is None:
+        return []
+
+    entries: list[str] = []
+    for line in lines[start_index:]:
+        if CONDITION_ASSESSMENT_ROW_RE.match(line):
+            entries.append(line)
+            continue
+        if entries and CONDITION_ASSESSMENT_STOP_RE.match(line):
+            break
+
+    return filter_condition_entries(entries)
+
+
+def combine_condition_entries(*groups: Iterable[str]) -> str:
+    combined: list[str] = []
+    seen: set[str] = set()
+    for group in groups:
+        for entry in filter_condition_entries(group):
+            key = re.sub(r"\s+", " ", entry).strip().lower()
+            if not key or key in seen:
+                continue
+            seen.add(key)
+            combined.append(entry)
+    return "\n".join(combined)
+
+
 def normalize_state(text: str) -> str:
     if not text:
         return ""
@@ -570,7 +612,7 @@ def extract_location(soup: BeautifulSoup) -> str:
 
 PRICE_RE = re.compile(r"\$[\d,]+(?:\.\d+)?")
 BIDS_RE = re.compile(r"(\d+)\s*bids?", re.IGNORECASE)
-JS_LITERAL_RE = re.compile(r"\\b(true|false|null)\\b", re.IGNORECASE)
+JS_LITERAL_RE = re.compile(r"\b(true|false|null)\b", re.IGNORECASE)
 
 
 def extract_sale_meta(soup: BeautifulSoup) -> tuple[str | None, str | None, str | None, str | None]:
@@ -777,20 +819,22 @@ def extract_dynamic_metrics(html: str) -> dict[str, str]:
 
 
 def extract_year_from_url(url: str) -> str:
-    match = re.search(r"/((?:19|20)\\d{2})-", url)
+    match = re.search(r"/((?:19|20)\d{2})-", url)
     return match.group(1) if match else ""
 
 
 def read_general_condition(soup: BeautifulSoup) -> str:
+    numbered_assessment = extract_numbered_condition_assessment(soup)
+
     section = soup.find(attrs={"id": re.compile("ConditionAssessment", re.IGNORECASE)})
     if section:
         bullet_items = filter_condition_entries(safe_get_text(li) for li in section.find_all("li"))
         if bullet_items:
-            return "\n".join(bullet_items)
+            return combine_condition_entries(numbered_assessment, bullet_items)
 
         paragraphs = filter_condition_entries(safe_get_text(p) for p in section.find_all("p"))
         if paragraphs:
-            return "\n".join(paragraphs)
+            return combine_condition_entries(numbered_assessment, paragraphs)
 
     legacy_note = soup.find("strong", string=re.compile("condition assessment", re.IGNORECASE))
     if legacy_note:
@@ -800,13 +844,15 @@ def read_general_condition(soup: BeautifulSoup) -> str:
             if next_list:
                 bullet_items = filter_condition_entries(safe_get_text(li) for li in next_list.find_all("li"))
                 if bullet_items:
-                    return "\n".join(bullet_items)
+                    return combine_condition_entries(numbered_assessment, bullet_items)
 
     condition = extract_bullets(soup, "condition")
     if condition:
         filtered_condition = filter_condition_entries(condition.splitlines())
         if filtered_condition:
-            return "\n".join(filtered_condition)
+            return combine_condition_entries(numbered_assessment, filtered_condition)
+    if numbered_assessment:
+        return combine_condition_entries(numbered_assessment)
     return ""
 
 
@@ -878,7 +924,6 @@ def fetch_html(session: requests.Session, url: str) -> str:
     last_error: str | None = None
     for attempt in range(1, MAX_FETCH_RETRIES + 1):
         prefix = PROXY_ROTATION[min(attempt - 1, len(PROXY_ROTATION) - 1)]
-        use_proxy = bool(prefix) or url.startswith(prefix)
         if prefix:
             suffix = url.replace("https://", "").replace("http://", "")
             target_url = f"{prefix}{suffix}"
@@ -1053,8 +1098,6 @@ def merge_and_save_static(existing_df: pd.DataFrame, new_df: pd.DataFrame) -> pd
         print(
             f"Canonical audit flagged {len(canonical_failures)} listing(s); keeping rows in static export."
         )
-    if "drivetrain_source" in static_export.columns:
-        static_export = static_export.drop(columns=["drivetrain_source"])
     static_export = static_export.reindex(columns=STATIC_OUTPUT_COLUMNS, fill_value="")
     static_export, pruned_rows = prune_to_active_queue(static_export)
     if pruned_rows:
@@ -1076,8 +1119,6 @@ def seed_active_dataset(static_df: pd.DataFrame) -> None:
         append_log=True,
     )
     active_df = _normalize_text_columns(active_df)
-    if "drivetrain_source" in active_df.columns:
-        active_df = active_df.drop(columns=["drivetrain_source"])
     base_columns = list(static_df.columns)
     existing_active = pd.read_csv(ACTIVE_OUTPUT_FILE) if ACTIVE_OUTPUT_FILE.exists() else pd.DataFrame()
 
@@ -1098,7 +1139,7 @@ def seed_active_dataset(static_df: pd.DataFrame) -> None:
             if wovr_mask.any():
                 active_df = active_df.loc[~wovr_mask].copy()
     # Ensure required dynamic columns exist.
-    for column in ("time_remaining_or_date_sold", "price", "bids"):
+    for column in ("time_remaining_or_date_sold", "price", "bids", "date_sold"):
         if column not in active_df.columns:
             active_df[column] = ""
     # Preserve scraped status where present; default blanks to active.
@@ -1114,7 +1155,7 @@ def seed_active_dataset(static_df: pd.DataFrame) -> None:
         existing_active["_url_norm"] = _normalize_url(existing_active["url"])
         existing_active = existing_active.drop_duplicates(subset=["_url_norm"], keep="last")
         lookup = existing_active.set_index("_url_norm")
-        for column in ("time_remaining_or_date_sold", "price", "bids"):
+        for column in ("time_remaining_or_date_sold", "price", "bids", "date_sold"):
             if column not in active_df.columns:
                 active_df[column] = ""
             if column not in lookup.columns:
@@ -1127,11 +1168,12 @@ def seed_active_dataset(static_df: pd.DataFrame) -> None:
 
     dynamic_columns = [
         col
-        for col in ("status", "time_remaining_or_date_sold", "price", "bids")
+        for col in ("status", "time_remaining_or_date_sold", "price", "bids", "date_sold")
         if col not in base_columns
     ]
     ordered_columns = base_columns + dynamic_columns
     active_df = active_df.reindex(columns=ordered_columns, fill_value="")
+    active_df = active_df.reindex(columns=ACTIVE_DETAIL_SCHEMA, fill_value="")
     atomic_write(active_df, ACTIVE_OUTPUT_FILE)
 
 
@@ -1183,7 +1225,15 @@ def main(
 
     pending_links = [url for url in all_links if _normalize_url_value(url) not in processed_urls]
 
-    target_links = all_links if force_all else (pending_links or all_links)
+    if force_all:
+        target_links = all_links
+    else:
+        target_links = pending_links
+        if not target_links:
+            print(
+                "No pending vehicle details to extract; existing static and active datasets left unchanged."
+            )
+            return
     if batch_size is not None and batch_size > 0:
         target_links = target_links[:batch_size]
         print(

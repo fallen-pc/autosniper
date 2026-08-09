@@ -1,10 +1,14 @@
-"""Process ranked curve candidates with AI and enqueue Autotrader scrapes."""
+"""Legacy ranked-curve processor.
+
+Curve pricing is now intentionally centralized in Curve Builder V2, where
+Carsales/manual evidence is the pricing source. This module still exposes
+Autotrader queue/scrape helpers used by the operator pages, but its CLI no
+longer writes curve rows.
+"""
 
 from __future__ import annotations
 
 import argparse
-import json
-import os
 import subprocess
 import sys
 from datetime import UTC, datetime, timedelta
@@ -12,36 +16,29 @@ from pathlib import Path
 from typing import Any
 
 import pandas as pd
-import requests
-from dotenv import find_dotenv, load_dotenv
-from openai import OpenAI
 
 if __package__ in (None, ""):
     sys.path.append(str(Path(__file__).resolve().parent.parent))
     from scripts.atomic_csv import write_dataframe_csv_atomic
     from scripts.curve_validator import build_curve_warnings
-    from scripts.generate_curve_candidates import load_tagged_sold_data
     from shared.canonical_tagging import tag_dataframe
-    from shared.curves import CURVE_COLUMNS, load_curves, resolve_curve_canonical_tag, save_curves
+    from shared.curves import CURVE_COLUMNS, resolve_curve_canonical_tag
     from shared.data_loader import dataset_path
 else:  # pragma: no cover
     from scripts.atomic_csv import write_dataframe_csv_atomic
     from scripts.curve_validator import build_curve_warnings
-    from scripts.generate_curve_candidates import load_tagged_sold_data
     from shared.canonical_tagging import tag_dataframe
-    from shared.curves import CURVE_COLUMNS, load_curves, resolve_curve_canonical_tag, save_curves
+    from shared.curves import CURVE_COLUMNS, resolve_curve_canonical_tag
     from shared.data_loader import dataset_path
 
 
 DEFAULT_QUEUE_PATH = dataset_path("quality/curve_candidates.csv")
-DEFAULT_BUILD_LOG_PATH = dataset_path("quality/curve_build_log.csv")
-DEFAULT_AUTOTRADER_QUEUE_PATH = dataset_path("quality/autotrader_scrape_queue.csv")
 DEFAULT_AUTOTRADER_SOURCE = Path("autotrader_isolated/output/autotrader_recent_market_tagged.csv")
 LEGACY_AUTOTRADER_SOURCE = Path("autotrader_isolated/output/first_page_results_tagged.csv")
-DEFAULT_AUTOTRADER_STATE = Path("autotrader_isolated/output/listing_state.csv")
-DEFAULT_AUTOTRADER_URLS_PATH = Path("autotrader_isolated/output/curve_seed_urls.txt")
-DEFAULT_AUTOTRADER_OUTPUT = Path("autotrader_isolated/output/first_page_results_tagged.csv")
-DEFAULT_SOLD_PATH = dataset_path("sold_cars.csv")
+LEGACY_AI_CURVE_BUILD_DISABLED_MESSAGE = (
+    "Legacy AI curve building is disabled. Use Curve Builder V2 for Carsales/manual "
+    "evidence-backed curve edits; Autotrader remains comparison/scrape follow-up only."
+)
 REQUIRED_KM_BUCKETS = [30000, 60000, 100000, 150000, 200000]
 INACTIVE_AUTOTRADER_STATUSES = {"sold", "expired", "removed"}
 RECENT_MARKET_WINDOW_DAYS = 90
@@ -59,86 +56,6 @@ AUTOTRADER_QUEUE_COLUMNS = [
     "completed_at",
     "last_result",
 ]
-BUILD_LOG_COLUMNS = [
-    "timestamp",
-    "curve_tag",
-    "recommended_action",
-    "result_status",
-    "model",
-    "confidence",
-    "anchor_years",
-    "autotrader_seed_url",
-    "warning_count",
-    "max_mid_shift_pct",
-    "notes",
-]
-CURVE_RESPONSE_SCHEMA = {
-    "type": "object",
-    "properties": {
-        "confidence": {"type": "number"},
-        "notes": {"type": "string"},
-        "rows": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "canonical_tag": {"type": "string"},
-                    "anchor_year": {"type": "integer"},
-                    "km_bucket": {"type": "integer"},
-                    "price_low": {"type": "integer"},
-                    "price_mid": {"type": "integer"},
-                    "price_high": {"type": "integer"},
-                },
-                "required": [
-                    "canonical_tag",
-                    "anchor_year",
-                    "km_bucket",
-                    "price_low",
-                    "price_mid",
-                    "price_high",
-                ],
-            },
-        },
-    },
-    "required": ["confidence", "notes", "rows"],
-}
-
-_client: OpenAI | None = None
-_dotenv_loaded = False
-
-
-def _ensure_api_key(env_local: Path) -> None:
-    if os.getenv("OPENAI_API_KEY"):
-        return
-    if env_local.exists():
-        for line in env_local.read_text(encoding="utf-8").splitlines():
-            if line.startswith("OPENAI_API_KEY="):
-                _, value = line.split("=", 1)
-                os.environ["OPENAI_API_KEY"] = value.strip()
-                return
-
-
-def _get_client() -> OpenAI:
-    global _client
-    global _dotenv_loaded
-    if not _dotenv_loaded:
-        dotenv_files: list[Path] = []
-        env_local = Path(".env.local")
-        if env_local.exists():
-            dotenv_files.append(env_local)
-        found_env = find_dotenv()
-        if found_env:
-            dotenv_files.append(Path(found_env))
-        if not dotenv_files:
-            load_dotenv()
-        else:
-            for file_path in dotenv_files:
-                load_dotenv(dotenv_path=file_path, override=False)
-        _ensure_api_key(env_local)
-        _dotenv_loaded = True
-    if _client is None:
-        _client = OpenAI()
-    return _client
 
 
 def _slug_component(value: object) -> str:
@@ -298,6 +215,38 @@ def _build_autotrader_recent_market_from_state(
     return working
 
 
+def load_carsales_apify_market(path: Path | None = None) -> pd.DataFrame:
+    """Load and normalize Carsales Apify listings for curve building."""
+    csv_path = path or dataset_path("quality/carsales_apify_listings.csv")
+    if not csv_path.exists():
+        return pd.DataFrame()
+    try:
+        df = pd.read_csv(csv_path, low_memory=False)
+    except Exception:
+        return pd.DataFrame()
+    if df.empty:
+        return pd.DataFrame()
+    working = df.copy()
+    working = tag_dataframe(working)
+    if "canonical_tag" not in working.columns:
+        return pd.DataFrame()
+    working["canonical_tag"] = working["canonical_tag"].fillna("").astype(str).str.strip()
+    working["curve_tag"] = working["canonical_tag"].apply(resolve_curve_canonical_tag)
+    for target, candidates in {
+        "year_numeric": ["year"],
+        "price_numeric": ["price"],
+        "odometer_numeric": ["odometer"],
+    }.items():
+        resolved = pd.Series(index=working.index, dtype="float64")
+        for column in candidates:
+            if column not in working.columns:
+                continue
+            resolved = resolved.fillna(pd.to_numeric(working[column], errors="coerce"))
+        working[target] = resolved
+    working = working.dropna(subset=["year_numeric", "price_numeric", "odometer_numeric"]).copy()
+    return working
+
+
 def load_autotrader_market(path: Path) -> pd.DataFrame:
     df: pd.DataFrame
     if path.exists():
@@ -328,241 +277,6 @@ def load_autotrader_market(path: Path) -> pd.DataFrame:
             resolved = resolved.fillna(pd.to_numeric(working[column], errors="coerce"))
         working[target] = resolved
     return working
-
-
-def summarize_market_by_year(df: pd.DataFrame, *, label: str) -> list[dict[str, Any]]:
-    if df.empty:
-        return []
-    working = df.dropna(subset=["year_numeric", "price_numeric", "odometer_numeric"]).copy()
-    if working.empty:
-        return []
-    rows: list[dict[str, Any]] = []
-    for year_value, group in working.groupby("year_numeric", sort=True):
-        price_series = group["price_numeric"]
-        odometer_series = group["odometer_numeric"]
-        rows.append(
-            {
-                "source": label,
-                "year": int(year_value),
-                "count": int(len(group)),
-                "price_min": int(round(price_series.min())),
-                "price_q25": int(round(price_series.quantile(0.25))),
-                "price_median": int(round(price_series.median())),
-                "price_q75": int(round(price_series.quantile(0.75))),
-                "price_max": int(round(price_series.max())),
-                "km_median": int(round(odometer_series.median())),
-            }
-        )
-    return rows
-
-
-def market_records(df: pd.DataFrame, *, max_rows: int, variant_column: str = "variant") -> list[dict[str, Any]]:
-    if df.empty:
-        return []
-    working = df.dropna(subset=["year_numeric", "price_numeric", "odometer_numeric"]).copy()
-    if working.empty:
-        return []
-    working = working.sort_values(["year_numeric", "odometer_numeric", "price_numeric"])
-    if len(working) > max_rows:
-        step = max(1, len(working) // max_rows)
-        working = working.iloc[::step].head(max_rows).copy()
-    rows: list[dict[str, Any]] = []
-    for _, row in working.iterrows():
-        rows.append(
-            {
-                "year": int(row["year_numeric"]),
-                "variant": str(row.get(variant_column, "") or "").strip(),
-                "price": int(round(float(row["price_numeric"]))),
-                "odometer": int(round(float(row["odometer_numeric"]))),
-            }
-        )
-    return rows
-
-
-def build_curve_prompt(
-    *,
-    curve_tag: str,
-    candidate_row: dict[str, Any],
-    anchor_years: list[int],
-    sold_summary: list[dict[str, Any]],
-    sold_records: list[dict[str, Any]],
-    active_summary: list[dict[str, Any]],
-    existing_curve_rows: list[dict[str, Any]],
-) -> str:
-    payload = {
-        "curve_tag": curve_tag,
-        "recommended_action": candidate_row.get("recommended_action"),
-        "sample_size": int(candidate_row.get("sold_count_usable") or 0),
-        "year_min": candidate_row.get("year_min"),
-        "year_max": candidate_row.get("year_max"),
-        "anchor_years_required": anchor_years,
-        "required_km_buckets": REQUIRED_KM_BUCKETS,
-        "curve_policy": {
-            "goal": "Build a conservative used-car price curve in AUD.",
-            "requirements": [
-                "Return every anchor_year x km_bucket combination exactly once.",
-                "Prices must be integers.",
-                "For each row: price_low <= price_mid <= price_high.",
-                "For each anchor year, prices must decrease or stay flat as km increases.",
-                "Use sold data as the strongest signal for price_mid.",
-                "Use recent retail market data to avoid overpricing and to shape price_high conservatively.",
-                "Prefer conservative pricing when evidence is thin.",
-                "Do not invent a premium not supported by the evidence.",
-            ],
-        },
-        "sold_summary_by_year": sold_summary,
-        "sold_records_sample": sold_records,
-        "active_summary_by_year": active_summary,
-        "existing_curve_rows": existing_curve_rows,
-    }
-    return (
-        "You are building a canonical vehicle pricing curve for AutoSniper.\n"
-        "Return JSON only with this shape:\n"
-        "{"
-        '"confidence": number, '
-        '"notes": string, '
-        '"rows": ['
-        '{"canonical_tag": string, "anchor_year": integer, "km_bucket": integer, '
-        '"price_low": integer, "price_mid": integer, "price_high": integer}'
-        "]}\n"
-        "Use the provided anchor years and km buckets exactly.\n"
-        "Do not wrap the JSON in markdown fences.\n"
-        "Context:\n"
-        f"{json.dumps(payload, ensure_ascii=True)}"
-    )
-
-
-def request_curve_from_openai(
-    *,
-    curve_tag: str,
-    candidate_row: dict[str, Any],
-    anchor_years: list[int],
-    sold_summary: list[dict[str, Any]],
-    sold_records: list[dict[str, Any]],
-    active_summary: list[dict[str, Any]],
-    existing_curve_rows: list[dict[str, Any]],
-    model: str,
-    temperature: float,
-) -> dict[str, Any]:
-    client = _get_client()
-    prompt = build_curve_prompt(
-        curve_tag=curve_tag,
-        candidate_row=candidate_row,
-        anchor_years=anchor_years,
-        sold_summary=sold_summary,
-        sold_records=sold_records,
-        active_summary=active_summary,
-        existing_curve_rows=existing_curve_rows,
-    )
-    response = client.chat.completions.create(
-        model=model,
-        temperature=temperature,
-        response_format={"type": "json_object"},
-        messages=[
-            {
-                "role": "system",
-                "content": (
-                    "You are a conservative automotive pricing analyst. "
-                    "Return valid JSON only."
-                ),
-            },
-            {"role": "user", "content": prompt},
-        ],
-    )
-    raw_content = response.choices[0].message.content or "{}"
-    return json.loads(raw_content)
-
-
-def request_curve_from_ollama(
-    *,
-    curve_tag: str,
-    candidate_row: dict[str, Any],
-    anchor_years: list[int],
-    sold_summary: list[dict[str, Any]],
-    sold_records: list[dict[str, Any]],
-    active_summary: list[dict[str, Any]],
-    existing_curve_rows: list[dict[str, Any]],
-    model: str,
-    temperature: float,
-    base_url: str,
-    timeout_seconds: int,
-) -> dict[str, Any]:
-    prompt = build_curve_prompt(
-        curve_tag=curve_tag,
-        candidate_row=candidate_row,
-        anchor_years=anchor_years,
-        sold_summary=sold_summary,
-        sold_records=sold_records,
-        active_summary=active_summary,
-        existing_curve_rows=existing_curve_rows,
-    )
-    response = requests.post(
-        f"{base_url.rstrip('/')}/api/chat",
-        json={
-            "model": model,
-            "stream": False,
-            "format": CURVE_RESPONSE_SCHEMA,
-            "options": {"temperature": temperature},
-            "messages": [
-                {
-                    "role": "system",
-                    "content": (
-                        "You are a conservative automotive pricing analyst. "
-                        "Return valid JSON only."
-                    ),
-                },
-                {"role": "user", "content": prompt},
-            ],
-        },
-        timeout=timeout_seconds,
-    )
-    response.raise_for_status()
-    payload = response.json()
-    message = payload.get("message") or {}
-    raw_content = str(message.get("content") or "{}").strip()
-    return json.loads(raw_content)
-
-
-def request_curve_from_ai(
-    *,
-    provider: str,
-    curve_tag: str,
-    candidate_row: dict[str, Any],
-    anchor_years: list[int],
-    sold_summary: list[dict[str, Any]],
-    sold_records: list[dict[str, Any]],
-    active_summary: list[dict[str, Any]],
-    existing_curve_rows: list[dict[str, Any]],
-    model: str,
-    temperature: float,
-    ollama_base_url: str,
-    ollama_timeout_seconds: int,
-) -> dict[str, Any]:
-    if provider == "ollama":
-        return request_curve_from_ollama(
-            curve_tag=curve_tag,
-            candidate_row=candidate_row,
-            anchor_years=anchor_years,
-            sold_summary=sold_summary,
-            sold_records=sold_records,
-            active_summary=active_summary,
-            existing_curve_rows=existing_curve_rows,
-            model=model,
-            temperature=temperature,
-            base_url=ollama_base_url,
-            timeout_seconds=ollama_timeout_seconds,
-        )
-    return request_curve_from_openai(
-        curve_tag=curve_tag,
-        candidate_row=candidate_row,
-        anchor_years=anchor_years,
-        sold_summary=sold_summary,
-        sold_records=sold_records,
-        active_summary=active_summary,
-        existing_curve_rows=existing_curve_rows,
-        model=model,
-        temperature=temperature,
-    )
 
 
 def compute_max_mid_shift_pct(existing_rows: pd.DataFrame, proposed_rows: pd.DataFrame) -> float:
@@ -713,49 +427,6 @@ def validate_curve_response(
     return proposed.sort_values(["anchor_year", "km_bucket"]).reset_index(drop=True), [], shift_pct
 
 
-def replace_curve_rows(curves_df: pd.DataFrame, new_rows: pd.DataFrame) -> pd.DataFrame:
-    curve_tag = str(new_rows.iloc[0]["canonical_tag"]).strip()
-    base = curves_df.copy()
-    if not base.empty:
-        base = base[base["canonical_tag"].astype(str).str.strip() != curve_tag].copy()
-    return pd.concat([base, new_rows[list(CURVE_COLUMNS)]], ignore_index=True)
-
-
-def upsert_autotrader_queue(
-    queue_path: Path,
-    *,
-    curve_tag: str,
-    seed_url: str,
-    state: str,
-    city: str,
-    action: str,
-    confidence: float | None,
-    notes: str,
-) -> None:
-    existing = pd.read_csv(queue_path, low_memory=False) if queue_path.exists() else pd.DataFrame(columns=AUTOTRADER_QUEUE_COLUMNS)
-    row = pd.DataFrame(
-        [
-            {
-                "timestamp": pd.Timestamp.utcnow().isoformat(),
-                "curve_tag": curve_tag,
-                "seed_url": seed_url,
-                "state": state,
-                "city": city,
-                "status": "queued",
-                "curve_build_action": action,
-                "curve_confidence": confidence,
-                "notes": notes,
-                "last_run_at": "",
-                "completed_at": "",
-                "last_result": "",
-            }
-        ]
-    )
-    combined = pd.concat([existing, row], ignore_index=True)
-    combined = combined.drop_duplicates(subset=["curve_tag", "seed_url"], keep="last")
-    write_dataframe_csv_atomic(combined.reindex(columns=AUTOTRADER_QUEUE_COLUMNS), queue_path, index=False)
-
-
 def update_autotrader_queue_status(
     queue_path: Path,
     *,
@@ -787,12 +458,6 @@ def update_autotrader_queue_status(
     if status == "completed":
         existing.loc[mask, "completed_at"] = timestamp
     write_dataframe_csv_atomic(existing.reindex(columns=AUTOTRADER_QUEUE_COLUMNS), queue_path, index=False)
-
-
-def append_build_log(log_path: Path, row: dict[str, Any]) -> None:
-    existing = pd.read_csv(log_path, low_memory=False) if log_path.exists() else pd.DataFrame(columns=BUILD_LOG_COLUMNS)
-    combined = pd.concat([existing, pd.DataFrame([row])], ignore_index=True)
-    write_dataframe_csv_atomic(combined.reindex(columns=BUILD_LOG_COLUMNS), log_path, index=False)
 
 
 def run_autotrader_scrape(
@@ -836,92 +501,12 @@ def run_autotrader_scrape(
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
-            "Process ready curve candidates with OpenAI, write validated curves.csv rows, "
-            "and enqueue matching Autotrader scrapes."
+            "Legacy curve-candidate CLI. Disabled by policy; use Curve Builder V2 for curve pricing."
         )
     )
     parser.add_argument("--queue", type=Path, default=DEFAULT_QUEUE_PATH, help="Path to curve_candidates.csv")
-    parser.add_argument("--sold", type=Path, default=DEFAULT_SOLD_PATH, help="Path to sold_cars.csv")
-    parser.add_argument(
-        "--autotrader-source",
-        type=Path,
-        default=DEFAULT_AUTOTRADER_SOURCE,
-        help="Tagged recent Autotrader market snapshot used as curve evidence",
-    )
-    parser.add_argument("--log-path", type=Path, default=DEFAULT_BUILD_LOG_PATH, help="Curve build log CSV")
-    parser.add_argument(
-        "--autotrader-queue-path",
-        type=Path,
-        default=DEFAULT_AUTOTRADER_QUEUE_PATH,
-        help="Autotrader scrape queue CSV",
-    )
     parser.add_argument("--limit", type=int, default=3, help="Maximum candidates to process")
     parser.add_argument("--tags", nargs="*", default=[], help="Optional list of curve_tag values to process")
-    parser.add_argument(
-        "--provider",
-        default="openai",
-        choices=["openai", "ollama"],
-        help="AI provider for curve generation",
-    )
-    parser.add_argument("--model", default="gpt-4o-mini", help="Model for curve generation")
-    parser.add_argument("--temperature", type=float, default=0.2, help="Sampling temperature")
-    parser.add_argument(
-        "--ollama-base-url",
-        default="http://127.0.0.1:11434",
-        help="Base URL for local Ollama API",
-    )
-    parser.add_argument(
-        "--ollama-timeout-seconds",
-        type=int,
-        default=180,
-        help="Timeout for Ollama chat requests",
-    )
-    parser.add_argument(
-        "--max-mid-shift-pct",
-        type=float,
-        default=0.15,
-        help="Reject refreshes whose max price_mid drift exceeds this fraction",
-    )
-    parser.add_argument("--state", default="", help="Optional Autotrader search state slug")
-    parser.add_argument("--city", default="", help="Optional Autotrader search city slug")
-    parser.add_argument("--dry-run", action="store_true", help="Build and validate without writing curves or queue files")
-    parser.add_argument("--run-autotrader", action="store_true", help="Run the Autotrader scraper after queueing URLs")
-    parser.add_argument(
-        "--autotrader-urls-file",
-        type=Path,
-        default=DEFAULT_AUTOTRADER_URLS_PATH,
-        help="Where to write queued Autotrader seed URLs",
-    )
-    parser.add_argument(
-        "--autotrader-output",
-        type=Path,
-        default=DEFAULT_AUTOTRADER_OUTPUT,
-        help="Autotrader scraper output CSV path when --run-autotrader is set",
-    )
-    parser.add_argument(
-        "--storage-state",
-        default="autotrader_isolated/output/storage_state.json",
-        help="Playwright storage state for Autotrader scraping",
-    )
-    parser.add_argument(
-        "--cookie-file",
-        default="autotrader_isolated/output/autotrader_cookie.txt",
-        help="Cookie file for Autotrader scraping",
-    )
-    parser.add_argument(
-        "--playwright-browser",
-        default="chrome",
-        choices=["chromium", "chrome", "msedge", "firefox", "webkit"],
-        help="Browser for Autotrader scraping",
-    )
-    parser.add_argument(
-        "--playwright-wait",
-        default="load",
-        choices=["domcontentloaded", "load", "networkidle"],
-        help="Playwright wait mode for Autotrader scraping",
-    )
-    parser.add_argument("--playwright-block-resources", action="store_true", help="Block images/fonts during Autotrader scraping")
-    parser.add_argument("--playwright-headful", action="store_true", help="Show the browser during Autotrader scraping")
     return parser.parse_args()
 
 
@@ -956,198 +541,7 @@ def main() -> None:
         print("No buildable curve candidates selected.")
         return
 
-    sold_tagged_df, _stats = load_tagged_sold_data(args.sold)
-    autotrader_df = load_autotrader_market(args.autotrader_source)
-    curves_df = load_curves()
-
-    processed_urls: list[str] = []
-    saved_count = 0
-
-    for _, candidate in work_df.iterrows():
-        curve_tag = str(candidate.get("curve_tag", "")).strip()
-        recommended_action = str(candidate.get("recommended_action", "")).strip()
-        existing_rows = curves_df[curves_df["canonical_tag"].astype(str).str.strip() == curve_tag].copy()
-        existing_anchor_years = (
-            sorted({int(value) for value in existing_rows["anchor_year"].dropna().tolist()})
-            if not existing_rows.empty and "anchor_year" in existing_rows.columns
-            else []
-        )
-
-        year_min = pd.to_numeric(candidate.get("year_min"), errors="coerce")
-        year_max = pd.to_numeric(candidate.get("year_max"), errors="coerce")
-        anchor_years = derive_anchor_years(
-            year_min=int(year_min) if pd.notna(year_min) else None,
-            year_max=int(year_max) if pd.notna(year_max) else None,
-            existing_anchor_years=existing_anchor_years,
-        )
-        if not anchor_years:
-            append_build_log(
-                args.log_path,
-                {
-                    "timestamp": pd.Timestamp.utcnow().isoformat(),
-                    "curve_tag": curve_tag,
-                    "recommended_action": recommended_action,
-                    "result_status": "skipped",
-                    "model": f"{args.provider}:{args.model}",
-                    "confidence": None,
-                    "anchor_years": "",
-                    "autotrader_seed_url": "",
-                    "warning_count": 0,
-                    "max_mid_shift_pct": 0.0,
-                    "notes": "Could not derive anchor years.",
-                },
-            )
-            continue
-
-        sold_rows = sold_tagged_df[sold_tagged_df["curve_tag"].astype(str).str.strip() == curve_tag].copy()
-        active_rows = autotrader_df[autotrader_df["curve_tag"].astype(str).str.strip() == curve_tag].copy()
-        sold_summary = summarize_market_by_year(sold_rows, label="sold")
-        sold_records = market_records(sold_rows, max_rows=60, variant_column="variant")
-        active_summary = summarize_market_by_year(active_rows, label="active")
-        existing_curve_rows = (
-            existing_rows.sort_values(["anchor_year", "km_bucket"])[list(CURVE_COLUMNS)].to_dict(orient="records")
-            if not existing_rows.empty
-            else []
-        )
-
-        seed_url = build_autotrader_seed_url(curve_tag, state=args.state, city=args.city)
-
-        try:
-            payload = request_curve_from_ai(
-                provider=args.provider,
-                curve_tag=curve_tag,
-                candidate_row=candidate.to_dict(),
-                anchor_years=anchor_years,
-                sold_summary=sold_summary,
-                sold_records=sold_records,
-                active_summary=active_summary,
-                existing_curve_rows=existing_curve_rows,
-                model=args.model,
-                temperature=args.temperature,
-                ollama_base_url=args.ollama_base_url,
-                ollama_timeout_seconds=args.ollama_timeout_seconds,
-            )
-            proposed_rows, errors, shift_pct = validate_curve_response(
-                curve_tag=curve_tag,
-                payload=payload,
-                anchor_years=anchor_years,
-                existing_rows=existing_rows,
-                max_mid_shift_pct=args.max_mid_shift_pct,
-            )
-            confidence = payload.get("confidence")
-            confidence_value = float(confidence) if confidence is not None else None
-            notes = str(payload.get("notes", "") or "").strip()
-        except Exception as exc:  # noqa: BLE001
-            append_build_log(
-                args.log_path,
-                {
-                    "timestamp": pd.Timestamp.utcnow().isoformat(),
-                    "curve_tag": curve_tag,
-                    "recommended_action": recommended_action,
-                    "result_status": "ai_error",
-                    "model": f"{args.provider}:{args.model}",
-                    "confidence": None,
-                    "anchor_years": "|".join(str(value) for value in anchor_years),
-                    "autotrader_seed_url": seed_url,
-                    "warning_count": 0,
-                    "max_mid_shift_pct": 0.0,
-                    "notes": str(exc),
-                },
-            )
-            continue
-
-        if proposed_rows is None:
-            append_build_log(
-                args.log_path,
-                {
-                    "timestamp": pd.Timestamp.utcnow().isoformat(),
-                    "curve_tag": curve_tag,
-                    "recommended_action": recommended_action,
-                    "result_status": "validation_failed",
-                    "model": f"{args.provider}:{args.model}",
-                    "confidence": confidence_value,
-                    "anchor_years": "|".join(str(value) for value in anchor_years),
-                    "autotrader_seed_url": seed_url,
-                    "warning_count": len(errors),
-                    "max_mid_shift_pct": shift_pct,
-                    "notes": " | ".join(errors),
-                },
-            )
-            continue
-
-        if not args.dry_run:
-            curves_df = replace_curve_rows(curves_df, proposed_rows)
-            save_curves(curves_df)
-            upsert_autotrader_queue(
-                args.autotrader_queue_path,
-                curve_tag=curve_tag,
-                seed_url=seed_url,
-                state=args.state,
-                city=args.city,
-                action=recommended_action,
-                confidence=confidence_value,
-                notes=notes,
-            )
-
-        processed_urls.append(seed_url)
-        saved_count += 1
-        append_build_log(
-            args.log_path,
-            {
-                "timestamp": pd.Timestamp.utcnow().isoformat(),
-                "curve_tag": curve_tag,
-                "recommended_action": recommended_action,
-                "result_status": "saved" if not args.dry_run else "validated",
-                "model": f"{args.provider}:{args.model}",
-                "confidence": confidence_value,
-                "anchor_years": "|".join(str(value) for value in anchor_years),
-                "autotrader_seed_url": seed_url,
-                "warning_count": 0,
-                "max_mid_shift_pct": shift_pct,
-                "notes": notes,
-            },
-        )
-
-    if processed_urls:
-        unique_urls = list(dict.fromkeys(processed_urls))
-        args.autotrader_urls_file.parent.mkdir(parents=True, exist_ok=True)
-        args.autotrader_urls_file.write_text("\n".join(unique_urls) + "\n", encoding="utf-8")
-        print(f"Wrote {len(unique_urls)} Autotrader seed URL(s) to {args.autotrader_urls_file}")
-
-        if args.run_autotrader and not args.dry_run:
-            result = run_autotrader_scrape(
-                urls_file=args.autotrader_urls_file,
-                output_path=args.autotrader_output,
-                storage_state=args.storage_state,
-                cookie_file=args.cookie_file,
-                browser=args.playwright_browser,
-                wait_mode=args.playwright_wait,
-                block_resources=args.playwright_block_resources,
-                headful=args.playwright_headful,
-            )
-            status = "completed" if result.returncode == 0 else "failed"
-            note = (result.stdout or "").strip()[-1000:]
-            if result.stderr:
-                stderr_note = result.stderr.strip()[-500:]
-                note = f"{note}\n{stderr_note}".strip()
-            update_autotrader_queue_status(
-                args.autotrader_queue_path,
-                seed_urls=unique_urls,
-                status=status,
-                result_note=note,
-            )
-            print(result.stdout)
-            if result.stderr:
-                print(result.stderr, file=sys.stderr)
-            if result.returncode != 0:
-                raise SystemExit(f"Autotrader scrape failed with exit code {result.returncode}")
-
-    print(
-        "Curve processing complete:",
-        f"selected={len(work_df)}",
-        f"saved={saved_count}",
-        f"dry_run={args.dry_run}",
-    )
+    raise SystemExit(LEGACY_AI_CURVE_BUILD_DISABLED_MESSAGE)
 
 
 if __name__ == "__main__":

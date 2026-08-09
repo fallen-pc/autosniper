@@ -1,5 +1,55 @@
 # Changelog
 
+## 2026-07-23
+- Kept Pajero Sport/QE rows out of Pajero NX GLX, GLS, and Exceed matching, and added governed `225000` km retail-curve cells for those three NX lanes using the existing same-lane depreciation shape.
+
+## 2026-07-18
+- Added Autotrader lifecycle confidence signals to AI Analysis: matched listings now retain first/last seen and sold/removed status, fast near-curve removals boost confidence, stale near-curve active listings warn, and Autotrader-vs-Carsales curve mismatches surface as non-blocking risk flags.
+- Removed the hidden legacy Curve Builder page and stripped the old AI/OpenAI/Ollama curve writer internals from `scripts/process_curve_candidates.py`; Curve Builder V2 is now the only save-capable curve-building surface.
+- Added the July staged Carsales curve batches: twenty-one narrow private-market lanes across Toyota Aurion/Corolla/Kluger, Kia Cerato, Holden Cruze/Barina/Calais/Commodore, Ford Focus, Hyundai i30/Elantra, Nissan X-Trail, Isuzu MU-X, and Mazda CX-5, with governed curve snapshots through `curves_20260717T064125Z.csv`.
+- Consolidated curve pricing onto Curve Builder V2 only. Legacy AI curve writing in `scripts/process_curve_candidates.py` is disabled, and Curve Pipeline now handles candidate queue refresh plus Autotrader follow-up only. Autotrader remains comparison evidence, not a curve-pricing input.
+
+## 2026-07-01
+- Added thirteen narrow Toyota Kluger, Mitsubishi Outlander, Nissan X-Trail, and Subaru Forester retail curve lanes from private Carsales/Apify evidence, with allowed-variant gates, V2 group mappings, supported-universe rows, and a governed curve snapshot.
+
+## 2026-06-23
+- Repaired scraped-data utilisation for existing curves: Corolla Ascent Sport ZRE182R manual rows now feed the existing manual curve, and first-generation 2014 MU-X LS-U/LS-T rows now have conservative early-year anchors while 2021+ MU-X rows remain separate newer-generation targets.
+- Added Toyota Camry Atara S ASV50R automatic petrol sedan and Volkswagen Golf V/A5 GTI automatic petrol hatch curves from private Carsales/Apify evidence, and repaired Triton `GL-R` aliasing plus Mazda `CX-5` spelling so existing governed curves pick up those rows instead of needing duplicates.
+- Added Toyota Camry XV30 Altise ACV36R/MCV36R automatic petrol sedan curves and Volkswagen Golf V Comfortline / Golf VI Trendline automatic petrol hatch curves from existing private Carsales/Apify evidence, prioritised by historical Grays sold volume without using Grays sold prices for retail curve repricing.
+- Added Ford Territory SY/SY MkII petrol automatic SUV, Ford Territory SZ/SZ MkII petrol automatic SUV, and Holden Captiva CG petrol/diesel automatic SUV curves from private Carsales/Apify evidence, prioritised by historical Grays sold volume.
+- Added Volkswagen Golf VI Comfortline automatic petrol and diesel hatch curves from a gated private Carsales/Apify scrape, keeping GTI, Golf R, Trendline, Highline, wagon, and manual lanes separate.
+- Added Isuzu MU-X LS-M, LS-U, and LS-T automatic diesel SUV curves from a gated private Carsales/Apify scrape, including high-km buckets for current active MU-X coverage.
+- Added a Carsales/Apify batch of 20 new retail curve lanes across Toyota, Hyundai, Ford, Mitsubishi, and Mazda, and extended the Hyundai iLoad automatic diesel curve with newer private-market anchors.
+- Added the `toyota_yaris_ascent_ncp130r_hatch_auto_petrol` curve from private Carsales/Apify Yaris Ascent NCP130R automatic hatch evidence, keeping YR/YRS/SX/ZR/GR/manual/hybrid/Cross rows out of the matcher.
+
+## 2026-06-19
+- Added a separate Holden Commodore VE Series II Omega petrol automatic sedan curve from private Carsales/Apify evidence, keeping the sedan and wagon Series II Omega lanes separate.
+- Added a separate Holden Commodore VE Series II Omega petrol automatic wagon curve from private Carsales/Apify evidence, keeping plain VE, SV6, VF, and gas-only rows out of the matcher.
+- Added separate Holden Commodore VE petrol automatic sedan/wagon curves for `Omega` and `SV6` from private Carsales/Apify evidence, keeping VE Series II, VF, gas/dual-fuel, and materially different badges out of the matcher.
+- Saved the governed VE curve artifact snapshot and manifest entry for the new Holden Commodore VE lanes.
+
+## 2026-06-16
+- Added separate Holden Commodore VF petrol automatic wagon curves for `Evoke` and `SV6` from private Carsales evidence, excluding gas-only rows and keeping sedan/wagon lanes separate.
+- Added separate Holden Commodore VF petrol automatic sedan curves for `Evoke` and `SV6` from private Carsales evidence, keeping wagons, utes, SS/V8/performance rows, and older VE lanes out of the matcher.
+
+## 2026-06-02
+- Added standard same-lane `225000` and `300000` km high-km extensions across existing curve tags, preserving existing Carsales-led extension rows and using lane-level depreciation from the existing curve shape rather than Grays sold-price repricing.
+
+## 2026-05-22
+- Added the `mitsubishi_triton_glx_mn_ute_manual_diesel` curve from private Carsales Triton GLX MN manual diesel ute evidence, using the standard grid plus shared `225000` and `300000` extension denominations.
+- Extended the `mitsubishi_pajero_glx_nt-nw_suv_auto_diesel` curve with the shared `300000` km high-km extension denomination so current GLX active rows above 225k remain in valuation range.
+- Extended the `mitsubishi_pajero_glx_nt-nw_suv_auto_diesel` curve with the repo-standard `225000` km extension denomination from private Carsales high-km Pajero GLX evidence.
+- Added the `mitsubishi_pajero_glx_nt-nw_suv_auto_diesel` standard-grid retail resale curve from private Carsales Pajero GLX NT/NW diesel automatic SUV evidence, with NT and NW matcher rows mapped into one conservative base curve.
+- Added the `ford_territory_sz_suv_auto_diesel` standard-grid retail resale curve from private Carsales Territory SZ/SZ MkII TX and TS diesel automatic SUV evidence, plus the first Ford matcher support.
+- Added the `hyundai_accent_active_rb_hatch_auto_petrol` standard-grid retail resale curve from private Carsales Accent Active RB hatch automatic petrol evidence, plus supported-universe and allowed-variant mapping for Active automatic/CVT hatch rows.
+
+## 2026-05-19
+- Added the `hyundai_iload_tq_van_auto_diesel` retail resale curve from private Carsales iLoad TQ diesel automatic van evidence, plus the supported-universe and allowed-variant mapping needed to classify automatic iLoad vans while keeping manual, Crew, and iMax rows out of the lane.
+- Refined the `hyundai_iload_tq_van_auto_diesel` standard five-bucket grid with additional private Carsales pages, lifting the normal 2012-2016 automatic van midpoints while treating very high asking rows as upper-market outliers rather than midpoint evidence.
+
+## 2026-05-18
+- Added a retail-only `225000` km bucket for the `2013` `toyota_corolla_ascent_zre182r_hatch_auto_petrol` curve from private Carsales Corolla Ascent hatch evidence, extending the high-km resale curve without using Grays sold prices for repricing.
+
 ## 2026-04-24
 - Added the Hyundai ix35 Elite LM base curve as `hyundai_ix35_elite_lm_wagon_auto_petrol` with `2010/2012/2014` anchors and the standard `30k/60k/100k/150k/200k` bucket grid, then wired the exact Elite LM match tag into the V2 group map and supported curve universe as a conservative family lane.
 - Added the Hyundai Getz SX TB manual base curve as `hyundai_getz_sx_tb_hatch_manual_petrol` with `2007/2009/2011` anchors and the standard `30k/60k/100k/150k/200k` bucket grid, then wired the exact SX TB manual match tag into the V2 group map and supported curve universe as a separate lane below the automatic curve.

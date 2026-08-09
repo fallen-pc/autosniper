@@ -16,6 +16,7 @@ from shared.curve_groups_v2 import load_curve_anchor_overrides_v2, load_curve_gr
 from shared.curves import resolve_curve_canonical_tag
 from shared.data_loader import dataset_path
 from shared.validators import R
+from scripts.atomic_csv import write_dataframe_csv_atomic
 
 UNCLASSIFIED = "UNCLASSIFIED"
 
@@ -33,13 +34,21 @@ ALLOWED_VARIANTS_PATH = CONFIG_DIR / "allowed_variants.csv"
 LEGACY_ALLOWED_VARIANTS_PATH = CONFIG_DIR / "toyota_allowed_variants.csv"
 NORMALISATION_RULES_PATH = CONFIG_DIR / "normalisation_rules.csv"
 LEGACY_NORMALISATION_RULES_PATH = CONFIG_DIR / "toyota_normalisation_rules.csv"
-TAG_LOG_PATH = dataset_path("quality/canonical_tagging_log.csv")
+TAG_LOG_PATH = dataset_path("quality/canonical_tagging_log_latest.csv")
 ELIGIBLE_CANONICAL_REASONS = {"", R.OK, "MATCHED", "NORMALISED_MATCH"}
 
 MAKE_ALIASES = {
     "toyota": "toyota",
     "mazda": "mazda",
     "hyundai": "hyundai",
+    "ford": "ford",
+    "holden": "holden",
+    "mitsubishi": "mitsubishi",
+    "isuzu": "isuzu",
+    "volkswagen": "volkswagen",
+    "vw": "volkswagen",
+    "nissan": "nissan",
+    "subaru": "subaru",
 }
 
 MODEL_ALIASES = {
@@ -51,7 +60,35 @@ MODEL_ALIASES = {
     "rav4": "rav4",
     "mazda3": "3",
     "mazda 3": "3",
+    "cx5": "cx5",
+    "cx 5": "cx5",
+    "cx-5": "cx5",
     "i30": "i30",
+    "accent": "accent",
+    "iload": "iload",
+    "i load": "iload",
+    "territory": "territory",
+    "captiva": "captiva",
+    "pajero": "pajero",
+    "triton": "triton",
+    "mux": "mux",
+    "mu x": "mux",
+    "mu-x": "mux",
+    "golf": "golf",
+    "kluger": "kluger",
+    "outlander": "outlander",
+    "xtrail": "xtrail",
+    "x trail": "xtrail",
+    "x-trail": "xtrail",
+    "forester": "forester",
+    "focus": "focus",
+    "falcon": "falcon",
+    "aurion": "aurion",
+    "cerato": "cerato",
+    "elantra": "elantra",
+    "calais": "calais",
+    "cruze": "cruze",
+    "barina": "barina",
 }
 
 
@@ -60,7 +97,7 @@ def is_canonical_eligible(canonical_tag: object, canonical_reason: object) -> bo
     if not tag_text or tag_text == UNCLASSIFIED:
         return False
     reason_text = str(canonical_reason or "").strip()
-    return reason_text in ELIGIBLE_CANONICAL_REASONS
+    return reason_text in ELIGIBLE_CANONICAL_REASONS or reason_text.upper() in ELIGIBLE_CANONICAL_REASONS
 
 BODY_ALIASES: Tuple[Tuple[str, str], ...] = (
     ("hatchback", "hatch"),
@@ -401,7 +438,11 @@ def _extract_series_code(text: str) -> str:
         return candidate
 
     # Some series/platform codes appear as short alpha tokens in the variant text.
-    short_match = re.search(r"\b(BL|BM|KE|KF|LM|TB)\b", text, re.IGNORECASE)
+    short_match = re.search(
+        r"\b(BL|BM|KE|KF|LM|TB|TQ|SZ|SY|NT|NW|NX|MN|MQ|CG|VI|ZH|ZJ|ZK|T30|T31|T32|S3|S4|79V|LW|LZ)\b",
+        text,
+        re.IGNORECASE,
+    )
     if short_match:
         return short_match.group(1).lower()
     return ""
@@ -573,7 +614,7 @@ def load_allowed_variants(path: Path | None = None) -> Tuple[AllowedVariant, ...
     if not sources:
         return ()
     variants: list[AllowedVariant] = []
-    seen_keys: set[tuple[str, str, str, str, str, str, str]] = set()
+    seen_keys: set[tuple[str, str, str, str, str, str, str, str]] = set()
     for source in sources:
         df = pd.read_csv(source)
         for _, row in df.iterrows():
@@ -596,7 +637,7 @@ def load_allowed_variants(path: Path | None = None) -> Tuple[AllowedVariant, ...
             )
             if not canonical_tag:
                 continue
-            row_key = (canonical_tag, make, model, body, fuel, transmission, badge)
+            row_key = (canonical_tag, make, model, body, fuel, transmission, badge, series)
             if row_key in seen_keys:
                 continue
             seen_keys.add(row_key)
@@ -645,16 +686,16 @@ def assign_canonical_tag(
     *,
     require_price: bool = False,
     allowed_variants: Sequence[AllowedVariant] | None = None,
-) -> Tuple[str, str, str]:
+) -> Tuple[str, str]:
     url = str(row.get("url", "") or "").strip()
     if not url:
-        return UNCLASSIFIED, R.NO_URL, ""
+        return UNCLASSIFIED, R.NO_URL
     raw_blob = _build_raw_text_blob(row)
     text_blob = raw_blob
     if _looks_like_non_vehicle(url, text_blob):
-        return UNCLASSIFIED, R.NON_VEHICLE, ""
+        return UNCLASSIFIED, R.NON_VEHICLE
     if require_price and _extract_price(row) is None:
-        return UNCLASSIFIED, R.NO_PRICE, ""
+        return UNCLASSIFIED, R.NO_PRICE
 
     normaliser = load_normaliser()
     normalized_row = dict(row)
@@ -668,46 +709,44 @@ def assign_canonical_tag(
 
     make = _normalize_make(normalized_row.get("make"))
     if not make:
-        return UNCLASSIFIED, OUT_OF_SCOPE, ""
+        return UNCLASSIFIED, OUT_OF_SCOPE
     model = _normalize_model(normalized_row.get("model"))
     if not model:
-        return UNCLASSIFIED, R.BAD_PARSE, ""
+        return UNCLASSIFIED, R.BAD_PARSE
 
     variants = allowed_variants or load_allowed_variants()
     candidates = [v for v in variants if v.make == make and v.model == model]
     if not candidates:
-        return UNCLASSIFIED, OUT_OF_SCOPE, ""
+        return UNCLASSIFIED, OUT_OF_SCOPE
 
     year = _parse_year(normalized_row.get("year"), text_blob)
     if year is None:
-        return UNCLASSIFIED, R.BAD_PARSE, ""
+        return UNCLASSIFIED, R.BAD_PARSE
 
     body_value = _normalize_body(normalized_row.get("body_type"), text_blob)
     if not body_value:
-        return UNCLASSIFIED, R.BAD_PARSE, ""
+        return UNCLASSIFIED, R.BAD_PARSE
     candidates = [v for v in candidates if _body_matches(v.body, v.body_aliases, body_value, text_blob)]
     if not candidates:
-        return UNCLASSIFIED, OUT_OF_SCOPE, ""
+        return UNCLASSIFIED, OUT_OF_SCOPE
 
     fuel = _parse_fuel(text_blob)
     if fuel in (None, "__AMBIG__"):
-        return UNCLASSIFIED, AMBIG_FUEL, ""
+        return UNCLASSIFIED, AMBIG_FUEL
     candidates = [v for v in candidates if v.fuel == fuel]
     if not candidates:
-        return UNCLASSIFIED, OUT_OF_SCOPE, ""
+        return UNCLASSIFIED, OUT_OF_SCOPE
 
     transmission = _parse_transmission(text_blob)
     if transmission in (None, "__AMBIG__"):
-        return UNCLASSIFIED, AMBIG_TRANS, ""
+        return UNCLASSIFIED, AMBIG_TRANS
     candidates = [v for v in candidates if v.transmission == transmission]
     if not candidates:
-        return UNCLASSIFIED, OUT_OF_SCOPE, ""
-
-    drivetrain_source = ""
+        return UNCLASSIFIED, OUT_OF_SCOPE
 
     candidates = [v for v in candidates if not _has_excluded_keyword(text_blob, v.excluded_keywords)]
     if not candidates:
-        return UNCLASSIFIED, DISALLOWED_VARIANT, ""
+        return UNCLASSIFIED, DISALLOWED_VARIANT
 
     # Series code fallback (e.g. ZRE152R / ZRE172R / MZEA12R / ZWE211R)
     series_text = " ".join(
@@ -719,6 +758,7 @@ def assign_canonical_tag(
         series_code = _normalize_series_code(series_code)
         if series_code:
             series_matches = [v for v in candidates if v.series and v.series == series_code]
+            series_matches = [v for v in series_matches if _badge_matches(text_blob, v.badge_aliases)]
             unique_series_tags = {v.canonical_tag for v in series_matches}
             if len(unique_series_tags) == 1:
                 required_reason = _validate_required_fields(
@@ -731,14 +771,14 @@ def assign_canonical_tag(
                     }
                 )
                 if required_reason != R.OK:
-                    return UNCLASSIFIED, required_reason, ""
-                return series_matches[0].canonical_tag, R.OK, ""
+                    return UNCLASSIFIED, required_reason
+                return series_matches[0].canonical_tag, R.OK
             if len(series_matches) == 0:
-                return UNCLASSIFIED, DISALLOWED_VARIANT, ""
+                return UNCLASSIFIED, DISALLOWED_VARIANT
 
     badge_matches = [v for v in candidates if _badge_matches(text_blob, v.badge_aliases)]
     if not badge_matches:
-        return UNCLASSIFIED, AMBIG_BADGE, ""
+        return UNCLASSIFIED, AMBIG_BADGE
     unique_tags = {v.canonical_tag for v in badge_matches}
     if len(unique_tags) > 1:
         year_choice = _disambiguate_by_year(badge_matches, year)
@@ -753,11 +793,11 @@ def assign_canonical_tag(
                 }
             )
             if required_reason != R.OK:
-                return UNCLASSIFIED, required_reason, ""
-            return year_choice.canonical_tag, R.OK, drivetrain_source
+                return UNCLASSIFIED, required_reason
+            return year_choice.canonical_tag, R.OK
         if not _year_in_any_band(badge_matches, year):
-            return UNCLASSIFIED, OUT_OF_SCOPE_YEAR, ""
-        return UNCLASSIFIED, AMBIG_BADGE, ""
+            return UNCLASSIFIED, OUT_OF_SCOPE_YEAR
+        return UNCLASSIFIED, AMBIG_BADGE
     required_reason = _validate_required_fields(
         {
             "year": year,
@@ -768,10 +808,10 @@ def assign_canonical_tag(
         }
     )
     if required_reason != R.OK:
-        return UNCLASSIFIED, required_reason, ""
+        return UNCLASSIFIED, required_reason
     if not _year_in_any_band([badge_matches[0]], year):
-        return UNCLASSIFIED, OUT_OF_SCOPE_YEAR, ""
-    return badge_matches[0].canonical_tag, R.OK, drivetrain_source
+        return UNCLASSIFIED, OUT_OF_SCOPE_YEAR
+    return badge_matches[0].canonical_tag, R.OK
 
 
 def _snapshot_fields(row: Mapping[str, object]) -> dict[str, object]:
@@ -790,12 +830,13 @@ def _snapshot_fields(row: Mapping[str, object]) -> dict[str, object]:
 
 
 def _append_tag_log(rows: Sequence[dict[str, object]]) -> None:
-    if not rows:
-        return
     TAG_LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
-    file_exists = TAG_LOG_PATH.exists()
-    df = pd.DataFrame(rows)
-    df.to_csv(TAG_LOG_PATH, mode="a", header=not file_exists, index=False)
+    columns = ["timestamp", "source", "url", "reason_code", "field_snapshot"]
+    df = pd.DataFrame(rows, columns=columns).drop_duplicates(
+        subset=["source", "url", "reason_code"],
+        keep="last",
+    )
+    write_dataframe_csv_atomic(df, TAG_LOG_PATH, index=False)
 
 
 def tag_dataframe(
@@ -817,7 +858,7 @@ def tag_dataframe(
 
     for _, row in df.iterrows():
         row_map = row.to_dict()
-        tag, reason, _drivetrain_source = assign_canonical_tag(
+        tag, reason = assign_canonical_tag(
             row_map, require_price=require_price, allowed_variants=variants
         )
         tags.append(tag)
@@ -836,7 +877,6 @@ def tag_dataframe(
     tagged = df.copy()
     tagged["canonical_tag"] = tags
     tagged["canonical_reason"] = reasons
-    # drivetrain_source is intentionally omitted from outputs.
     if filter_unclassified:
         tagged = tagged[tagged["canonical_tag"] != UNCLASSIFIED].copy()
 

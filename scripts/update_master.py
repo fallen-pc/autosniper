@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import os
 import re
 import sys
 from datetime import datetime, timezone
@@ -17,8 +16,10 @@ if __package__ in (None, ""):
     sys.path.append(str(Path(__file__).resolve().parent.parent))
     from scripts.atomic_csv import append_dataframe_csv_atomic, write_dataframe_csv_atomic
     from shared.data_loader import dataset_path
+    from shared.governance import SOLD_DETAIL_SCHEMA
     from shared.sold_cleaning import normalize_listing_fields
     from shared.canonical_tagging import tag_dataframe
+    from shared.schema import TERMINAL_STATES
     from shared.state_machine import ensure_state_schema, normalize_state
     from shared.validators import R, validate_sold_cars_df
     from shared.exclusions import append_pipeline_exclusions
@@ -26,8 +27,10 @@ if __package__ in (None, ""):
 else:
     from scripts.atomic_csv import append_dataframe_csv_atomic, write_dataframe_csv_atomic
     from shared.data_loader import dataset_path
+    from shared.governance import SOLD_DETAIL_SCHEMA
     from shared.sold_cleaning import normalize_listing_fields
     from shared.canonical_tagging import tag_dataframe
+    from shared.schema import TERMINAL_STATES
     from shared.state_machine import ensure_state_schema, normalize_state
     from shared.validators import R, validate_sold_cars_df
     from shared.exclusions import append_pipeline_exclusions
@@ -37,13 +40,14 @@ REFERRED_FILE = dataset_path("referred_cars.csv")
 ACTIVE_FILE = dataset_path("active_vehicle_details.csv")
 STATIC_FILE = dataset_path("vehicle_static_details.csv")
 STATE_FILE = dataset_path("vehicle_state.csv")
-SOLD_PRICE_PENDING_FILE = dataset_path("sold_price_pending.csv")
 SOLD_DISCARD_LOG = dataset_path("scrapers/sold_discard_log.csv")
+NORMALIZED_FILE = dataset_path("normalised_data.csv")
 
 DEDUP_KEYS: Sequence[str] = ("url", "vin")
 REFERRED_STATUSES = {"referred", "canceled", "cancelled", "closed"}
 EXCLUDED_VARIANT_KEYWORDS = ("motorcycle",)
 SOLD_REDUNDANT_COLUMNS = ("time_remaining_or_date_sold", "final_price", "final_bids", "status")
+ISO_DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 WOVR_PATTERN = re.compile(
     r"\bwovr\b|wovr[-\s]*(?:inspected|repairable|statutory)|write[-\s]?off",
     re.IGNORECASE,
@@ -129,6 +133,11 @@ def _parse_date(value: object) -> str | None:
     if _is_blank(value):
         return None
     text = str(value).strip()
+    if ISO_DATE_RE.match(text):
+        try:
+            return datetime.strptime(text, "%Y-%m-%d").date().isoformat()
+        except ValueError:
+            return None
     try:
         parsed = date_parser.parse(text, fuzzy=True, dayfirst=True, tzinfos=AU_TZINFOS)
     except (ValueError, TypeError):
@@ -140,11 +149,20 @@ def _normalize_odometer(value: object) -> tuple[int | None, bool]:
     if _is_blank(value):
         return None, False
     parsed = _to_int(value)
+    suspect = False
+    if parsed is None:
+        text = str(value)
+        suspect = True
+        match = re.search(r"\d[\d, ]*", text)
+        if match:
+            parsed = _to_int(match.group(0))
     if parsed is None:
         return None, True
     if parsed == 0 or parsed < 1000 or parsed > 700000:
         return None, True
-    return parsed, False
+    if re.search(r"discrepanc|suspect|unknown|not verified", str(value), re.IGNORECASE):
+        suspect = True
+    return parsed, suspect
 
 
 def _append_sold_discard_log(records: list[dict[str, object]]) -> None:
@@ -319,7 +337,10 @@ def _prepare_sold_rows(frame: pd.DataFrame, *, static_df: pd.DataFrame | None = 
         print(f"Pruned redundant sold columns: {drop_cols}")
     if "sale_price" in cleaned.columns:
         cleaned = cleaned.drop(columns=["sale_price"])
-    return cleaned
+    for column in SOLD_DETAIL_SCHEMA:
+        if column not in cleaned.columns:
+            cleaned[column] = ""
+    return cleaned.reindex(columns=SOLD_DETAIL_SCHEMA)
 
 
 def _sold_rows_missing_sale_price(frame: pd.DataFrame) -> pd.Series:
@@ -369,6 +390,8 @@ def _merge_preserving_history(
     ensure_schema: bool = False,
     validator: Callable[[pd.DataFrame], tuple[pd.DataFrame, dict[str, int]]] | None = None,
     *,
+    dedup_keys: Sequence[str] = DEDUP_KEYS,
+    dedup_existing: bool = False,
     prepare_kwargs: dict[str, object] | None = None,
 ) -> None:
     existing_raw = _load_dataframe(path)
@@ -384,6 +407,14 @@ def _merge_preserving_history(
             schema_changed = True
 
     if prepared_new.empty:
+        if dedup_existing:
+            dedup_cols = [
+                col for col in dedup_keys if col in prepared_existing.columns
+            ]
+            if dedup_cols:
+                before = len(prepared_existing)
+                prepared_existing = prepared_existing.drop_duplicates(subset=dedup_cols, keep="first").copy()
+                schema_changed |= len(prepared_existing) != before
         if ensure_schema and schema_changed:
             _atomic_write(prepared_existing, path)
             print(f"{label.title()} listings saved to {path} (schema normalized; +0).")
@@ -396,8 +427,10 @@ def _merge_preserving_history(
         added = len(prepared_new)
     else:
         dedup_cols = [
-            col for col in DEDUP_KEYS if col in prepared_existing.columns and col in prepared_new.columns
+            col for col in dedup_keys if col in prepared_existing.columns and col in prepared_new.columns
         ]
+        if dedup_existing and dedup_cols:
+            prepared_existing = prepared_existing.drop_duplicates(subset=dedup_cols, keep="first").copy()
         filtered_new = prepared_new.copy()
         if dedup_cols:
             existing_keys = set(_build_key(prepared_existing, dedup_cols))
@@ -448,6 +481,21 @@ def _remove_wovr_rows(frame: pd.DataFrame) -> pd.DataFrame:
         frame = frame.loc[~mask].copy()
         print(f"Filtered out {removed} WOVR listing(s) from active listings.")
     return frame
+
+
+def _filter_active_rows_with_live_signals(frame: pd.DataFrame) -> pd.DataFrame:
+    if frame.empty:
+        return frame
+    working = frame.copy()
+    if "price" not in working.columns:
+        working["price"] = ""
+    if "time_remaining_or_date_sold" not in working.columns:
+        working["time_remaining_or_date_sold"] = ""
+    keep_mask = (~_blank_mask(working["price"])) | (~_blank_mask(working["time_remaining_or_date_sold"]))
+    removed = int((~keep_mask).sum())
+    if removed:
+        print(f"Filtered out {removed} active row(s) without price or countdown evidence.")
+    return working.loc[keep_mask].copy()
 
 
 def _project_columns(frame: pd.DataFrame, columns: Sequence[str]) -> pd.DataFrame:
@@ -615,6 +663,25 @@ def _load_state_table() -> pd.DataFrame:
     return ensure_state_schema(state_df)
 
 
+def _load_static_identity_table() -> pd.DataFrame:
+    static_df = _load_dataframe(STATIC_FILE)
+    if NORMALIZED_FILE.parent != STATIC_FILE.parent:
+        return static_df
+    normalized_df = _load_dataframe(NORMALIZED_FILE)
+    if normalized_df.empty:
+        return static_df
+    if static_df.empty:
+        return normalized_df
+    if "url" not in normalized_df.columns or "url" not in static_df.columns:
+        return static_df
+    combined = pd.concat([normalized_df, static_df], ignore_index=True, sort=False)
+    combined["_url_norm"] = _normalize_url(combined["url"])
+    combined = combined[combined["_url_norm"].ne("")]
+    combined = combined.drop_duplicates(subset=["_url_norm"], keep="last")
+    combined = combined.drop(columns=["_url_norm"])
+    return combined.reset_index(drop=True)
+
+
 def _prune_urls_from_dataset(path: Path, urls: set[str], label: str) -> None:
     if not urls or not path.exists():
         return
@@ -640,7 +707,7 @@ def update_master_database() -> None:
     state_df = state_df.copy()
     state_df["state"] = state_df["state"].apply(normalize_state)
 
-    static_df = _load_dataframe(STATIC_FILE)
+    static_df = _load_static_identity_table()
     existing_active = _load_dataframe(ACTIVE_FILE)
 
     active_df = _materialize_state_view(
@@ -695,6 +762,7 @@ def update_master_database() -> None:
 
     if not active_df.empty:
         active_df = _remove_wovr_rows(active_df)
+        active_df = _filter_active_rows_with_live_signals(active_df)
         active_queue_urls = _load_active_queue_urls()
         if active_queue_urls and "url" in active_df.columns:
             active_df["_url_norm"] = _normalize_url(active_df["url"])
@@ -712,17 +780,12 @@ def update_master_database() -> None:
     if not sold_df.empty:
         blank_sale_mask = _sold_rows_missing_sale_price(sold_df)
         if blank_sale_mask.any():
-            moved_rows = sold_df.loc[blank_sale_mask].copy()
-            if not moved_rows.empty:
-                moved_rows["status"] = "pending_final_sale_price"
-                _merge_preserving_history(
-                    SOLD_PRICE_PENDING_FILE,
-                    moved_rows,
-                    "pending sold-price verification",
-                    ensure_schema=False,
-                )
-                sold_df = sold_df.loc[~blank_sale_mask].copy()
-                print(f"Moved {len(moved_rows)} sold listing(s) without verified final sale price into pending review.")
+            skipped = int(blank_sale_mask.sum())
+            sold_df = sold_df.loc[~blank_sale_mask].copy()
+            print(
+                f"Skipped {skipped} sold listing(s) without verified final sale price; "
+                "only explicit Sold for evidence is materialized."
+            )
     if not sold_df.empty:
         sold_df = tag_dataframe(
             sold_df,
@@ -754,6 +817,8 @@ def update_master_database() -> None:
         "referred/canceled/closed",
         prepare_fn=_prepare_referred_rows,
         ensure_schema=True,
+        dedup_keys=("url",),
+        dedup_existing=True,
     )
 
     if not active_df.empty:
@@ -784,8 +849,6 @@ def update_master_database() -> None:
         active_target["status"] = active_target["status"].fillna("active").astype(str).str.strip().str.lower()
         active_target = active_target[active_target["status"] == "active"].copy()
         active_target["status"] = "active"
-    if "drivetrain_source" in active_target.columns:
-        active_target = active_target.drop(columns=["drivetrain_source"])
     _atomic_write(active_target, ACTIVE_FILE)
     print(f"Active listings saved to {ACTIVE_FILE} ({len(active_target)} rows).")
 
@@ -794,7 +857,11 @@ def update_master_database() -> None:
         completed_urls.update(sold_df["url"].dropna().tolist())
     if "url" in referred_df.columns:
         completed_urls.update(referred_df["url"].dropna().tolist())
-    _prune_urls_from_dataset(dataset_path("active_vehicle_links.csv"), completed_urls, "active links (sold/referred)")
+    if "url" in state_df.columns and "state" in state_df.columns:
+        terminal_mask = state_df["state"].astype(str).str.strip().str.lower().isin(TERMINAL_STATES)
+        terminal_urls = state_df.loc[terminal_mask, "url"].dropna().tolist()
+        completed_urls.update(terminal_urls)
+    _prune_urls_from_dataset(dataset_path("active_vehicle_links.csv"), completed_urls, "active links (terminal state)")
     if "url" in active_target.columns:
         active_urls = {url.strip() for url in active_target["url"].dropna().tolist() if str(url).strip()}
         if active_urls:

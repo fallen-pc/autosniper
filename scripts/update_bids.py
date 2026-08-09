@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import csv
 import json
 import logging
 import os
@@ -220,8 +219,6 @@ def persist_dataframe(df: pd.DataFrame, note: str) -> None:
     """Write the current dataframe state to disk atomically for resume safety."""
     os.makedirs(os.path.dirname(CSV_FILE), exist_ok=True)
     snapshot = df.copy()
-    if "drivetrain_source" in snapshot.columns:
-        snapshot = snapshot.drop(columns=["drivetrain_source"])
     snapshot["url"] = snapshot["url"].apply(clean_url)
     write_dataframe_csv_atomic(snapshot, CSV_FILE, index=False)
     print(f"{note}: wrote {len(snapshot)} rows to {CSV_FILE}")
@@ -364,8 +361,6 @@ def _load_active_seed_dataframe() -> pd.DataFrame:
         return active_df
 
     seed_df = static_df.copy()
-    if "drivetrain_source" in seed_df.columns:
-        seed_df = seed_df.drop(columns=["drivetrain_source"])
     if "url" in seed_df.columns:
         seed_df["url"] = seed_df["url"].apply(clean_url)
         if queue_urls:
@@ -523,17 +518,23 @@ def extract_bid_info(soup):
         canceled_elem = soup.find("p", class_="large-stamp large-stamp-sale-closed")
         is_canceled = canceled_elem and "Sale closed" in canceled_elem.get_text(strip=True) if canceled_elem else False
         is_referred = is_referred or is_canceled  # Treat canceled as Referred
+        price_heading_text = referred_elem.get_text(" ", strip=True) if referred_elem else ""
+        has_sold_for_price = bool(re.search(r"\bSold\s+for\b", price_heading_text, re.IGNORECASE))
+        final_sale_price = price if has_sold_for_price and price != "N/A" else ""
+        sale_price_source = "sold_for_heading" if final_sale_price else ""
         print(f"  Referred/Canceled element: {referred_elem or canceled_elem}")
         print(f"  Is Referred or Canceled: {is_referred}")
+        if final_sale_price:
+            print(f"  Verified final sale price: {final_sale_price}")
 
         # Check for Active status based on time remaining
         is_active = bool(time_remaining and re.search(r"\d+\s*(d|day|days|h|hour|hours|m|min|minutes|s|sec|seconds)", time_remaining.lower(), re.IGNORECASE))
         print(f"  Is Active: {is_active}")
 
-        return price, bids, time_remaining, date_sold, is_referred, is_active
+        return price, bids, time_remaining, date_sold, is_referred, is_active, final_sale_price, sale_price_source
     except Exception as e:
         print(f"Warning: error extracting auction info: {e}")
-        return "N/A", "0", None, None, False, False
+        return "N/A", "0", None, None, False, False, "", ""
 
 # ─── Fetch one listing ─────────────────────────────────────────
 async def safe_goto(page, url, timeout=60000, retries=2):
@@ -563,17 +564,17 @@ async def fetch_listing_data(url, page, browser, playwright):
                     print("  Cancellation page detected; treating listing as referred.")
                     content = await page.content()
                     soup = BeautifulSoup(content, "html.parser")
-                    price, bids, time_remaining, date_sold, is_referred, is_active = extract_bid_info(soup)
-                    return price, bids, time_remaining, date_sold, True, False, browser, page
+                    price, bids, time_remaining, date_sold, is_referred, is_active, final_sale_price, sale_price_source = extract_bid_info(soup)
+                    return price, bids, time_remaining, date_sold, True, False, "", "", browser, page
                 print("  Skipping due to unexpected redirect.")
-                return "N/A", "0", None, None, False, False, browser, page
+                return "N/A", "0", None, None, False, False, "", "", browser, page
             content = await page.content()
             soup = BeautifulSoup(content, "html.parser")
-            price, bids, time_remaining, date_sold, is_referred, is_active = extract_bid_info(soup)
-            return price, bids, time_remaining, date_sold, is_referred, is_active, browser, page
+            price, bids, time_remaining, date_sold, is_referred, is_active, final_sale_price, sale_price_source = extract_bid_info(soup)
+            return price, bids, time_remaining, date_sold, is_referred, is_active, final_sale_price, sale_price_source, browser, page
         else:
             print(f"  Failed to load {url}; marking as skipped.")
-            return "N/A", "0", None, None, False, False, browser, page
+            return "N/A", "0", None, None, False, False, "", "", browser, page
     except Exception as e:
         print(f"Critical fetch error for {url}: {e}. Restarting browser.")
         try:
@@ -586,7 +587,7 @@ async def fetch_listing_data(url, page, browser, playwright):
             pass
         browser = await playwright.chromium.launch(headless=True)
         page = await browser.new_page()
-        return "N/A", "0", None, None, False, False, browser, page
+        return "N/A", "0", None, None, False, False, "", "", browser, page
 
 # ─── Main update loop ──────────────────────────────────────────
 async def update_bids(
@@ -696,8 +697,21 @@ async def update_bids(
                 print(f"Updating [{idx+1}/{len(urls)}]: {url}")
                 price = bids = time_remaining = date_sold = None
                 is_referred = is_active = False
+                final_sale_price = ""
+                sale_price_source = ""
                 try:
-                    price, bids, time_remaining, date_sold, is_referred, is_active, browser, page = await fetch_listing_data(
+                    (
+                        price,
+                        bids,
+                        time_remaining,
+                        date_sold,
+                        is_referred,
+                        is_active,
+                        final_sale_price,
+                        sale_price_source,
+                        browser,
+                        page,
+                    ) = await fetch_listing_data(
                         url, page, browser, playwright
                     )
 
@@ -733,9 +747,12 @@ async def update_bids(
 
                     # Update fields
                     df.loc[df["url"] == url, "price"] = price
+                    if final_sale_price:
+                        df.loc[df["url"] == url, "final_sale_price"] = final_sale_price
+                        df.loc[df["url"] == url, "sale_price_source"] = sale_price_source
                     try:
                         df.loc[df["url"] == url, "bids"] = int(bids)
-                    except:
+                    except (ValueError, TypeError):
                         df.loc[df["url"] == url, "bids"] = 0
 
                     print(f"  Time remaining: {time_remaining if time_remaining else 'None'}")
@@ -756,6 +773,11 @@ async def update_bids(
                         df.loc[df["url"] == url, "time_remaining_or_date_sold"] = "N/A"
                         df.loc[df["url"] == url, "status"] = "Referred"
                         evidence = "referred_or_cancelled_indicator"
+                    elif final_sale_price and date_sold and int(bids) > 0:
+                        print("  Condition: Sold-for heading, end date, and bids found - Set to Sold")
+                        df.loc[df["url"] == url, "time_remaining_or_date_sold"] = date_sold
+                        df.loc[df["url"] == url, "status"] = "Sold"
+                        evidence = "sold_for_heading_final_price"
                     elif date_sold and int(bids) > 0:
                         print("  Condition: End date and bids found without verified final sale price - Set to Referred")
                         df.loc[df["url"] == url, "time_remaining_or_date_sold"] = date_sold

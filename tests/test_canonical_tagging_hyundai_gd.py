@@ -18,7 +18,7 @@ def test_assign_canonical_tag_accepts_hyundai_gd_2012_active_into_early_curve():
         "url": "https://www.example.com/hyundai/i30/active-2012",
     }
 
-    canonical_tag, canonical_reason, _drivetrain = assign_canonical_tag(row, require_price=True)
+    canonical_tag, canonical_reason = assign_canonical_tag(row, require_price=True)
 
     assert canonical_tag == "hyundai_i30_active_petrol_auto_hatch_gd"
     assert canonical_reason == "[OK]"
@@ -39,7 +39,7 @@ def test_assign_canonical_tag_rejects_hyundai_gd_elite_from_active_curve():
         "url": "https://www.example.com/hyundai/i30/elite",
     }
 
-    canonical_tag, canonical_reason, _drivetrain = assign_canonical_tag(row, require_price=True)
+    canonical_tag, canonical_reason = assign_canonical_tag(row, require_price=True)
 
     assert canonical_tag == "UNCLASSIFIED"
     assert canonical_reason in {"[AMBIG_BADGE]", "[DISALLOWED_VARIANT]"}
@@ -60,7 +60,7 @@ def test_assign_canonical_tag_rejects_hyundai_gd_active_x_from_early_curve():
         "url": "https://www.example.com/hyundai/i30/active-x",
     }
 
-    canonical_tag, canonical_reason, _drivetrain = assign_canonical_tag(row, require_price=True)
+    canonical_tag, canonical_reason = assign_canonical_tag(row, require_price=True)
 
     assert canonical_tag == "UNCLASSIFIED"
     assert canonical_reason in {"[DISALLOWED_VARIANT]", "[OUT_OF_SCOPE_YEAR]"}
@@ -81,7 +81,7 @@ def test_assign_canonical_tag_accepts_hyundai_pd_active_into_pd_curve():
         "url": "https://www.example.com/hyundai/i30/pd-active",
     }
 
-    canonical_tag, canonical_reason, _drivetrain = assign_canonical_tag(row, require_price=True)
+    canonical_tag, canonical_reason = assign_canonical_tag(row, require_price=True)
 
     assert canonical_tag == "hyundai_i30_active_petrol_auto_hatch_pd"
     assert canonical_reason == "[OK]"
@@ -102,7 +102,7 @@ def test_assign_canonical_tag_rejects_hyundai_pd_active_x_from_active_curve():
         "url": "https://www.example.com/hyundai/i30/pd-active-x",
     }
 
-    canonical_tag, canonical_reason, _drivetrain = assign_canonical_tag(row, require_price=True)
+    canonical_tag, canonical_reason = assign_canonical_tag(row, require_price=True)
 
     assert canonical_tag == "UNCLASSIFIED"
     assert canonical_reason == "[DISALLOWED_VARIANT]"
@@ -122,7 +122,7 @@ def test_assign_canonical_tag_rejects_hyundai_active_gd_from_pd_curve():
         "url": "https://www.example.com/hyundai/i30/2017-active-gd-automatic-hatchback",
     }
 
-    canonical_tag, canonical_reason, _drivetrain = assign_canonical_tag(row, require_price=True)
+    canonical_tag, canonical_reason = assign_canonical_tag(row, require_price=True)
 
     assert canonical_tag == "UNCLASSIFIED"
     assert canonical_reason in {"[DISALLOWED_VARIANT]", "[OUT_OF_SCOPE_YEAR]"}
@@ -201,3 +201,76 @@ def test_assign_canonical_tag_accepts_hyundai_getz_sx_tb_auto_and_manual_lanes()
         "hyundai_getz_sx_petrol_manual_hatch_tb",
         "[OK]",
     )
+
+
+def test_assign_canonical_tag_accepts_hyundai_accent_active_rb_auto_hatch_only():
+    _load_curve_year_band.cache_clear()
+    auto_hatch = {
+        "make": "Hyundai",
+        "model": "Accent",
+        "variant": "Active RB CVT Hatchback",
+        "body_type": "hatchback",
+        "transmission": "CVT",
+        "fuel_type": "petrol",
+        "year": "2016",
+        "price": "3000",
+        "url": "https://www.example.com/2016-hyundai-accent-active-rb-cvt-hatchback",
+    }
+    manual_hatch = {
+        **auto_hatch,
+        "transmission": "manual",
+        "url": "https://www.example.com/2016-hyundai-accent-active-rb-manual-hatchback",
+    }
+    auto_sedan = {
+        **auto_hatch,
+        "body_type": "sedan",
+        "url": "https://www.example.com/2016-hyundai-accent-active-rb-cvt-sedan",
+    }
+
+    assert assign_canonical_tag(auto_hatch, require_price=True)[0:2] == (
+        "hyundai_accent_active_petrol_auto_hatch_rb",
+        "[OK]",
+    )
+    assert assign_canonical_tag(manual_hatch, require_price=True)[0] == "UNCLASSIFIED"
+    assert assign_canonical_tag(auto_sedan, require_price=True)[0] == "UNCLASSIFIED"
+
+
+def test_assign_canonical_tag_accepts_hyundai_iload_tq_auto_diesel_van_only():
+    _load_curve_year_band.cache_clear()
+    auto_van = {
+        "make": "Hyundai",
+        "model": "iLoad",
+        "variant": "TQ Turbo Diesel Van",
+        "body_type": "van",
+        "transmission": "automatic",
+        "fuel_type": "diesel",
+        "year": "2014",
+        "price": "9500",
+        "url": "https://www.example.com/2014-hyundai-iload-tq-turbo-diesel-automatic-van",
+    }
+    manual_van = {
+        **auto_van,
+        "transmission": "manual",
+        "url": "https://www.example.com/2014-hyundai-iload-tq-turbo-diesel-manual-van",
+    }
+    crew_van = {
+        **auto_van,
+        "variant": "TQ Crew Van Turbo Diesel",
+        "url": "https://www.example.com/2014-hyundai-iload-tq-crew-van-automatic-diesel",
+    }
+    imax = {
+        **auto_van,
+        "variant": "iMax TQ Turbo Diesel",
+        "url": "https://www.example.com/2014-hyundai-imax-tq-automatic-diesel",
+    }
+
+    assert assign_canonical_tag(auto_van, require_price=True)[0:2] == (
+        "hyundai_iload_tq_van_auto_diesel",
+        "[OK]",
+    )
+    assert assign_canonical_tag(manual_van, require_price=True)[0:2] == (
+        "hyundai_iload_tq_van_manual_diesel",
+        "[OK]",
+    )
+    assert assign_canonical_tag(crew_van, require_price=True)[0] == "UNCLASSIFIED"
+    assert assign_canonical_tag(imax, require_price=True)[0] == "UNCLASSIFIED"

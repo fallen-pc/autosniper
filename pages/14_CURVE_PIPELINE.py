@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pandas as pd
 import streamlit as st
+from shared.navigation import render_sidebar_navigation
 
 from scripts.process_curve_candidates import (
     DEFAULT_AUTOTRADER_SOURCE,
@@ -19,11 +20,12 @@ from shared.styling import display_banner, hero_action_card, inject_global_style
 
 
 st.set_page_config(page_title="Curve Pipeline", layout="wide")
+render_sidebar_navigation()
 inject_global_styles()
 display_banner()
 page_intro(
     "CURVE PIPELINE",
-    "Candidate queue, AI curve jobs, and Autotrader follow-up in one control surface.",
+    "Candidate queue and Autotrader follow-up for curve lanes. Curve prices are edited only in Curve Builder V2.",
     show_logo=False,
 )
 
@@ -476,8 +478,8 @@ if make_summary_df.empty:
 else:
     st.dataframe(make_summary_df, use_container_width=True, hide_index=True)
 
-section_heading("Pipeline Actions", "Refresh queue inputs, build curves, and execute scrape follow-up.")
-action_cols = st.columns(3)
+section_heading("Pipeline Actions", "Refresh queue inputs and execute Autotrader follow-up. Curve pricing is handled in Curve Builder V2.")
+action_cols = st.columns(2)
 with action_cols[0]:
     refresh_clicked = hero_action_card(
         "Refresh Candidates",
@@ -486,13 +488,6 @@ with action_cols[0]:
         button_key="curve_pipeline_refresh_candidates",
     )
 with action_cols[1]:
-    build_clicked = hero_action_card(
-        "Build Curves",
-        "Run the AI curve builder on selected queue tags.",
-        "Run selected builds",
-        button_key="curve_pipeline_run_builds",
-    )
-with action_cols[2]:
     scrape_clicked = hero_action_card(
         "Run Scrapes",
         "Execute all pending Autotrader seed URLs and update queue status.",
@@ -500,26 +495,18 @@ with action_cols[2]:
         button_key="curve_pipeline_run_scrapes",
     )
 
-section_heading("Build Controls", "Set queue thresholds and local-model runtime options.")
+section_heading("Queue Controls", "Set queue thresholds and Autotrader scrape scope.")
 control_left, control_right = st.columns(2)
 with control_left:
     min_listings = st.number_input("Min sold listings", min_value=1, max_value=200, value=20, step=1)
     max_year_span = st.number_input("Max year span", min_value=1, max_value=20, value=6, step=1)
     min_odometer_std = st.number_input("Min odometer std", min_value=0, max_value=200000, value=10000, step=1000)
-    build_limit = st.number_input("Build limit", min_value=1, max_value=50, value=2, step=1)
-    dry_run = st.checkbox("Dry run builds", value=False)
 with control_right:
-    provider = st.selectbox("Provider", options=["ollama", "openai"], index=0)
-    model = st.text_input("Model", value="llama3.2:1b" if provider == "ollama" else "gpt-4o-mini")
-    ollama_timeout = st.number_input("Ollama timeout (s)", min_value=60, max_value=3600, value=600, step=60)
-    state = st.text_input("Autotrader state", value="vic")
-    city = st.text_input("Autotrader city", value="melbourne")
-    run_scrape_after_build = st.checkbox("Run scrape after build", value=False)
     headful = st.checkbox("Headful scraper", value=True)
 
 st.caption(
-    "Conservative readiness rule: a tag is buildable with either strong sold history "
-    "or the combined-evidence path (sold >= 5, active listings >= 40, at least 3 active years, and broad odometer spread)."
+    "Conservative readiness still helps prioritize lane review, but this page no longer writes curve prices. "
+    "Use Curve Builder V2 for Carsales/manual evidence-backed curve edits; use Autotrader here only for comparison follow-up."
 )
 
 unlock_df = _build_unlock_frame(manual_df, current_min_listings=int(min_listings))
@@ -620,12 +607,6 @@ if evidence_df.empty:
 else:
     st.dataframe(evidence_df, use_container_width=True, hide_index=True)
 
-selected_tags = st.multiselect(
-    "Selected curve tags",
-    options=ready_df["curve_tag"].astype(str).tolist() if "curve_tag" in ready_df.columns else [],
-    default=ready_df["curve_tag"].astype(str).head(int(build_limit)).tolist() if "curve_tag" in ready_df.columns else [],
-)
-
 if refresh_clicked:
     result = _run_python_command(
         [
@@ -642,45 +623,6 @@ if refresh_clicked:
     )
     _stash_result(result, success_message="Candidate queue refreshed.")
     st.rerun()
-
-if build_clicked:
-    if not selected_tags:
-        st.warning("Select at least one ready curve tag before building.")
-    else:
-        build_args = [
-            "scripts/process_curve_candidates.py",
-            "--provider",
-            provider,
-            "--model",
-            model,
-            "--state",
-            state,
-            "--city",
-            city,
-            "--limit",
-            str(int(build_limit)),
-            "--tags",
-            *selected_tags,
-        ]
-        if provider == "ollama":
-            build_args.extend(["--ollama-timeout-seconds", str(int(ollama_timeout))])
-        if dry_run:
-            build_args.append("--dry-run")
-        if run_scrape_after_build:
-            build_args.extend(
-                [
-                    "--run-autotrader",
-                    "--storage-state",
-                    STORAGE_STATE_PATH,
-                    "--cookie-file",
-                    COOKIE_FILE_PATH,
-                ]
-            )
-            if headful:
-                build_args.append("--playwright-headful")
-        result = _run_python_command(build_args)
-        _stash_result(result, success_message="Curve build pipeline completed.")
-        st.rerun()
 
 if scrape_clicked:
     if pending_scrape_df.empty:

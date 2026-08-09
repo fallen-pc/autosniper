@@ -24,11 +24,10 @@ Mark each as:
 
 Suggested pages to check:
 - `DASHBOARD.py`
-- `pages/00_RADAR.py`
-- `pages/04_MAPPINGS.py`
-- `pages/4_MASTER_DATABASE.py`
+- `pages/6_AI_ANALYSIS.py`
+- `pages/17_MODEL_PROOF.py`
+- `pages/05_HEALTH.py`
 - `pages/15_CURVE_BUILDER_V2.py`
-- `pages/99_STYLE_GUIDE.py`
 - scraper/operator pages only as needed for actual sandbox bring-up validation
 
 ## Pass 2: Useful operator flows
@@ -38,10 +37,14 @@ Suggested pages to check:
 - Confirm base interactions do not immediately error
 - Note any dataset/service blockers separately from code bugs
 
-### Mapping/admin flow
-- Open mappings page
-- Confirm empty-state handling works
-- Confirm rule editors render without crashing
+### Buying flow
+- Use AI Analysis as the daily decision screen
+- Confirm Dashboard cards are a condensed projection of the same active scope
+- Use Active Inventory only for scraper coverage, raw status, and bid-data checks
+
+### Normalisation governance
+- Review exceptions and listing detail without exposing a direct rule-writing editor
+- Change normalisation or allowed-variant rules through the governed source/test workflow
 
 ### Master database flow
 - Open master database page

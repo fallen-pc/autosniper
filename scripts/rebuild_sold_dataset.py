@@ -16,7 +16,7 @@ if __package__ in (None, ""):
     sys.path.append(str(Path(__file__).resolve().parent.parent))
     from scripts.atomic_csv import write_dataframe_csv_atomic
     from shared.data_loader import dataset_path
-    from shared.schema import SOLD_LISTING_SCHEMA, SOLD_RAW_SCRAPE_COLUMNS
+    from shared.schema import SOLD_RAW_SCRAPE_COLUMNS
     from shared.sold_cleaning import (
         drop_invalid_odometer_rows,
         drop_invalid_years,
@@ -27,7 +27,7 @@ if __package__ in (None, ""):
 else:  # pragma: no cover
     from scripts.atomic_csv import write_dataframe_csv_atomic
     from shared.data_loader import dataset_path
-    from shared.schema import SOLD_LISTING_SCHEMA, SOLD_RAW_SCRAPE_COLUMNS
+    from shared.schema import SOLD_RAW_SCRAPE_COLUMNS
     from shared.sold_cleaning import (
         drop_invalid_odometer_rows,
         drop_invalid_years,

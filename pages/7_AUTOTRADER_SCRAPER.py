@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pandas as pd
 import streamlit as st
+from shared.navigation import render_sidebar_navigation
 
 from shared.styling import (
     clean_html,
@@ -22,6 +23,7 @@ ROOT_DIR = Path(__file__).resolve().parent.parent
 
 
 st.set_page_config(page_title="AUTOTRADER SCRAPER", layout="wide")
+render_sidebar_navigation()
 inject_global_styles()
 display_banner()
 
@@ -36,7 +38,8 @@ section_heading("Scrape Configuration", "Tune pagination, priority ordering, and
 left, right = st.columns(2)
 with left:
     url = st.text_input("Search URL", value=DEFAULT_URL)
-    output_path = st.text_input("Output CSV path", value=DEFAULT_OUTPUT)
+    output_path = DEFAULT_OUTPUT
+    st.caption(f"Output CSV: `{output_path}`")
     all_pages = st.checkbox("Follow next_page_url (all pages)", value=True)
     max_pages = st.number_input(
         "Max pages (0 = no limit)",
@@ -225,7 +228,7 @@ if run_clicked:
         _render_command_result(result)
 
 section_heading("Latest Output", "Preview the newest Autotrader results.")
-output_file = Path(output_path or DEFAULT_OUTPUT)
+output_file = ROOT_DIR / DEFAULT_OUTPUT
 if output_file.exists():
     try:
         results = pd.read_csv(output_file)

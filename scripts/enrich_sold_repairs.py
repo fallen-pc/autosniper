@@ -53,13 +53,7 @@ def enrich_dataframe(df: pd.DataFrame) -> pd.DataFrame:
         )
     enriched = pd.DataFrame(records, index=df.index)
     output_columns = [
-        "general_condition_norm",
-        "condition_clean",
-        "defects_only",
         *repair_feature_columns(),
-        "repair_tags",
-        "repair_severity",
-        "decision_condition_only",
         "estimated_parts_cost_aud",
         "parts_cost_basis",
     ]

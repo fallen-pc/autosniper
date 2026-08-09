@@ -15,7 +15,7 @@ From WSL:
 
 ```bash
 cd /mnt/c/Users/ewanf/Desktop/autosniper-main-sandbox
-/home/ewanf/.cache/autosniper-test-venv/bin/python -m streamlit run DASHBOARD.py --server.headless true --server.port 8503
+/home/ewanf/.cache/autosniper-test-venv/bin/python -m streamlit run app.py --server.headless true --server.port 8503
 ```
 
 Use another port if 8503 is already occupied.
@@ -51,14 +51,14 @@ sudo apt install -y libnspr4 libnss3
 
 ## Known good bring-up principles
 - Use `sys.executable`-driven page entrypoints where patched; do not assume `python` exists in PATH.
-- Launch from the sandbox repo root so `DASHBOARD.py` resolves correctly.
+- Launch from the sandbox repo root so `app.py` and its curated navigation resolve correctly.
 - Prefer WSL + Linux-side venv over Windows PowerShell + Windows venv for sandbox runtime validation.
 
 ## What is already fixed in sandbox bring-up
 - bare `python` shell-outs in key Streamlit pages replaced with active-interpreter usage
-- `pages/04_MAPPINGS.py` empty-state editor crash fixed
+- the retired Mappings editor is no longer part of the supported app
 - selected live deprecation/warning sites cleaned up in a bounded way
-- additional click-through render bugs fixed in `pages/15_CURVE_BUILDER_V2.py` and `pages/99_STYLE_GUIDE.py`
+- additional click-through render bugs fixed in `pages/15_CURVE_BUILDER_V2.py`; the standalone style-guide page was later retired
 
 ## What is not guaranteed by this runbook
 - all datasets exist

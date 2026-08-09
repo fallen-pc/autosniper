@@ -134,3 +134,111 @@ def test_docs_and_tests_do_not_require_state_memory_update():
         override_granted=False,
     )
     assert errors == []
+
+
+def test_staged_paths_include_deleted_files(monkeypatch):
+    captured: list[str] = []
+
+    def fake_run_git(args, root=ROOT):
+        captured.extend(args)
+        return ["project_memory/00_constitution/deleted.md"]
+
+    monkeypatch.setattr(project_memory, "_run_git", fake_run_git)
+
+    assert project_memory.staged_paths(ROOT) == [
+        "project_memory/00_constitution/deleted.md"
+    ]
+    assert "--diff-filter=ACMRD" in captured
+
+
+def test_changed_paths_uses_base_to_head_range_and_includes_deletions(monkeypatch):
+    captured: list[str] = []
+
+    def fake_run_git(args, root=ROOT):
+        captured.extend(args)
+        return ["project_memory/03_decisions/DEC-999-deleted.md"]
+
+    monkeypatch.setattr(project_memory, "_run_git", fake_run_git)
+
+    assert project_memory.changed_paths("base-sha", "head-sha", root=ROOT) == [
+        "project_memory/03_decisions/DEC-999-deleted.md"
+    ]
+    assert "--diff-filter=ACMRD" in captured
+    assert "base-sha...head-sha" in captured
+
+
+def test_git_range_blocks_protected_memory_without_approval(monkeypatch):
+    monkeypatch.delenv("AUTOSNIPER_MEMORY_WRITE_APPROVED", raising=False)
+    monkeypatch.setattr(
+        project_memory,
+        "changed_paths",
+        lambda *_args, **_kwargs: [
+            "project_memory/00_constitution/project_mission.md"
+        ],
+    )
+
+    errors = project_memory.run_checks(ROOT, base_ref="base-sha", head_ref="head-sha")
+
+    assert any("Protected project memory files changed without approval" in error for error in errors)
+
+
+def test_git_range_allows_protected_memory_with_approval(monkeypatch):
+    monkeypatch.setenv("AUTOSNIPER_MEMORY_WRITE_APPROVED", "1")
+    monkeypatch.setattr(
+        project_memory,
+        "changed_paths",
+        lambda *_args, **_kwargs: [
+            "project_memory/00_constitution/project_mission.md"
+        ],
+    )
+
+    errors = project_memory.run_checks(ROOT, base_ref="base-sha", head_ref="head-sha")
+
+    assert errors == []
+
+
+def test_git_range_requires_state_memory_for_meaningful_source_change(monkeypatch):
+    monkeypatch.delenv("AUTOSNIPER_STATE_MEMORY_OPTIONAL", raising=False)
+    monkeypatch.setattr(
+        project_memory,
+        "changed_paths",
+        lambda *_args, **_kwargs: ["shared/project_memory.py"],
+    )
+
+    errors = project_memory.run_checks(ROOT, base_ref="base-sha", head_ref="head-sha")
+
+    assert any("Meaningful project changes require a state-memory update" in error for error in errors)
+
+
+def test_git_range_accepts_source_change_with_state_memory(monkeypatch):
+    monkeypatch.delenv("AUTOSNIPER_STATE_MEMORY_OPTIONAL", raising=False)
+    monkeypatch.setattr(
+        project_memory,
+        "changed_paths",
+        lambda *_args, **_kwargs: [
+            "shared/project_memory.py",
+            "project_memory/02_state/recent_changes.md",
+        ],
+    )
+
+    errors = project_memory.run_checks(ROOT, base_ref="base-sha", head_ref="head-sha")
+
+    assert errors == []
+
+
+def test_run_checks_rejects_staged_and_git_range_together():
+    errors = project_memory.run_checks(ROOT, staged=True, base_ref="base-sha")
+
+    assert errors == ["Use either staged validation or Git-range validation, not both."]
+
+
+def test_governance_workflow_enforces_pr_memory_diff_and_label_approval():
+    workflow = (ROOT / ".github" / "workflows" / "governance.yml").read_text(
+        encoding="utf-8"
+    )
+
+    assert "types: [opened, synchronize, reopened, labeled, unlabeled]" in workflow
+    assert "protected-memory-approved" in workflow
+    assert 'github.event.pull_request.base.sha' in workflow
+    assert 'github.event.pull_request.head.sha' in workflow
+    assert "project_memory.py check --base-ref" in workflow

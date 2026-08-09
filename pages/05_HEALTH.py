@@ -3,15 +3,17 @@ from pathlib import Path
 
 import pandas as pd
 import streamlit as st
+from shared.navigation import render_sidebar_navigation
 
 from shared.csv_utils import read_csv_or_empty
 from shared.data_loader import dataset_path
 from shared.ops_utils import load_active_df, load_static_df, load_valuations_df
-from shared.scraper_health import load_scraper_health_report
+from shared.scraper_health import friendly_health_failure, load_scraper_health_report
 from shared.styling import display_banner, inject_global_styles, page_intro, section_heading
 
 
 st.set_page_config(page_title="Health - Pipeline", layout="wide")
+render_sidebar_navigation()
 inject_global_styles()
 display_banner()
 page_intro("PIPELINE HEALTH", "Counts, freshness, and error signals.", show_logo=False)
@@ -40,36 +42,50 @@ legacy_failures_path = dataset_path("scrape_failures.csv")
 curve_coverage_report_path = Path("output/governance/curve_coverage.csv")
 curve_monotonicity_report_path = Path("output/governance/curve_monotonicity.csv")
 
-links_df = _load_csv(links_path)
-static_df = load_static_df()
-active_df = load_active_df()
-valuations_df = load_valuations_df()
-sold_df = _load_csv(sold_path)
-referred_df = _load_csv(referred_path)
-health_report = load_scraper_health_report()
+with st.spinner("Loading current pipeline health…"):
+    links_df = _load_csv(links_path)
+    static_df = load_static_df()
+    active_df = load_active_df()
+    valuations_df = load_valuations_df()
+    sold_df = _load_csv(sold_path)
+    referred_df = _load_csv(referred_path)
+    health_report = load_scraper_health_report()
 
-if health_report:
-    section_heading("Automated Snapshot", "Latest scheduler-written health signals.")
+section_heading("Automated Snapshot", "Latest scheduler-written health signals.")
+if not health_report:
+    st.info("No automated health snapshot is available yet. Dataset counts and freshness are shown below.")
+else:
     generated_at = str(health_report.get("generated_at") or "")
     job_name = str(health_report.get("job_name") or "")
     job_status = str(health_report.get("job_status") or "")
     error_message = str(health_report.get("error_message") or "")
     if generated_at:
         st.caption(f"Generated: {generated_at}")
-    if job_name or job_status:
-        st.write({"last_job": job_name or "unknown", "job_status": job_status or "unknown"})
+    status_cols = st.columns(2)
+    status_cols[0].metric("Latest job", job_name or "Unknown")
+    status_cols[1].metric("Status", (job_status or "Unknown").replace("_", " ").title())
     if error_message:
-        st.error(error_message)
+        st.warning(friendly_health_failure(job_name, error_message))
 
     stage_metrics = health_report.get("stage_metrics") or {}
     if stage_metrics:
         stage_df = pd.DataFrame(stage_metrics.values())
         if not stage_df.empty:
+            excluded_stage = stage_df.get("source", pd.Series(dtype=str)).astype(str).eq("excluded")
+            stage_df.loc[excluded_stage, "label"] = "Exclusion log freshness"
+            stage_df.loc[
+                excluded_stage & stage_df["status"].astype(str).ne("healthy"),
+                "status",
+            ] = "stale"
             st.dataframe(stage_df, use_container_width=True, hide_index=True)
 
     stale_datasets = health_report.get("stale_datasets") or []
     if stale_datasets:
-        st.warning("Stale or degraded datasets: " + ", ".join(sorted(set(str(value) for value in stale_datasets))))
+        stale_labels = {
+            "excluded": "exclusion log",
+        }
+        readable_stale = [stale_labels.get(str(value), str(value)) for value in stale_datasets]
+        st.warning("Stale or degraded datasets: " + ", ".join(sorted(set(readable_stale))))
 
     failure_reasons = pd.DataFrame(health_report.get("top_failure_reasons") or [])
     if not failure_reasons.empty:

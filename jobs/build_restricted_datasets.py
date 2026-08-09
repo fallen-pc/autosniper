@@ -97,6 +97,51 @@ def _write_restricted(df: pd.DataFrame, schema: Iterable[str], path: Path) -> No
     write_dataframe_csv_atomic(restricted, path, index=False)
 
 
+def _normalized_assignment_series(df: pd.DataFrame, column: str) -> pd.Series:
+    return _column_or_blank(df, column).fillna("").astype(str).str.strip()
+
+
+def _persist_canonical_assignments(
+    source_df: pd.DataFrame,
+    tagged_df: pd.DataFrame,
+    path: Path,
+) -> int:
+    """Persist refreshed tags back to the source without changing its row set."""
+    if source_df.empty or tagged_df.empty or "url" not in source_df.columns or "url" not in tagged_df.columns:
+        return 0
+
+    assignment_columns = ["url", "canonical_tag", "canonical_reason"]
+    assignments = tagged_df.reindex(columns=assignment_columns).copy()
+    assignments["url"] = assignments["url"].fillna("").astype(str).str.strip()
+    assignments = assignments[assignments["url"].ne("")].drop_duplicates("url", keep="last")
+    if assignments.empty:
+        return 0
+
+    working = source_df.copy()
+    working["url"] = working["url"].fillna("").astype(str).str.strip()
+    for column in ("canonical_tag", "canonical_reason"):
+        if column not in working.columns:
+            working[column] = ""
+
+    assignment_lookup = assignments.set_index("url")
+    matched_mask = working["url"].isin(assignment_lookup.index)
+    if not matched_mask.any():
+        return 0
+
+    before_tag = _normalized_assignment_series(working, "canonical_tag")
+    before_reason = _normalized_assignment_series(working, "canonical_reason")
+    matched_urls = working.loc[matched_mask, "url"]
+    working.loc[matched_mask, "canonical_tag"] = matched_urls.map(assignment_lookup["canonical_tag"]).to_numpy()
+    working.loc[matched_mask, "canonical_reason"] = matched_urls.map(assignment_lookup["canonical_reason"]).to_numpy()
+    after_tag = _normalized_assignment_series(working, "canonical_tag")
+    after_reason = _normalized_assignment_series(working, "canonical_reason")
+    changed_mask = before_tag.ne(after_tag) | before_reason.ne(after_reason)
+    changed_count = int(changed_mask.sum())
+    if changed_count:
+        write_dataframe_csv_atomic(working, path, index=False)
+    return changed_count
+
+
 def _column_or_blank(df: pd.DataFrame, column: str) -> pd.Series:
     if column in df.columns:
         return df[column]
@@ -207,10 +252,10 @@ def _append_enrichment_backlog(df: pd.DataFrame, source: str) -> None:
 
 def build_restricted_datasets() -> None:
     active_df = pd.read_csv(ACTIVE_SOURCE, low_memory=False) if ACTIVE_SOURCE.exists() else pd.DataFrame()
-    sold_df = pd.read_csv(SOLD_SOURCE, low_memory=False) if SOLD_SOURCE.exists() else pd.DataFrame()
+    sold_source_df = pd.read_csv(SOLD_SOURCE, low_memory=False) if SOLD_SOURCE.exists() else pd.DataFrame()
 
     active_df = _prepare_frame(active_df)
-    sold_df = _prepare_frame(sold_df)
+    sold_df = _prepare_frame(sold_source_df)
 
     if "date_sold" not in active_df.columns and "time_remaining_or_date_sold" in active_df.columns:
         active_df["date_sold"] = active_df["time_remaining_or_date_sold"]
@@ -218,6 +263,11 @@ def build_restricted_datasets() -> None:
     sold_df = _filter_sold(sold_df)
     active_with_groups, active_map = _assign_groups(active_df, "active", require_price=False)
     sold_with_groups, sold_map = _assign_groups(sold_df, "sold", require_price=True)
+    sold_source_retagged = _persist_canonical_assignments(
+        sold_source_df,
+        sold_with_groups,
+        SOLD_SOURCE,
+    )
 
     active_restricted = active_with_groups[
         active_with_groups["canonical_tag"] != UNCLASSIFIED
@@ -243,6 +293,7 @@ def build_restricted_datasets() -> None:
         f"active={len(active_restricted)}",
         f"sold={len(sold_restricted)}",
         f"map={len(group_map)}",
+        f"sold_source_retagged={sold_source_retagged}",
     )
 
 

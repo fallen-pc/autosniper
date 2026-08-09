@@ -1,0 +1,363 @@
+import pandas as pd
+import pytest
+
+from shared.repair_pricing_schedule import (
+    EXCLUDED_PRICING_CANONICALS,
+    HARD_AVOID_PRICING_CANONICALS,
+    apply_quote_response,
+    build_quote_followup_body,
+    build_quote_request_body,
+    build_quote_request_subject,
+    canonical_pricing_candidates,
+    dictionary_pricing_candidates,
+    needs_pricing,
+    next_request_id,
+    overdue_quote_followup_candidates,
+    parse_quote_response,
+    pricing_row_from_quote,
+    should_skip_quote_followup,
+    is_hard_avoid_pricing_candidate,
+    suggest_pricing_method,
+    suggest_supplier_type,
+    save_pricing_schedule,
+    validate_pricing_schedule,
+)
+
+
+def _pricing_row(vehicle_class: str = "small_hatch", *, evidence_source: str = "Supplier email") -> dict[str, object]:
+    return {
+        "canonical_defect": "panel_damage",
+        "vehicle_class": vehicle_class,
+        "pricing_method": "repair_quote",
+        "low_estimate": 500,
+        "default_estimate": 700,
+        "high_estimate": 900,
+        "evidence_source": evidence_source,
+    }
+
+
+def test_pricing_schedule_allows_evidenced_class_specific_rows() -> None:
+    schedule = pd.DataFrame([_pricing_row("small_hatch"), _pricing_row("medium_suv")])
+
+    assert validate_pricing_schedule(schedule) == []
+
+
+def test_pricing_schedule_rejects_duplicate_class_rows_and_missing_evidence(tmp_path) -> None:
+    schedule = pd.DataFrame(
+        [
+            _pricing_row("small_hatch"),
+            _pricing_row("small_hatch", evidence_source=""),
+        ]
+    )
+
+    errors = validate_pricing_schedule(schedule)
+    assert any("Duplicate canonical defect/vehicle class" in error for error in errors)
+    assert any("evidence_source is required" in error for error in errors)
+    output_path = tmp_path / "repair_pricing_schedule.csv"
+    with pytest.raises(ValueError, match="Invalid repair pricing schedule"):
+        save_pricing_schedule(schedule, output_path)
+    assert not output_path.exists()
+
+
+def test_reviewed_pricing_candidate_is_included_with_dictionary_candidates() -> None:
+    decisions = pd.DataFrame(
+        [
+            {
+                "repair_key": "seat torn",
+                "repair_item": "seat torn.",
+                "decision": "Add dictionary rule",
+                "target_category": "interior",
+                "canonical_defect": "seat_damage",
+            },
+            {
+                "repair_key": "and",
+                "repair_item": "and.",
+                "decision": "Ignore as boilerplate",
+                "target_category": "boilerplate",
+                "canonical_defect": "boilerplate_joiner_noise",
+            },
+        ]
+    )
+
+    candidates = canonical_pricing_candidates(decisions)
+
+    row = candidates[candidates["canonical_defect"] == "seat_damage"].iloc[0]
+    assert row["category"] == "interior"
+    assert "boilerplate_joiner_noise" not in set(candidates["canonical_defect"])
+
+
+def test_needs_pricing_excludes_items_already_in_schedule() -> None:
+    candidates = pd.DataFrame(
+        [
+            {"canonical_defect": "battery_issue", "category": "replacement", "examples": "", "decision_count": 2},
+            {"canonical_defect": "windscreen_damage", "category": "glass", "examples": "", "decision_count": 1},
+        ]
+    )
+    schedule = pd.DataFrame([{"canonical_defect": "battery_issue"}])
+
+    missing = needs_pricing(candidates, schedule)
+
+    assert missing["canonical_defect"].tolist() == ["windscreen_damage"]
+
+
+def test_dictionary_pricing_candidates_include_existing_repair_dictionary_items() -> None:
+    candidates = dictionary_pricing_candidates()
+
+    assert "windscreen_damage" in set(candidates["canonical_defect"])
+    assert "boilerplate_feature_list" not in set(candidates["canonical_defect"])
+    assert "body_location_list" not in set(candidates["canonical_defect"])
+
+
+def test_supplier_suggestions_distinguish_wreckers_from_specialists() -> None:
+    assert suggest_pricing_method("mirror_light_damage") == "wrecker_part_price"
+    assert suggest_supplier_type("mirror_light_damage") == "wrecker"
+    assert suggest_supplier_type("battery_issue") == "tyre_battery"
+    assert suggest_pricing_method("wheel_missing") == "parts_supplier_price"
+    assert suggest_supplier_type("wheel_missing") == "tyre_battery"
+    assert suggest_pricing_method("windscreen_damage") == "repair_quote"
+    assert suggest_supplier_type("windscreen_damage") == "glass"
+
+
+def test_hard_avoid_items_are_excluded_from_pricing_candidates() -> None:
+    decisions = pd.DataFrame(
+        [
+            {
+                "repair_key": "engine light on",
+                "repair_item": "engine light on.",
+                "decision": "Add dictionary rule",
+                "target_category": "mechanical",
+                "canonical_defect": "engine_light_on",
+            },
+            {
+                "repair_key": "windscreen cracked",
+                "repair_item": "windscreen cracked.",
+                "decision": "Add dictionary rule",
+                "target_category": "glass",
+                "canonical_defect": "windscreen_damage",
+            },
+        ]
+    )
+
+    candidates = canonical_pricing_candidates(decisions)
+
+    assert "engine_light_on" not in set(candidates["canonical_defect"])
+    assert "windscreen_damage" in set(candidates["canonical_defect"])
+
+
+def test_non_priceable_catch_all_items_are_excluded_from_pricing_candidates() -> None:
+    decisions = pd.DataFrame(
+        [
+            {
+                "repair_key": "gear knob missing",
+                "repair_item": "gear knob missing.",
+                "decision": "Add dictionary rule",
+                "target_category": "replacement",
+                "canonical_defect": "replacement_required",
+            },
+            {
+                "repair_key": "front bumper",
+                "repair_item": "front bumper.",
+                "decision": "Add dictionary rule",
+                "target_category": "cosmetic",
+                "canonical_defect": "body_location_list",
+            },
+            {
+                "repair_key": "sunroof cracked",
+                "repair_item": "sunroof cracked.",
+                "decision": "Add dictionary rule",
+                "target_category": "replacement",
+                "canonical_defect": "sunroof_damage",
+            },
+        ]
+    )
+
+    candidates = canonical_pricing_candidates(decisions)
+
+    assert "replacement_required" not in set(candidates["canonical_defect"])
+    assert "body_location_list" not in set(candidates["canonical_defect"])
+    assert "sunroof_damage" in set(candidates["canonical_defect"])
+
+
+def test_hard_avoid_exclusion_set_covers_common_avoid_canonicals() -> None:
+    expected = {
+        "engine_oil_leak",
+        "transmission_requires_attention",
+        "tow_or_no_drive_required",
+        "structural_damage",
+        "engine_smoke_visible",
+        "engine_idling_rough",
+        "head_gasket_issue",
+        "brakes_require_attention",
+        "steering_requires_attention",
+    }
+
+    assert expected.issubset(HARD_AVOID_PRICING_CANONICALS)
+
+
+def test_non_priceable_exclusion_set_covers_helper_and_catch_all_canonicals() -> None:
+    assert {"replacement_required", "body_location_list"}.issubset(EXCLUDED_PRICING_CANONICALS)
+
+
+def test_hard_avoid_keyword_filter_catches_combined_review_keys() -> None:
+    assert is_hard_avoid_pricing_candidate(
+        "engine_fluid_leak_large_scuff_on_front_bumper_medium_scratch"
+    )
+    assert is_hard_avoid_pricing_candidate("medium_dent_on_top_of_left_front_door_frame")
+    assert not is_hard_avoid_pricing_candidate("paint_damage")
+
+
+def test_next_request_id_increments_existing_ids() -> None:
+    existing = pd.DataFrame([{"request_id": "RQ-0003"}, {"request_id": "manual"}])
+
+    assert next_request_id(existing) == "RQ-0004"
+
+
+def test_quote_request_draft_asks_for_specific_price_without_auction_context() -> None:
+    subject = build_quote_request_subject("cosmetic_surface_damage")
+    body = build_quote_request_body(
+        "cosmetic_surface_damage",
+        "2016 Toyota Corolla hatch",
+        "repair a scuffed front bumper corner",
+    )
+
+    assert subject == "Price request - cosmetic surface damage"
+    assert "Could you please give me a price for this repair?" in body
+    assert "Job: repair a scuffed front bumper corner" in body
+    blocked_terms = ["auction", "bidding", "reconditioning", "pricing schedule"]
+    assert not any(term in body.lower() for term in blocked_terms)
+
+
+def test_overdue_quote_followups_skip_photo_requests_and_prior_followups() -> None:
+    quotes = pd.DataFrame(
+        [
+            {
+                "request_id": "RQ-0027",
+                "canonical_defect": "seat_issue",
+                "contact_method": "gmail",
+                "status": "replied",
+                "request_date": "2026-07-06",
+                "recipient_email": "rob@example.com",
+                "sent_thread_id": "thread-seat",
+                "response_text": "Please send photos before I can estimate.",
+                "response_parse_status": "no_price_found",
+            },
+            {
+                "request_id": "RQ-0028",
+                "canonical_defect": "paint_surface_issue",
+                "contact_method": "gmail",
+                "status": "sent",
+                "request_date": "2026-07-07",
+                "recipient_email": "paint@example.com",
+                "sent_thread_id": "thread-paint",
+                "last_attempted_date": "2026-07-07",
+                "notes": "Initial request sent.",
+            },
+            {
+                "request_id": "RQ-0029",
+                "canonical_defect": "generic_damage",
+                "contact_method": "gmail",
+                "status": "sent",
+                "request_date": "2026-07-07",
+                "recipient_email": "panel@example.com",
+                "sent_thread_id": "thread-panel",
+                "notes": "Follow-up sent via Gmail 2026-07-09.",
+            },
+        ]
+    )
+
+    overdue = overdue_quote_followup_candidates(quotes, today="2026-07-10")
+
+    assert overdue["request_id"].tolist() == ["RQ-0028"]
+    assert should_skip_quote_followup(quotes.iloc[0])
+    assert should_skip_quote_followup(quotes.iloc[2])
+
+
+def test_quote_followup_body_reuses_vehicle_job_and_avoids_internal_context() -> None:
+    row = {
+        "canonical_defect": "paint_surface_issue",
+        "representative_vehicle": "2016 Toyota Corolla hatch",
+        "draft_body": (
+            "Vehicle: 2016 Toyota Corolla hatch\n"
+            "Job: localised clear coat peel on one panel\n"
+            "Location: Melbourne metro"
+        ),
+    }
+
+    body = build_quote_followup_body(row)
+
+    assert "Just following up on this price request." in body
+    assert "Vehicle: 2016 Toyota Corolla hatch" in body
+    assert "Job: localised clear coat peel on one panel" in body
+    blocked_terms = ["auction", "bidding", "reconditioning", "pricing schedule"]
+    assert not any(term in body.lower() for term in blocked_terms)
+
+
+def test_quote_followup_body_can_use_request_notes_when_draft_body_is_empty() -> None:
+    row = {
+        "canonical_defect": "generic_damage",
+        "representative_vehicle": "2016 Toyota Corolla hatch",
+        "draft_body": "",
+        "notes": "Asked Pomroy Panels for vehicle-specific minor cosmetic one-panel dent/scuff/scratch repair price range.",
+    }
+
+    body = build_quote_followup_body(row)
+
+    assert "Job: vehicle-specific minor cosmetic one-panel dent/scuff/scratch repair price range" in body
+
+
+def test_parse_quote_response_extracts_range_and_typical_price() -> None:
+    parsed = parse_quote_response("Low end is $220, high is $480. Most jobs are usually $320.")
+
+    assert parsed["quoted_low"] == 220
+    assert parsed["quoted_high"] == 480
+    assert parsed["quoted_default"] == 320
+    assert parsed["response_parse_status"] == "parsed_price"
+
+
+def test_parse_quote_response_extracts_shorthand_money_ranges() -> None:
+    parsed = parse_quote_response("Cost varies from $400-500, or total $550-700 as a rough guide.")
+
+    assert parsed["quoted_low"] == 400
+    assert parsed["quoted_high"] == 700
+
+
+def test_parse_quote_response_extracts_aud_and_en_dash_ranges() -> None:
+    parsed = parse_quote_response("Typical range is AUD 420 – $680.")
+
+    assert parsed["quoted_low"] == 420
+    assert parsed["quoted_high"] == 680
+
+
+def test_apply_quote_response_and_promote_to_pricing_row() -> None:
+    quotes = pd.DataFrame(
+        [
+            {
+                "request_id": "RQ-0099",
+                "canonical_defect": "seat_damage",
+                "category": "interior",
+                "vehicle_class": "small_hatch",
+                "supplier": "Example Upholstery",
+                "recipient_email": "quotes@example.com",
+                "status": "sent",
+                "request_date": "2026-06-27",
+                "notes": "cloth seat repair",
+            }
+        ]
+    )
+
+    updated = apply_quote_response(
+        quotes,
+        "RQ-0099",
+        "This would be $180 to $350 depending on fabric. Typical is $250.",
+        response_date="2026-06-28",
+    )
+    pricing = pricing_row_from_quote(updated, "RQ-0099")
+
+    row = updated.iloc[0]
+    assert row["status"] == "replied"
+    assert row["quoted_low"] == 180
+    assert row["quoted_high"] == 350
+    assert row["quoted_default"] == 250
+    assert pricing is not None
+    assert pricing["canonical_defect"] == "seat_damage"
+    assert pricing["default_estimate"] == 250

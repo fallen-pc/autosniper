@@ -7,6 +7,29 @@ import shared.curve_groups_v2 as curve_groups_v2
 from shared.curves import interpolate_base_by_year, interpolate_price_by_km
 
 
+STANDARD_KM_BUCKETS = {30000, 60000, 100000, 150000, 200000}
+ALLOWED_EXTENSION_KM_BUCKETS = {225000, 300000}
+
+
+def _assert_saved_base_curve_only(curves_df, base_tag, matcher_tag, expected_anchor_years):
+    base_rows = curves_df[curves_df["canonical_tag"].astype(str) == base_tag]
+    matcher_rows = curves_df[curves_df["canonical_tag"].astype(str) == matcher_tag]
+
+    assert not base_rows.empty
+    assert base_rows["anchor_year"].nunique() == expected_anchor_years
+    _assert_standard_grid_with_known_extensions(base_rows)
+    assert matcher_rows.empty
+
+
+def _assert_standard_grid_with_known_extensions(curve_rows):
+    allowed_buckets = STANDARD_KM_BUCKETS | ALLOWED_EXTENSION_KM_BUCKETS
+
+    for anchor_year, year_rows in curve_rows.groupby("anchor_year"):
+        buckets = set(year_rows["km_bucket"].astype(int).tolist())
+        assert STANDARD_KM_BUCKETS <= buckets, int(anchor_year)
+        assert buckets <= allowed_buckets, (int(anchor_year), sorted(buckets - allowed_buckets))
+
+
 class CurveTests(unittest.TestCase):
     def test_interpolate_price_by_km(self) -> None:
         points = [(50000, 30000), (100000, 25000), (200000, 18000)]
@@ -22,6 +45,10 @@ class CurveTests(unittest.TestCase):
         )
         estimate = interpolate_base_by_year(df, "demo", 2019, 100000)
         self.assertAlmostEqual(estimate, 22000.0)
+
+    def test_km_within_curve_coverage_allows_small_high_km_overage(self) -> None:
+        self.assertTrue(curves.km_within_curve_coverage(309209, 30000, 300000))
+        self.assertFalse(curves.km_within_curve_coverage(325000, 30000, 300000))
 
 
 if __name__ == "__main__":
@@ -151,18 +178,13 @@ def test_live_supported_curves_have_complete_standard_grid():
         ].astype(str)
     )
     saved_tags = set(curves_df["canonical_tag"].astype(str))
-    expected_km_buckets = [30000, 60000, 100000, 150000, 200000]
 
     assert live_base_tags <= saved_tags
     assert saved_tags <= set(supported_df["base_curve_tag"].astype(str))
 
     for curve_tag in sorted(live_base_tags):
         curve_rows = curves_df[curves_df["canonical_tag"].astype(str) == curve_tag]
-        for anchor_year, year_rows in curve_rows.groupby("anchor_year"):
-            assert sorted(year_rows["km_bucket"].astype(int).tolist()) == expected_km_buckets, (
-                curve_tag,
-                int(anchor_year),
-            )
+        _assert_standard_grid_with_known_extensions(curve_rows)
 
 
 def test_saved_curve_price_bands_are_ordered_and_decline_with_km():
@@ -185,130 +207,108 @@ def test_saved_curve_price_bands_are_ordered_and_decline_with_km():
 def test_mzea12r_saved_curve_resolves_through_v2_base_tag():
     curves_df = curves.load_curves()
 
-    base_rows = curves_df[curves_df["canonical_tag"].astype(str) == "toyota_corolla_mzea12r_hatch_auto_petrol"]
-    matcher_rows = curves_df[
-        curves_df["canonical_tag"].astype(str) == "toyota_corolla_ascent-sport_petrol_auto_hatch_mzea12r"
-    ]
-
-    assert len(base_rows) == 15
-    assert matcher_rows.empty
+    _assert_saved_base_curve_only(
+        curves_df,
+        "toyota_corolla_mzea12r_hatch_auto_petrol",
+        "toyota_corolla_ascent-sport_petrol_auto_hatch_mzea12r",
+        expected_anchor_years=3,
+    )
 
 
 def test_cx5_ke_saved_curve_resolves_through_v2_base_tag():
     curves_df = curves.load_curves()
 
-    base_rows = curves_df[
-        curves_df["canonical_tag"].astype(str) == "mazda_cx5_maxx-sport_ke_wagon_auto_diesel"
-    ]
-    matcher_rows = curves_df[
-        curves_df["canonical_tag"].astype(str) == "mazda_cx5_maxx-sport_diesel_auto_wagon_ke"
-    ]
-
-    assert len(base_rows) == 15
-    assert matcher_rows.empty
+    _assert_saved_base_curve_only(
+        curves_df,
+        "mazda_cx5_maxx-sport_ke_wagon_auto_diesel",
+        "mazda_cx5_maxx-sport_diesel_auto_wagon_ke",
+        expected_anchor_years=3,
+    )
 
 
 def test_ix35_se_lm_saved_curve_resolves_through_v2_base_tag():
     curves_df = curves.load_curves()
 
-    base_rows = curves_df[
-        curves_df["canonical_tag"].astype(str) == "hyundai_ix35_se_lm_wagon_auto_petrol"
-    ]
-    matcher_rows = curves_df[
-        curves_df["canonical_tag"].astype(str) == "hyundai_ix35_se_petrol_auto_wagon_lm"
-    ]
-
-    assert len(base_rows) == 15
-    assert matcher_rows.empty
+    _assert_saved_base_curve_only(
+        curves_df,
+        "hyundai_ix35_se_lm_wagon_auto_petrol",
+        "hyundai_ix35_se_petrol_auto_wagon_lm",
+        expected_anchor_years=3,
+    )
 
 
 def test_ix35_elite_lm_saved_curve_resolves_through_v2_base_tag():
     curves_df = curves.load_curves()
 
-    base_rows = curves_df[
-        curves_df["canonical_tag"].astype(str) == "hyundai_ix35_elite_lm_wagon_auto_petrol"
-    ]
-    matcher_rows = curves_df[
-        curves_df["canonical_tag"].astype(str) == "hyundai_ix35_elite_petrol_auto_wagon_lm"
-    ]
-
-    assert len(base_rows) == 15
-    assert matcher_rows.empty
+    _assert_saved_base_curve_only(
+        curves_df,
+        "hyundai_ix35_elite_lm_wagon_auto_petrol",
+        "hyundai_ix35_elite_petrol_auto_wagon_lm",
+        expected_anchor_years=3,
+    )
 
 
 def test_getz_sx_tb_auto_saved_curve_resolves_through_v2_base_tag():
     curves_df = curves.load_curves()
 
-    base_rows = curves_df[
-        curves_df["canonical_tag"].astype(str) == "hyundai_getz_sx_tb_hatch_auto_petrol"
-    ]
-    matcher_rows = curves_df[
-        curves_df["canonical_tag"].astype(str) == "hyundai_getz_sx_petrol_auto_hatch_tb"
-    ]
-
-    assert len(base_rows) == 15
-    assert matcher_rows.empty
+    _assert_saved_base_curve_only(
+        curves_df,
+        "hyundai_getz_sx_tb_hatch_auto_petrol",
+        "hyundai_getz_sx_petrol_auto_hatch_tb",
+        expected_anchor_years=3,
+    )
 
 
 def test_getz_sx_tb_manual_saved_curve_resolves_through_v2_base_tag():
     curves_df = curves.load_curves()
 
-    base_rows = curves_df[
-        curves_df["canonical_tag"].astype(str) == "hyundai_getz_sx_tb_hatch_manual_petrol"
-    ]
-    matcher_rows = curves_df[
-        curves_df["canonical_tag"].astype(str) == "hyundai_getz_sx_petrol_manual_hatch_tb"
-    ]
-
-    assert len(base_rows) == 15
-    assert matcher_rows.empty
+    _assert_saved_base_curve_only(
+        curves_df,
+        "hyundai_getz_sx_tb_hatch_manual_petrol",
+        "hyundai_getz_sx_petrol_manual_hatch_tb",
+        expected_anchor_years=3,
+    )
 
 
 def test_axvh71r_saved_curve_resolves_through_v2_base_tag():
     curves_df = curves.load_curves()
 
-    base_rows = curves_df[curves_df["canonical_tag"].astype(str) == "toyota_camry_axvh71r_sedan_auto_hybrid"]
-    matcher_rows = curves_df[
-        curves_df["canonical_tag"].astype(str) == "toyota_camry_ascent_hybrid_auto_sedan_axvh71r"
-    ]
-
-    assert len(base_rows) == 20
-    assert matcher_rows.empty
+    _assert_saved_base_curve_only(
+        curves_df,
+        "toyota_camry_axvh71r_sedan_auto_hybrid",
+        "toyota_camry_ascent_hybrid_auto_sedan_axvh71r",
+        expected_anchor_years=4,
+    )
 
 
 def test_camry_ascent_sport_axvh71r_saved_curve_resolves_through_v2_base_tag():
     curves_df = curves.load_curves()
 
-    base_rows = curves_df[
-        curves_df["canonical_tag"].astype(str) == "toyota_camry_ascent-sport_axvh71r_sedan_auto_hybrid"
-    ]
-    matcher_rows = curves_df[
-        curves_df["canonical_tag"].astype(str) == "toyota_camry_ascent-sport_hybrid_auto_sedan_axvh71r"
-    ]
-
-    assert len(base_rows) == 15
-    assert matcher_rows.empty
+    _assert_saved_base_curve_only(
+        curves_df,
+        "toyota_camry_ascent-sport_axvh71r_sedan_auto_hybrid",
+        "toyota_camry_ascent-sport_hybrid_auto_sedan_axvh71r",
+        expected_anchor_years=3,
+    )
 
 
 def test_camry_asv70r_saved_curve_resolves_through_v2_base_tag():
     curves_df = curves.load_curves()
 
-    base_rows = curves_df[curves_df["canonical_tag"].astype(str) == "toyota_camry_asv70r_sedan_auto_petrol"]
-    matcher_rows = curves_df[
-        curves_df["canonical_tag"].astype(str) == "toyota_camry_ascent_petrol_auto_sedan_asv70r"
-    ]
-
-    assert len(base_rows) == 15
-    assert matcher_rows.empty
+    _assert_saved_base_curve_only(
+        curves_df,
+        "toyota_camry_asv70r_sedan_auto_petrol",
+        "toyota_camry_ascent_petrol_auto_sedan_asv70r",
+        expected_anchor_years=3,
+    )
 
 
 def test_camry_asv50r_saved_curve_resolves_through_v2_base_tag():
     curves_df = curves.load_curves()
 
-    base_rows = curves_df[curves_df["canonical_tag"].astype(str) == "toyota_camry_asv50r_sedan_auto_petrol"]
-    matcher_rows = curves_df[
-        curves_df["canonical_tag"].astype(str) == "toyota_camry_altise_petrol_auto_sedan_asv50r"
-    ]
-
-    assert len(base_rows) == 15
-    assert matcher_rows.empty
+    _assert_saved_base_curve_only(
+        curves_df,
+        "toyota_camry_asv50r_sedan_auto_petrol",
+        "toyota_camry_altise_petrol_auto_sedan_asv50r",
+        expected_anchor_years=3,
+    )

@@ -17,7 +17,7 @@ def test_assign_canonical_tag_rejects_mazda_bm_from_bl_curve():
         "price": "7120",
     }
 
-    canonical_tag, canonical_reason, _drivetrain = assign_canonical_tag(row, require_price=True)
+    canonical_tag, canonical_reason = assign_canonical_tag(row, require_price=True)
 
     assert canonical_tag == "UNCLASSIFIED"
     assert canonical_reason in {"[DISALLOWED_VARIANT]", "[OUT_OF_SCOPE_YEAR]"}
@@ -36,7 +36,7 @@ def test_assign_canonical_tag_accepts_mazda_cx5_maxx_sport_ke_diesel_lane():
         "price": "9",
     }
 
-    canonical_tag, canonical_reason, _drivetrain = assign_canonical_tag(row, require_price=True)
+    canonical_tag, canonical_reason = assign_canonical_tag(row, require_price=True)
 
     assert canonical_tag == "mazda_cx5_maxx-sport_diesel_auto_wagon_ke"
     assert canonical_reason == "[OK]"

@@ -48,6 +48,60 @@ Follow-up candidates:
 - separate sport `2.0L` pass for `SR` / `SR Premium`
 - engine-aware handling for `SE`
 
+## Accent Active RB Automatic Hatch
+
+Base curve:
+- `hyundai_accent_active_rb_hatch_auto_petrol`
+
+Current working interpretation:
+- body: `hatch`
+- transmission: `auto`
+- fuel: `petrol`
+- intended market slice: private-sale Hyundai Accent Active RB/RB2/RB3/RB4 automatic petrol hatches
+- anchor years: `2013`, `2015`, `2017`
+- buckets use the standard repo grid: `30000`, `60000`, `100000`, `150000`, `200000`
+
+Included rows for the current pass:
+- Accent Active hatch automatic/CVT petrol rows
+
+Excluded rows for the current pass:
+- manual rows
+- sedan rows
+- diesel or hybrid rows
+- Sport, Elite, or other non-Active trims
+
+Why:
+- The early 1.6L and later 1.4L Active hatches are held as one budget commuter lane unless future evidence justifies an engine split.
+- This curve is a retail resale curve built from Carsales/private asking evidence only. Grays sold history remains hammer-bid evidence, not repricing evidence.
+
+## iLoad TQ Diesel Automatic Van
+
+Base curve:
+- `hyundai_iload_tq_van_auto_diesel`
+
+Current working interpretation:
+- body: `van`
+- transmission: `auto`
+- fuel: `diesel`
+- intended market slice: private-sale Hyundai iLoad TQ diesel automatic vans
+- anchor years for current rebuild: `2012`, `2014`, `2016`
+- buckets use the standard repo grid: `30000`, `60000`, `100000`, `150000`, `200000`
+- standard low-km buckets are conservative extrapolations from the observed 57k-203k private asking band; 250k+ private rows were used only as context for the 200k bucket and not added as extra curve buckets
+- the 2026-05-19 refresh used 100+ private Carsales rows from pages 1-7; very high asking rows around `$30k-$38k` were treated as upper-market outliers rather than midpoint evidence
+
+Included rows for the current pass:
+- iLoad van automatic diesel rows only
+
+Excluded rows for the current pass:
+- manual iLoad rows
+- iLoad Crew rows
+- iMax people mover rows
+- petrol rows
+
+Why these exclusions exist:
+- Manual vans, crew vans, and iMax people movers are separate value lanes and should not be silently merged into the automatic van resale curve.
+- This curve is a retail resale curve built from Carsales/private asking evidence only. Grays sold history remains hammer-bid evidence, not repricing evidence.
+
 ## i30 PD Active Hatch
 
 Base curve:
@@ -79,3 +133,9 @@ Excluded trims for the current PD pass:
 Why these exclusions exist:
 - This curve is for exact Active hatch rows only. Higher trim, sport, or Active X rows should not be used as fallback evidence even if they share the same PD generation.
 - Later high-km PD evidence is thinner than the 2017-2019 evidence, so 2020-2021 should interpolate until stronger evidence supports separate anchors.
+
+## Carsales/Apify Batch Curves - 2026-06-23
+
+- `hyundai_accent_sport_rb_hatch_auto_petrol` was built or extended from `35` clean private Carsales/Apify same-lane rows spanning `2017`-`2019`. Nearby trim, body, transmission, fuel, and generation lanes remain separate; Grays sold evidence is not used to reprice this retail curve.
+- `hyundai_iload_tq_van_manual_diesel` was built or extended from `35` clean private Carsales/Apify same-lane rows spanning `2008`-`2015`. Nearby trim, body, transmission, fuel, and generation lanes remain separate; Grays sold evidence is not used to reprice this retail curve.
+- `hyundai_iload_tq_van_auto_diesel` was built or extended from `79` clean private Carsales/Apify same-lane rows spanning `2015`-`2021`. Nearby trim, body, transmission, fuel, and generation lanes remain separate; Grays sold evidence is not used to reprice this retail curve.

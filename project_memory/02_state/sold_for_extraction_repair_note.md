@@ -1,0 +1,3 @@
+# Sold-for extraction repair note
+
+2026-05-30: `scripts/update_bids.py` now treats an explicit Grays `Sold for` heading as a verified final sale price, writing `final_sale_price` with `sale_price_source=sold_for_heading`. This fixes the flat `sold_cars.csv` count caused by ended sold pages being routed to `sold_price_pending.csv` despite the page exposing a final sale price. A one-time pending repair verified and merged all 282 pending URLs into `CSV_data/scrapers/sold_cars.csv`. The last 10 required preserving numeric odometer values from discrepancy text with `odo_suspect=1`; `sold_price_pending.csv` is now empty.

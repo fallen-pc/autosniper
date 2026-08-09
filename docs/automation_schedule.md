@@ -14,7 +14,47 @@ This job runs:
 - bid refresh
 - Autotrader scrape
 - master database update
+- Pickles, Manheim, and Slattery external auction scrape into `output/external_auction_scrape/daily`
 - full active-listing AI revaluation
+- optional AI suggestions for unresolved Repair Review items (disabled by default)
+
+External auction saved-curve matches are loaded into the same active AI
+revaluation path as Grays restricted active rows, so repair parsing, curve
+coverage, max-bid logic, and AI Analysis output use the same valuation process.
+External rows with settled sale evidence also feed Missed Opportunities through
+the same historical replay logic; active/upcoming rows are not treated as missed
+opportunities until they have a price and sold/closed date or status.
+
+External auction scrape defaults are intentionally source-specific so the daily
+job stays bounded:
+- Pickles: 20 list pages, all curve-prefiltered detail rows
+- Manheim: 1 list page per configured location, first 25 curve-prefiltered detail rows
+- Slattery: current motor-vehicles category, all curve-prefiltered detail rows
+
+Useful overrides:
+
+```text
+AUTOSNIPER_EXTERNAL_AUCTIONS_DAILY=0
+AUTOSNIPER_EXTERNAL_PICKLES_PAGES=20
+AUTOSNIPER_EXTERNAL_PICKLES_DETAILS=0
+AUTOSNIPER_EXTERNAL_MANHEIM_PAGES=1
+AUTOSNIPER_EXTERNAL_MANHEIM_DETAILS=25
+AUTOSNIPER_EXTERNAL_SLATTERY_PAGES=0
+AUTOSNIPER_EXTERNAL_SLATTERY_DETAILS=0
+AUTOSNIPER_EXTERNAL_AUCTIONS_OUTPUT_DIR=output\external_auction_scrape\daily
+AUTOSNIPER_AUTOTRADER_SCRAPE_ENABLED=1
+```
+
+Optional Repair Review suggestions can run after daily and hourly valuation.
+They only prefill the operator review form; they do not write dictionary rules
+or approve repair decisions. Enable them only on a machine with `OPENAI_API_KEY`
+configured:
+
+```text
+AUTOSNIPER_REPAIR_AI_CLASSIFIER=1
+AUTOSNIPER_REPAIR_AI_LIMIT=25
+AUTOSNIPER_REPAIR_AI_MODEL=gpt-4.1-mini
+```
 
 ## Hourly Active Monitor
 
@@ -29,6 +69,7 @@ This job runs:
 - change detection on bid, bid count, time remaining, and status
 - AI revaluation for changed listings
 - AI revaluation for listings with stale or missing active analysis
+- optional AI suggestions for unresolved Repair Review items (when enabled)
 
 ## Telegram Alerts
 
@@ -40,8 +81,13 @@ TELEGRAM_CHAT_ID
 ```
 
 The active monitor now sends alerts when:
-- a listing becomes potentially viable
-- a previously viable listing becomes no longer profitable
+- AI Analysis marks a current active listing as `action_label = Buy`
+- a listing previously marked `Buy` by AI Analysis is no longer marked `Buy`
+
+Telegram does not run a separate buying policy. It reports the saved AI Analysis
+row from `CSV_data/ai/ai_listing_valuations.csv`; the only extra guard is that
+the URL must still be present in current active listings and absent from
+sold/referred data.
 
 Alert state is tracked in:
 

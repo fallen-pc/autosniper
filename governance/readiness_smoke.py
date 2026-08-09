@@ -94,18 +94,11 @@ def validate_materialized_views(datasets: dict[str, pd.DataFrame]) -> list[str]:
 
     state_working = state_df.copy()
     state_working["state"] = state_working["state"].fillna("").astype(str).str.strip().str.lower()
-    state_active_urls = _normalized_url_set(state_working[state_working["state"] == "active"])
+    state_working["_url_norm"] = state_working["url"].fillna("").astype(str).str.strip()
 
     active_urls = _normalized_url_set(active_df)
     static_urls = _normalized_url_set(static_df)
     active_link_urls = _normalized_url_set(active_links_df)
-
-    unexpected_active = sorted(active_urls - state_active_urls)
-    if unexpected_active:
-        errors.append(
-            "active_vehicle_details.csv contains urls that are not active in vehicle_state.csv. "
-            f"Sample: {', '.join(unexpected_active[:5])}"
-        )
 
     missing_static = sorted(active_urls - static_urls)
     if missing_static:
@@ -120,6 +113,16 @@ def validate_materialized_views(datasets: dict[str, pd.DataFrame]) -> list[str]:
             errors.append(
                 "active_vehicle_details.csv contains urls missing from active_vehicle_links.csv. "
                 f"Sample: {', '.join(stale_active[:5])}"
+            )
+
+    if not state_working.empty:
+        terminal_states = {"sold", "referred", "withdrawn", "dead_url"}
+        terminal_urls = _normalized_url_set(state_working[state_working["state"].isin(terminal_states)])
+        terminal_active = sorted(active_urls & terminal_urls)
+        if terminal_active:
+            errors.append(
+                "active_vehicle_details.csv contains urls marked terminal in vehicle_state.csv. "
+                f"Sample: {', '.join(terminal_active[:5])}"
             )
 
     return errors

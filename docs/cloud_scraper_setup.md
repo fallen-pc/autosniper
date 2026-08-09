@@ -1,5 +1,7 @@
 # Cloud Scraper Setup
 
+> Historical migration guide: the migration is complete. The DigitalOcean VPS at `/opt/autosniper` is now the live runtime and data owner. Use `docs/vps_sync_workflow.md` for current deployment practice. Do not assess production freshness from laptop Task Scheduler or laptop CSV timestamps.
+
 ## Goal
 
 Move the scheduled scraper work off the laptop and onto an always-on cloud Windows machine, while keeping the current app and pipeline logic as unchanged as possible.

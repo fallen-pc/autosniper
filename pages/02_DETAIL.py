@@ -1,5 +1,6 @@
 import pandas as pd
 import streamlit as st
+from shared.navigation import render_sidebar_navigation
 
 from shared.ops_utils import (
     append_curve_queue,
@@ -18,6 +19,7 @@ from shared.styling import display_banner, inject_global_styles, page_intro, sec
 
 
 st.set_page_config(page_title="Detail - QA", layout="wide")
+render_sidebar_navigation()
 inject_global_styles()
 display_banner()
 page_intro("DETAIL", "Full transparency for a single URL.", show_logo=False)
@@ -183,8 +185,8 @@ with actions_right:
         else:
             st.warning("Canonical tag is missing. Cannot queue.")
 
-section_heading("Quick Links", "Jump to other tools fast.")
-links = st.columns(3)
+section_heading("Quick Links", "Open the listing or its governed valuation curve.")
+links = st.columns(2)
 with links[0]:
     link_button = getattr(st, "link_button", None)
     if callable(link_button):
@@ -198,9 +200,3 @@ with links[1]:
             st.switch_page("pages/03_CURVES.py")
         except Exception:
             st.info("Open the Curves page from the sidebar to view this tag.")
-with links[2]:
-    if st.button("Open mappings", key="detail_open_mappings"):
-        try:
-            st.switch_page("pages/04_MAPPINGS.py")
-        except Exception:
-            st.info("Open the Mappings page from the sidebar to edit rules.")

@@ -5,5 +5,6 @@ import streamlit as st
 from shared.navigation import build_navigation
 
 
-navigation = st.navigation(build_navigation(), position="sidebar")
+pages = build_navigation()
+navigation = st.navigation(pages, position="hidden")
 navigation.run()

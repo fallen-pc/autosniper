@@ -718,7 +718,11 @@ def compare_active_to_history(
         base_candidates = _apply_attribute_filters(active_row, base_candidates)
         active_odometer = active_row.get("odometer_numeric")
 
-        def _build_match_summary(candidate_df: pd.DataFrame) -> tuple[PriceStats, pd.DataFrame, pd.DataFrame]:
+        def _build_match_summary(
+            candidate_df: pd.DataFrame,
+            active_row=active_row,
+            active_odometer=active_odometer,
+        ) -> tuple[PriceStats, pd.DataFrame, pd.DataFrame]:
             scored = _score_matches(active_row, candidate_df)
             selected = _select_relevant_matches(scored)
             stats_obj, close_df = _summarise_prices(selected, active_odometer)

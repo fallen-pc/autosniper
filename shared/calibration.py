@@ -9,9 +9,8 @@ from typing import Any
 import pandas as pd
 
 from scripts.ai_listing_valuation import (
-    INTERSTATE_BUYING_ALLOWED,
+    _interstate_purchase_blocked,
     OPERATING_STATE,
-    _is_interstate_listing,
 )
 from shared.comps_engine import parse_currency, parse_numeric
 from shared.curves import (
@@ -253,7 +252,7 @@ def build_calibration_detail(
             curve_estimate,
             include_repairs=include_repairs,
         )
-        out_of_operating_state = _is_interstate_listing(row.to_dict()) and not INTERSTATE_BUYING_ALLOWED
+        out_of_operating_state = _interstate_purchase_blocked(row.to_dict())
         max_bid = decision.get("max_bid")
         projected_profit = decision.get("projected_profit_at_sold")
         delta = curve_estimate - sold_price if curve_estimate is not None and sold_price is not None else None

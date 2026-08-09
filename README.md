@@ -9,7 +9,7 @@ whole workflow can be shared on GitHub and hosted on Streamlit Cloud.
 ---
 
 ## Features
-- **Streamlit dashboard** (`DASHBOARD.py` & `pages/`) showing status metrics and detailed listings.
+- **Streamlit app** (`app.py`, `DASHBOARD.py` & `pages/`) with curated navigation, status metrics, and detailed listings.
 - **Data bundle loader** (`shared/data_loader.py`) that optionally pulls CSVs from a remote ZIP.
 - **Scrapers** for Grays (production) and Exploratory Autotrader utilities under `scripts/` and `autotrader/`.
 - **AI enrichment** via OpenAI for vehicle valuations (`scripts/ai_listing_valuation.py`, Streamlit actions).
@@ -39,7 +39,7 @@ whole workflow can be shared on GitHub and hosted on Streamlit Cloud.
    - For remote data bundles (see below) set `AUTOSNIPER_DATA_URL`.
 6. **Run the dashboard**
    ```powershell
-   streamlit run DASHBOARD.py
+   streamlit run app.py
    ```
 
 ---
@@ -88,12 +88,12 @@ The curve-candidate scripts are part of the production operator workflow rather 
 
 ```powershell
 python scripts/generate_curve_candidates.py
-python scripts/process_curve_candidates.py --help
 ```
 
 - `generate_curve_candidates.py` ranks sold-data tags into `CSV_data/quality/curve_candidates.csv`.
-- `process_curve_candidates.py` validates AI curve proposals, updates `CSV_data/restricted/curves.csv`,
-  and seeds downstream Autotrader scrape URLs/queue files under `CSV_data/quality/`.
+- Curve prices are edited in Curve Builder V2 only, using Carsales/Apify or manual Carsales evidence.
+- `process_curve_candidates.py` is a legacy AI curve writer and is disabled for curve pricing.
+- Autotrader scrape URLs/queue files under `CSV_data/quality/` are follow-up comparison evidence, not curve-pricing input.
 - Any committed `curves.csv` change should be followed by `python scripts/governance_checks.py check`
   and a fresh `snapshot-curves` entry.
 
@@ -161,7 +161,7 @@ The output directory is git-ignored so local runs do not dirty your working tree
    - `AUTOSNIPER_DATA_URL` points to a remote bundle.
 3. Create a new app at [share.streamlit.io](https://share.streamlit.io):
    - Connect to the GitHub repo/branch.
-   - Set **Main file** to `DASHBOARD.py`.
+   - Set **Main file** to `app.py` so the curated navigation is used.
    - Add secrets / environment variables (`AUTOSNIPER_*`, `OPENAI_API_KEY`, etc.).
 4. Deploy – Streamlit Cloud installs dependencies, hydrates the data bundle, and the app
    becomes available at a shareable URL.

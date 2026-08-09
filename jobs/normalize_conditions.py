@@ -14,7 +14,6 @@ from shared.condition_normalizer import (
     split_defect_lines,
     tokenize,
 )
-from shared.data_loader import dataset_path
 
 
 INPUTS = [

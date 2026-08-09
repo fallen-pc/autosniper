@@ -1,5 +1,6 @@
 import pandas as pd
 import streamlit as st
+from shared.navigation import render_sidebar_navigation
 
 from shared.ops_utils import (
     apply_global_filters,
@@ -22,6 +23,7 @@ from shared.styling import display_banner, inject_global_styles, page_intro, sec
 
 
 st.set_page_config(page_title="Exceptions - Ops", layout="wide")
+render_sidebar_navigation()
 inject_global_styles()
 display_banner()
 page_intro("EXCEPTIONS", "Ruthless list of everything broken or incomplete.", show_logo=False)
@@ -181,7 +183,7 @@ with left:
         st.info("Select one row to inspect it in the side panel.")
 
 with right:
-    section_heading("Fix Kit", "Open the right tool for this exception.")
+    section_heading("Fix Kit", "Inspect the listing or its governed valuation curve.")
     selected_url = st.session_state.get("ops_selected_url")
     if not selected_url:
         st.info("Select a row on the left to populate this panel.")
@@ -217,9 +219,3 @@ with right:
                     st.switch_page("pages/03_CURVES.py")
                 except Exception:
                     st.info("Open the Curves page from the sidebar to view this tag.")
-
-            if st.button("Open mappings", key="exceptions_open_mappings"):
-                try:
-                    st.switch_page("pages/04_MAPPINGS.py")
-                except Exception:
-                    st.info("Open the Mappings page from the sidebar to edit rules.")

@@ -17,7 +17,7 @@ def test_assign_canonical_tag_rejects_corolla_conquest_from_ascent_curve():
         "url": "https://www.example.com/2008-toyota-corolla-conquest-zre152r-automatic-sedan",
     }
 
-    canonical_tag, canonical_reason, _drivetrain = assign_canonical_tag(row, require_price=True)
+    canonical_tag, canonical_reason = assign_canonical_tag(row, require_price=True)
 
     assert canonical_tag == "UNCLASSIFIED"
     assert canonical_reason == "[DISALLOWED_VARIANT]"
@@ -131,6 +131,76 @@ def test_camry_altise_asv50r_maps_to_expected_lane():
     )
 
 
+def test_camry_altise_xv30_series_map_to_expected_lanes():
+    _load_curve_year_band.cache_clear()
+
+    acv_row = {
+        "make": "Toyota",
+        "model": "Camry",
+        "variant": "Altise ACV36R",
+        "body_type": "Sedan",
+        "transmission": "Automatic",
+        "fuel_type": "Petrol",
+        "year": "2004",
+        "price": "5500",
+        "url": "https://www.example.com/2004-toyota-camry-altise-acv36r-automatic-sedan",
+    }
+    mcv_row = {
+        **acv_row,
+        "variant": "Altise MCV36R",
+        "year": "2005",
+        "url": "https://www.example.com/2005-toyota-camry-altise-mcv36r-automatic-sedan",
+    }
+    sportivo_row = {
+        **acv_row,
+        "variant": "Sportivo ACV36R",
+        "url": "https://www.example.com/2004-toyota-camry-sportivo-acv36r-automatic-sedan",
+    }
+
+    assert assign_canonical_tag(acv_row, require_price=True)[0:2] == (
+        "toyota_camry_altise_petrol_auto_sedan_acv36r",
+        "[OK]",
+    )
+    assert assign_canonical_tag(mcv_row, require_price=True)[0:2] == (
+        "toyota_camry_altise_petrol_auto_sedan_mcv36r",
+        "[OK]",
+    )
+    assert assign_canonical_tag(sportivo_row, require_price=True)[0] == "UNCLASSIFIED"
+
+
+def test_camry_atara_s_asv50r_maps_without_absorbing_sx_or_sl():
+    _load_curve_year_band.cache_clear()
+
+    row = {
+        "make": "Toyota",
+        "model": "Camry",
+        "variant": "Atara S ASV50R",
+        "body_type": "Sedan",
+        "transmission": "Automatic",
+        "fuel_type": "Petrol",
+        "year": "2013",
+        "price": "14900",
+        "url": "https://www.example.com/2013-toyota-camry-atara-s-asv50r-auto-sedan",
+    }
+    sx_row = {
+        **row,
+        "variant": "Atara SX ASV50R",
+        "url": "https://www.example.com/2013-toyota-camry-atara-sx-asv50r-auto-sedan",
+    }
+    sl_row = {
+        **row,
+        "variant": "Atara SL ASV50R",
+        "url": "https://www.example.com/2013-toyota-camry-atara-sl-asv50r-auto-sedan",
+    }
+
+    assert assign_canonical_tag(row, require_price=True)[0:2] == (
+        "toyota_camry_atara-s_petrol_auto_sedan_asv50r",
+        "[OK]",
+    )
+    assert assign_canonical_tag(sx_row, require_price=True)[0] == "UNCLASSIFIED"
+    assert assign_canonical_tag(sl_row, require_price=True)[0] == "UNCLASSIFIED"
+
+
 def test_hilux_sr_gun126r_4x4_dual_cab_chassis_maps_to_expected_lane():
     _load_curve_year_band.cache_clear()
 
@@ -174,6 +244,84 @@ def test_hilux_sr_gun126r_rejects_nearby_ute_lanes():
     ]
 
     for row in rejected_rows:
-        canonical_tag, canonical_reason, _drivetrain = assign_canonical_tag(row, require_price=True)
+        canonical_tag, canonical_reason = assign_canonical_tag(row, require_price=True)
         assert canonical_tag == "UNCLASSIFIED"
         assert canonical_reason in {"[DISALLOWED_VARIANT]", "[OUT_OF_SCOPE]"}
+
+
+def test_yaris_ascent_ncp130r_maps_to_expected_lane():
+    _load_curve_year_band.cache_clear()
+
+    row = {
+        "make": "Toyota",
+        "model": "Yaris",
+        "variant": "Ascent NCP130R",
+        "body_type": "Hatch",
+        "transmission": "Automatic",
+        "fuel_type": "Petrol",
+        "year": "2018",
+        "price": "17500",
+        "url": "https://www.example.com/2018-toyota-yaris-ascent-ncp130r-auto-hatch",
+    }
+
+    assert assign_canonical_tag(row, require_price=True)[0:2] == (
+        "toyota_yaris_ascent_petrol_auto_hatch_ncp130r",
+        "[OK]",
+    )
+
+
+def test_yaris_ascent_ncp130r_rejects_other_yaris_lanes():
+    _load_curve_year_band.cache_clear()
+
+    base_row = {
+        "make": "Toyota",
+        "model": "Yaris",
+        "variant": "Ascent NCP130R",
+        "body_type": "Hatch",
+        "transmission": "Automatic",
+        "fuel_type": "Petrol",
+        "year": "2018",
+        "price": "17500",
+        "url": "https://www.example.com/2018-toyota-yaris-ascent-ncp130r-auto-hatch",
+    }
+    rejected_rows = [
+        ({**base_row, "variant": "YR NCP130R", "year": "2014"}, "toyota_yaris_yr_petrol_auto_hatch_ncp130r"),
+        ({**base_row, "variant": "Ascent NCP130R", "transmission": "Manual"}, "toyota_yaris_ascent_petrol_manual_hatch_ncp130r"),
+        ({**base_row, "variant": "SX NCP131R"}, "UNCLASSIFIED"),
+        ({**base_row, "variant": "Yaris Cross Ascent"}, "UNCLASSIFIED"),
+    ]
+
+    for row, expected_tag in rejected_rows:
+        canonical_tag, canonical_reason = assign_canonical_tag(row, require_price=True)
+        assert canonical_tag == expected_tag
+        if expected_tag == "UNCLASSIFIED":
+            assert canonical_reason in {"[DISALLOWED_VARIANT]", "[OUT_OF_SCOPE]"}
+        else:
+            assert canonical_reason == "[OK]"
+
+
+def test_corolla_ascent_sport_zre182r_manual_maps_without_absorbing_ascent_manual():
+    _load_curve_year_band.cache_clear()
+
+    sport_manual = {
+        "make": "Toyota",
+        "model": "Corolla",
+        "variant": "Ascent Sport ZRE182R",
+        "body_type": "Hatch",
+        "transmission": "Manual",
+        "fuel_type": "Petrol",
+        "year": "2014",
+        "price": "11500",
+        "url": "https://www.example.com/2014-toyota-corolla-ascent-sport-zre182r-manual-hatch",
+    }
+    ascent_manual = {
+        **sport_manual,
+        "variant": "Ascent ZRE182R",
+        "url": "https://www.example.com/2014-toyota-corolla-ascent-zre182r-manual-hatch",
+    }
+
+    assert assign_canonical_tag(sport_manual, require_price=True)[0:2] == (
+        "toyota_corolla_ascent-sport_petrol_manual_hatch_zre18x",
+        "[OK]",
+    )
+    assert assign_canonical_tag(ascent_manual, require_price=True)[0] == "UNCLASSIFIED"

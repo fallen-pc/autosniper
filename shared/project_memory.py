@@ -17,8 +17,10 @@ from shared.governance import DATASET_CONTRACTS, TRACKED_DATASET_PATHS
 from shared.project_memory_guard import (
     MEMORY_MANIFEST_PATH,
     MEMORY_WRITE_APPROVAL_ENV,
+    STATE_MEMORY_OPTIONAL_ENV,
     normalize_repo_path,
     validate_protected_memory_changes,
+    validate_state_memory_updates,
 )
 from shared.schema import ALLOWED_LISTING_STATES, TERMINAL_STATES
 
@@ -350,12 +352,52 @@ def _run_git(args: list[str], root: Path = REPO_ROOT) -> list[str]:
 
 
 def staged_paths(root: Path = REPO_ROOT) -> list[str]:
-    return _run_git(["diff", "--cached", "--name-only", "--diff-filter=ACMR"], root=root)
+    return _run_git(["diff", "--cached", "--name-only", "--diff-filter=ACMRD"], root=root)
 
 
-def run_checks(root: Path = REPO_ROOT, *, staged: bool = False) -> list[str]:
+def changed_paths(
+    base_ref: str,
+    head_ref: str = "HEAD",
+    *,
+    root: Path = REPO_ROOT,
+) -> list[str]:
+    base = str(base_ref).strip()
+    head = str(head_ref).strip() or "HEAD"
+    if not base:
+        raise ValueError("A non-empty base ref is required for Git-range memory validation.")
+    return _run_git(
+        ["diff", "--name-only", "--diff-filter=ACMRD", f"{base}...{head}"],
+        root=root,
+    )
+
+
+def validate_memory_change_paths(paths: list[str]) -> list[str]:
+    approval_granted = str(os.getenv(MEMORY_WRITE_APPROVAL_ENV, "")).strip() == "1"
+    state_override_granted = str(os.getenv(STATE_MEMORY_OPTIONAL_ENV, "")).strip() == "1"
+    errors = validate_protected_memory_changes(
+        paths,
+        approval_granted=approval_granted,
+    )
+    errors.extend(
+        validate_state_memory_updates(
+            paths,
+            override_granted=state_override_granted,
+        )
+    )
+    return errors
+
+
+def run_checks(
+    root: Path = REPO_ROOT,
+    *,
+    staged: bool = False,
+    base_ref: str | None = None,
+    head_ref: str = "HEAD",
+) -> list[str]:
     errors: list[str] = []
     manifest: dict[str, Any] | None = None
+    if staged and base_ref:
+        return ["Use either staged validation or Git-range validation, not both."]
     try:
         manifest = load_manifest(root)
     except (FileNotFoundError, ValueError) as exc:
@@ -364,16 +406,15 @@ def run_checks(root: Path = REPO_ROOT, *, staged: bool = False) -> list[str]:
     errors.extend(validate_manifest(root, manifest))
     errors.extend(validate_decision_index(root))
     errors.extend(validate_machine_rules(root, manifest))
-    if staged:
-        approval_granted = str(os.getenv(MEMORY_WRITE_APPROVAL_ENV, "")).strip() == "1"
+    if staged or base_ref:
         try:
-            errors.extend(
-                validate_protected_memory_changes(
-                    staged_paths(root),
-                    approval_granted=approval_granted,
-                )
+            paths = (
+                staged_paths(root)
+                if staged
+                else changed_paths(str(base_ref), head_ref, root=root)
             )
-        except RuntimeError as exc:
+            errors.extend(validate_memory_change_paths(paths))
+        except (RuntimeError, ValueError) as exc:
             errors.append(str(exc))
     return errors
 
@@ -467,7 +508,11 @@ def build_context_bundle(
 
 
 def command_check(args: argparse.Namespace) -> int:
-    errors = run_checks(staged=args.staged)
+    errors = run_checks(
+        staged=args.staged,
+        base_ref=args.base_ref,
+        head_ref=args.head_ref,
+    )
     if errors:
         for error in errors:
             print(f"[project-memory] ERROR: {error}")
@@ -500,8 +545,25 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Project memory checks and context bootstrap.")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    check_parser = subparsers.add_parser("check", help="Validate manifest, decisions, generated rules, and staged protection.")
-    check_parser.add_argument("--staged", action="store_true", help="Also validate staged protected-memory changes.")
+    check_parser = subparsers.add_parser(
+        "check",
+        help="Validate manifest, decisions, generated rules, and changed-memory protection.",
+    )
+    change_source = check_parser.add_mutually_exclusive_group()
+    change_source.add_argument(
+        "--staged",
+        action="store_true",
+        help="Validate staged protected-memory and required state-memory changes.",
+    )
+    change_source.add_argument(
+        "--base-ref",
+        help="Validate protected-memory and required state-memory changes from this Git base to --head-ref.",
+    )
+    check_parser.add_argument(
+        "--head-ref",
+        default="HEAD",
+        help="Git head ref for --base-ref validation (default: HEAD).",
+    )
     check_parser.set_defaults(func=command_check)
 
     refresh_parser = subparsers.add_parser("refresh-machine-rules", help="Regenerate machine-readable rule files.")

@@ -250,7 +250,7 @@ def extract_all_vehicle_links(max_pages: int | None = None) -> None:
     write_dataframe_csv_atomic(pipeline_df, OUTPUT_FILE, index=False)
     print(f"Saved {len(pipeline_df)} vehicle links to {OUTPUT_FILE} ({len(new_links)} new).")
 
-    active_urls: set[str] = set()
+    active_urls: set[str] = _load_active_urls(ACTIVE_OUTPUT_FILE)
     for link in sorted(all_links):
         norm = _normalize_url(link)
         if not norm:
@@ -260,6 +260,7 @@ def extract_all_vehicle_links(max_pages: int | None = None) -> None:
         if is_compliance_slug(link):
             continue
         active_urls.add(norm)
+    active_urls -= sold_referred_norm
     active_df = pd.DataFrame(sorted(active_urls), columns=["url"])
     ACTIVE_OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
     write_dataframe_csv_atomic(active_df, ACTIVE_OUTPUT_FILE, index=False)

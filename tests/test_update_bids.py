@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import pandas as pd
+from bs4 import BeautifulSoup
 
 import scripts.update_bids as update_bids
 
@@ -81,3 +82,36 @@ def test_state_observation_does_not_treat_visible_price_as_final_sale_price() ->
     assert obs.current_price == "209"
     assert obs.final_sale_price == ""
     assert obs.has_sale_price is False
+
+
+def test_extract_bid_info_marks_sold_for_heading_as_final_sale_price() -> None:
+    soup = BeautifulSoup(
+        """
+        <div class="dls-heading-3 currentbid_price">
+            Sold for <span itemprop="price">$12,101</span>
+        </div>
+        <abbr class="endtime" title="2026-04-06T20:00:00+10:00">06 April 2026 20:00 AEST</abbr>
+        <a>141 bids</a>
+        """,
+        "html.parser",
+    )
+
+    (
+        price,
+        bids,
+        time_remaining,
+        date_sold,
+        is_referred,
+        is_active,
+        final_sale_price,
+        sale_price_source,
+    ) = update_bids.extract_bid_info(soup)
+
+    assert price == "12101"
+    assert bids == "141"
+    assert time_remaining is None
+    assert date_sold == "06 April 2026 20:00 AEST"
+    assert is_referred is False
+    assert is_active is False
+    assert final_sale_price == "12101"
+    assert sale_price_source == "sold_for_heading"

@@ -11,8 +11,9 @@ from typing import Any, Dict, Optional
 
 import pandas as pd
 import streamlit as st
+from shared.navigation import render_sidebar_navigation
 
-from scripts.ai_listing_valuation import load_cached_results, run_curve_listing_analysis
+from scripts.ai_listing_valuation import MIN_NET_PROFIT_ABSOLUTE, load_cached_results, run_curve_listing_analysis
 from scripts.ai_price_analysis import _extract_hours_remaining
 from shared.comps_engine import parse_currency, parse_numeric
 from shared.canonical_tagging import UNCLASSIFIED, is_canonical_eligible, tag_dataframe
@@ -20,12 +21,21 @@ from shared.curves import (
     get_curve_points,
     interpolate_base_by_year,
     interpolate_price_by_km,
+    km_within_curve_coverage,
     list_curve_tags,
     load_curves,
     resolve_curve_canonical_tag,
 )
 from shared.data_loader import dataset_path, ensure_datasets_available
+from shared.decision_policy import action_display_parts, derive_action_label_from_row
 from shared.global_filters import apply_global_sidebar_filters, render_global_sidebar_filters
+from shared.buying_lanes import (
+    ALL_CAPITAL_LANES,
+    CAPITAL_LANE_OPTIONS,
+    HIGHER_CAPITAL_LANE,
+    classify_capital_lane,
+    filter_capital_lane,
+)
 from shared.location_utils import extract_state
 from shared.repair_features import build_repair_features
 from shared.repair_pricing import (
@@ -34,9 +44,20 @@ from shared.repair_pricing import (
     WINDSCREEN_ADAS,
     WINDSCREEN_STD,
     assess_repairs,
+    repair_fragments_to_records,
+    vehicle_class_for_listing,
 )
+from shared.repair_review import (
+    append_live_review_items,
+    append_unclassified_condition_lines,
+    repair_mapping_summary,
+)
+from shared.reauction import collapse_reauction_lifecycles, reauction_context_for_listing
+from shared.sold_comparables import select_km_aware_comparables
 from shared.styling import clean_html, display_banner, inject_global_styles, page_intro
+from shared.validators import validate_sold_cars_df
 from shared.valuation_display import (
+    bid_display_parts,
     conservative_margin_percent,
     first_currency_value,
     recommended_max_bid_value,
@@ -44,6 +65,7 @@ from shared.valuation_display import (
 
 
 st.set_page_config(page_title="AI Analysis (Curve)", layout="wide")
+render_sidebar_navigation()
 render_global_sidebar_filters()
 inject_global_styles()
 display_banner()
@@ -70,9 +92,24 @@ if missing:
     st.stop()
 
 
+def _query_param_text(name: str) -> str:
+    try:
+        value = st.query_params.get(name, "")
+    except Exception:
+        return ""
+    if isinstance(value, list):
+        value = value[0] if value else ""
+    return str(value or "").strip()
+
+
+target_listing_url = _query_param_text("listing_url") or _query_param_text("url")
+linked_listing_mode = bool(target_listing_url)
+
+
 SPORT_TRIM_PATTERN = re.compile(r"\b(sport|sports|sx|zr|zrx)\b|sportivo|levin", re.IGNORECASE)
 ENGINE_DEFECT_PATTERN = re.compile(r"engine noise observed|engine idling rough", re.IGNORECASE)
 AUTOTRADER_OUTPUT = Path("autotrader_isolated/output/first_page_results.csv")
+AUTOTRADER_RECENT_MARKET = Path("autotrader_isolated/output/autotrader_recent_market_tagged.csv")
 AUTOTRADER_STATE = Path("autotrader_isolated/output/listing_state.csv")
 CURVE_IMAGE_DIR = Path("curves/images")
 STRUCTURAL_KEYWORDS = [
@@ -84,7 +121,9 @@ STRUCTURAL_KEYWORDS = [
     "c-pillar",
     "chassis",
     "frame",
-    "rail",
+    "chassis rail",
+    "frame rail",
+    "cant rail",
     "apron",
 ]
 REPLACEMENT_KEYWORDS = [
@@ -112,7 +151,7 @@ DEFECT_PATTERNS: list[tuple[str, str, int]] = [
     (r"\bnot running\b|\bnon[- ]runner\b", "mechanical", 3),
     # Structural (red)
     (r"\b(a|b|c)[- ]?pillar\b", "structural", 3),
-    (r"\bchassis\b|\bframe\b|\brail\b|\bapron\b", "structural", 3),
+    (r"\bchassis\b|\bframe\b|\b(chassis|frame|cant) rail\b|\b(a|b|c)[- ]?pillar\b|\bapron\b", "structural", 3),
     # Hail = red / avoid
     (r"\bhail\b", "structural", 3),
     # Glass (orange)
@@ -186,7 +225,8 @@ def _expected_finish_display_parts(row: pd.Series) -> tuple[str, str]:
     bid_basis = parse_currency(row.get("expected_auction_bid_basis"))
     display_value = row.get("expected_auction_bid_basis") or row.get("expected_auction_price")
     display_text = _format_price_text(display_value)
-    status_text = _safe_text(row.get("bid_status"), fallback="Unknown")
+    cap_status = _expected_finish_cap_status(row)
+    status_text = cap_status or _safe_text(row.get("bid_status"), fallback="Unknown")
     if (
         bid_basis is not None
         and raw_expected is not None
@@ -196,6 +236,21 @@ def _expected_finish_display_parts(row: pd.Series) -> tuple[str, str]:
     if _truthy(row.get("no_edge")):
         status_text = f"{status_text}; no edge now"
     return display_text, status_text
+
+
+def _expected_finish_cap_status(row: pd.Series) -> str:
+    expected_value = parse_currency(row.get("expected_auction_bid_basis"))
+    if expected_value is None:
+        expected_value = parse_currency(row.get("expected_auction_price"))
+    max_bid = parse_currency(row.get("recommended_max_bid"))
+    if max_bid is None:
+        max_bid = parse_currency(row.get("max_bid_value"))
+    if expected_value is None or max_bid is None or max_bid <= 0:
+        return ""
+    gap = expected_value - max_bid
+    if gap > 0:
+        return f"Projected over max cap by {_format_currency_value(gap)}"
+    return "Projected within max cap"
 
 
 def _max_bid_safety_text(row: pd.Series) -> str:
@@ -517,7 +572,11 @@ def _map_verdict_label(verdict: str) -> tuple[str, str]:
 
 
 def _display_action_label(action: object) -> str:
-    return _safe_text(action, fallback="Review").strip()
+    return action_display_parts(action)[0]
+
+
+def _display_action_detail(action: object) -> str:
+    return action_display_parts(action)[1]
 
 
 def _display_profit_label(label: object) -> str:
@@ -702,9 +761,77 @@ def _rego_ok(row: dict[str, object]) -> bool:
     return bool(expiry)
 
 
+def _resale_value_for_repairs(row) -> Optional[float]:
+    # Same vehicle-value figure the live pipeline passes to assess_repairs(), so the
+    # cosmetic-cap/verdict-gate scaling shown here matches what actually drove the
+    # stored recommended_max_bid/computed_verdict for this listing. Falls back through
+    # a few resale field names since callers pass either a pd.Series row or a plain
+    # dict (row.to_dict()) with the same keys.
+    getter = row.get
+    return first_currency_value(
+        getter("resale_mid_value"),
+        getter("resale_mid"),
+        getter("expected_sale"),
+        getter("curve_adjusted"),
+    )
+
+
 def build_defect_profile(row: dict[str, object]) -> dict[str, object]:
     notes = row.get("normalized_condition_text") or row.get("general_condition", "") or ""
-    severities, bucket_lines, unmatched = _bucket_details_from_notes(notes)
+    adas_windscreen = bool(
+        row.get("adas_windscreen") or row.get("windscreen_adas") or row.get("windshield_adas")
+    )
+    assessment = assess_repairs(
+        notes,
+        adas_windscreen=adas_windscreen,
+        vehicle_value=_resale_value_for_repairs(row),
+        vehicle_class=vehicle_class_for_listing(row),
+    )
+    bucket_lines = {
+        "cosmetic": [],
+        "glass": [],
+        "replacement": [],
+        "structural": [],
+        "mechanical": [],
+        "interior": [],
+    }
+    unmatched: list[str] = []
+    matched_pills: set[str] = set()
+    for fragment in assessment.fragments:
+        line = fragment.original_text
+        if not line:
+            continue
+        matched_pills.update(fragment.pills)
+        if fragment.status == "unclassified":
+            unmatched.append(line)
+            continue
+        if fragment.status == "ignored":
+            continue
+        if fragment.hard_avoid_reason == "mechanical" or "MECHANICAL" in fragment.pills:
+            bucket_lines["mechanical"].append(line)
+        elif fragment.hard_avoid_reason == "structural" or "STRUCTURAL" in fragment.pills:
+            bucket_lines["structural"].append(line)
+        elif fragment.category == "glass" or "GLASS" in fragment.pills:
+            bucket_lines["glass"].append(line)
+        elif fragment.category == "replacement" or "PANEL_REPLACE" in fragment.pills:
+            bucket_lines["replacement"].append(line)
+        elif fragment.category == "interior":
+            bucket_lines["interior"].append(line)
+        elif fragment.category == "cosmetic" or "COSMETIC_PANEL" in fragment.pills:
+            bucket_lines["cosmetic"].append(line)
+
+    for key, values in bucket_lines.items():
+        bucket_lines[key] = list(dict.fromkeys(values))
+    unmatched = list(dict.fromkeys(unmatched))
+
+    severities = {
+        "cosmetic": min(3, int(assessment.cosmetic_panels or 0)),
+        "glass": 2 if assessment.glass_cost > 0 or "GLASS" in assessment.pills else 0,
+        "replacement": 2 if assessment.replacement_cost > 0 or "PANEL_REPLACE" in assessment.pills else 0,
+        "structural": 3 if assessment.hard_avoid_reason == "structural" or "STRUCTURAL" in assessment.pills else 0,
+        "mechanical": 3 if assessment.hard_avoid_reason == "mechanical" or "MECHANICAL" in assessment.pills else 0,
+        "interior": min(2, len(bucket_lines["interior"])),
+    }
     profile: dict[str, object] = {
         "rego_ok": _rego_ok(row),
         "spare_key_ok": _truthy(row.get("spare_key")),
@@ -714,6 +841,10 @@ def build_defect_profile(row: dict[str, object]) -> dict[str, object]:
         **severities,
         "bucket_lines": bucket_lines,
         "unmatched_lines": unmatched,
+        "repair_cost": int(assessment.total_cost or 0),
+        "repair_pills": sorted(set(assessment.pills) | matched_pills),
+        "repair_hard_avoid": bool(assessment.hard_avoid),
+        "repair_hard_avoid_reason": assessment.hard_avoid_reason or "",
     }
     return profile
 
@@ -726,6 +857,14 @@ def similarity_score(a: dict[str, object], b: dict[str, object]) -> int:
     score += 20 * abs(int(a["glass"]) - int(b["glass"]))
     score += 8 * abs(int(a["cosmetic"]) - int(b["cosmetic"]))
     score += 6 * abs(int(a["interior"]) - int(b["interior"]))
+    a_cost = int(a.get("repair_cost", 0) or 0)
+    b_cost = int(b.get("repair_cost", 0) or 0)
+    score += min(60, abs(a_cost - b_cost) // 250)
+    a_pills = set(a.get("repair_pills", []) or [])
+    b_pills = set(b.get("repair_pills", []) or [])
+    score += 10 * len(a_pills.symmetric_difference(b_pills))
+    if bool(a.get("repair_hard_avoid")) != bool(b.get("repair_hard_avoid")):
+        score += 80
     for key in (
         "rego_ok",
         "spare_key_ok",
@@ -746,13 +885,17 @@ def match_quality_from_score(score: int) -> str:
 
 
 def _defects_compact(profile: dict[str, object]) -> str:
+    repair_cost = int(profile.get("repair_cost", 0) or 0)
+    hard_reason = _safe_text(profile.get("repair_hard_avoid_reason"), fallback="")
+    hard_text = f" {hard_reason.upper()}" if hard_reason else ""
     return (
         f"C{int(profile['cosmetic'])} "
         f"G{int(profile['glass'])} "
         f"R{int(profile['replacement'])} "
         f"S{int(profile['structural'])} "
         f"M{int(profile['mechanical'])} "
-        f"I{int(profile['interior'])}"
+        f"I{int(profile['interior'])} "
+        f"${repair_cost:,}{hard_text}"
     )
 
 
@@ -832,6 +975,22 @@ def _trans_match(left: object, right: object) -> bool:
     return left_key == right_key or left_key in right_key or right_key in left_key
 
 
+def _body_match(left: object, right: object) -> bool:
+    def _norm_body(value: object) -> str:
+        key = _norm_key(value)
+        if key in {"suv", "wagon", "stationwagon", "crossover"}:
+            return "suv_wagon"
+        if key in {"hatch", "hatchback"}:
+            return "hatchback"
+        return key
+
+    left_key = _norm_body(left)
+    right_key = _norm_body(right)
+    if not left_key or not right_key:
+        return True
+    return left_key == right_key or left_key in right_key or right_key in left_key
+
+
 def _score_autotrader_matches(
     listing_row: pd.Series,
     curve_tag: str,
@@ -875,6 +1034,7 @@ def _score_autotrader_matches(
         candidate_tag = _safe_text(candidate.get("canonical_tag"), fallback="").strip()
         if candidate_tag == UNCLASSIFIED:
             candidate_tag = ""
+        candidate_tag = resolve_curve_canonical_tag(candidate_tag) if candidate_tag else ""
         if not candidate_tag or candidate_tag != curve_tag:
             continue
         stats["group_match"] += 1
@@ -882,7 +1042,7 @@ def _score_autotrader_matches(
             continue
         if not _trans_match(listing_trans, candidate.get("transmission")):
             continue
-        if not _token_match(listing_body, candidate.get("body_type")):
+        if not _body_match(listing_body, candidate.get("body_type")):
             continue
         stats["fuel_trans_body"] += 1
 
@@ -931,6 +1091,11 @@ def _score_autotrader_matches(
                 "rego": candidate.get("rego"),
                 "url": candidate.get("url"),
                 "price_value": candidate.get("price_value"),
+                "status": candidate.get("status"),
+                "first_seen": candidate.get("first_seen"),
+                "last_seen": candidate.get("last_seen"),
+                "last_price_date": candidate.get("last_price_date"),
+                "sold_date": candidate.get("sold_date"),
                 "match_score": total_score,
                 "match_quality": quality,
             }
@@ -942,13 +1107,80 @@ def _score_autotrader_matches(
     return scored.head(max(1, int(limit))).reset_index(drop=True), stats
 
 
+def _market_lifecycle_summary(matches: pd.DataFrame, curve_resale: object) -> dict[str, object]:
+    resale_value = parse_currency(curve_resale)
+    if matches.empty or resale_value is None or resale_value <= 0:
+        return {
+            "matched_count": 0,
+            "fast_clear_count": 0,
+            "stale_active_count": 0,
+            "near_curve_count": 0,
+        }
+
+    now_ts = pd.Timestamp.now(tz="UTC")
+    fast_clear_count = 0
+    stale_active_count = 0
+    near_curve_count = 0
+    observed_days: list[float] = []
+    near_prices: list[float] = []
+
+    for _, match in matches.iterrows():
+        price_value = parse_currency(match.get("price_value") or match.get("price"))
+        if price_value is None or price_value <= 0:
+            continue
+        near_curve = abs(price_value - resale_value) / resale_value <= 0.10
+        if not near_curve:
+            continue
+        near_curve_count += 1
+        near_prices.append(float(price_value))
+
+        first_seen = pd.to_datetime(match.get("first_seen"), errors="coerce", utc=True)
+        last_seen = pd.to_datetime(match.get("last_seen"), errors="coerce", utc=True)
+        sold_date = pd.to_datetime(match.get("sold_date"), errors="coerce", utc=True)
+        status = _safe_text(match.get("status"), fallback="").strip().lower()
+
+        end_seen = sold_date if pd.notna(sold_date) else last_seen
+        if pd.notna(first_seen) and pd.notna(end_seen):
+            days_listed = max(0.0, (end_seen - first_seen).total_seconds() / 86400.0)
+            observed_days.append(days_listed)
+            if status in {"sold", "removed", "expired"} and days_listed <= 5:
+                fast_clear_count += 1
+
+        if status in {"", "active"} and pd.notna(first_seen):
+            active_days = max(0.0, (now_ts - first_seen).total_seconds() / 86400.0)
+            observed_days.append(active_days)
+            if active_days >= 30:
+                stale_active_count += 1
+
+    median_days = None
+    if observed_days:
+        median_days = float(pd.Series(observed_days).median())
+    median_near_price = None
+    if near_prices:
+        median_near_price = float(pd.Series(near_prices).median())
+
+    return {
+        "matched_count": int(len(matches)),
+        "fast_clear_count": int(fast_clear_count),
+        "stale_active_count": int(stale_active_count),
+        "near_curve_count": int(near_curve_count),
+        "median_days_listed": median_days,
+        "median_near_curve_price": median_near_price,
+    }
+
+
 def _condition_summary_sections(row: pd.Series) -> tuple[list[dict[str, object]], str]:
     raw_notes = _safe_text(row.get("general_condition"), fallback="").strip()
     display_notes = _safe_text(row.get("normalized_condition_text"), fallback="").strip() or raw_notes
     adas_windscreen = bool(
         row.get("adas_windscreen") or row.get("windscreen_adas") or row.get("windshield_adas")
     )
-    assessment = assess_repairs(display_notes, adas_windscreen=adas_windscreen)
+    assessment = assess_repairs(
+        display_notes,
+        adas_windscreen=adas_windscreen,
+        vehicle_value=_resale_value_for_repairs(row),
+        vehicle_class=vehicle_class_for_listing(row),
+    )
     _, bucket_lines, _ = _bucket_details_from_notes(display_notes)
     sections: list[dict[str, object]] = []
 
@@ -1086,20 +1318,132 @@ def _condition_summary_sections(row: pd.Series) -> tuple[list[dict[str, object]]
         )
 
     total_deduction = int(assessment.total_cost or 0)
-    if total_deduction > 0:
+    high_deduction = int(assessment.total_cost_high or assessment.total_cost or 0)
+    low_deduction = int(assessment.total_cost_low or 0)
+    if assessment.hard_avoid:
+        hard_reason = _safe_text(assessment.hard_avoid_reason, fallback="condition").replace("_", " ")
         sections.append(
             {
-                "title": "Total repair / risk deduction",
-                "bullets": ["Applied to max bid after repairs."],
-                "cost_line": f"Total deduction: ${total_deduction:,}",
+                "title": "Repair / risk decision",
+                "bullets": [
+                    f"Hard avoid: {hard_reason}.",
+                    "Proxy max is blocked rather than reduced by a normal repair allowance.",
+                ],
+                "cost_line": f"Hard-avoid reserve: ${total_deduction:,}",
+            }
+        )
+    elif total_deduction > 0:
+        sections.append(
+            {
+                "title": "Repair / risk allowance",
+                "bullets": [
+                    "Likely allowance is shown separately from the conservative max-bid deduction.",
+                ],
+                "cost_line": (
+                    f"Likely: ${total_deduction:,}"
+                    f" (range ${low_deduction:,}-${high_deduction:,}; max-bid deduction uses ${high_deduction:,})"
+                ),
             }
         )
 
     return sections, raw_notes
 
 
+def _render_repair_fragment_records(records: list[dict[str, object]]) -> None:
+    for record in records:
+        original = _safe_text(record.get("original_text"), fallback="")
+        status = _safe_text(record.get("status"), fallback="unclassified")
+        category = _safe_text(record.get("category"), fallback="unclassified")
+        defects = _safe_text(record.get("canonical_defects"), fallback="")
+        pills = _safe_text(record.get("pills"), fallback="")
+        cost = parse_currency(record.get("cost_estimate"))
+        reasons = _safe_text(record.get("reasons"), fallback="")
+        meta = [f"status: {status}", f"category: {category}"]
+        if defects:
+            meta.append(f"match: {defects}")
+        if pills:
+            meta.append(f"pills: {pills}")
+        if cost and cost > 0:
+            meta.append(f"cost: {_format_currency_value(cost)}")
+        st.markdown(f"- **{html.escape(original)}**")
+        st.caption(" | ".join(meta))
+        if reasons:
+            st.caption(reasons)
+
+
+def _listing_title(row: pd.Series) -> str:
+    parts = [
+        _safe_text(row.get("year"), fallback=""),
+        _safe_text(row.get("make"), fallback=""),
+        _safe_text(row.get("model"), fallback=""),
+        _safe_text(row.get("variant"), fallback=""),
+    ]
+    return " ".join(part for part in parts if part) or "Unknown vehicle"
+
+
+def _render_repair_mapping_status(
+    row: pd.Series,
+    fragment_records: list[dict[str, object]],
+    display_notes: str,
+) -> None:
+    summary = repair_mapping_summary(fragment_records)
+    total = int(summary.get("total", 0) or 0)
+    needs_review = list(summary.get("needs_review_records", []) or [])
+    unresolved = list(summary.get("unresolved_records", []) or [])
+    mapped = int(summary.get("mapped_count", 0) or 0)
+
+    if not fragment_records:
+        st.info("Repair mapping: no condition fragments found.")
+        return
+
+    if summary.get("pass"):
+        st.success(f"Repair mapping pass: {mapped}/{total} fragments identified.")
+        return
+
+    if needs_review:
+        appended = append_live_review_items(
+            needs_review,
+            vehicle=_listing_title(row),
+            url=_safe_text(row.get("url"), fallback=""),
+            condition_notes=display_notes,
+        )
+        suffix = f" Added {appended} item(s) to Repair Review." if appended else ""
+        st.warning(
+            f"Repair mapping needs review: {len(needs_review)} new/unmapped fragment(s); "
+            f"{len(unresolved)} reviewed unresolved fragment(s).{suffix}"
+        )
+        with st.expander("Unmapped repair fragments", expanded=True):
+            for record in needs_review:
+                st.write(f"- {safe_fragment_text(record)}")
+    else:
+        st.warning(
+            f"Repair mapping reviewed but unresolved: {len(unresolved)} fragment(s) are saved as unclassified."
+        )
+    if unresolved:
+        with st.expander("Reviewed unresolved fragments", expanded=False):
+            for record in unresolved:
+                st.write(f"- {safe_fragment_text(record)}")
+
+
+def safe_fragment_text(record: dict[str, object]) -> str:
+    text = _safe_text(record.get("original_text"), fallback="")
+    status = _safe_text(record.get("status"), fallback="unclassified")
+    category = _safe_text(record.get("category"), fallback="unclassified")
+    return f"{text} ({status}, {category})" if text else f"{status}, {category}"
+
+
 def _render_condition_summary(row: pd.Series) -> None:
     sections, raw_notes = _condition_summary_sections(row)
+    display_notes = _safe_text(row.get("normalized_condition_text"), fallback="").strip() or raw_notes
+    adas_windscreen = bool(
+        row.get("adas_windscreen") or row.get("windscreen_adas") or row.get("windshield_adas")
+    )
+    assessment = assess_repairs(
+        display_notes,
+        adas_windscreen=adas_windscreen,
+        vehicle_value=_resale_value_for_repairs(row),
+        vehicle_class=vehicle_class_for_listing(row),
+    )
     st.markdown("**Condition summary**")
     for section in sections:
         st.markdown(f"**{section['title']}**")
@@ -1112,6 +1456,11 @@ def _render_condition_summary(row: pd.Series) -> None:
         if impact_line:
             st.write(f"*{impact_line}*")
         st.write("")
+    fragment_records = repair_fragments_to_records(assessment)
+    _render_repair_mapping_status(row, fragment_records, display_notes)
+    if fragment_records:
+        st.markdown("**Repair split / dictionary match**")
+        _render_repair_fragment_records(fragment_records)
     with st.expander("Source condition notes (verbatim)", expanded=False):
         if not raw_notes:
             st.write("(none)")
@@ -1275,6 +1624,17 @@ def _render_autotrader_confirmation(row: pd.Series) -> None:
         f"{match_count} | Median of matches: {_format_currency_value(median_price)} | "
         f"Delta vs curve: {diff_text} | Confidence: {confidence_signal}"
     )
+    lifecycle = _market_lifecycle_summary(matches, resale_value)
+    if lifecycle.get("near_curve_count"):
+        median_days = lifecycle.get("median_days_listed")
+        median_days_text = f"{float(median_days):.1f}" if median_days is not None else "N/A"
+        st.caption(
+            "Lifecycle signal: "
+            f"{lifecycle.get('near_curve_count', 0)} near-curve match(es), "
+            f"{lifecycle.get('fast_clear_count', 0)} cleared within 5 days, "
+            f"{lifecycle.get('stale_active_count', 0)} active for 30+ days, "
+            f"median days listed {median_days_text}."
+        )
 
     display_cols = [
         "year",
@@ -1284,6 +1644,9 @@ def _render_autotrader_confirmation(row: pd.Series) -> None:
         "price",
         "odometer",
         "location",
+        "first_seen",
+        "last_seen",
+        "sold_date",
         "match_quality",
     ]
     table_df = matches[[col for col in display_cols if col in matches.columns]].copy()
@@ -1396,27 +1759,61 @@ def _curve_range_for_row(row: pd.Series) -> tuple[Optional[float], Optional[floa
 
 
 def _repair_deduction_value(row: pd.Series) -> int:
+    assessment = _repair_assessment_for_row(row)
+    return int(assessment.total_cost or 0)
+
+
+def _repair_assessment_for_row(row: pd.Series):
     raw_notes = _safe_text(row.get("general_condition"), fallback="").strip()
     display_notes = _safe_text(row.get("normalized_condition_text"), fallback="").strip() or raw_notes
     adas_windscreen = bool(
         row.get("adas_windscreen") or row.get("windscreen_adas") or row.get("windshield_adas")
     )
-    assessment = assess_repairs(display_notes, adas_windscreen=adas_windscreen)
-    return int(assessment.total_cost or 0)
+    return assess_repairs(
+        display_notes,
+        adas_windscreen=adas_windscreen,
+        vehicle_value=_resale_value_for_repairs(row),
+        vehicle_class=vehicle_class_for_listing(row),
+    )
+
+
+def _format_repair_max_bid_deduction(row: pd.Series) -> str:
+    assessment = _repair_assessment_for_row(row)
+    if assessment.hard_avoid:
+        return "Blocked"
+    return _format_currency_value(assessment.total_cost_high or assessment.total_cost)
 
 
 def _render_grays_comparables(row: pd.Series, comps_items: list[str]) -> None:
-    _render_bullets("Comparable sales (Grays)", comps_items)
+    _render_bullets("Auction sold comps (Grays)", comps_items)
+    st.caption(
+        "Auction sold comps support expected auction finish and bid risk. "
+        "They do not set the Carsales resale curve."
+    )
     tag_value = row.get("canonical_tag")
     if not tag_value or (isinstance(tag_value, float) and pd.isna(tag_value)):
         st.info("Vehicle curve tag missing. Historical Grays comparables unavailable.")
         return
 
     listing_year = _safe_int(row.get("year"))
+    curve_key = resolve_curve_canonical_tag(tag_value)
+    all_tag_comps = (
+        sold_df[sold_df["curve_tag"] == curve_key]
+        if "curve_tag" in sold_df.columns
+        else sold_df[sold_df["canonical_tag"] == curve_key]
+    )
+    same_year_count = 0
+    if listing_year is not None and "year_int" in all_tag_comps.columns:
+        same_year_count = int((all_tag_comps["year_int"] == listing_year).sum())
     comps_df = _select_sold_subset(sold_df, tag_value, listing_year).copy()
     if comps_df.empty:
         st.info("No matching Grays sold comparables found for this listing.")
         return
+    if listing_year is not None and same_year_count < 3:
+        st.warning(
+            f"Only {same_year_count} same-year Grays sold comp(s) for {listing_year}; "
+            "showing nearby years from the same curve tag."
+        )
 
     active_profile = build_defect_profile(row.to_dict())
     scores: list[int] = []
@@ -1493,6 +1890,7 @@ def _render_grays_comparables(row: pd.Series, comps_items: list[str]) -> None:
             "structural",
             "mechanical",
             "interior",
+            "repair_cost",
             "odometer",
             "price",
         ]
@@ -1515,6 +1913,7 @@ def _render_grays_comparables(row: pd.Series, comps_items: list[str]) -> None:
             "structural": "tip_structural",
             "mechanical": "tip_mechanical",
             "interior": "tip_interior",
+            "repair_cost": "tip_repair_cost",
         }
         rows_html = []
         for _, matrix_row in comp_matrix.iterrows():
@@ -1541,6 +1940,8 @@ def _render_grays_comparables(row: pd.Series, comps_items: list[str]) -> None:
                 ):
                     sev = int(val) if str(val).isdigit() else 0
                     cell = _severity_pill_html(sev, tooltip=str(tip_val))
+                elif col == "repair_cost":
+                    cell = html.escape(_format_currency_value(parse_currency(val)))
                 else:
                     text_val = str(val)
                     if col == "odometer":
@@ -1564,7 +1965,19 @@ def _render_grays_comparables(row: pd.Series, comps_items: list[str]) -> None:
 
     unmatched = active_profile.get("unmatched_lines", [])
     if unmatched:
+        display_notes = (
+            _safe_text(row.get("normalized_condition_text"), fallback="").strip()
+            or _safe_text(row.get("general_condition"), fallback="").strip()
+        )
+        appended = append_unclassified_condition_lines(
+            unmatched,
+            vehicle=_listing_title(row),
+            url=_safe_text(row.get("url"), fallback=""),
+            condition_notes=display_notes,
+        )
         with st.expander("Unclassified condition lines", expanded=False):
+            if appended:
+                st.caption(f"Added {appended} item(s) to Repair Review.")
             st.markdown("\n".join(f"- {line}" for line in unmatched))
 
     comp_unmatched: list[str] = []
@@ -1634,22 +2047,23 @@ def _render_comparables_tab(row: pd.Series, comps_items: list[str]) -> None:
 
 def _render_condition_tab(row: pd.Series, defect_profile: dict[str, object]) -> None:
     repair_deduction = _repair_deduction_value(row)
-    metric_cols = st.columns(4)
+    max_bid_deduction = _format_repair_max_bid_deduction(row)
+    metric_cols = st.columns(5)
     metric_cols[0].metric("Cosmetic damage", str(int(defect_profile.get("cosmetic", 0) or 0)))
     metric_cols[1].metric("Structural flags", str(int(defect_profile.get("structural", 0) or 0)))
     metric_cols[2].metric("Mechanical notes", str(int(defect_profile.get("mechanical", 0) or 0)))
-    metric_cols[3].metric("Repair deduction", _format_currency_value(repair_deduction))
+    metric_cols[3].metric("Allowance", _format_currency_value(repair_deduction))
+    metric_cols[4].metric("Bid deduction", max_bid_deduction)
     _render_condition_summary(row)
 
 
 def _render_bid_logic_tab(
     row: pd.Series,
     *,
-    top_buy_passed: list[str],
-    top_buy_failed: list[str],
     risk_items: list[str],
 ) -> None:
     repair_deduction = _repair_deduction_value(row)
+    max_bid_deduction = _format_repair_max_bid_deduction(row)
     auction_cost = _compute_auction_cost_value(row)
     confidence_value = row.get("confidence")
     confidence_percent = None
@@ -1662,59 +2076,59 @@ def _render_bid_logic_tab(
     if confidence_display == "N/A":
         confidence_display = _curve_confidence_label(row.get("confidence"))
     expected_finish_display, expected_finish_status = _expected_finish_display_parts(row)
+    bid_display = bid_display_parts(row)
+    cap_profit_display = _format_price_text(row.get("net_profit_worst") or row.get("net_profit_mid"))
+    expected_profit_display = _format_price_text(row.get("expected_auction_worst_profit") or row.get("expected_auction_profit"))
+    expected_profit_label = _display_profit_label(row.get("expected_auction_profit_label"))
+    expected_finish_detail = f"Scenario profit {expected_profit_display}"
+    if expected_profit_label not in ("Unknown", "N/A"):
+        expected_finish_detail = f"{expected_finish_detail}; {expected_profit_label.lower()}"
+    expected_finish_source = _safe_text(row.get("expected_auction_source"), "N/A")
+    expected_finish_comps = _safe_text(row.get("expected_auction_comps_count"), "N/A")
+    discount_display = (
+        f"{float(row.get('discount_used') or 0):.0%}"
+        if pd.notna(row.get("discount_used"))
+        else "N/A"
+    )
+    difficulty_reasons = _safe_text(row.get("difficulty_reasons"), "N/A")
 
     metric_rows = [
         ("Resale estimate", _format_currency_value(_compute_resale_value(row))),
-        ("Expected finish basis", expected_finish_display),
-        ("Profit at expected finish", _format_price_text(row.get("expected_auction_worst_profit") or row.get("expected_auction_profit"))),
-        ("Raw margin now", _format_price_text(row.get("profit_at_current_bid_worst") or row.get("profit_at_current_bid"))),
+        ("Proxy max bid", bid_display["max_label"]),
+        ("Worst profit at proxy max", cap_profit_display),
+        ("Current vs proxy max", bid_display["status"]),
+        ("Expected finish guide", expected_finish_display),
+        ("Scenario profit at expected finish", expected_profit_display),
         ("Current price", _format_price_text(row.get("price"))),
         ("Auction cost", _format_currency_value(auction_cost)),
         ("Fees", _format_price_text(row.get("fees_estimate"))),
         ("Transport", _format_price_text(row.get("transport_estimate"))),
-        ("Repair cost", _format_currency_value(repair_deduction)),
+        ("Allowance", _format_currency_value(repair_deduction)),
+        ("Bid deduction", max_bid_deduction),
         ("Confidence", confidence_display),
-        ("Net profit", _format_price_text(row.get("net_profit_worst") or row.get("net_profit_mid"))),
-        ("Max bid limit", _format_currency_value(row.get("max_bid_value"))),
     ]
 
-    first_row = st.columns(5)
-    second_row = st.columns(5)
-    third_row = st.columns(max(1, len(metric_rows) - 10))
-    for column, (label, value) in zip(first_row, metric_rows[:5]):
+    first_row = st.columns(4)
+    second_row = st.columns(4)
+    third_row = st.columns(max(1, len(metric_rows) - 8))
+    for column, (label, value) in zip(first_row, metric_rows[:4]):
         column.metric(label, value)
-    for column, (label, value) in zip(second_row, metric_rows[5:10]):
+    for column, (label, value) in zip(second_row, metric_rows[4:8]):
         column.metric(label, value)
-    for column, (label, value) in zip(third_row, metric_rows[10:]):
+    for column, (label, value) in zip(third_row, metric_rows[8:]):
         column.metric(label, value)
 
     _render_bullets(
-        "Profit notes",
+        "Bid decision",
         [
-            f"Discount used: {float(row.get('discount_used') or 0):.0%}" if pd.notna(row.get("discount_used")) else "Discount used: N/A",
-            f"Expected auction finish: {_format_price_text(row.get('expected_auction_price'))}",
-            f"Expected finish basis used for profit: {expected_finish_display}",
-            f"Expected finish status: {expected_finish_status}",
-            f"Expected finish source: {_safe_text(row.get('expected_auction_source'), 'N/A')}",
-            f"Expected finish comps: {_safe_text(row.get('expected_auction_comps_count'), 'N/A')}",
-            f"Profit at expected finish (mid): {_format_price_text(row.get('expected_auction_profit'))}",
-            f"Profit at expected finish (worst): {_format_price_text(row.get('expected_auction_worst_profit'))}",
-            f"Raw-margin-now strength: {_display_profit_label(row.get('current_profit_label'))}",
-            f"Expected-finish margin strength: {_display_profit_label(row.get('expected_auction_profit_label'))}",
-            f"Max-bid safety: {_max_bid_safety_text(row)}",
-            f"Flip difficulty: {_safe_text(row.get('flip_difficulty'), 'N/A')}",
-            f"Difficulty reasons: {_safe_text(row.get('difficulty_reasons'), 'N/A')}",
-            f"Bid status: {_safe_text(row.get('bid_status'), 'N/A')}",
             f"Action: {_display_action_label(row.get('action_label'))}",
-            f"Auction cost total: {_format_currency_value(auction_cost)}",
-            f"Repair cost: {_format_currency_value(repair_deduction)}",
-            f"Net profit (mid): {_format_price_text(row.get('net_profit_mid'))}",
-            f"Net profit (worst): {_format_price_text(row.get('net_profit_worst'))}",
-            f"Profit margin: {_format_percent(row.get('profit_margin_value'))}",
+            f"{bid_display['status']}: {bid_display['status_detail']}",
+            f"Expected finish: {expected_finish_display} ({expected_finish_detail}; {expected_finish_status})",
+            f"Expected finish evidence: {expected_finish_source}; comps {expected_finish_comps}; discount {discount_display}",
+            f"Costs included: fees {_format_price_text(row.get('fees_estimate'))}, transport {_format_price_text(row.get('transport_estimate'))}, repair/risk {_format_currency_value(repair_deduction)}",
+            f"Flip difficulty: {_safe_text(row.get('flip_difficulty'), 'N/A')} - {difficulty_reasons}",
         ],
     )
-    _render_bullets("Top Buy passed", top_buy_passed[:4])
-    _render_bullets("Top Buy failed", top_buy_failed[:4])
     _render_bullets("Notes / risks", risk_items[:4])
 
 
@@ -1757,6 +2171,14 @@ def _build_grays_comparison_rows(listing_row: pd.Series, comps_df: pd.DataFrame)
             "tip_structural": _bucket_tip("structural"),
             "tip_mechanical": _bucket_tip("mechanical"),
             "tip_interior": _bucket_tip("interior"),
+            "repair_cost": int(profile.get("repair_cost", 0) or 0),
+            "tip_repair_cost": " | ".join(
+                [
+                    f"pills: {', '.join(profile.get('repair_pills', []) or [])}",
+                    f"hard: {_safe_text(profile.get('repair_hard_avoid_reason'), fallback='none')}",
+                    f"unclassified: {len(profile.get('unmatched_lines', []) or [])}",
+                ]
+            ),
         }
 
     listing_year = _safe_text(listing_row.get("year"), fallback="").strip()
@@ -1925,6 +2347,7 @@ def load_group_map() -> pd.DataFrame:
 def load_sold_data() -> pd.DataFrame:
     sold_path = dataset_path("sold_cars_restricted.csv")
     df = pd.read_csv(sold_path)
+    df, _ = validate_sold_cars_df(df)
     df["url"] = df["url"].astype(str).str.strip()
     df["odometer_numeric"] = df["odometer_reading"].apply(parse_numeric)
     df["price_numeric"] = df["price"].apply(parse_currency)
@@ -2019,6 +2442,8 @@ def _filter_autotrader_text(
 
 def _autotrader_cache_key() -> float | None:
     mtimes = []
+    if AUTOTRADER_RECENT_MARKET.exists():
+        mtimes.append(AUTOTRADER_RECENT_MARKET.stat().st_mtime)
     if AUTOTRADER_OUTPUT.exists():
         mtimes.append(AUTOTRADER_OUTPUT.stat().st_mtime)
     if AUTOTRADER_STATE.exists():
@@ -2028,7 +2453,7 @@ def _autotrader_cache_key() -> float | None:
 
 @st.cache_data(ttl=300)
 def load_autotrader_data(raw_mtime: float | None = None) -> pd.DataFrame:
-    if not AUTOTRADER_OUTPUT.exists() and not AUTOTRADER_STATE.exists():
+    if not AUTOTRADER_RECENT_MARKET.exists() and not AUTOTRADER_OUTPUT.exists() and not AUTOTRADER_STATE.exists():
         return pd.DataFrame()
     tagged_path = AUTOTRADER_OUTPUT.with_name(
         f"{AUTOTRADER_OUTPUT.stem}_tagged{AUTOTRADER_OUTPUT.suffix}"
@@ -2038,11 +2463,38 @@ def load_autotrader_data(raw_mtime: float | None = None) -> pd.DataFrame:
     use_tagged = tagged_mtime is not None and tagged_mtime >= raw_mtime
 
     live_df = pd.DataFrame()
-    if AUTOTRADER_OUTPUT.exists():
+    if AUTOTRADER_RECENT_MARKET.exists():
+        live_df = pd.read_csv(AUTOTRADER_RECENT_MARKET)
+        live_df["source"] = live_df.get("source", "autotrader_recent_market")
+        if AUTOTRADER_STATE.exists() and "url" in live_df.columns:
+            state_df = pd.read_csv(AUTOTRADER_STATE)
+            lifecycle_cols = [
+                "url",
+                "status",
+                "first_seen",
+                "last_seen",
+                "last_price_date",
+                "sold_date",
+            ]
+            state_cols = [col for col in lifecycle_cols if col in state_df.columns]
+            if "url" in state_cols:
+                live_df = live_df.merge(
+                    state_df[state_cols].drop_duplicates("url", keep="last"),
+                    on="url",
+                    how="left",
+                    suffixes=("", "_state"),
+                )
+                if "status_state" in live_df.columns:
+                    if "status" not in live_df.columns:
+                        live_df["status"] = ""
+                    live_status = live_df["status"].fillna("").astype(str).str.strip()
+                    live_df["status"] = live_df["status"].where(live_status.ne(""), live_df["status_state"])
+                    live_df.drop(columns=["status_state"], inplace=True)
+    elif AUTOTRADER_OUTPUT.exists():
         live_df = pd.read_csv(tagged_path if use_tagged else AUTOTRADER_OUTPUT)
 
     sold_df = pd.DataFrame()
-    if AUTOTRADER_STATE.exists():
+    if live_df.empty and AUTOTRADER_STATE.exists():
         state_df = pd.read_csv(AUTOTRADER_STATE)
         if "status" in state_df.columns:
             sold_df = state_df[state_df["status"].str.lower() == "sold"].copy()
@@ -2334,12 +2786,13 @@ else:
         active_df = active_df.merge(km_band, left_on="curve_tag", right_index=True, how="left")
         if "odometer_numeric" not in active_df.columns:
             active_df["odometer_numeric"] = active_df["odometer_reading"].apply(parse_numeric)
-        active_df["km_in_range"] = (
-            active_df["odometer_numeric"].notna()
-            & active_df["min_km"].notna()
-            & active_df["max_km"].notna()
-            & (active_df["odometer_numeric"] >= active_df["min_km"])
-            & (active_df["odometer_numeric"] <= active_df["max_km"])
+        active_df["km_in_range"] = active_df.apply(
+            lambda row: km_within_curve_coverage(
+                row.get("odometer_numeric"),
+                row.get("min_km"),
+                row.get("max_km"),
+            ),
+            axis=1,
         )
     else:
         active_df["km_in_range"] = False
@@ -2389,42 +2842,12 @@ else:
     sold_df = sold_df[sold_df["curve_tag"].isin(allowed_tags)].copy()
 sold_df = _exclude_corolla_sport_comps(sold_df)
 sold_df = _exclude_major_engine_defects(sold_df)
+sold_df = collapse_reauction_lifecycles(sold_df)
 sold_df["year_int"] = sold_df["year"].apply(_safe_int) if "year" in sold_df.columns else None
 if "curve_tag" not in sold_df.columns:
     sold_df["curve_tag"] = sold_df["canonical_tag"].apply(resolve_curve_canonical_tag)
 
 curve_key_col = "curve_tag"
-
-sold_stats_group = (
-    sold_df.dropna(subset=[curve_key_col, "price_numeric"])
-    .groupby(curve_key_col)["price_numeric"]
-    .agg(["count", "median", "mean", "min", "max"])
-    .rename(
-        columns={
-            "count": "comps_count",
-            "median": "comps_median",
-            "mean": "comps_mean",
-            "min": "comps_min",
-            "max": "comps_max",
-        }
-    )
-)
-
-sold_stats_year = (
-    sold_df.dropna(subset=[curve_key_col, "price_numeric", "year_int"])
-    .groupby([curve_key_col, "year_int"])["price_numeric"]
-    .agg(["count", "median", "mean", "min", "max"])
-    .rename(
-        columns={
-            "count": "comps_count",
-            "median": "comps_median",
-            "mean": "comps_mean",
-            "min": "comps_min",
-            "max": "comps_max",
-        }
-    )
-)
-
 
 st.sidebar.header("Filters")
 if allowed_tags:
@@ -2438,6 +2861,11 @@ else:
         }
     )
 group_filter = st.sidebar.selectbox("Vehicle curve", ["All"] + group_values)
+capital_lane_filter = st.sidebar.selectbox("Capital lane", CAPITAL_LANE_OPTIONS)
+if capital_lane_filter == HIGHER_CAPITAL_LANE:
+    st.sidebar.caption(
+        "Curve resale $20k-$40k. Normal action, repair, risk and auction-site proxy ceilings still apply."
+    )
 refresh_clicked = st.sidebar.button("Refresh valuations")
 force_refresh = refresh_clicked
 
@@ -2468,7 +2896,7 @@ filter_cols = st.columns([1.1, 1, 1.2, 1], gap="medium")
 with filter_cols[0]:
     sort_choice = st.selectbox(
         "Sort by",
-        ["Profit %", "Max Bid", "Auction ending soon"],
+        ["Profit %", "Proxy max", "Auction ending soon"],
         index=0,
     )
 with filter_cols[1]:
@@ -2482,6 +2910,7 @@ with filter_cols[2]:
 with filter_cols[3]:
     hide_avoid = st.checkbox("Hide Avoid listings", value=True)
     hide_no_max_bid = st.checkbox("Hide listings without max bid", value=True)
+
 
 TIME_BUCKETS: dict[str, tuple[Optional[float], Optional[float]]] = {
     "All": (None, None),
@@ -2497,13 +2926,13 @@ st.markdown(
         """
         <style>
         :root {
-            --sniper-card: #0b0f14;
-            --sniper-card-deep: #070b10;
-            --sniper-cyan: #27b6ff;
-            --sniper-cyan-soft: rgba(39, 182, 255, 0.2);
-            --sniper-green: #2cff9a;
-            --sniper-amber: #ffb347;
-            --sniper-red: #ff4d4d;
+            /* --sniper-card, --sniper-card-deep, --sniper-cyan-soft, --sniper-green,
+               --sniper-amber, and --sniper-red used to be declared here too, but
+               nothing in this file ever referenced them (verified via grep) --
+               removed as dead custom properties. --sniper-cyan is kept as a local
+               alias so the one real usage below doesn't need touching, but the
+               actual color now lives once in shared/styling.py. */
+            --sniper-cyan: var(--autosniper-signal-cyan);
         }
         .vehicle-card {
             --card-glow: 0 0 0 rgba(0, 0, 0, 0);
@@ -2639,28 +3068,68 @@ st.markdown(
             border-color: rgba(39, 182, 255, 0.25);
             background: rgba(39, 182, 255, 0.06);
         }
-        .card-actions a {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.35rem;
-            padding: 0.2rem 0.55rem;
-            border-radius: 999px;
-            border: 1px solid rgba(39, 182, 255, 0.6);
-            color: var(--autosniper-primary);
-            text-decoration: none;
-            font-size: 0.62rem;
-            text-transform: uppercase;
-            letter-spacing: 0.12em;
-        }
-        .card-actions a:hover {
-            background: rgba(39, 182, 255, 0.12);
-        }
+        /* .card-actions a / a:hover now live in shared/styling.py so this
+           page and 8_MISSED_OPPORTUNITIES.py share one definition. */
         .card-metrics {
             margin-top: 0.5rem;
             display: grid;
-            grid-template-columns: repeat(5, minmax(0, 1fr));
-            gap: 0.5rem;
+            grid-template-columns: minmax(220px, 1fr) minmax(260px, 1.35fr) minmax(220px, 1fr);
+            gap: 0.65rem;
             align-items: stretch;
+        }
+        .metric-group {
+            border-radius: 12px;
+            padding: 0.62rem 0.72rem 0.68rem;
+            background: rgba(8, 12, 18, 0.72);
+            border: 1px solid rgba(39, 182, 255, 0.22);
+            border-left: 3px solid rgba(39, 182, 255, 0.65);
+            min-height: 126px;
+        }
+        .metric-group.money-group {
+            border-left-color: rgba(44, 255, 154, 0.72);
+        }
+        .metric-group.context-group {
+            border-left-color: rgba(255, 179, 71, 0.68);
+        }
+        .metric-group-title {
+            margin-bottom: 0.46rem;
+            font-size: 0.58rem;
+            line-height: 1;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            color: rgba(255, 255, 255, 0.58);
+        }
+        .metric-group-items {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.46rem 0.62rem;
+        }
+        .metric-group.auction-group .metric-group-items,
+        .metric-group.context-group .metric-group-items {
+            grid-template-columns: 1fr;
+        }
+        .metric-item {
+            min-width: 0;
+            padding-top: 0.36rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .metric-item.primary {
+            padding: 0.36rem 0.44rem 0.42rem;
+            border: 1px solid rgba(39, 182, 255, 0.34);
+            border-radius: 8px;
+            background: rgba(39, 182, 255, 0.07);
+        }
+        .metric-item.price-up {
+            border-color: rgba(44, 255, 154, 0.5);
+            background: rgba(44, 255, 154, 0.08);
+        }
+        .metric-item.price-down {
+            border-color: rgba(255, 179, 71, 0.52);
+            background: rgba(255, 179, 71, 0.08);
+        }
+        .metric-item.price-flat {
+            border-color: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.035);
         }
         .metric-box {
             background: rgba(8, 12, 18, 0.65);
@@ -2680,10 +3149,13 @@ st.markdown(
             margin-bottom: 0.14rem;
         }
         .metric-value {
-            font-size: 1.18rem;
+            font-size: 1rem;
             font-weight: 800;
             color: var(--autosniper-primary);
             line-height: 1.05;
+        }
+        .metric-item.primary .metric-value {
+            font-size: 1.16rem;
         }
         .metric-box.primary .metric-value {
             font-size: 1.18rem;
@@ -2891,10 +3363,13 @@ st.markdown(
                 white-space: normal;
             }
             .card-metrics {
-                grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+                grid-template-columns: 1fr;
             }
             .decision-signal-row {
                 grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            }
+            .metric-group.money-group .metric-group-items {
+                grid-template-columns: 1fr;
             }
         }
         </style>
@@ -2904,16 +3379,19 @@ st.markdown(
 )
 
 filtered = active_df.copy()
-if "hours_remaining" in filtered.columns and (min_hours is not None or max_hours is not None):
-    filtered = filtered[filtered["hours_remaining"].notna()]
-    if min_hours is not None:
-        filtered = filtered[filtered["hours_remaining"] >= min_hours]
-    if max_hours is not None:
-        filtered = filtered[filtered["hours_remaining"] < max_hours]
+if linked_listing_mode and "url" in filtered.columns:
+    filtered = filtered[filtered["url"].astype(str).str.strip() == target_listing_url].copy()
+else:
+    if "hours_remaining" in filtered.columns and (min_hours is not None or max_hours is not None):
+        filtered = filtered[filtered["hours_remaining"].notna()]
+        if min_hours is not None:
+            filtered = filtered[filtered["hours_remaining"] >= min_hours]
+        if max_hours is not None:
+            filtered = filtered[filtered["hours_remaining"] < max_hours]
 
-if group_filter != "All":
-    group_column = "curve_tag" if "curve_tag" in filtered.columns else "canonical_tag"
-    filtered = filtered[filtered[group_column] == group_filter]
+    if group_filter != "All":
+        group_column = "curve_tag" if "curve_tag" in filtered.columns else "canonical_tag"
+        filtered = filtered[filtered[group_column] == group_filter]
 
 if "canonical_tag" not in filtered.columns:
     filtered["canonical_tag"] = ""
@@ -2926,16 +3404,21 @@ if allowed_tags:
 
 no_curve_filtered = no_curve_active_df.copy()
 if not no_curve_filtered.empty:
-    if "hours_remaining" in no_curve_filtered.columns and (min_hours is not None or max_hours is not None):
-        no_curve_filtered = no_curve_filtered[no_curve_filtered["hours_remaining"].notna()]
-        if min_hours is not None:
-            no_curve_filtered = no_curve_filtered[no_curve_filtered["hours_remaining"] >= min_hours]
-        if max_hours is not None:
-            no_curve_filtered = no_curve_filtered[no_curve_filtered["hours_remaining"] < max_hours]
-    if group_filter != "All":
-        group_column = "curve_tag" if "curve_tag" in no_curve_filtered.columns else "canonical_tag"
-        if group_column in no_curve_filtered.columns:
-            no_curve_filtered = no_curve_filtered[no_curve_filtered[group_column] == group_filter]
+    if linked_listing_mode and "url" in no_curve_filtered.columns:
+        no_curve_filtered = no_curve_filtered[
+            no_curve_filtered["url"].astype(str).str.strip() == target_listing_url
+        ].copy()
+    else:
+        if "hours_remaining" in no_curve_filtered.columns and (min_hours is not None or max_hours is not None):
+            no_curve_filtered = no_curve_filtered[no_curve_filtered["hours_remaining"].notna()]
+            if min_hours is not None:
+                no_curve_filtered = no_curve_filtered[no_curve_filtered["hours_remaining"] >= min_hours]
+            if max_hours is not None:
+                no_curve_filtered = no_curve_filtered[no_curve_filtered["hours_remaining"] < max_hours]
+        if group_filter != "All":
+            group_column = "curve_tag" if "curve_tag" in no_curve_filtered.columns else "canonical_tag"
+            if group_column in no_curve_filtered.columns:
+                no_curve_filtered = no_curve_filtered[no_curve_filtered[group_column] == group_filter]
 
 def _render_no_curve_section(no_curve_df: pd.DataFrame) -> None:
     if no_curve_df.empty:
@@ -2972,7 +3455,23 @@ def _render_no_curve_section(no_curve_df: pd.DataFrame) -> None:
             )
 
 if filtered.empty:
-    if no_curve_filtered.empty:
+    if linked_listing_mode:
+        linked_summary_html = clean_html(
+            """
+            <div class="autosniper-section">
+                <div class="section-title">Linked AI Analysis</div>
+                <div class="section-subtitle">Showing this vehicle only from the Telegram alert link.</div>
+            </div>
+            """
+        )
+        st.markdown(linked_summary_html, unsafe_allow_html=True)
+
+    if linked_listing_mode and no_curve_filtered.empty:
+        st.warning("The linked listing is not in the current AI Analysis active set.")
+    elif linked_listing_mode:
+        st.info("The linked listing is active, but it does not currently have enough curve coverage for AI pricing.")
+        _render_no_curve_section(no_curve_filtered)
+    elif no_curve_filtered.empty:
         st.info("No active listings match the current filters.")
     else:
         st.info("No curve-covered listings match the current filters.")
@@ -3000,23 +3499,19 @@ for _, row in filtered.iterrows():
         base_estimate = interpolate_base_by_year(curves_df, curve_key, year_val, odo_val)
     trim_multiplier = None
     adjusted_estimate = base_estimate
-    stats = None
-    if year_val is not None and (curve_key, year_val) in sold_stats_year.index:
-        stats = sold_stats_year.loc[(curve_key, year_val)]
-    elif curve_key in sold_stats_group.index:
-        stats = sold_stats_group.loc[curve_key]
-    comps_count = int(stats["comps_count"]) if stats is not None else 0
-    comps_median = float(stats["comps_median"]) if stats is not None else None
-    comps_mean = float(stats["comps_mean"]) if stats is not None else None
-    comps_min = float(stats["comps_min"]) if stats is not None else None
-    comps_max = float(stats["comps_max"]) if stats is not None else None
+    sold_subset = _select_sold_subset(sold_df, curve_key, year_val)
+    sold_subset, comp_stats = select_km_aware_comparables(sold_subset, odo_val)
+    comps_count = comp_stats.count
+    comps_median = comp_stats.median
+    comps_mean = comp_stats.mean
+    comps_min = comp_stats.minimum
+    comps_max = comp_stats.maximum
     expected_sale, expected_sale_note = _estimate_expected_sale(
         adjusted_estimate,
         comps_median,
         comps_count,
     )
 
-    sold_subset = _select_sold_subset(sold_df, curve_key, year_val)
     km_percentile = None
     historical_matches = []
     if not sold_subset.empty:
@@ -3025,12 +3520,14 @@ for _, row in filtered.iterrows():
 
     autotrader_median = None
     listings_cluster_ok = False
+    market_lifecycle = None
     curve_tag = _curve_key_for_row(row)
-    at_matches, _ = _score_autotrader_matches(row, curve_tag)
+    at_matches, _ = _score_autotrader_matches(row, curve_tag, limit=50)
     if not at_matches.empty and "price_value" in at_matches.columns:
         price_series = at_matches["price_value"].dropna()
         if not price_series.empty:
             autotrader_median = float(price_series.median())
+    market_lifecycle = _market_lifecycle_summary(at_matches, adjusted_estimate)
     listings_cluster_ok = len(at_matches) >= 3
 
     if adjusted_estimate is None:
@@ -3052,6 +3549,10 @@ for _, row in filtered.iterrows():
                 "comps_mean": comps_mean,
                 "comps_min": comps_min,
                 "comps_max": comps_max,
+                "comps_method": comp_stats.method,
+                "comps_km_min": comp_stats.km_min,
+                "comps_km_max": comp_stats.km_max,
+                "comps_km_distance_median": comp_stats.km_distance_median,
                 "expected_sale": expected_sale,
                 "expected_sale_note": expected_sale_note or "No curve / Not eligible",
             }
@@ -3074,6 +3575,8 @@ for _, row in filtered.iterrows():
         autotrader_median=autotrader_median,
         carsales_estimate=adjusted_estimate,
         listings_cluster_ok=listings_cluster_ok,
+        market_lifecycle=market_lifecycle,
+        reauction_context=reauction_context_for_listing(row, sold_df),
         force_refresh=force_refresh_row,
     )
     analysis["curve_base"] = base_estimate
@@ -3084,6 +3587,10 @@ for _, row in filtered.iterrows():
     analysis["comps_mean"] = comps_mean
     analysis["comps_min"] = comps_min
     analysis["comps_max"] = comps_max
+    analysis["comps_method"] = comp_stats.method
+    analysis["comps_km_min"] = comp_stats.km_min
+    analysis["comps_km_max"] = comp_stats.km_max
+    analysis["comps_km_distance_median"] = comp_stats.km_distance_median
     analysis["expected_sale"] = expected_sale
     analysis["expected_sale_note"] = expected_sale_note
     analysis["spec_reason"] = spec_reason or ""
@@ -3194,24 +3701,6 @@ def _split_notes(value: object) -> list[str]:
     return [note.strip() for note in text.split(";") if note.strip()]
 
 
-def _parse_reason_list(value: object) -> list[str]:
-    if value is None or (isinstance(value, float) and pd.isna(value)):
-        return []
-    if isinstance(value, list):
-        return [str(item) for item in value if str(item).strip()]
-    text = str(value).strip()
-    if not text:
-        return []
-    if text.startswith("[") and text.endswith("]"):
-        try:
-            parsed = json.loads(text)
-        except json.JSONDecodeError:
-            parsed = None
-        if isinstance(parsed, list):
-            return [str(item) for item in parsed if str(item).strip()]
-    return [item.strip() for item in text.split(";") if item.strip()]
-
-
 def _truthy(value: object) -> bool:
     if value is None or (isinstance(value, float) and pd.isna(value)):
         return False
@@ -3223,37 +3712,56 @@ def _truthy(value: object) -> bool:
     return False
 
 
+def _resolve_action_label(row: pd.Series) -> str:
+    current_action = _safe_text(row.get("action_label"), fallback="Review")
+    return derive_action_label_from_row(
+        row,
+        min_profit=MIN_NET_PROFIT_ABSOLUTE,
+        fallback=current_action,
+    )
+
+
 output = output.copy()
+output["action_label"] = output.apply(_resolve_action_label, axis=1)
 output["profit_margin_value"] = output.apply(_compute_profit_margin_value, axis=1)
 output["resale_value"] = output.apply(_compute_resale_value, axis=1)
+output["capital_lane"] = output["resale_value"].apply(classify_capital_lane)
 output["max_bid_value"] = output.apply(_compute_max_bid_value, axis=1)
 output["score_100_value"] = output.apply(_compute_score_100_value, axis=1)
 output["verdict_label"] = output["computed_verdict"].apply(lambda value: _map_verdict_label(str(value))[0])
 output["verdict_class"] = output["computed_verdict"].apply(lambda value: _map_verdict_label(str(value))[1])
 
 filtered_output = output.copy()
-filtered_output = apply_global_sidebar_filters(
-    filtered_output,
-    state_columns=("location_state", "rego_state", "location"),
-    vehicle_type_columns=("body_type", "body"),
-    margin_columns=("profit_margin_value", "profit_margin_percent"),
-    canonical_tag_column="curve_tag",
-    curve_tags=allowed_tags,
-)
-if group_filter != "All":
-    group_column = "curve_tag" if "curve_tag" in filtered_output.columns else "canonical_tag"
-    filtered_output = filtered_output[filtered_output[group_column] == group_filter]
+if target_listing_url and "url" in filtered_output.columns:
+    filtered_output = filtered_output[filtered_output["url"].astype(str).str.strip() == target_listing_url].copy()
+    if filtered_output.empty:
+        st.warning("The linked listing is not in the current AI Analysis active set.")
+else:
+    filtered_output = apply_global_sidebar_filters(
+        filtered_output,
+        state_columns=("location_state", "rego_state", "location"),
+        vehicle_type_columns=("body_type", "body"),
+        margin_columns=("profit_margin_value", "profit_margin_percent"),
+        canonical_tag_column="curve_tag",
+        curve_tags=allowed_tags,
+    )
+    if group_filter != "All":
+        group_column = "curve_tag" if "curve_tag" in filtered_output.columns else "canonical_tag"
+        filtered_output = filtered_output[filtered_output[group_column] == group_filter]
 
-if hide_avoid:
-    filtered_output = filtered_output[filtered_output["verdict_label"] != "Avoid"]
+    if capital_lane_filter != ALL_CAPITAL_LANES:
+        filtered_output = filter_capital_lane(filtered_output, capital_lane_filter)
 
-if min_margin > 0:
-    filtered_output = filtered_output[
-        filtered_output["profit_margin_value"].fillna(-1) >= min_margin
-    ]
+    if hide_avoid:
+        filtered_output = filtered_output[filtered_output["action_label"] != "Avoid"]
 
-if hide_no_max_bid:
-    filtered_output = filtered_output[filtered_output["max_bid_value"].notna()]
+    if min_margin > 0:
+        filtered_output = filtered_output[
+            filtered_output["profit_margin_value"].fillna(-1) >= min_margin
+        ]
+
+    if hide_no_max_bid:
+        filtered_output = filtered_output[filtered_output["max_bid_value"].notna()]
 
 if filtered_output.empty:
     st.info("No active listings match the current filters.")
@@ -3265,7 +3773,7 @@ if sort_choice == "Profit %":
         ascending=[False, False],
         na_position="last",
     )
-elif sort_choice == "Max Bid":
+elif sort_choice == "Proxy max":
     filtered_output = filtered_output.sort_values(
         by=["max_bid_value", "profit_margin_value"],
         ascending=[False, False],
@@ -3294,15 +3802,21 @@ if time_bucket != "All":
 if group_filter != "All":
     active_filter_labels.append("vehicle curve selected")
 active_filter_text = "; ".join(active_filter_labels) if active_filter_labels else "No extra filters active"
+if linked_listing_mode:
+    summary_title = "Linked AI Analysis"
+    summary_subtitle = "Showing this vehicle only from the Telegram alert link."
+else:
+    summary_title = "Active AI Opportunities"
+    summary_subtitle = (
+        f"Showing {len(filtered_output):,} of {len(output):,} curve-covered listing(s). "
+        f"{hidden_count:,} hidden by current filters. {active_filter_text}."
+    )
 
 summary_html = clean_html(
     f"""
     <div class="autosniper-section">
-        <div class="section-title">Active AI Opportunities</div>
-        <div class="section-subtitle">
-            Showing {len(filtered_output):,} of {len(output):,} curve-covered listing(s).
-            {hidden_count:,} hidden by current filters. {active_filter_text}.
-        </div>
+        <div class="section-title">{summary_title}</div>
+        <div class="section-subtitle">{summary_subtitle}</div>
     </div>
     """
 )
@@ -3324,6 +3838,33 @@ def _build_metric_box_with_sub(
             f'<div class="metric-label">{html.escape(label)}</div>',
             f'<div class="metric-value">{html.escape(value)}</div>',
             sub_html,
+            "</div>",
+        ]
+    )
+
+
+def _build_metric_item(label: str, value: str, subtext: Optional[str] = None, class_name: Optional[str] = None) -> str:
+    sub_html = f'<div class="metric-sub">{html.escape(subtext)}</div>' if subtext else ""
+    class_attr = f"metric-item {class_name}".strip() if class_name else "metric-item"
+    return "".join(
+        [
+            f'<div class="{class_attr}">',
+            f'<div class="metric-label">{html.escape(label)}</div>',
+            f'<div class="metric-value">{html.escape(value)}</div>',
+            sub_html,
+            "</div>",
+        ]
+    )
+
+
+def _build_metric_group(title: str, items: list[str], class_name: str) -> str:
+    return "".join(
+        [
+            f'<div class="metric-group {html.escape(class_name)}">',
+            f'<div class="metric-group-title">{html.escape(title)}</div>',
+            '<div class="metric-group-items">',
+            "".join(items),
+            "</div>",
             "</div>",
         ]
     )
@@ -3447,7 +3988,10 @@ def _confidence_badges_html(curve_confidence: str, data_completeness: str, risk_
 
 def _signal_tone(value: object) -> str:
     normalized = _safe_text(value, fallback="").strip().lower()
-    if any(token in normalized for token in ["avoid", "over max", "no edge", "trap", "low", "high risk"]):
+    if any(
+        token in normalized
+        for token in ["avoid", "over max", "no edge", "trap", "low", "high risk", "policy blocked", "no policy bid"]
+    ):
         return "signal-danger"
     if any(token in normalized for token in ["watch", "review", "marginal", "conditional", "medium", "unknown"]):
         return "signal-watch"
@@ -3507,27 +4051,22 @@ def render_listing_card(row: pd.Series) -> None:
     verdict_class = _safe_text(row.get("verdict_class"), fallback="verdict-marginal")
     verdict_pill_class = f"{verdict_class}-pill"
     profit_class = _profit_tier_class(row.get("profit_margin_value"))
-    top_buy_badge = _safe_text(row.get("top_buy_badge"), fallback="").strip()
-    if _truthy(row.get("is_top_buy")) and not top_buy_badge:
-        top_buy_badge = "TOP BUY"
-    top_buy_html = (
-        f'<div class="verdict-pill top-buy-pill">{html.escape(top_buy_badge)}</div>'
-        if top_buy_badge and top_buy_badge != "N/A"
-        else ""
-    )
     action_label = _display_action_label(row.get("action_label"))
 
-    max_bid_display = _format_currency_value(row.get("max_bid_value"))
+    bid_display = bid_display_parts(row)
+    max_bid_display = bid_display["max_label"]
     resale_display = _format_currency_value(row.get("resale_value"))
     profit_pct_display = _format_percent(row.get("profit_margin_value"))
-    current_profit_display = _format_price_text(row.get("profit_at_current_bid_worst") or row.get("profit_at_current_bid"))
-    current_profit_label = _display_profit_label(row.get("current_profit_label"))
     expected_auction_display, expected_finish_status = _expected_finish_display_parts(row)
     expected_profit_display = _format_price_text(row.get("expected_auction_worst_profit") or row.get("expected_auction_profit"))
     expected_profit_label = _display_profit_label(row.get("expected_auction_profit_label"))
     hard_max_safety = _max_bid_safety_text(row)
+    cap_profit_display = _format_price_text(row.get("net_profit_worst") or row.get("net_profit_mid"))
+    expected_finish_sub = f"{expected_finish_status}; scenario profit {expected_profit_display}"
+    if expected_profit_label not in ("Unknown", "N/A"):
+        expected_finish_sub = f"{expected_finish_sub}; {expected_profit_label.lower()}"
     flip_difficulty = _safe_text(row.get("flip_difficulty"), fallback="Unknown")
-    bid_status = _safe_text(row.get("bid_status"), fallback="Unknown")
+    bid_status = bid_display["status"]
     score_100 = row.get("score_100_value")
     score_100_display = "N/A"
     if score_100 is not None and not (isinstance(score_100, float) and pd.isna(score_100)):
@@ -3569,6 +4108,9 @@ def render_listing_card(row: pd.Series) -> None:
     )
 
     header_meta_parts = []
+    capital_lane = _safe_text(row.get("capital_lane"), fallback="").strip()
+    if capital_lane:
+        header_meta_parts.append(capital_lane)
     if canonical_tag:
         header_meta_parts.append(f"Tag {canonical_tag}")
     normalized_text = _safe_text(row.get("normalized_condition_text"), fallback="").strip()
@@ -3617,19 +4159,19 @@ def render_listing_card(row: pd.Series) -> None:
             _build_signal_tile(
                 "Action",
                 action_label,
-                f"Verdict context: {verdict_label}",
+                f"{_display_action_detail(row.get('action_label'))} Verdict: {verdict_label}.",
                 _signal_tone(action_label),
             ),
             _build_signal_tile(
                 "Bid status",
                 bid_status,
-                hard_max_safety,
+                bid_display["status_detail"],
                 _signal_tone(bid_status),
             ),
             _build_signal_tile(
                 "Margin",
                 profit_pct_display,
-                current_profit_label,
+                hard_max_safety,
                 _margin_signal_tone(row.get("profit_margin_value")),
             ),
             _build_signal_tile(
@@ -3660,7 +4202,6 @@ def render_listing_card(row: pd.Series) -> None:
             f'<div class="card-top-meta">{html.escape(header_meta)}</div>' if header_meta else "",
             "</div>",
             '<div class="card-top-right">',
-            top_buy_html,
             f'<div class="verdict-pill {verdict_pill_class} support-pill context-pill">{html.escape(verdict_label)}</div>',
             '<div class="card-actions">',
             f'<a href="{html.escape(_safe_text(row.get("url"), fallback=""))}" target="_blank">Open</a>'
@@ -3672,17 +4213,35 @@ def render_listing_card(row: pd.Series) -> None:
             "</div>",
             signal_row_html,
             '<div class="card-metrics">',
-            _build_metric_box("Current price", current_price_display),
-            _build_metric_box_with_sub("Price update", price_update_value, price_update_sub, price_update_class),
-            _build_metric_box("Time left", time_left_display),
-            _build_metric_box_with_sub("Raw margin now", current_profit_display, current_profit_label),
-            _build_metric_box_with_sub("Expected finish", expected_auction_display, expected_finish_status),
-            _build_metric_box_with_sub("Profit at expected finish", expected_profit_display, expected_profit_label),
-            _build_metric_box_with_sub("Max bid limit", max_bid_display, hard_max_safety),
-            _build_metric_box("Difficulty", flip_difficulty),
-            _build_metric_box("Expected resale", resale_display),
-            _build_metric_box("Profit %", profit_pct_display),
-            _build_metric_box("Score /100", score_100_display),
+            _build_metric_group(
+                "Live auction",
+                [
+                    _build_metric_item("Current price", current_price_display, class_name="primary"),
+                    _build_metric_item("Price update", price_update_value, price_update_sub, price_update_class),
+                    _build_metric_item("Time left", time_left_display),
+                ],
+                "auction-group",
+            ),
+            _build_metric_group(
+                "Deal maths",
+                [
+                    _build_metric_item("Proxy max bid", max_bid_display, bid_display["max_detail"], "primary"),
+                    _build_metric_item("Worst profit at proxy max", cap_profit_display, hard_max_safety),
+                    _build_metric_item("Current vs proxy max", bid_status, bid_display["status_detail"]),
+                    _build_metric_item("Expected finish", expected_auction_display, expected_finish_sub),
+                ],
+                "money-group",
+            ),
+            _build_metric_group(
+                "Model context",
+                [
+                    _build_metric_item("Difficulty", flip_difficulty),
+                    _build_metric_item("Expected resale", resale_display),
+                    _build_metric_item("Profit %", profit_pct_display),
+                    _build_metric_item("Score /100", score_100_display),
+                ],
+                "context-group",
+            ),
             "</div>",
             '<div class="chip-row">',
             f'<span class="{km_chip_class}">{html.escape(km_label)}</span>',
@@ -3698,7 +4257,7 @@ def render_listing_card(row: pd.Series) -> None:
                 )
                 for label, key in bucket_defs
             ),
-            f'<span class="chip warn">AMBIG_DRIVETRAIN</span>' if drivetrain_warning else "",
+            '<span class="chip warn">AMBIG_DRIVETRAIN</span>' if drivetrain_warning else "",
             "</div>",
             "</div>",
         ]
@@ -3739,9 +4298,6 @@ def render_listing_card(row: pd.Series) -> None:
     if spec_reason:
         risk_items.append(f"Spec coverage: {spec_reason}")
 
-    top_buy_failed = _parse_reason_list(row.get("top_buy_failed_reasons"))
-    top_buy_passed = _parse_reason_list(row.get("top_buy_passed_reasons"))
-
     overview_tab, curve_tab, comparables_tab, condition_tab, bid_logic_tab = st.tabs(
         ["Overview", "Curve", "Comparables", "Condition", "Bid Logic"]
     )
@@ -3761,8 +4317,6 @@ def render_listing_card(row: pd.Series) -> None:
     with bid_logic_tab:
         _render_bid_logic_tab(
             row,
-            top_buy_passed=top_buy_passed,
-            top_buy_failed=top_buy_failed,
             risk_items=risk_items,
         )
 
@@ -3770,6 +4324,7 @@ def render_listing_card(row: pd.Series) -> None:
 for _, row in filtered_output.iterrows():
     render_listing_card(row)
 
-_render_no_curve_section(no_curve_filtered)
+if not linked_listing_mode:
+    _render_no_curve_section(no_curve_filtered)
 
 st.caption(f"Last refreshed: {time.strftime('%Y-%m-%d %H:%M:%S')}")

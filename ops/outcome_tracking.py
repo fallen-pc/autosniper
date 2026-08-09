@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, Tuple
+from typing import Iterable
 
 import pandas as pd
 
@@ -44,6 +44,15 @@ ACTUAL_COLUMNS = [
     "is_profitable_actual",
     "hit",
     "settled_date",
+]
+
+REAL_OUTCOME_COLUMNS = [
+    "actual_sale_price",
+    "actual_profit",
+    "outcome_error_abs",
+    "outcome_error_pct",
+    "is_profitable_actual",
+    "hit",
 ]
 
 IDENTITY_COLUMNS = [
@@ -248,11 +257,17 @@ def _prepare_numeric_columns(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def logged_outcome_mask(df: pd.DataFrame) -> pd.Series:
+    """Rows with a real manually logged sale outcome, not just purchase history."""
+    if df.empty:
+        return pd.Series(False, index=df.index)
+    if "actual_sale_price" not in df.columns:
+        return pd.Series(False, index=df.index)
+    return pd.to_numeric(df["actual_sale_price"], errors="coerce").notna()
+
+
 def _infer_settled_dates(df: pd.DataFrame) -> pd.Series:
     primary = pd.to_datetime(df.get("settled_date"), errors="coerce")
-    if "purchase_date" in df.columns:
-        purchase_dates = pd.to_datetime(df["purchase_date"], errors="coerce")
-        primary = primary.fillna(purchase_dates)
     fallback = None
     if "time_remaining_or_date_sold" in df.columns:
         fallback = pd.to_datetime(df["time_remaining_or_date_sold"], errors="coerce")
@@ -325,7 +340,7 @@ def compute_outcome_metrics() -> OutcomeData:
     df["reconditioning_cost"] = df["reconditioning_cost"].fillna(0.0)
 
     df["actual_profit"] = pd.NA
-    has_actuals = df["actual_sale_price"].notna()
+    has_actuals = logged_outcome_mask(df)
     df.loc[has_actuals, "actual_profit"] = (
         df.loc[has_actuals, "actual_sale_price"]
         - (
@@ -362,12 +377,13 @@ def compute_outcome_metrics() -> OutcomeData:
     )
 
     df["settled_date"] = _infer_settled_dates(df)
+    df.loc[~has_actuals, "settled_date"] = pd.NaT
 
     _ensure_directory(SCORING_PATH)
     write_dataframe_csv_atomic(df, SCORING_PATH, index=False)
     write_dataframe_csv_atomic(df, ENRICHED_PATH, index=False)
 
-    metrics_df = df[df["hit"].notna()].copy()
+    metrics_df = df[has_actuals & df["hit"].notna()].copy()
     metrics_df["settled_date"] = pd.to_datetime(metrics_df["settled_date"], errors="coerce")
     metrics_df = metrics_df.dropna(subset=["settled_date"])
     metrics_df["week"] = metrics_df["settled_date"].dt.to_period("W").dt.start_time
@@ -436,5 +452,6 @@ __all__ = [
     "OutcomeData",
     "compute_outcome_metrics",
     "load_scored_listings",
+    "logged_outcome_mask",
     "update_scored_listings",
 ]

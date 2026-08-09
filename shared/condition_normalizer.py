@@ -8,7 +8,6 @@ from pathlib import Path
 from typing import Iterable, List, Tuple
 
 import yaml
-from shared.data_loader import dataset_path
 
 RULES_PATH = Path(__file__).resolve().parent.parent / "config" / "condition_rules_v1.csv"
 RULES_V2_PATH = Path(__file__).resolve().parent.parent / "config" / "condition_dictionary_v2.yaml"
