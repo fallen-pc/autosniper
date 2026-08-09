@@ -44,6 +44,29 @@ whole workflow can be shared on GitHub and hosted on Streamlit Cloud.
 
 ---
 
+## Dashboard Access Control
+
+The dashboard exposes controls that launch scrapers, rebuild models, and write datasets, so any
+non-loopback deployment must be password protected.
+
+| Variable | Purpose |
+| -------- | ------- |
+| `AUTOSNIPER_DASHBOARD_PASSWORD` | Shared password required before any page renders. |
+| `AUTOSNIPER_DASHBOARD_PASSWORD_SHA256` | Hex SHA-256 digest of the password; preferred over the plaintext variable. |
+| `AUTOSNIPER_DASHBOARD_AUTH_DISABLED` | Set to `1` to run with no gate. Only safe for a loopback-only local session. |
+
+On the VPS runtime (`AUTOSNIPER_VPS_MODE=1`, or a checkout at `/opt/autosniper`) the app refuses to
+render until one of the password variables is set. Generate a digest with:
+
+```powershell
+python -c "import hashlib,getpass;print(hashlib.sha256(getpass.getpass().encode()).hexdigest())"
+```
+
+The password gate is application-level only; keep the deployment behind HTTPS and restrict the
+hosting firewall to the addresses that need it.
+
+---
+
 ## Commit Hygiene
 
 Enable commit-slicing guardrails once per clone:

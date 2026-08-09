@@ -5,7 +5,8 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
-from typing import Dict, Optional, Tuple
+from typing import Dict, Iterable, Optional, Tuple
+from urllib.parse import urlparse
 
 import pandas as pd
 from dateutil import parser as date_parser
@@ -98,6 +99,23 @@ class ValidatorConfig:
 
 def _s(value: object) -> str:
     return "" if value is None else str(value).strip()
+
+
+def is_allowed_scrape_url(url: object, allowed_domains: Iterable[str]) -> bool:
+    """Return True when ``url`` is an HTTPS URL on one of ``allowed_domains``.
+
+    Domains match the host itself or any subdomain of it, so a scrape target
+    can never be redirected at an unrelated or internal host.
+    """
+    parsed = urlparse(_s(url))
+    if parsed.scheme != "https" or not parsed.hostname:
+        return False
+    host = parsed.hostname.lower().rstrip(".")
+    return any(
+        host == domain or host.endswith(f".{domain}")
+        for domain in (str(item).strip().lower().lstrip(".") for item in allowed_domains)
+        if domain
+    )
 
 
 def _is_future_sold_date(value: object, *, today: date | None = None) -> bool:
