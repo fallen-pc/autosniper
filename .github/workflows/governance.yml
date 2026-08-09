@@ -53,10 +53,29 @@ jobs:
           python scripts/project_memory.py check --base-ref "${{ github.event.pull_request.base.sha }}" --head-ref "${{ github.event.pull_request.head.sha }}"
 
       - name: Run governed checks
+        if: github.event_name != 'pull_request' || !contains(github.event.pull_request.labels.*.name, 'tracked-dataset-changes-approved')
         env:
           GOVERNANCE_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
         run: |
           python scripts/governance_checks.py check --publish-summary
+
+      - name: Run governed checks with approved dataset snapshot
+        if: github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'tracked-dataset-changes-approved')
+        env:
+          GOVERNANCE_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          python scripts/governance_checks.py check --publish-summary \
+            --allow-dataset-change CSV_data/restricted/restricted_group_map.csv \
+            --allow-dataset-change CSV_data/scrapers/active_vehicle_details.csv \
+            --allow-dataset-change CSV_data/scrapers/active_vehicle_links.csv \
+            --allow-dataset-change CSV_data/scrapers/all_vehicle_links.csv \
+            --allow-dataset-change CSV_data/scrapers/excluded_listings.csv \
+            --allow-dataset-change CSV_data/scrapers/normalised_data.csv \
+            --allow-dataset-change CSV_data/scrapers/pipeline_exclusions.csv \
+            --allow-dataset-change CSV_data/scrapers/raw_vehicle_data.csv \
+            --allow-dataset-change CSV_data/scrapers/referred_cars.csv \
+            --allow-dataset-change CSV_data/scrapers/sold_cars.csv \
+            --allow-dataset-change CSV_data/scrapers/vehicle_static_details.csv
 
       - name: Upload governance reports
         if: always()
