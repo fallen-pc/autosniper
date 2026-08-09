@@ -6,6 +6,7 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 from shared.navigation import render_sidebar_navigation
+from shared.safe_paths import resolve_autotrader_output_path
 
 from shared.styling import (
     clean_html,
@@ -129,7 +130,9 @@ def _build_scrape_command() -> list[str]:
     if url:
         command.extend(["--url", url])
     if output_path:
-        command.extend(["--output", output_path])
+        command.extend(
+            ["--output", str(resolve_autotrader_output_path(output_path, root_dir=ROOT_DIR))]
+        )
     if storage_state:
         command.extend(["--storage-state", storage_state])
     if cookie_file:
@@ -227,8 +230,13 @@ if run_clicked:
         _render_command_result(result)
 
 section_heading("Latest Output", "Preview the newest Autotrader results.")
-output_file = Path(output_path or DEFAULT_OUTPUT)
-if output_file.exists():
+try:
+    output_file = resolve_autotrader_output_path(output_path or DEFAULT_OUTPUT, root_dir=ROOT_DIR)
+except ValueError as exc:
+    st.error(str(exc))
+    output_file = None
+
+if output_file is not None and output_file.exists():
     try:
         results = pd.read_csv(output_file)
     except Exception as exc:  # noqa: BLE001

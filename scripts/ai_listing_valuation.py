@@ -3,7 +3,6 @@ import os
 import re
 import warnings
 from datetime import datetime, timezone
-from functools import lru_cache
 from hashlib import sha256
 from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional

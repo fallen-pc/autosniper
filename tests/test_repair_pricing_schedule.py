@@ -321,6 +321,13 @@ def test_parse_quote_response_extracts_shorthand_money_ranges() -> None:
     assert parsed["quoted_high"] == 700
 
 
+def test_parse_quote_response_extracts_aud_and_en_dash_ranges() -> None:
+    parsed = parse_quote_response("Typical range is AUD 420 – $680.")
+
+    assert parsed["quoted_low"] == 420
+    assert parsed["quoted_high"] == 680
+
+
 def test_apply_quote_response_and_promote_to_pricing_row() -> None:
     quotes = pd.DataFrame(
         [

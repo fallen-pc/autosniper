@@ -166,7 +166,6 @@ def build_scraper_operations_snapshot(
 
     grays_links_path = scraper_dir / "all_vehicle_links.csv"
     grays_active_path = scraper_dir / "active_vehicle_details.csv"
-    grays_sold_path = scraper_dir / "sold_cars.csv"
     autotrader_path = autotrader_dir / "first_page_results.csv"
     autotrader_session_path = autotrader_dir / "storage_state.json"
     external_links_path = external_dir / "external_auction_links.csv"
@@ -176,7 +175,6 @@ def build_scraper_operations_snapshot(
 
     grays_links = _read_csv(grays_links_path)
     grays_active = _read_csv(grays_active_path)
-    grays_sold = _read_csv(grays_sold_path)
     autotrader = _read_csv(autotrader_path)
     external_links = _read_csv(external_links_path)
     external_all = _read_csv(external_all_path)
