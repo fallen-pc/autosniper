@@ -35,50 +35,61 @@ def navigation_spec(*, vps_mode: bool | None = None) -> NavigationSpec:
     if vps_mode:
         system_pages.insert(0, ("pages/00_SCRAPER_OPERATIONS.py", "Scraper Operations", True))
 
-    return OrderedDict(
-        [
-            (
-                "SYSTEM",
-                system_pages,
-            ),
-            (
-                "PIPELINE",
-                [
-                    ("pages/12_GRAYS_PIPELINE.py", "Grays Pipeline", False),
-                    ("pages/05_HEALTH.py", "Health", False),
-                ],
-            ),
-            (
-                "VALUATION",
-                [
-                    ("pages/03_CURVES.py", "Curves", False),
-                    ("pages/15_CURVE_BUILDER_V2.py", "Curve Builder V2", False),
-                    ("pages/14_CURVE_PIPELINE.py", "Curve Pipeline", False),
-                ],
-            ),
-            (
-                "AI",
-                [
-                    ("pages/6_AI_ANALYSIS.py", "AI Analysis", False),
-                    ("pages/17_MODEL_PROOF.py", "Model Proof", False),
-                ],
-            ),
-            (
-                "INTELLIGENCE",
-                [
-                    ("pages/8_MISSED_OPPORTUNITIES.py", "Missed Opportunities", False),
-                    ("pages/18_REPAIR_REVIEW.py", "Repair Review", False),
-                    ("pages/19_REPAIR_PRICING.py", "Repair Pricing", False),
-                ],
-            ),
-            (
-                "OPERATIONS",
-                [
-                    ("pages/7_AUTOTRADER_SCRAPER.py", "Autotrader Scraper", False),
-                ],
-            ),
-        ]
-    )
+    valuation_pages = [
+        ("pages/03_CURVES.py", "Curves", False),
+    ]
+    intelligence_pages = [
+        ("pages/8_MISSED_OPPORTUNITIES.py", "Missed Opportunities", False),
+    ]
+    operations_pages: list[tuple[str, str, bool]] = []
+    if not vps_mode:
+        # Production is intentionally runtime-only. These pages can write governed
+        # inputs or launch scraper work, so they remain development-only surfaces.
+        valuation_pages.extend(
+            [
+                ("pages/15_CURVE_BUILDER_V2.py", "Curve Builder V2", False),
+                ("pages/14_CURVE_PIPELINE.py", "Curve Pipeline", False),
+            ]
+        )
+        intelligence_pages.extend(
+            [
+                ("pages/18_REPAIR_REVIEW.py", "Repair Review", False),
+                ("pages/19_REPAIR_PRICING.py", "Repair Pricing", False),
+            ]
+        )
+        operations_pages.append(("pages/7_AUTOTRADER_SCRAPER.py", "Autotrader Scraper", False))
+
+    groups = [
+        (
+            "SYSTEM",
+            system_pages,
+        ),
+        (
+            "PIPELINE",
+            [
+                ("pages/12_GRAYS_PIPELINE.py", "Grays Pipeline", False),
+                ("pages/05_HEALTH.py", "Health", False),
+            ],
+        ),
+        (
+            "VALUATION",
+            valuation_pages,
+        ),
+        (
+            "AI",
+            [
+                ("pages/6_AI_ANALYSIS.py", "AI Analysis", False),
+                ("pages/17_MODEL_PROOF.py", "Model Proof", False),
+            ],
+        ),
+        (
+            "INTELLIGENCE",
+            intelligence_pages,
+        ),
+    ]
+    if operations_pages:
+        groups.append(("OPERATIONS", operations_pages))
+    return OrderedDict(groups)
 
 
 def build_navigation() -> "OrderedDict[str, list[st.Page]]":
