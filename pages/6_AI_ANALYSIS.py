@@ -1990,35 +1990,6 @@ def _render_grays_comparables(row: pd.Series, comps_items: list[str]) -> None:
             st.markdown("\n".join(f"- {line}" for line in comp_unmatched))
 
 
-def _render_overview_tab(
-    row: pd.Series,
-    *,
-    ai_notes: list[str],
-    risk_items: list[str],
-    combined_flags: list[str],
-) -> None:
-    curve_confidence = _curve_confidence_label(row.get("confidence"))
-    comps_count = _format_count(row.get("comps_count"))
-    risk_count = str(len(combined_flags))
-    summary_cols = st.columns(3)
-    summary_cols[0].metric("Curve confidence", curve_confidence)
-    summary_cols[1].metric("Comparable sales", comps_count)
-    summary_cols[2].metric("Risk flags", risk_count)
-
-    profile_items = [
-        f"Vehicle tag: {_safe_text(row.get('canonical_tag'), fallback='N/A')}",
-        f"Expected sale source: {_safe_text(row.get('expected_sale_note'), fallback='N/A')}",
-        f"Curve tag: {_curve_key_for_row(row) or 'N/A'}",
-    ]
-    _render_bullets("Listing profile", profile_items)
-    _render_bullets("AI reasoning", ai_notes[:4])
-    _render_bullets("Notes / risks", risk_items[:4])
-
-    listing_url = _safe_text(row.get("url"), fallback="")
-    if listing_url:
-        st.markdown(f"[Open listing]({listing_url})")
-
-
 def _render_curve_tab(row: pd.Series) -> None:
     resale_display = _format_currency_value(_compute_resale_value(row))
     odometer_value = row.get("odometer_numeric")
@@ -2955,6 +2926,27 @@ st.markdown(
         }
         .vehicle-card.profit-tier-mid {
             --card-glow: 0 0 0 rgba(0, 0, 0, 0);
+        }
+        [data-testid="stVerticalBlockBorderWrapper"]:has(.listing-shell-marker) {
+            border-color: rgba(39, 182, 255, 0.32);
+            border-radius: 18px;
+            background: rgba(8, 18, 29, 0.34);
+            padding: 0.35rem 0.85rem 0.8rem;
+        }
+        .listing-shell-marker {
+            height: 0;
+        }
+        .listing-persistent-header {
+            padding: 0.2rem 0.15rem 0.65rem;
+        }
+        .listing-spacer {
+            height: 1.25rem;
+        }
+        [data-testid="stMetricValue"] {
+            background: none !important;
+            -webkit-background-clip: initial !important;
+            -webkit-text-fill-color: #E5E5E5 !important;
+            color: #E5E5E5 !important;
         }
         .card-top {
             display: flex;
@@ -4190,9 +4182,9 @@ def render_listing_card(row: pd.Series) -> None:
         ]
     )
 
-    card_html = "".join(
+    listing_header_html = "".join(
         [
-            f'<div class="vehicle-card {verdict_class} {profit_class}">',
+            '<div class="listing-persistent-header">',
             '<div class="card-top">',
             '<div class="vehicle-title-block">',
             '<div class="vehicle-title">',
@@ -4211,6 +4203,13 @@ def render_listing_card(row: pd.Series) -> None:
             "</div>",
             "</div>",
             "</div>",
+            "</div>",
+        ]
+    )
+
+    card_html = "".join(
+        [
+            f'<div class="vehicle-card {verdict_class} {profit_class}">',
             signal_row_html,
             '<div class="card-metrics">',
             _build_metric_group(
@@ -4262,18 +4261,6 @@ def render_listing_card(row: pd.Series) -> None:
             "</div>",
         ]
     )
-    st.markdown(card_html, unsafe_allow_html=True)
-
-    ai_notes = _split_notes(row.get("confidence_notes"))
-    expected_note = _safe_text(row.get("expected_sale_note"), fallback="")
-    if expected_note:
-        ai_notes.append(expected_note)
-    if not ai_notes:
-        ai_notes = [
-            f"Confidence: {confidence_text}",
-            f"Margin target: {profit_pct_display}",
-        ]
-
     comps_min = _format_currency_value(row.get("comps_min"))
     comps_max = _format_currency_value(row.get("comps_max"))
     comps_range = (
@@ -4298,27 +4285,26 @@ def render_listing_card(row: pd.Series) -> None:
     if spec_reason:
         risk_items.append(f"Spec coverage: {spec_reason}")
 
-    overview_tab, curve_tab, comparables_tab, condition_tab, bid_logic_tab = st.tabs(
-        ["Overview", "Curve", "Comparables", "Condition", "Bid Logic"]
-    )
-    with overview_tab:
-        _render_overview_tab(
-            row,
-            ai_notes=ai_notes,
-            risk_items=risk_items,
-            combined_flags=combined_flags,
+    with st.container(border=True):
+        st.markdown('<div class="listing-shell-marker"></div>', unsafe_allow_html=True)
+        st.markdown(listing_header_html, unsafe_allow_html=True)
+        overview_tab, curve_tab, comparables_tab, condition_tab, bid_logic_tab = st.tabs(
+            ["Overview", "Curve", "Comparables", "Condition", "Bid Logic"]
         )
-    with curve_tab:
-        _render_curve_tab(row)
-    with comparables_tab:
-        _render_comparables_tab(row, comps_items)
-    with condition_tab:
-        _render_condition_tab(row, defect_profile)
-    with bid_logic_tab:
-        _render_bid_logic_tab(
-            row,
-            risk_items=risk_items,
-        )
+        with overview_tab:
+            st.markdown(card_html, unsafe_allow_html=True)
+        with curve_tab:
+            _render_curve_tab(row)
+        with comparables_tab:
+            _render_comparables_tab(row, comps_items)
+        with condition_tab:
+            _render_condition_tab(row, defect_profile)
+        with bid_logic_tab:
+            _render_bid_logic_tab(
+                row,
+                risk_items=risk_items,
+            )
+    st.markdown('<div class="listing-spacer"></div>', unsafe_allow_html=True)
 
 
 for _, row in filtered_output.iterrows():

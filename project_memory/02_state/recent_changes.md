@@ -1,5 +1,15 @@
 # Recent Changes
 
+- 2026-08-09: Prepared the preserved dirty worktree as an intentional GitHub catch-up on `codex/local-dirty-catchup-20260809`. The publishable scope includes the July/August governed curve campaign (`115` to `191` canonical curve tags), all manifest-linked curve snapshots, Carsales/Apify exact-URL and flat-schema ingestion improvements, canonical tagging and focused regressions, reusable curve worklists/builders, classification PDF generators, vehicle-class-aware repair assessment, and the AI Analysis listing-card layout update. Generated CatBoost output, the live repair-review queue, paid-run raw JSON, backup/runtime CSVs, rebuilt artifacts, and local editor configuration remain deliberately uncommitted.
+
+- 2026-08-04: Ran the daily repair quote Gmail pass. All Toyo Auto Parts replied to `RQ-0053` (`bumper_damage`) that no used Corolla bumper cover was available, so `repair_quote_requests.csv` was marked `replied` / `no_price_found` and no pricing schedule row was promoted. The overdue follow-up detector returned no eligible rows. Sent one safe non-duplicate fresh request, `RQ-0054` (`bonnet_strut_damage` to Melbourne Wide Mobile Mechanics, Gmail thread `19fc9ec3d8ebeca1`), after the related All Toyo parts request had no stock. Focused repair-pricing tests and project-memory checks passed.
+
+- 2026-08-02: Corrected stale runtime-authority notes after a local audit mistakenly treated disabled laptop Task Scheduler jobs and stale laptop CSVs as production failures. The DigitalOcean VPS at `/opt/autosniper` is explicitly the live runtime and single data writer; future scheduler, scraper-freshness, active-listing, and valuation-runtime audits must inspect VPS systemd timers, run state, health output, and VPS-owned CSVs first. Live read-only verification showed the app service active/enabled, daily and hourly timers enabled, both latest jobs successful, current coverage date `2026-08-02`, and fresh active/sold/valuation datasets. Updated current status, open issues, next actions, the historical cloud guide, and added `vps_runtime_authority_2026-08-02.md`; historical dated laptop notes remain historical.
+
+- 2026-07-30: Ran the daily repair quote Gmail pass. All Toyo Auto Parts replied to `RQ-0048` (`lighting_condensation_damage`) that no used Corolla light assembly was in stock, so the request log was marked `replied` / `no_price_found` and no pricing schedule row was promoted. The overdue follow-up detector returned no eligible rows because older open Gmail requests already had follow-up markers/drafts or detail/no-price blockers, and the newest sent rows were too recent. Sent two safe non-duplicate fresh requests to All Toyo Auto Parts: `RQ-0050` (`grille_damage`, Gmail message/thread `19fb02fc7d40bb26`) and `RQ-0051` (`tailgate_latch_damage`, Gmail message/thread `19fb02fde7bbc8a6`). Focused repair-pricing tests passed.
+
+- 2026-07-27: Ran the daily repair quote Gmail pass. Tyroola replied to `RQ-0046` (`tyre_replacement`) with a 205/55R16 product-range link but no direct dollar low/default/high price, so the request log was marked `replied` / `no_price_found` and no pricing schedule row was promoted. No overdue follow-up drafts were prepared because all eligible old Gmail rows already had prior follow-up markers, existing drafts, no-price/detail blockers, or recent send dates. Sent one safe non-duplicate fresh request, `RQ-0047` (`tyre_puncture` to Highway Tyres), using the approved representative 205/55R16 Corolla assumption and recording Gmail message/thread `19fa0b8d953ddbb5`.
+
 - 2026-07-26: Closed the stale Grays sold-tag gap. Restricted-dataset rebuilds now persist refreshed `canonical_tag` / `canonical_reason` assignments back into `sold_cars.csv` without changing its row set or rewriting an unchanged file, and governed `save_curves()` calls immediately rebuild the restricted active/sold datasets so newly supported curves unlock matching historical Grays evidence without waiting for the next daily pipeline.
 - 2026-07-26: Added `scripts/deploy_vps.ps1` for guarded code-only DigitalOcean deployments. It packages the Streamlit/source/config surfaces while explicitly protecting VPS-generated CSV data, curves, artifacts, logs, outputs, and virtual environments; validates Python locally and in a remote staging directory; refuses to deploy over an active scheduled pipeline job unless forced; keeps five rollback snapshots; installs changed requirements; restarts Streamlit; and requires a passing health endpoint before reporting success.
 
@@ -337,16 +347,72 @@
 - 2026-07-22: Added explicit capital lanes to AI Analysis: first-buy below `$20k` curve resale, higher-capital from `$20k` through `$40k`, specialist above `$40k`, and unpriced/review. The sidebar can isolate a lane and each card shows its lane; this is presentation/filtering only and does not weaken curve coverage, repair, action, or auction-site proxy-max rules.
 - 2026-07-23: Ran the daily repair quote Gmail pass. Promoted Classic Motor Trimmers' direct `carpet_torn` reply as a medium-confidence install-only quote (`$900`, excluding the Toyota one-piece carpet part), marked On Demand Auto Care's `interior_stains` reply as `no_price_found`, and sent no additional fresh outreach because the live request log already had today's new non-duplicate request batch.
 - 2026-07-26: Ran the daily repair quote Gmail pass. No new direct supplier prices were promotable; prepared in-thread follow-up drafts for `RQ-0042` bonnet latch (`r-5687123799446344704` / `19f9bdd20f529e19`) and `RQ-0044` punctured bumper (`r-6933280293967780977` / `19f9bdd27d84b114`), then sent one non-duplicate tyre quote request to Tyroola as `RQ-0046` (`19f9bde305815ae3`) using a recorded representative `205/55R16` assumption and no rego. Focused repair-pricing tests passed, overdue candidates are clear, and duplicate canonical-defect/supplier pairs remain zero.
+# 2026-07-26
+
+- Added `scripts/generate_classification_reference_pdf.py`, which builds an audit-friendly PDF from the current governed vehicle-tag mappings, curve universe, repair dictionary, pricing schedule, review decisions, and live repair queue.
+- Reworked the PDF's base-vehicle section into plain-English vehicle, variant, series, body, fuel, and gearbox columns; raw canonical tags remain only as audit references.
+
+# 2026-08-05
+
+- Split the classification reference into separately generated `vehicle_classifications.pdf` and `repair_classifications.pdf` outputs, each rebuilt from the current governed vehicle or repair sources with its own flow, counts, appendices, and source list.
+- Added a governed Mitsubishi Outlander ES ZM 2WD 2.5L petrol curve from 11 in-band private Carsales listings (2021-2023, 41,000-185,000 km). The paid Apify run cost US$0.033; its 4 AWD rows and lone 2024 2WD row remain excluded. Also updated the Carsales importer to preserve flat-schema odometer, series, specification, seller, and location fields instead of silently writing blanks.
+- Added four governed staged-evidence lanes: Ford Falcon XR6 FG MkII automatic (9 private Carsales rows), Toyota RAV4 CV ACA33R 4x4 automatic (10), Subaru Forester X S3 manual AWD (10), and Holden Calais V VF V6 automatic sedan (9). Focus Trend manual, GR Yaris, mixed-drivetrain X-Trail, and mixed-engine Calais VZ remain held because their evidence did not support a safe curve.
+
+# 2026-07-27
+
+- Added `notes/curve_decisions/rejected_curve_lanes.csv` as the durable no-repeat ledger for curve lanes assessed but not published. It records the Grays demand, exact retail-evidence count, rejection reason, reconsideration threshold, Apify run ID, and cost. Seeded it with the recent X5 3.0d, A4 1.8 TFSI, CR-V Sport RD, Golf 90TSI A7, Golf Comfortline, Astra CD AH, Kuga Trend TF diesel, and duplicate Commodore SV6 VE decisions. Future curve batches must append every held/rejected lane here instead of leaving the decision only in chat.
+- Continued the exact Grays-demand queue and published governed private-Carsales curves for Subaru XV 2.0i-S G4X, Mitsubishi Lancer ES CJ automatic sedan, Volkswagen Tiguan 132TSI Pacific 5N, and Subaru Outback base 2.5i B5A/4GEN. Added narrow `Sportwagon` model aliases for the already-governed Commodore Omega VE and VE Series II wagon curves without changing their prices. Governed restricted-sold coverage reached `4,117`; focused verification passed `124` tests with zero curve warnings.
+- Appended Corolla Ascent Seca ZZE123R, Barina TM hatch, and Cruze CD JH sedan holds to the rejection ledger. Corolla is a catalogue mismatch (Carsales identifies Ascent as ZZE122R and ZZE123R as Sportivo/manual); Barina lacks a reliable Grays badge and has only five matching unbadged rows; Cruze has only five exact private CD JH Series II automatic sedan rows.
 
 # 2026-07-28
 
 - Enabled unattended Autotrader scraping on the DigitalOcean VPS. The guarded deployment now includes `autotrader_isolated` source while excluding its authenticated runtime output, and the scheduler selects Chromium on Linux and wraps headed runs with `xvfb-run` when no display is present. A production-path one-page VPS proof collected 26 Melbourne/VIC listings without a 403 and wrote `autotrader_isolated/output/first_page_results.csv`; the VPS environment now enables the daily Autotrader stage.
 - Tightened VPS publishing into an explicit code-sync workflow. `scripts/deploy_vps.ps1` now refuses ambiguous dirty deployments by default, packages the exact current Git commit rather than arbitrary working-tree contents, records that commit on the VPS after health verification, and supports `-Push` for a single deploy-and-sync operation. Runtime scraper data and authenticated browser state remain VPS-owned and protected.
+- Continued the Grays-demand curve queue. Published governed exact-lane curves for Honda Civic VTi 8th Gen automatic sedan, Ford Focus Ambiente LW MkII automatic hatch, Audi Q5 3.0 TDI quattro 8R, Volkswagen Tiguan 103TDI 5N, and BMW 320i Executive E90; added narrow Sportwagon SV6 aliases to existing Commodore VE, VE Series II, and VF wagon curves. The Focus matcher was tightened after verification exposed accidental plain-LW matches. Focus Ambiente LW MkII sedan remains held with only two exact private listings and is recorded in the rejection ledger. Restricted sold coverage reached 4,239; 114 focused matcher tests passed with zero curve warnings, and the governed snapshot is `curves_20260728T133149Z.csv`.
 
 # 2026-07-29
 
+- Daily repair quote improvement: promoted Highway Tyres direct Gmail quote for `tyre_puncture` to the pricing schedule at $40 low/default/high, marked `RQ-0047` priced, and sent two non-duplicate fresh requests (`RQ-0048` lighting assembly to All Toyo, `RQ-0049` window regulator repair to Melbourne Wide Mobile Mechanics). Focused repair pricing tests passed.
+- Continued the exact Grays-demand queue from 4,239 to 4,368 covered deduplicated sold records. Added the missing Grays `Series 320i Exec. E90` alias to the existing BMW curve and published governed private-Carsales curves for Jeep Grand Cherokee Laredo WK explicit 4x4 petrol, Mazda CX-9 Grand Touring TB AWD/4WD, Hyundai i20 Active PB manual, Dodge Journey SXT 3.6, Dodge Journey R/T 3.6, and Mercedes C250 BE/CGI/BlueEFFICIENCY Avantgarde W204 1.8 turbo petrol. Full focused verification passed 120 tests with zero curve warnings; snapshot `curves_20260728T153953Z.csv`.
+- Appended durable holds for drivetrain-ambiguous generic Jeep Laredo WK petrol rows, early Journey SXT 2.7 and isolated R/T 2.7 rows, Honda Odyssey Luxury 2004-2008 with only four exact listings, and Suzuki Swift EZ because Carsales does not expose EZ as the expected series filter. Paid Apify spend for this continuation was about US$0.79.
 - Added a read-only Scraper Operations landing page for the VPS and made it the default route while preserving AI Analysis at `/AI_ANALYSIS`. It reports real scheduler state, next daily/hourly times, Grays and Autotrader freshness/counts, Pickles/Slattery/Manheim discovery and detail coverage, priced rows, failures, authenticated-session availability, and a distinct Manheim 403 `Blocked` state without exposing credentials or public run controls.
+# 2026-07-29 - Grays-demand curve expansion continued
 
-# 2026-08-09
+- Completed a capped 35-model private Carsales/Apify batch (`mR71gh69iHA8jcSVG`): 4,786 unique listings for US$5.77987.
+- Reconciled the batch against the actual live Grays source (`sold_cars.csv`) and retained five exact generation/trim/powertrain lanes with at least six auction records: Mazda 2 Neo DE (17), Mitsubishi ASX LS XB (14), Nissan Qashqai Ti J11 (9), MG3 Core SZP1 (7), and Hyundai Kona Active OS (6). A provisional 67-lane build based on the wrong demand source was pruned before handoff.
+- Added body normalization for fastback, commercial van, crew-cab utility, and crew-cab pickup source encodings.
+- Recorded every specifically assessed unpublished lane in `rejected_curve_lanes.csv`; shared-batch holds use zero marginal lane cost to avoid counting the same batch charge repeatedly.
+
+# 2026-07-31
+
+- Replaced the stale Autotrader-based curve worklist with a live Grays-native target report that groups exact make/model/variant/body/fuel/transmission lanes, splits disconnected year bands, counts unique auction vehicles, and flags previously assessed lanes.
+- Reconsidered the HiAce Commuter hold after discovering 26 live Grays `GDH320R` bus records hidden by the earlier variant matcher. Reused 11 clean private Carsales Commuter 2.8-diesel listings from the already-paid batch, published the governed H300/GDH320R curve without further Apify spend, and increased restricted sold coverage from 4,517 to 4,544.
+
+# 2026-08-05
+
+- Continued the live Grays coverage queue without additional Apify spend. Extended the governed BMW 320i Executive E90 curve through its final 2011 model year using the existing year premium, unlocking eight sold rows while keeping 2012/F30 excluded.
+- Published separate Mazda CX-7 ER Series 2 Classic 2.5 petrol automatic and Luxury Sports 2.3 turbo AWD petrol automatic curves from 16/9 exact private Carsales listings and 16/22 unique live Grays vehicles. Restricted sold coverage increased from 4,544 to 4,592 before the BMW/CX-7 combined final refresh.
+- Reassessed and retained holds for BMW X5 3.0d E70 because 24 retail rows still produce a flat high-kilometre-only fit, and Subaru Outback 2.5i B4A because its six exact retail listings all sit between 186,305 and 412,000 km.
+- Fixed paid Carsales preflight for `--start-url-file`: each exact private make/model URL is now evaluated individually instead of being mislabeled as a broad scrape. The focused wrapper suite passes 13 tests.
+
+- Published governed private-Carsales curves for BMW 118i F20 1.6T, Range Rover Evoque TD4 150 SE 9, BMW 118i E87 2.0, Audi Q3 2.0 TFSI quattro 8U, and Honda Accord Euro Luxury seventh generation.
+- Added narrow canonical matchers and regression tests so adjacent engines, generations, trims, bodies, fuels, and transmissions remain excluded.
+- Retagged/rebuilt the restricted datasets after each accepted lane; governed sold coverage reached 4,465.
+- Held BMW 318i E46 for thin retail evidence, later BMW 118i F20 LCI for thin Grays demand, and Subaru Tribeca 3.6R Premium B9 despite strong retail evidence because only three matching Grays sold records exist.
+- Paid Apify runs and every unpublished assessed lane were recorded in `notes/curve_decisions/rejected_curve_lanes.csv`.
+
+# 2026-08-02 - Repair quote outreach maintenance
+
+- Prepared Gmail follow-up drafts for RQ-0049 window regulator diagnosis/repair and RQ-0050 Corolla grille replacement, recorded the draft IDs/message IDs in `repair_quote_requests.csv`, and sent one non-duplicate vehicle-specific `seat_issue` request to Classic Motor Trimmers as RQ-0052. No new supplier price reply was promotable into `repair_pricing_schedule.csv`.
+
+# 2026-08-03 - Repair quote outreach maintenance
+
+- Prepared a Gmail follow-up draft for RQ-0051 tailgate latch/lock-actuator pricing and recorded the draft ID/message ID in `repair_quote_requests.csv`. Sent one non-duplicate vehicle-specific `bumper_damage` used-part request to All Toyo Auto Parts as RQ-0053. No new supplier price reply was promotable into `repair_pricing_schedule.csv`.
+
+# 2026-08-09 - Repair quote outreach maintenance
+
+- Classified Classic Motor Trimmers' RQ-0052 seat-trim reply as inspection-required/no-price, prepared an in-thread follow-up draft for RQ-0054 bonnet strut replacement, and sent two non-duplicate vehicle-specific fresh requests: RQ-0055 windscreen replacement to Windscreen Medics and RQ-0056 fitted battery replacement to Acetune Mobile Mechanics. No direct supplier price was promotable into `repair_pricing_schedule.csv`; duplicate pairs stayed at zero, overdue candidates stayed at zero, and focused repair pricing tests passed.
+
+# 2026-08-09 - GitHub main catch-up
 
 - Cleared PR #8 lint and CodeQL findings before merging the long-lived development branch into `main`. The Autotrader Streamlit page now uses its fixed governed output file instead of accepting a user-controlled filesystem path; repair-quote money-range parsing now uses a linear whitespace pattern; two dead lint findings were removed. Added focused AUD/en-dash range coverage and verified the security slice from an isolated clean worktree. Governance now accepts the explicit `tracked-dataset-changes-approved` label only through an exact 11-file allowlist for this historical data snapshot; associated merge commits inherit that approval through GitHub's commit-to-PR lookup while unlabeled PRs and direct pushes remain strict.
