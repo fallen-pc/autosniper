@@ -1,0 +1,37 @@
+# Highest-yield remaining Grays-backed models, ordered by current sold demand.
+# Private Carsales listings only. Exact lane filtering happens after import.
+https://www.carsales.com.au/cars/private/mazda/cx-3/
+https://www.carsales.com.au/cars/private/toyota/landcruiser-prado/
+https://www.carsales.com.au/cars/private/toyota/hiace/
+https://www.carsales.com.au/cars/private/toyota/landcruiser/
+https://www.carsales.com.au/cars/private/kia/sportage/
+https://www.carsales.com.au/cars/private/mitsubishi/asx/
+https://www.carsales.com.au/cars/private/kia/sorento/
+https://www.carsales.com.au/cars/private/kia/carnival/
+https://www.carsales.com.au/cars/private/hyundai/santa-fe/
+https://www.carsales.com.au/cars/private/honda/cr-v/
+https://www.carsales.com.au/cars/private/mazda/bt-50/
+https://www.carsales.com.au/cars/private/mazda/2/
+https://www.carsales.com.au/cars/private/mazda/cx-30/
+https://www.carsales.com.au/cars/private/mitsubishi/pajero-sport/
+https://www.carsales.com.au/cars/private/toyota/c-hr/
+https://www.carsales.com.au/cars/private/mitsubishi/eclipse-cross/
+https://www.carsales.com.au/cars/private/hyundai/kona/
+https://www.carsales.com.au/cars/private/isuzu/d-max/
+https://www.carsales.com.au/cars/private/nissan/qashqai/
+https://www.carsales.com.au/cars/private/ford/mustang/
+https://www.carsales.com.au/cars/private/mercedes-benz/glc300/
+https://www.carsales.com.au/cars/private/jeep/grand-cherokee/
+https://www.carsales.com.au/cars/private/mg/mg3/
+https://www.carsales.com.au/cars/private/volkswagen/amarok/
+https://www.carsales.com.au/cars/private/suzuki/swift/
+https://www.carsales.com.au/cars/private/holden/colorado/
+https://www.carsales.com.au/cars/private/mg/hs/
+https://www.carsales.com.au/cars/private/mazda/cx-8/
+https://www.carsales.com.au/cars/private/gwm/haval-jolion/
+https://www.carsales.com.au/cars/private/mg/zs/
+https://www.carsales.com.au/cars/private/mercedes-benz/c200/
+https://www.carsales.com.au/cars/private/honda/hr-v/
+https://www.carsales.com.au/cars/private/kia/rio/
+https://www.carsales.com.au/cars/private/subaru/crosstrek/
+https://www.carsales.com.au/cars/private/mazda/6/

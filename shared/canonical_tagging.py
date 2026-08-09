@@ -104,15 +104,19 @@ BODY_ALIASES: Tuple[Tuple[str, str], ...] = (
     ("hatch", "hatch"),
     ("sedan", "sedan"),
     ("saloon", "sedan"),
+    ("fastback", "coupe"),
     ("suv", "suv"),
     ("wagon", "wagon"),
     ("dual cab", "dualcab_ute"),
     ("double cab", "dualcab_ute"),
     ("dualcab", "dualcab_ute"),
+    ("crew cab utility", "dualcab_ute"),
+    ("crew cab pickup", "dualcab_ute"),
     ("ute", "ute"),
     ("cab chassis", "cab_chassis"),
     ("crew cab chassis", "cab_chassis"),
     ("van", "van"),
+    ("commercial", "van"),
     ("people mover", "people_mover"),
     ("coupe", "coupe"),
     ("convertible", "convertible"),
@@ -241,7 +245,7 @@ def _to_int(value: object) -> int:
 
 def _compile_alias(alias: str) -> re.Pattern:
     escaped = re.escape(alias).replace(r"\ ", r"\s+")
-    return re.compile(rf"\b{escaped}\b", re.IGNORECASE)
+    return re.compile(rf"(?<!\w){escaped}(?!\w)", re.IGNORECASE)
 
 
 def _alias_in_text(text: str, alias: str) -> bool:
@@ -453,7 +457,7 @@ def _normalize_series_code(series_code: str) -> str:
     if not code:
         return ""
     # Ignore model-like tokens that can be mistaken for series codes.
-    if code in {"ix35", "cx5", "cx9"}:
+    if code in {"ix35", "cx5", "cx9"} or re.fullmatch(r"ml\d{3}", code):
         return ""
     # Map common series codes to canonical v2 series buckets.
     if code in {"zre182r"}:

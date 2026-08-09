@@ -5,16 +5,25 @@ from pathlib import Path
 import pytest
 
 from scripts.run_carsales_apify import (
+    ABOTAPI_ACTOR_ID,
     build_actor_input,
     import_completed_run,
     main,
     poll_run_until_terminal,
     require_token,
     start_actor_run,
+    _carsales_url_target,
 )
 
 
-def test_build_actor_input_uses_targeted_private_used_filters():
+def test_carsales_url_target_extracts_private_make_and_model():
+    assert _carsales_url_target(
+        "https://www.carsales.com.au/cars/private/mazda/cx-7/"
+    ) == ("mazda", "cx-7")
+    assert _carsales_url_target("https://www.carsales.com.au/cars/mazda/cx-7/") is None
+
+
+def test_build_actor_input_uses_url_mode_for_an_exact_start_url():
     actor_input = build_actor_input(
         make="Holden",
         model="Commodore",
@@ -25,7 +34,7 @@ def test_build_actor_input_uses_targeted_private_used_filters():
         start_url="https://www.carsales.com.au/cars/holden/commodore/",
     )
 
-    assert actor_input["mode"] == "search"
+    assert actor_input["mode"] == "url"
     assert actor_input["condition"] == "used"
     assert actor_input["sellerType"] == "private"
     assert actor_input["make"] == "holden"
@@ -36,6 +45,53 @@ def test_build_actor_input_uses_targeted_private_used_filters():
     assert actor_input["state"] == "vic"
     assert actor_input["startUrls"] == [{"url": "https://www.carsales.com.au/cars/holden/commodore/"}]
     assert actor_input["proxy"]["apifyProxyGroups"] == ["RESIDENTIAL"]
+
+
+def test_build_actor_input_uses_search_mode_without_a_start_url():
+    actor_input = build_actor_input(make="Toyota", model="RAV4")
+
+    assert actor_input["mode"] == "search"
+    assert "startUrls" not in actor_input
+
+
+def test_build_actor_input_uses_abotapi_schema_and_caps():
+    actor_input = build_actor_input(
+        make="Nissan",
+        model="Pulsar",
+        body_type="Sedan",
+        transmission="Automatic",
+        fuel_type="Petrol",
+        actor_id=ABOTAPI_ACTOR_ID,
+        max_listings=30,
+    )
+
+    assert actor_input["mode"] == "search"
+    assert actor_input["make"] == "Nissan"
+    assert actor_input["model"] == "Pulsar"
+    assert actor_input["bodyType"] == "sedan"
+    assert actor_input["maxListings"] == 30
+    assert actor_input["expandPriceBands"] is False
+    assert actor_input["proxyConfiguration"]["apifyProxyGroups"] == ["RESIDENTIAL"]
+    assert "flatten" not in actor_input
+
+
+def test_build_actor_input_accepts_multiple_exact_abotapi_urls():
+    actor_input = build_actor_input(
+        actor_id=ABOTAPI_ACTOR_ID,
+        start_urls=[
+            "https://www.carsales.com.au/cars/private/mazda/cx-3/",
+            "https://www.carsales.com.au/cars/private/mitsubishi/asx/",
+            "https://www.carsales.com.au/cars/private/mazda/cx-3/",
+        ],
+        max_listings=500,
+    )
+
+    assert actor_input["mode"] == "url"
+    assert actor_input["urls"] == [
+        "https://www.carsales.com.au/cars/private/mazda/cx-3/",
+        "https://www.carsales.com.au/cars/private/mitsubishi/asx/",
+    ]
+    assert actor_input["maxListings"] == 500
 
 
 def test_require_token_rejects_missing_token(monkeypatch):
@@ -126,6 +182,42 @@ def test_import_completed_run_writes_normalized_rows(monkeypatch, tmp_path: Path
     text = output_path.read_text(encoding="utf-8")
     assert "carsales_apify" in text
     assert "SSE-AD-1" in text
+
+
+def test_import_normalizes_known_toyota_hybrid_series(monkeypatch, tmp_path: Path):
+    monkeypatch.setattr(
+        "scripts.run_carsales_apify.fetch_dataset_items",
+        lambda dataset_id, token=None: [
+            {
+                "adId": "SSE-AD-RAV4",
+                "canonicalUrl": "https://example.test/rav4",
+                "title": "2024 Toyota RAV4 GX Auto 2WD",
+                "make": "Toyota",
+                "model": "RAV4",
+                "year": 2024,
+                "variant": "GX Auto 2WD",
+                "price": 42500,
+                "specs": {
+                    "bodyStyle": "SUV",
+                    "transmission": "Automatic",
+                    "fuelType": "Petrol - Unleaded Ulp",
+                    "odometer": 42000,
+                    "all": {"Series": "AXAH52R", "Badge": "GX"},
+                },
+                "seller": {"type": "Private"},
+            }
+        ],
+    )
+    output_path = tmp_path / "carsales_apify_listings.csv"
+
+    import_completed_run(
+        {"id": "run-rav4", "status": "SUCCEEDED", "defaultDatasetId": "dataset-rav4"},
+        output_path=output_path,
+        overwrite=True,
+    )
+
+    imported = __import__("pandas").read_csv(output_path)
+    assert imported.loc[0, "fuel_type"] == "Hybrid"
 
 
 def test_import_completed_run_can_import_cost_cap_aborted_rows(monkeypatch, tmp_path: Path):

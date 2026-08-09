@@ -227,7 +227,12 @@ def load_carsales_apify_market(path: Path | None = None) -> pd.DataFrame:
     if df.empty:
         return pd.DataFrame()
     working = df.copy()
-    working = tag_dataframe(working)
+    working = tag_dataframe(
+        working,
+        source="carsales_apify_market",
+        require_price=True,
+        append_log=False,
+    )
     if "canonical_tag" not in working.columns:
         return pd.DataFrame()
     working["canonical_tag"] = working["canonical_tag"].fillna("").astype(str).str.strip()
