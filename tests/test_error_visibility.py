@@ -78,13 +78,37 @@ def test_load_state_table_logs_unreadable_state_file(tmp_path, caplog, monkeypat
     assert "Unreadable listing state" in caplog.text
 
 
-def test_update_master_propagates_restricted_build_failure(monkeypatch):
+def test_update_master_propagates_restricted_build_failure(tmp_path, monkeypatch):
+    def _tmp_dataset_path(name: str) -> Path:
+        path = tmp_path / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        return path
+
+    for attribute in (
+        "SOLD_FILE",
+        "REFERRED_FILE",
+        "ACTIVE_FILE",
+        "STATIC_FILE",
+        "STATE_FILE",
+        "SOLD_DISCARD_LOG",
+        "NORMALIZED_FILE",
+    ):
+        monkeypatch.setattr(update_master, attribute, _tmp_dataset_path(attribute.lower() + ".csv"))
+    monkeypatch.setattr(update_master, "dataset_path", _tmp_dataset_path)
+    monkeypatch.setattr(update_master, "_load_dataframe", lambda *_a, **_k: pd.DataFrame())
+    monkeypatch.setattr(update_master, "append_pipeline_exclusions", lambda *_a, **_k: None)
+    monkeypatch.setattr(
+        update_master,
+        "_load_state_table",
+        lambda: update_master.ensure_state_schema(
+            pd.DataFrame([{"url": "https://example.com/lot/1", "state": "active"}])
+        ),
+    )
+
     def _boom() -> None:
         raise ValueError("restricted build exploded")
 
     monkeypatch.setattr(update_master, "build_restricted_datasets", _boom)
-    monkeypatch.setattr(update_master, "_load_dataframe", lambda *_a, **_k: pd.DataFrame())
-    monkeypatch.setattr(update_master, "_write_master_outputs", lambda *_a, **_k: None, raising=False)
 
     with pytest.raises(RuntimeError, match="Restricted dataset build failed"):
         update_master.update_master_database()
