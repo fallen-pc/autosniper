@@ -349,4 +349,4 @@
 
 # 2026-08-09
 
-- Cleared PR #8 governance and CodeQL findings before merging the long-lived development branch into `main`. Autotrader output paths entered through the Streamlit page are now resolved inside `autotrader_isolated/output` and traversal or absolute paths outside that directory are rejected; repair-quote money-range parsing now uses a linear whitespace pattern; two dead lint findings were removed. Added focused path traversal and AUD/en-dash range tests. Verified with Ruff, 65 focused tests, the full 632-test suite, readiness smoke, governance checks, and project-memory validation from an isolated clean worktree.
+- Cleared PR #8 lint and CodeQL findings before merging the long-lived development branch into `main`. The Autotrader Streamlit page now uses its fixed governed output file instead of accepting a user-controlled filesystem path; repair-quote money-range parsing now uses a linear whitespace pattern; two dead lint findings were removed. Added focused AUD/en-dash range coverage and verified the security slice from an isolated clean worktree.
