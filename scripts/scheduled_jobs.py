@@ -11,7 +11,7 @@ from datetime import date, datetime, time as dt_time, timedelta, timezone
 from pathlib import Path
 from typing import Any, Dict, Iterable, Optional
 import subprocess
-from zoneinfo import ZoneInfo
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import pandas as pd
 import requests
@@ -30,6 +30,7 @@ from scripts.active_monitor import (
     revalue_active_listings,
 )
 from scripts.outcome_tracking import compute_outcome_metrics
+from shared.csv_utils import CSV_READ_ERRORS
 from shared.data_loader import dataset_path
 from shared.decision_policy import derive_action_label_from_row
 from shared.governance import write_governance_report_bundle
@@ -169,7 +170,11 @@ def _local_timezone() -> timezone | ZoneInfo:
     timezone_name = os.getenv("AUTOSNIPER_LOCAL_TIMEZONE", "Australia/Sydney").strip() or "Australia/Sydney"
     try:
         return ZoneInfo(timezone_name)
-    except Exception:
+    except (ZoneInfoNotFoundError, ValueError, OSError) as exc:
+        print(
+            f"WARNING: unusable AUTOSNIPER_LOCAL_TIMEZONE {timezone_name!r} "
+            f"({type(exc).__name__}: {exc}); falling back to UTC coverage dates."
+        )
         return timezone.utc
 
 
@@ -219,7 +224,8 @@ def _load_daily_run_state() -> Dict[str, Any]:
         return {}
     try:
         return json.loads(DAILY_STATE_PATH.read_text(encoding="utf-8"))
-    except Exception:
+    except (OSError, ValueError) as exc:
+        print(f"WARNING: unreadable daily run state {DAILY_STATE_PATH} ({type(exc).__name__}: {exc}).")
         return {}
 
 
@@ -269,7 +275,10 @@ def _last_successful_daily_date_local() -> date | None:
 def _read_lock_payload() -> Dict[str, Any] | None:
     try:
         return json.loads(LOCK_PATH.read_text(encoding="utf-8"))
-    except Exception:
+    except FileNotFoundError:
+        return None
+    except (OSError, ValueError) as exc:
+        print(f"WARNING: unreadable job lock {LOCK_PATH} ({type(exc).__name__}: {exc}).")
         return None
 
 
@@ -378,7 +387,8 @@ def _load_existing_metrics() -> Dict[str, Any]:
         return {}
     try:
         return json.loads(METRICS_PATH.read_text(encoding="utf-8"))
-    except Exception:
+    except (OSError, ValueError) as exc:
+        print(f"WARNING: unreadable daily metrics {METRICS_PATH} ({type(exc).__name__}: {exc}).")
         return {}
 
 
@@ -389,7 +399,8 @@ def _count_active_listings() -> Optional[int]:
     try:
         df = pd.read_csv(path, low_memory=False)
         return int(len(df))
-    except Exception:
+    except CSV_READ_ERRORS as exc:
+        print(f"WARNING: could not count active listings in {path} ({type(exc).__name__}: {exc}).")
         return None
 
 
@@ -465,7 +476,8 @@ def _load_daily_ai_analysis_frame() -> pd.DataFrame:
     if active_path.exists() and "url" in df.columns:
         try:
             active_df = pd.read_csv(active_path, usecols=["url"], low_memory=False)
-        except Exception:
+        except CSV_READ_ERRORS as exc:
+            print(f"WARNING: unreadable active listings {active_path} ({type(exc).__name__}: {exc}).")
             active_df = pd.DataFrame()
         if not active_df.empty and "url" in active_df.columns:
             active_urls = set(active_df["url"].dropna().astype(str).str.strip())
@@ -514,8 +526,8 @@ def _send_daily_ai_analysis_summary(*, trigger: str, coverage_date_local: date) 
         )
         print(f"Daily AI Analysis Telegram summary sent={sent}, verdict={verdict}.")
         return sent
-    except Exception:
-        print("Daily AI Analysis Telegram summary failed.")
+    except Exception as exc:  # noqa: BLE001 - summary alert must not fail the pipeline
+        print(f"WARNING: Daily AI Analysis Telegram summary failed: {type(exc).__name__}: {exc}")
         return False
 
 
@@ -540,9 +552,8 @@ def _wait_for_internet(max_wait_hours: int) -> bool:
 
 
 def _existing_lock_ttl_hours() -> int:
-    try:
-        payload = json.loads(LOCK_PATH.read_text(encoding="utf-8"))
-    except Exception:
+    payload = _read_lock_payload()
+    if not payload:
         return max(max(LOCK_TTLS.values(), default=4), 4)
     owner_job = str(payload.get("job") or "").strip()
     return LOCK_TTLS.get(owner_job, max(max(LOCK_TTLS.values(), default=4), 4))
@@ -830,7 +841,8 @@ def _load_external_auction_seed_listings(output_dir: Path) -> list[scrape_extern
             continue
         try:
             df = pd.read_csv(path, low_memory=False)
-        except Exception:
+        except CSV_READ_ERRORS as exc:
+            print(f"WARNING: skipping unreadable external auction seed {path} ({type(exc).__name__}: {exc}).")
             continue
         if df.empty or "url" not in df.columns:
             continue

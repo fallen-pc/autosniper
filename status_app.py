@@ -14,15 +14,16 @@ def load_metrics() -> dict:
         return {}
     try:
         return json.loads(METRICS_PATH.read_text(encoding="utf-8"))
-    except Exception:
+    except (OSError, ValueError) as exc:
+        st.warning(f"Unreadable pipeline metrics {METRICS_PATH}: {type(exc).__name__}: {exc}")
         return {}
 
 
 def format_minutes_ago(last_run_utc: str) -> float:
     try:
-        ts = datetime.fromisoformat(last_run_utc.replace("Z", "+00:00"))
+        ts = datetime.fromisoformat(str(last_run_utc).replace("Z", "+00:00"))
         return max((NOW - ts).total_seconds() / 60.0, 0.0)
-    except Exception:
+    except (TypeError, ValueError):
         return math.inf
 
 

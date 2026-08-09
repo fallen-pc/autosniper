@@ -19,12 +19,14 @@ if __package__ in (None, ""):
     sys.path.append(str(Path(__file__).resolve().parent.parent))
     from scripts.active_snapshot_retention import compact_active_snapshots
     from scripts.atomic_csv import append_dict_rows_csv_atomic, write_dataframe_csv_atomic
+    from shared.csv_utils import CSV_READ_ERRORS
     from shared.data_loader import dataset_path
     from shared.schema import STATE_ACTIVE, STATE_STATIC_PARSED
     from shared.state_machine import ListingObservation, ensure_state_schema, upsert_state_row
 else:  # pragma: no cover
     from scripts.active_snapshot_retention import compact_active_snapshots
     from scripts.atomic_csv import append_dict_rows_csv_atomic, write_dataframe_csv_atomic
+    from shared.csv_utils import CSV_READ_ERRORS
     from shared.data_loader import dataset_path
     from shared.schema import STATE_ACTIVE, STATE_STATIC_PARSED
     from shared.state_machine import ListingObservation, ensure_state_schema, upsert_state_row
@@ -129,11 +131,8 @@ def derive_location_state(location: str | None) -> str:
 def derive_auction_site(url: str | None) -> str:
     if not url:
         return ""
-    try:
-        parts = url.split("/")
-        return parts[3] if len(parts) > 3 else ""
-    except Exception:
-        return ""
+    parts = str(url).split("/")
+    return parts[3] if len(parts) > 3 else ""
 
 
 def append_snapshot_row(record: dict[str, object]) -> None:
@@ -147,14 +146,12 @@ def record_snapshot(
     bids_text: str | None,
     time_remaining_text: str | None,
 ) -> None:
-    try:
-        row = df.loc[df["url"] == url].iloc[0].to_dict()
-    except Exception:
-        row = {}
+    matches = df.loc[df["url"] == url]
+    row = matches.iloc[0].to_dict() if not matches.empty else {}
     price_numeric = parse_currency_value(price_text)
     try:
         bids_numeric = int(bids_text)
-    except Exception:
+    except (TypeError, ValueError):
         bids_numeric = None
     time_hours = parse_time_remaining_to_hours(time_remaining_text)
     record = {
@@ -181,7 +178,13 @@ def load_resume_queue(all_urls: list[str]) -> list[str]:
     try:
         data = json.loads(resume_path.read_text(encoding="utf-8"))
         queued = data.get("remaining_urls", [])
-    except Exception:
+    except (OSError, ValueError, AttributeError) as exc:
+        logger.warning(
+            "Ignoring unreadable resume queue %s (%s: %s); reprocessing the full URL list.",
+            resume_path,
+            type(exc).__name__,
+            exc,
+        )
         return all_urls
     if not queued:
         return all_urls
@@ -229,7 +232,13 @@ def _load_state_dataframe() -> pd.DataFrame:
         return ensure_state_schema(pd.DataFrame())
     try:
         df = pd.read_csv(STATE_FILE, low_memory=False)
-    except Exception:
+    except CSV_READ_ERRORS as exc:
+        logger.error(
+            "Unreadable listing state %s (%s: %s); rebuilding state from an empty frame.",
+            STATE_FILE,
+            type(exc).__name__,
+            exc,
+        )
         df = pd.DataFrame()
     return ensure_state_schema(df)
 
@@ -284,7 +293,13 @@ def _load_active_queue_urls() -> set[str]:
         return set()
     try:
         links_df = pd.read_csv(ACTIVE_LINKS_FILE)
-    except Exception:
+    except CSV_READ_ERRORS as exc:
+        logger.error(
+            "Unreadable active link queue %s (%s: %s); skipping state reconciliation.",
+            ACTIVE_LINKS_FILE,
+            type(exc).__name__,
+            exc,
+        )
         return set()
     if "url" not in links_df.columns:
         return set()
@@ -603,7 +618,7 @@ async def update_bids(
         df = _load_active_seed_dataframe()
         if df.empty:
             print("No active seed dataset found. Expected active or static listings CSV.")
-            return [], skipped_urls
+            return df, skipped_urls
         state_df = _load_state_dataframe()
         state_df, reconciled_rows = reconcile_state_active_queue(state_df)
         if reconciled_rows:
@@ -855,16 +870,13 @@ async def update_bids(
         clear_resume_queue()
 
         if not skip_master:
-            try:
-                from scripts import update_master
+            from scripts import update_master
 
-                update_master.update_master_database()
-            except Exception as exc:
-                logger.error(f"Failed to run update_master after update_bids: {exc}")
+            update_master.update_master_database()
 
         return df, skipped_urls
-    except Exception as e:
-        logger.error(f"Unexpected error in update_bids: {e}")
+    except Exception:
+        logger.exception("Unexpected error in update_bids; attempting emergency snapshot before failing.")
         if "df" in locals():
             try:
                 persist_dataframe(df, "Emergency save")
@@ -872,7 +884,7 @@ async def update_bids(
                     persist_state_dataframe(state_df, "Emergency state save")
             except Exception as save_error:  # noqa: BLE001
                 logger.error(f"Failed to persist emergency snapshot: {save_error}")
-        return df, skipped_urls
+        raise
 
 # ─── Entry point ────────────────────────────────────────────────
 if __name__ == "__main__":

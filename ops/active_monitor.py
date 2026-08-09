@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Iterable
+import logging
 import os
 import re
 
@@ -20,12 +21,14 @@ from scripts.atomic_csv import write_dataframe_csv_atomic
 from scripts.process_curve_candidates import DEFAULT_AUTOTRADER_SOURCE, load_autotrader_market
 from shared.canonical_tagging import UNCLASSIFIED, is_canonical_eligible
 from shared.comps_engine import parse_currency, parse_numeric
+from shared.csv_utils import CSV_READ_ERRORS
 from shared.curves import interpolate_base_by_year, list_curve_tags, load_curves, resolve_curve_canonical_tag
 from shared.data_loader import dataset_path
 from shared.location_utils import extract_state
 from shared.repair_pricing import assess_repairs, repair_fragments_to_records
 from shared.repair_review import append_live_review_items
 
+logger = logging.getLogger(__name__)
 
 ACTIVE_RESTRICTED_PATH = dataset_path("active_vehicle_details_restricted.csv")
 ACTIVE_LIVE_PATH = dataset_path("active_vehicle_details.csv")
@@ -161,7 +164,13 @@ def _load_normalized_conditions() -> pd.DataFrame:
         return pd.DataFrame()
     try:
         df = pd.read_csv(NORMALIZED_CONDITIONS_PATH)
-    except Exception:
+    except CSV_READ_ERRORS as exc:
+        logger.warning(
+            "Unreadable normalized conditions %s (%s: %s); condition context will be missing.",
+            NORMALIZED_CONDITIONS_PATH,
+            type(exc).__name__,
+            exc,
+        )
         return pd.DataFrame()
     if "url" not in df.columns or "component_normalized" not in df.columns:
         return pd.DataFrame()

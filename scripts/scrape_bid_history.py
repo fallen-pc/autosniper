@@ -17,9 +17,11 @@ if __package__ in (None, ""):
 
     sys.path.append(str(Path(__file__).resolve().parent.parent))
     from scripts.atomic_csv import append_dict_rows_csv_atomic
+    from shared.csv_utils import CSV_READ_ERRORS
     from shared.data_loader import dataset_path
 else:  # pragma: no cover
     from scripts.atomic_csv import append_dict_rows_csv_atomic
+    from shared.csv_utils import CSV_READ_ERRORS
     from shared.data_loader import dataset_path
 
 
@@ -58,8 +60,11 @@ def _load_urls(
             existing = pd.read_csv(output_path, usecols=["url"])
             existing_urls = set(existing["url"].dropna().astype(str).str.strip())
             urls = urls[~urls.isin(existing_urls)]
-        except Exception:
-            pass
+        except CSV_READ_ERRORS as exc:
+            print(
+                f"WARNING: could not read existing bid history {output_path} "
+                f"({type(exc).__name__}: {exc}); re-scraping every URL."
+            )
     if limit is not None and limit > 0:
         urls = urls.head(limit)
     return urls.tolist()

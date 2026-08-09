@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import re
 import sys
 from datetime import datetime, timezone
@@ -15,6 +16,7 @@ from dateutil import parser as date_parser
 if __package__ in (None, ""):
     sys.path.append(str(Path(__file__).resolve().parent.parent))
     from scripts.atomic_csv import append_dataframe_csv_atomic, write_dataframe_csv_atomic
+    from shared.csv_utils import CSV_READ_ERRORS
     from shared.data_loader import dataset_path
     from shared.governance import SOLD_DETAIL_SCHEMA
     from shared.sold_cleaning import normalize_listing_fields
@@ -26,6 +28,7 @@ if __package__ in (None, ""):
     from scripts.build_restricted_datasets import build_restricted_datasets
 else:
     from scripts.atomic_csv import append_dataframe_csv_atomic, write_dataframe_csv_atomic
+    from shared.csv_utils import CSV_READ_ERRORS
     from shared.data_loader import dataset_path
     from shared.governance import SOLD_DETAIL_SCHEMA
     from shared.sold_cleaning import normalize_listing_fields
@@ -35,6 +38,9 @@ else:
     from shared.validators import R, validate_sold_cars_df
     from shared.exclusions import append_pipeline_exclusions
     from scripts.build_restricted_datasets import build_restricted_datasets
+
+logger = logging.getLogger(__name__)
+
 SOLD_FILE = dataset_path("sold_cars.csv")
 REFERRED_FILE = dataset_path("referred_cars.csv")
 ACTIVE_FILE = dataset_path("active_vehicle_details.csv")
@@ -403,7 +409,7 @@ def _merge_preserving_history(
     if prepare_fn is not None:
         try:
             schema_changed = not prepared_existing.equals(existing_raw)
-        except Exception:
+        except (TypeError, ValueError):
             schema_changed = True
 
     if prepared_new.empty:
@@ -658,7 +664,13 @@ def _load_state_table() -> pd.DataFrame:
         return ensure_state_schema(pd.DataFrame())
     try:
         state_df = pd.read_csv(STATE_FILE, low_memory=False)
-    except Exception:
+    except CSV_READ_ERRORS as exc:
+        logger.error(
+            "Unreadable listing state %s (%s: %s); rebuilding state from an empty frame.",
+            STATE_FILE,
+            type(exc).__name__,
+            exc,
+        )
         state_df = pd.DataFrame()
     return ensure_state_schema(state_df)
 
@@ -878,7 +890,7 @@ def update_master_database() -> None:
     try:
         build_restricted_datasets()
     except Exception as exc:
-        print(f"Restricted dataset build failed: {exc}")
+        raise RuntimeError("Restricted dataset build failed after master update.") from exc
 
 
 if __name__ == "__main__":

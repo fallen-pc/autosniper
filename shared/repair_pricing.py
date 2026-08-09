@@ -9,14 +9,18 @@ from pathlib import Path
 from typing import Dict, List, Mapping, Optional, Tuple
 import html
 import json
+import logging
 import re
 
 import pandas as pd
 import yaml
 
+from shared.csv_utils import CSV_READ_ERRORS
 from shared.condition_normalizer import estimate_component_count
 from shared.repair_features import build_repair_features
 from shared.repair_review import DECISIONS_PATH, load_repair_review_decisions, review_key, safe_text
+
+logger = logging.getLogger(__name__)
 
 
 PANEL_RATE = 300
@@ -148,7 +152,13 @@ def _load_schedule_cost_bands(_path: str, _content_hash: str) -> Dict[tuple[str,
     """Load class-specific low/default/high estimates for one file signature."""
     try:
         df = pd.read_csv(REPAIR_PRICING_SCHEDULE_PATH)
-    except Exception:
+    except CSV_READ_ERRORS as exc:
+        logger.warning(
+            "Unreadable repair pricing schedule %s (%s: %s); using default cost bands.",
+            REPAIR_PRICING_SCHEDULE_PATH,
+            type(exc).__name__,
+            exc,
+        )
         return {}
     overrides: Dict[tuple[str, str], RepairCostBand] = {}
     for _, row in df.iterrows():

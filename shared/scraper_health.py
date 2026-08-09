@@ -3,13 +3,17 @@
 from __future__ import annotations
 
 import json
+import logging
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 import pandas as pd
 
+from shared.csv_utils import CSV_READ_ERRORS
 from shared.data_loader import dataset_path
+
+logger = logging.getLogger(__name__)
 
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
@@ -79,7 +83,13 @@ def _load_csv(path: Path) -> pd.DataFrame:
         return pd.DataFrame()
     try:
         return pd.read_csv(path, low_memory=False)
-    except (ValueError, pd.errors.EmptyDataError):
+    except CSV_READ_ERRORS as exc:
+        logger.warning(
+            "Health check could not read %s (%s: %s); reporting it as empty.",
+            path,
+            type(exc).__name__,
+            exc,
+        )
         return pd.DataFrame()
 
 
@@ -116,7 +126,13 @@ def _top_failure_reasons() -> pd.DataFrame:
         return pd.DataFrame(columns=["reason_code", "count"])
     try:
         df = pd.read_csv(path, usecols=["reason_code"], low_memory=False)
-    except Exception:
+    except CSV_READ_ERRORS as exc:
+        logger.warning(
+            "Could not read scraper failure reasons from %s (%s: %s).",
+            path,
+            type(exc).__name__,
+            exc,
+        )
         return pd.DataFrame(columns=["reason_code", "count"])
     if df.empty or "reason_code" not in df.columns:
         return pd.DataFrame(columns=["reason_code", "count"])
@@ -255,5 +271,11 @@ def load_scraper_health_report(report_path: Path = SCRAPER_HEALTH_JSON_PATH) -> 
         return None
     try:
         return json.loads(report_path.read_text(encoding="utf-8"))
-    except (json.JSONDecodeError, OSError):
+    except (json.JSONDecodeError, OSError) as exc:
+        logger.warning(
+            "Unreadable scraper health report %s (%s: %s).",
+            report_path,
+            type(exc).__name__,
+            exc,
+        )
         return None

@@ -15,6 +15,7 @@ from scripts.process_curve_candidates import (
     run_autotrader_scrape,
     update_autotrader_queue_status,
 )
+from shared.csv_utils import CSV_READ_ERRORS
 from shared.data_loader import dataset_path
 from shared.styling import display_banner, hero_action_card, inject_global_styles, page_intro, section_heading
 
@@ -46,7 +47,8 @@ def _load_csv(path: Path) -> pd.DataFrame:
         return pd.DataFrame()
     try:
         return pd.read_csv(path, low_memory=False)
-    except Exception:
+    except CSV_READ_ERRORS as exc:
+        st.warning(f"Could not read {path}: {type(exc).__name__}: {exc}")
         return pd.DataFrame()
 
 

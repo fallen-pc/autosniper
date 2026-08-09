@@ -99,8 +99,11 @@ def main() -> None:
             done = set(progress.get("completed", []))
             urls = [url for url in urls if url not in done]
             print(f"Resuming: {len(done)} already completed, {len(urls)} remaining.")
-        except Exception:
-            pass
+        except (OSError, ValueError, AttributeError) as exc:
+            print(
+                f"WARNING: could not read resume progress {PROGRESS_PATH} "
+                f"({type(exc).__name__}: {exc}); processing every URL."
+            )
     if args.limit and args.limit > 0:
         urls = urls[: args.limit]
     if args.max_per_run and args.max_per_run > 0:
