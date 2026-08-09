@@ -48,8 +48,9 @@ def _replace_rows(path: Path, rows: list[dict[str, object]], key: str, managed: 
     existing = pd.read_csv(path, low_memory=False)
     existing = existing[~existing[key].astype(str).isin(managed)].copy()
     incoming = pd.DataFrame(rows, columns=existing.columns)
+    subset = [key, "series"] if path.name == "allowed_variants.csv" else [key]
     write_dataframe_csv_atomic(
-        pd.concat([existing, incoming], ignore_index=True).drop_duplicates(key, keep="last"),
+        pd.concat([existing, incoming], ignore_index=True).drop_duplicates(subset, keep="last"),
         path,
         index=False,
     )

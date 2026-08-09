@@ -2395,6 +2395,51 @@ def test_mazda_cx7_er_series_2_lanes_are_trim_specific(variant, expected):
     assert assign_canonical_tag({**row, "transmission": "Manual"}, require_price=True)[0] == "UNCLASSIFIED"
 
 
+@pytest.mark.parametrize(
+    ("make", "model", "variant", "body", "transmission", "fuel", "year", "expected"),
+    [
+        ("BMW", "X5", "xDrive 30d F15", "Wagon", "Automatic", "Diesel", 2016, "bmw_x5_xdrive30d_diesel_auto_wagon_f15"),
+        ("Audi", "A4", "1.8 TFSI B8", "Sedan", "CVT", "Petrol", 2012, "audi_a4_1.8-tfsi_petrol_auto_sedan_b8"),
+        ("Mazda", "3", "Neo BL", "Hatchback", "Automatic", "Petrol", 2012, "mazda_3_neo_petrol_auto_hatch_bl"),
+        ("Jeep", "Cherokee", "Sport 4x2 KL 9", "Wagon", "Automatic", "Petrol", 2015, "jeep_cherokee_sport-4x2_petrol_auto_wagon_kl9"),
+        ("Nissan", "Micra", "K12", "Hatchback", "Automatic", "Petrol", 2009, "nissan_micra_k12_petrol_auto_hatch"),
+    ],
+)
+def test_apify_batch2_lanes_match_exact_grays_identity(
+    make, model, variant, body, transmission, fuel, year, expected
+):
+    _load_curve_year_band.cache_clear()
+    row = {
+        "make": make, "model": model, "variant": variant, "body_type": body,
+        "transmission": transmission, "fuel_type": fuel, "year": str(year),
+        "price": "10000", "url": "https://example.test/apify-batch2",
+    }
+    assert assign_canonical_tag(row, require_price=True)[0:2] == (expected, "[OK]")
+
+
+@pytest.mark.parametrize(
+    "row",
+    [
+        {"make": "BMW", "model": "X5", "variant": "xDrive40d F15", "body_type": "Wagon", "transmission": "Automatic", "fuel_type": "Diesel", "year": "2016"},
+        {"make": "Audi", "model": "A4", "variant": "1.8 TFSI B8 quattro", "body_type": "Sedan", "transmission": "CVT", "fuel_type": "Petrol", "year": "2012"},
+        {"make": "Mazda", "model": "3", "variant": "Neo BL", "body_type": "Sedan", "transmission": "Automatic", "fuel_type": "Petrol", "year": "2012"},
+        {"make": "Jeep", "model": "Cherokee", "variant": "Sport 4x4 KL 9", "body_type": "Wagon", "transmission": "Automatic", "fuel_type": "Petrol", "year": "2015"},
+        {"make": "Nissan", "model": "Micra", "variant": "K13", "body_type": "Hatchback", "transmission": "Automatic", "fuel_type": "Petrol", "year": "2012"},
+    ],
+)
+def test_apify_batch2_lanes_reject_adjacent_identity(row):
+    _load_curve_year_band.cache_clear()
+    row = {**row, "price": "10000", "url": "https://example.test/apify-batch2-negative"}
+    accepted = {
+        "bmw_x5_xdrive30d_diesel_auto_wagon_f15",
+        "audi_a4_1.8-tfsi_petrol_auto_sedan_b8",
+        "mazda_3_neo_petrol_auto_hatch_bl",
+        "jeep_cherokee_sport-4x2_petrol_auto_wagon_kl9",
+        "nissan_micra_k12_petrol_auto_hatch",
+    }
+    assert assign_canonical_tag(row, require_price=True)[0] not in accepted
+
+
 def test_jeep_grand_cherokee_laredo_wk_requires_explicit_4x4():
     _load_curve_year_band.cache_clear()
     base_row = {

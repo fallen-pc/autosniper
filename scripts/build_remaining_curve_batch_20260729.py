@@ -815,7 +815,7 @@ def main() -> int:
         index=False,
     )
     _append_unique(
-        ROOT / "config" / "allowed_variants.csv", allowed_rows, ["canonical_tag"], managed_match_tags
+        ROOT / "config" / "allowed_variants.csv", allowed_rows, ["canonical_tag", "series"], managed_match_tags
     )
     _append_unique(
         ROOT / "config" / "curve_groups_v2.csv", group_rows, ["match_tag"], managed_match_tags

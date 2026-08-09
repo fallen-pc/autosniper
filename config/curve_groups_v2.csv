@@ -12,7 +12,6 @@ toyota_camry_ascent_petrol_auto_sedan_asv70r,toyota_camry_asv70r_sedan_auto_petr
 toyota_camry_altise_petrol_auto_sedan_asv50r,toyota_camry_asv50r_sedan_auto_petrol,active,Direct Altise petrol mapping
 toyota_camry_atara-s_petrol_auto_sedan_asv50r,toyota_camry_atara-s_asv50r_sedan_auto_petrol,active,Direct Camry ASV50R Atara S automatic petrol sedan mapping
 toyota_yaris_yr_petrol_auto_hatch_ncp90r,toyota_yaris_ncp90r_hatch_auto_petrol,active,Direct mapping
-mazda_3_neo_petrol_auto_hatch_bl,mazda_3_bl_hatch_auto_petrol,active,Merge trim into base Mazda 3 BL curve
 mazda_3_neo-sport_petrol_auto_hatch_bl,mazda_3_bl_hatch_auto_petrol,active,Merge trim into base Mazda 3 BL curve
 mazda_3_maxx_petrol_auto_hatch_bl,mazda_3_bl_hatch_auto_petrol,active,Merge trim into base Mazda 3 BL curve
 mazda_3_maxx-sport_petrol_auto_hatch_bl,mazda_3_bl_hatch_auto_petrol,active,Merge trim into base Mazda 3 BL curve
@@ -202,3 +201,8 @@ toyota_hiace_slwb-commuter_diesel_auto_bus_h300,toyota_hiace_commuter-slwb_2.8-t
 mg_mg3_core_petrol_auto_hatch_szp1,mg_mg3_core_szp1_hatch_auto_petrol,,
 mazda_cx-7_classic_petrol_auto_wagon_er-series-2,mazda_cx-7_classic_er-series-2_wagon_auto_petrol,,
 mazda_cx-7_luxury-sports_petrol_auto_wagon_er-series-2,mazda_cx-7_luxury-sports_er-series-2_wagon_auto_petrol,,
+bmw_x5_xdrive30d_diesel_auto_wagon_f15,bmw_x5_xdrive30d_f15_wagon_auto_diesel,active,"Built from 49 exact private Carsales rows (12 outliers trimmed) and 20 unique live Grays vehicles; adjacent generations, trims, bodies, fuels, transmissions, and drivetrains remain separate."
+audi_a4_1.8-tfsi_petrol_auto_sedan_b8,audi_a4_1.8-tfsi_b8_sedan_auto_petrol,active,"Built from 12 exact private Carsales rows (2 outliers trimmed) and 27 unique live Grays vehicles; adjacent generations, trims, bodies, fuels, transmissions, and drivetrains remain separate."
+mazda_3_neo_petrol_auto_hatch_bl,mazda_3_neo_bl_hatch_auto_petrol,active,"Built from 12 exact private Carsales rows (3 outliers trimmed) and 14 unique live Grays vehicles; adjacent generations, trims, bodies, fuels, transmissions, and drivetrains remain separate."
+jeep_cherokee_sport-4x2_petrol_auto_wagon_kl9,jeep_cherokee_sport-4x2_kl9_wagon_auto_petrol,active,"Built from 15 exact private Carsales rows (0 outliers trimmed) and 14 unique live Grays vehicles; adjacent generations, trims, bodies, fuels, transmissions, and drivetrains remain separate."
+nissan_micra_k12_petrol_auto_hatch,nissan_micra_k12_hatch_auto_petrol,active,"Built from 6 exact private Carsales rows (0 outliers trimmed) and 13 unique live Grays vehicles; adjacent generations, trims, bodies, fuels, transmissions, and drivetrains remain separate."

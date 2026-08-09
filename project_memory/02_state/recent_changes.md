@@ -1,5 +1,9 @@
 # Recent Changes
 
+- 2026-08-09: Closed two integration regressions exposed while publishing the second Apify curve batch. Curve builders now preserve repeated allowlist tags by `(canonical_tag, series)` so the shared Pajero GLX NT/NW tag keeps both generation rows, and explicit curve aliases resolve through their target group before falling back to a source tag's live group. The curve-version manifest also stores repository-owned paths relatively instead of leaking a machine-specific checkout path. Final integrated validation passed `730` tests, readiness, governance (`402/402` observed tags covered, zero monotonicity errors), and project-memory checks.
+
+- 2026-08-09: Added a second evidence-backed continuation from private Carsales Apify run `7WqoauuNvqzoVM5jO`: BMW X5 xDrive30d F15 (`49` exact retail rows used after `12` outliers; `20` unique live Grays vehicles), Audi A4 1.8 TFSI B8 CVT (`12` / `2`; `27`), Mazda 3 Neo BL (`12` / `3`; `14`), Jeep Cherokee Sport 4x2 KL9 (`15` / `0`; `14`), and Nissan Micra K12 (`6` / `0`; `13`). The batch input and reusable builder are preserved with the governed curve/config snapshot; adjacent generations, trims, powertrains, and drivetrains remain separate.
+
 - 2026-08-09: Assembled the governed data snapshot for the July/August curve campaign. `CSV_data/restricted/curves.csv` advances from `2,149` rows / `115` canonical tags to `3,705` rows / `191` tags; the commit includes every newly referenced manifest snapshot through `curves_20260804T220329Z.csv`, the normalized 4,786-listing Carsales campaign input needed by the reusable batch builder, the durable rejected-lane ledger, and a matching changelog entry. All 78 manifest snapshot paths and SHA-256 values verify, the full suite passes `720` tests, readiness passes, governance covers `402/402` observed tags with zero monotonicity errors, and project-memory validation passes. Per-run raw actor JSON, backup CSVs, and generated runtime/model outputs remain outside source control.
 
 - 2026-08-09: Assembled the source/policy slice for the governed curve catch-up: exact Carsales URL batches now receive per-target preflight, the alternate Apify actor schema imports without losing identity/specification fields, canonical tagging covers the newly evidenced exact lanes and source body encodings, and reusable Grays-first worklists/builders plus the accepted/rejected decision ledger preserve how the campaign was produced. Paid-run raw JSON remains local evidence; the normalized campaign input is reserved for the separate governed data snapshot.
@@ -398,6 +402,13 @@
 - Published separate Mazda CX-7 ER Series 2 Classic 2.5 petrol automatic and Luxury Sports 2.3 turbo AWD petrol automatic curves from 16/9 exact private Carsales listings and 16/22 unique live Grays vehicles. Restricted sold coverage increased from 4,544 to 4,592 before the BMW/CX-7 combined final refresh.
 - Reassessed and retained holds for BMW X5 3.0d E70 because 24 retail rows still produce a flat high-kilometre-only fit, and Subaru Outback 2.5i B4A because its six exact retail listings all sit between 186,305 and 412,000 km.
 - Fixed paid Carsales preflight for `--start-url-file`: each exact private make/model URL is now evaluated individually instead of being mislabeled as a broad scrape. The focused wrapper suite passes 13 tests.
+
+# 2026-08-09
+
+- Completed capped private Carsales/Apify run `7WqoauuNvqzoVM5jO`: 1,272 listings across 11 live-Grays-backed target models for US$1.56307, imported to `CSV_data/scrapers/carsales_grays_targets_batch2_20260805.csv`.
+- Published five governed lanes from that batch: BMW X5 xDrive30d F15, Audi A4 1.8 TFSI B8 CVT/automatic sedan, Mazda 3 Neo BL automatic hatch, Jeep Cherokee Sport 4x2 KL9, and Nissan Micra K12 automatic hatch. Exact private evidence counts were 61/14/15/15/6 and unique live Grays demand was 20/27/14/14/13 respectively.
+- Updated durable holds for Kuga Trend TF diesel, Mondeo Ambiente MD diesel, Fiesta CL WT automatic, Accord VTi seventh generation, Barina TM unbadged, and Outback 2.5i B4A rather than publishing thin, ambiguous, or high-kilometre-only curves.
+- Focused validation passed 184 tests with zero curve warnings; the restricted rebuild increased covered sold rows from 4,592 to 4,696, a gain of 104.
 
 - Published governed private-Carsales curves for BMW 118i F20 1.6T, Range Rover Evoque TD4 150 SE 9, BMW 118i E87 2.0, Audi Q3 2.0 TFSI quattro 8U, and Honda Accord Euro Luxury seventh generation.
 - Added narrow canonical matchers and regression tests so adjacent engines, generations, trims, bodies, fuels, and transmissions remain excluded.
