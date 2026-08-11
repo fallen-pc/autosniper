@@ -11,6 +11,10 @@ from typing import Any, Dict, Optional
 
 import pandas as pd
 import streamlit as st
+from ops.active_monitor import (
+    _exclude_shortlist_ineligible_rows,
+    _load_external_auction_active_rows,
+)
 from shared.navigation import render_sidebar_navigation
 
 from scripts.ai_listing_valuation import MIN_NET_PROFIT_ABSOLUTE, load_cached_results, run_curve_listing_analysis
@@ -2292,6 +2296,11 @@ def load_active_data() -> pd.DataFrame:
 
 
 @st.cache_data(ttl=300)
+def load_external_active_data() -> pd.DataFrame:
+    return _load_external_auction_active_rows()
+
+
+@st.cache_data(ttl=300)
 def load_live_active_data() -> pd.DataFrame:
     live_path = dataset_path("active_vehicle_details.csv")
     if not live_path.exists():
@@ -2679,12 +2688,19 @@ if not live_df.empty:
             )
             active_df.drop(columns=[live_field], inplace=True)
 
+external_active_df = load_external_active_data()
+if not external_active_df.empty:
+    active_df = pd.concat([active_df, external_active_df], ignore_index=True, sort=False)
+active_df = _exclude_shortlist_ineligible_rows(active_df)
+
 if "time_remaining_or_date_sold" in active_df.columns:
     active_df["hours_remaining"] = active_df["time_remaining_or_date_sold"].apply(_extract_hours_remaining)
 elif "date_sold" in active_df.columns:
     active_df["hours_remaining"] = active_df["date_sold"].apply(_extract_hours_remaining)
 else:
     active_df["hours_remaining"] = None
+if "odometer_reading" in active_df.columns:
+    active_df["odometer_numeric"] = active_df["odometer_reading"].apply(parse_numeric)
 if "price" in active_df.columns:
     active_df["price_numeric"] = active_df["price"].apply(parse_currency)
 
