@@ -2854,3 +2854,47 @@ def test_second_bulk_grays_demand_lanes_match_exact_generation(
         "url": f"https://example.test/second-bulk/{model}/{variant}/{year}",
     }
     assert assign_canonical_tag(row, require_price=True)[0:2] == (expected_tag, "[OK]")
+def test_apify_batch3_lanes_stay_generation_trim_and_powertrain_specific():
+    _load_curve_year_band.cache_clear()
+    cases = [
+        (
+            {
+                "make": "Mercedes", "model": "Benz", "variant": "B200 W245",
+                "body_type": "Hatchback", "transmission": "CVT", "fuel_type": "Petrol",
+                "year": "2008", "price": "6500", "url": "https://example.test/b200-w245",
+            },
+            "mercedes_benz_b200_petrol_auto_hatch_w245",
+            [
+                {"variant": "B200 Turbo W245"}, {"variant": "B200 W246", "year": "2013"},
+                {"fuel_type": "Diesel"}, {"transmission": "Manual"},
+            ],
+        ),
+        (
+            {
+                "make": "Mercedes", "model": "Benz", "variant": "C200 BE W204",
+                "body_type": "Sedan", "transmission": "Automatic", "fuel_type": "Petrol",
+                "year": "2012", "price": "13000", "url": "https://example.test/c200-be-w204",
+            },
+            "mercedes_benz_c200-be_petrol_auto_sedan_w204",
+            [
+                {"variant": "C200 Kompressor W204"}, {"variant": "C250 BE W204"},
+                {"body_type": "Coupe"}, {"fuel_type": "Diesel"},
+            ],
+        ),
+        (
+            {
+                "make": "Nissan", "model": "X-Trail", "variant": "ST (4x4) T30",
+                "body_type": "Wagon", "transmission": "Automatic", "fuel_type": "Petrol",
+                "year": "2005", "price": "5000", "url": "https://example.test/xtrail-st-t30",
+            },
+            "nissan_xtrail_st_petrol_auto_suv_t30",
+            [
+                {"variant": "ST-L (4x4) T30"}, {"variant": "ST (4x4) T31", "year": "2008"},
+                {"transmission": "Manual"}, {"fuel_type": "Diesel"},
+            ],
+        ),
+    ]
+    for base_row, expected, changes in cases:
+        assert assign_canonical_tag(base_row, require_price=True)[0:2] == (expected, "[OK]")
+        for change in changes:
+            assert assign_canonical_tag({**base_row, **change}, require_price=True)[0] != expected

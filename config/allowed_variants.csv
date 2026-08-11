@@ -207,3 +207,6 @@ audi_a4_1.8-tfsi_petrol_auto_sedan_b8,audi,a4,sedan,petrol,auto,1.8 tfsi,b8,1.8 
 mazda_3_neo_petrol_auto_hatch_bl,mazda,3,hatch,petrol,auto,neo,bl10f1,neo|neo bl,hatch|hatchback,manual|diesel|hybrid|sedan|maxx|sp25|bm|bn|bk
 jeep_cherokee_sport-4x2_petrol_auto_wagon_kl9,jeep,cherokee,wagon,petrol,auto,sport 4x2,kl9,sport 4x2|sport 4x2 kl 9|sport,wagon|suv,manual|diesel|hybrid|4x4|awd|limited|longitude|trailhawk|3.2
 nissan_micra_k12_petrol_auto_hatch,nissan,micra,hatch,petrol,auto,k12,k12,k12,hatch|hatchback,manual|diesel|hybrid|k13|st|ti
+mercedes_benz_b200_petrol_auto_hatch_w245,mercedes,benz,hatch,petrol,auto,b200,w245,b200|b200 w245,hatch|hatchback,manual|diesel|hybrid|turbo|b180|b250|w246
+mercedes_benz_c200-be_petrol_auto_sedan_w204,mercedes,benz,sedan,petrol,auto,c200 be,w204,c200 be|c200 blueefficiency|c200 be w204,sedan|saloon,manual|diesel|hybrid|coupe|wagon|c180|c250|c300|c63|kompressor|w205
+nissan_xtrail_st_petrol_auto_suv_t30,nissan,xtrail,suv,petrol,auto,st,t30,st|st 4x4|st (4x4),suv|wagon,manual|diesel|hybrid|st-l|stl|ti|ts|tl|t31|t32|t33
