@@ -1,5 +1,8 @@
 # Changelog
 
+## 2026-08-10
+- Added governed Mercedes-Benz B200 W245, Mercedes-Benz C200 BlueEFFICIENCY W204, and Nissan X-Trail ST T30 curves from recovered private Carsales evidence, increasing restricted Grays sold coverage from 4,696 to 4,749 vehicles.
+
 ## 2026-08-09
 - Added five further live-Grays-backed lanes from private Carsales Apify batch `7WqoauuNvqzoVM5jO`: BMW X5 xDrive30d F15, Audi A4 1.8 TFSI B8 CVT, Mazda 3 Neo BL, Jeep Cherokee Sport 4x2 KL9, and Nissan Micra K12, with a reproducible builder and governed snapshot.
 - Reconciled the accumulated July/August governed curve campaign into source control: the saved curve set grows from 115 to 191 canonical tags, with its manifest-linked snapshots, matcher/config support, exact-lane regression coverage, and durable accepted/rejected decision records.
