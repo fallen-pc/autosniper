@@ -1,5 +1,7 @@
 # Recent Changes
 
+- 2026-08-11: Hardened dashboard authentication to fail closed on every runtime when no credential is configured. Loopback-only local development now requires the explicit `AUTOSNIPER_DASHBOARD_AUTH_DISABLED=1` opt-out, preventing a missed VPS/runtime flag from exposing controls on another hosted or forwarded deployment.
+
 - 2026-07-26: Closed the stale Grays sold-tag gap. Restricted-dataset rebuilds now persist refreshed `canonical_tag` / `canonical_reason` assignments back into `sold_cars.csv` without changing its row set or rewriting an unchanged file, and governed `save_curves()` calls immediately rebuild the restricted active/sold datasets so newly supported curves unlock matching historical Grays evidence without waiting for the next daily pipeline.
 - 2026-07-26: Added `scripts/deploy_vps.ps1` for guarded code-only DigitalOcean deployments. It packages the Streamlit/source/config surfaces while explicitly protecting VPS-generated CSV data, curves, artifacts, logs, outputs, and virtual environments; validates Python locally and in a remote staging directory; refuses to deploy over an active scheduled pipeline job unless forced; keeps five rollback snapshots; installs changed requirements; restarts Streamlit; and requires a passing health endpoint before reporting success.
 

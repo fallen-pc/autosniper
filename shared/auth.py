@@ -26,8 +26,6 @@ import secrets
 
 import streamlit as st
 
-from shared.runtime import is_vps_runtime
-
 PASSWORD_ENV = "AUTOSNIPER_DASHBOARD_PASSWORD"
 PASSWORD_PBKDF2_ENV = "AUTOSNIPER_DASHBOARD_PASSWORD_PBKDF2"
 AUTH_DISABLED_ENV = "AUTOSNIPER_DASHBOARD_AUTH_DISABLED"
@@ -96,7 +94,6 @@ def password_matches(candidate: str, credential: str) -> bool:
 
 def auth_requirement(
     *,
-    vps_mode: bool,
     credential: str | None,
     disabled: bool,
 ) -> str:
@@ -109,9 +106,7 @@ def auth_requirement(
         return OPEN
     if credential:
         return GATE
-    if vps_mode:
-        return BLOCKED
-    return OPEN
+    return BLOCKED
 
 
 def _render_gate(credential: str) -> None:
@@ -131,7 +126,6 @@ def require_dashboard_auth() -> None:
     """Stop page execution unless the visitor is authenticated."""
     credential = configured_credential()
     requirement = auth_requirement(
-        vps_mode=is_vps_runtime(),
         credential=credential,
         disabled=auth_disabled(),
     )

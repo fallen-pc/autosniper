@@ -19,18 +19,20 @@ def _verifier(password: str) -> str:
 
 
 def test_hosted_runtime_without_password_is_blocked():
-    assert auth_requirement(vps_mode=True, credential=None, disabled=False) == BLOCKED
+    assert auth_requirement(credential=None, disabled=False) == BLOCKED
 
 
 def test_configured_password_gates_every_runtime():
     credential = _verifier("hunter2")
-    assert auth_requirement(vps_mode=True, credential=credential, disabled=False) == GATE
-    assert auth_requirement(vps_mode=False, credential=credential, disabled=False) == GATE
+    assert auth_requirement(credential=credential, disabled=False) == GATE
 
 
-def test_local_runtime_and_explicit_opt_out_stay_open():
-    assert auth_requirement(vps_mode=False, credential=None, disabled=False) == OPEN
-    assert auth_requirement(vps_mode=True, credential="hunter2", disabled=True) == OPEN
+def test_every_runtime_fails_closed_without_credentials():
+    assert auth_requirement(credential=None, disabled=False) == BLOCKED
+
+
+def test_explicit_local_opt_out_stays_open():
+    assert auth_requirement(credential="hunter2", disabled=True) == OPEN
 
 
 def test_pbkdf2_verifier_env_takes_precedence(monkeypatch):

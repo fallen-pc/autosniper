@@ -46,8 +46,8 @@ whole workflow can be shared on GitHub and hosted on Streamlit Cloud.
 
 ## Dashboard Access Control
 
-The dashboard exposes controls that launch scrapers, rebuild models, and write datasets, so any
-non-loopback deployment must be password protected.
+The dashboard exposes controls that launch scrapers, rebuild models, and write datasets, so it
+fails closed on every runtime unless authentication is configured or explicitly disabled.
 
 | Variable | Purpose |
 | -------- | ------- |
@@ -55,8 +55,9 @@ non-loopback deployment must be password protected.
 | `AUTOSNIPER_DASHBOARD_PASSWORD_PBKDF2` | PBKDF2-HMAC-SHA256 verifier (`<iterations>$<salt_hex>$<derived_hex>`); preferred over the plaintext variable. |
 | `AUTOSNIPER_DASHBOARD_AUTH_DISABLED` | Set to `1` to run with no gate. Only safe for a loopback-only local session. |
 
-On the VPS runtime (`AUTOSNIPER_VPS_MODE=1`, or a checkout at `/opt/autosniper`) the app refuses to
-render until one of the password variables is set. Generate a digest with:
+Every runtime refuses to render until one of the password variables is set. For loopback-only
+local development, explicitly set `AUTOSNIPER_DASHBOARD_AUTH_DISABLED=1` for that process. Never
+use the opt-out on a forwarded, shared, or hosted port. Generate a verifier with:
 
 ```powershell
 python -c "import getpass;from shared.auth import build_pbkdf2_verifier;print(build_pbkdf2_verifier(getpass.getpass()))"
