@@ -41,6 +41,17 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _text_line_ending_hashes(path: Path) -> set[str]:
+    """Return raw, LF, and CRLF hashes for cross-platform governed text files."""
+    raw = path.read_bytes()
+    lf_bytes = raw.replace(b"\r\n", b"\n")
+    crlf_bytes = lf_bytes.replace(b"\n", b"\r\n")
+    return {
+        hashlib.sha256(payload).hexdigest()
+        for payload in (raw, lf_bytes, crlf_bytes)
+    }
+
+
 def _csv_row_count(path: Path) -> int:
     return len(pd.read_csv(path))
 
@@ -94,7 +105,7 @@ def _validate_curve_manifest(root: Path, curves: pd.DataFrame) -> list[str]:
     expected_hash = str(latest["sha256"]).strip().lower()
     if current_hash != snapshot_hash:
         errors.append("Current curves.csv does not match the latest versioned snapshot.")
-    if expected_hash != current_hash:
+    if expected_hash not in _text_line_ending_hashes(curves_path):
         errors.append("Latest curve manifest SHA-256 does not match curves.csv.")
 
     try:

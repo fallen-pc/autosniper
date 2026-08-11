@@ -6,3 +6,4 @@
 - VPS navigation is runtime/read-only. Curve Builder, Curve Pipeline, Repair Review, Repair Pricing, and the interactive Autotrader Scraper remain local development surfaces.
 - The live repair queue and all scraper/valuation/runtime outputs remain VPS-owned and are never overwritten by the governed release.
 - The in-progress third curve batch remains separate and is not authorized for production release until committed, reviewed, merged, and included in a coherent `main` release.
+- Curve-manifest validation treats LF and CRLF encodings as equivalent for the recorded SHA-256 provenance check, while still requiring `curves.csv` to exactly match its checked-out version snapshot and its governed row/tag counts. This keeps Windows-authored snapshots releasable from Linux CI/VPS without weakening content-drift detection.

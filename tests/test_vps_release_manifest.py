@@ -67,3 +67,18 @@ def test_release_rejects_curve_snapshot_drift(tmp_path: Path) -> None:
     errors = validate_release(release_root)
 
     assert any("does not match the latest versioned snapshot" in error for error in errors)
+
+
+def test_release_accepts_manifest_hash_across_csv_line_endings(tmp_path: Path) -> None:
+    release_root = _copy_release_fixture(tmp_path)
+    manifest = pd.read_csv(release_root / "CSV_data/restricted/versions/curves_manifest.csv")
+    paths = [
+        release_root / "CSV_data/restricted/curves.csv",
+        release_root / Path(str(manifest.iloc[-1]["snapshot_path"])),
+    ]
+    for path in paths:
+        path.write_bytes(path.read_bytes().replace(b"\r\n", b"\n"))
+
+    errors = validate_release(release_root)
+
+    assert "Latest curve manifest SHA-256 does not match curves.csv." not in errors
