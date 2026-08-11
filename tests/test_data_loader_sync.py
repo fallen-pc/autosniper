@@ -29,7 +29,14 @@ def data_dir(monkeypatch, tmp_path) -> Path:
     monkeypatch.setattr(data_loader, "DATA_DIR", directory)
     monkeypatch.setattr(data_loader, "_SYNC_MARKER", directory / ".remote_sync.json")
     monkeypatch.setattr(data_loader, "_last_sync_time", 0.0)
-    for name in ("AUTOSNIPER_DATA_URL", "AUTOSNIPER_DATA_TOKEN", "AUTOSNIPER_DATA_UPLOAD_URL"):
+    for name in (
+        "AUTOSNIPER_DATA_URL",
+        "AUTOSNIPER_DATA_TOKEN",
+        "AUTOSNIPER_DATA_UPLOAD_URL",
+        "AUTOSNIPER_DATA_CACHE_MINUTES",
+        "AUTOSNIPER_DATA_TIMEOUT",
+        "AUTOSNIPER_DATA_DIR",
+    ):
         monkeypatch.delenv(name, raising=False)
     return directory
 
@@ -97,7 +104,7 @@ def test_extract_zip_skips_directories_and_maps_flat_names(data_dir) -> None:
 
 
 def test_extract_zip_rejects_absolute_member_paths(data_dir) -> None:
-    with pytest.raises(ValueError, match="Unsafe archive member path"):
+    with pytest.raises(ValueError, match=r"Unsafe archive member path|escapes data directory"):
         data_loader._extract_zip(_zip_bytes({"/etc/passwd": b"x"}))
 
 
