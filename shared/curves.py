@@ -144,7 +144,9 @@ def resolve_curve_canonical_tag(
         return resolved
 
     candidate_base_tags = []
-    for tag_value in (original, resolved):
+    # An explicit alias is the caller's requested grouping override. Resolve its
+    # target before falling back to any live group attached to the source tag.
+    for tag_value in (resolved, original):
         candidate = resolve_base_curve_tag(tag_value, groups_df)
         if candidate and candidate not in candidate_base_tags:
             candidate_base_tags.append(candidate)

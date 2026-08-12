@@ -150,3 +150,68 @@ def test_assign_canonical_tag_accepts_mitsubishi_triton_gl_r_aliases_as_glxr():
         "mitsubishi_triton_glxr_diesel_auto_ute_mn",
         "[OK]",
     )
+
+
+def test_assign_canonical_tag_splits_outlander_es_zl_by_drivetrain():
+    _load_curve_year_band.cache_clear()
+    base_row = {
+        "make": "Mitsubishi",
+        "model": "Outlander",
+        "badge": "ES",
+        "body_type": "Wagon",
+        "transmission": "Automatic",
+        "fuel_type": "Petrol",
+        "year": "2019",
+        "price": "20000",
+    }
+    cases = [
+        (
+            {**base_row, "variant": "ES ZL Auto 2WD", "url": "https://example.test/outlander-zl-2wd"},
+            "mitsubishi_outlander_es-2wd_petrol_auto_suv_zl",
+        ),
+        (
+            {**base_row, "variant": "ES ZL Auto AWD", "url": "https://example.test/outlander-zl-awd"},
+            "mitsubishi_outlander_es-awd_petrol_auto_suv_zl",
+        ),
+    ]
+    for row, expected_tag in cases:
+        assert assign_canonical_tag(row, require_price=True)[0:2] == (expected_tag, "[OK]")
+
+    rejected_rows = [
+        {**base_row, "variant": "LS ZL Auto 2WD", "badge": "LS", "url": "https://example.test/outlander-ls"},
+        {**base_row, "variant": "ES ZL Auto 2WD PHEV", "fuel_type": "Hybrid", "url": "https://example.test/outlander-phev"},
+    ]
+    for row in rejected_rows:
+        assert assign_canonical_tag(row, require_price=True)[0] == "UNCLASSIFIED"
+
+
+def test_assign_canonical_tag_supports_outlander_es_zm_2wd_only():
+    _load_curve_year_band.cache_clear()
+    base_row = {
+        "make": "Mitsubishi",
+        "model": "Outlander",
+        "badge": "ES",
+        "body_type": "SUV",
+        "transmission": "Automatic",
+        "fuel_type": "Petrol",
+        "year": "2022",
+        "price": "26900",
+    }
+
+    assert assign_canonical_tag(
+        {
+            **base_row,
+            "variant": "ES ZM Auto 2WD MY22",
+            "url": "https://example.test/outlander-zm-2wd",
+        },
+        require_price=True,
+    )[0:2] == ("mitsubishi_outlander_es-2wd_petrol_auto_suv_zm", "[OK]")
+
+    assert assign_canonical_tag(
+        {
+            **base_row,
+            "variant": "ES ZM Auto AWD MY22",
+            "url": "https://example.test/outlander-zm-awd",
+        },
+        require_price=True,
+    )[0] == "UNCLASSIFIED"

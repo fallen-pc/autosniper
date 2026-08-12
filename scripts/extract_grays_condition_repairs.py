@@ -14,7 +14,12 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from shared.repair_pricing import assess_repairs, repair_decision_label, repair_fragments_to_records
+from shared.repair_pricing import (
+    assess_repairs,
+    repair_decision_label,
+    repair_fragments_to_records,
+    vehicle_class_for_listing,
+)
 
 
 DEFAULT_INPUTS = [
@@ -137,6 +142,7 @@ def iter_condition_rows(input_paths: Iterable[Path]) -> Iterable[dict[str, objec
                 "model": safe_text(row.get("model")),
                 "variant": safe_text(row.get("variant")),
                 "canonical_tag": safe_text(row.get("canonical_tag")),
+                "vehicle_class": vehicle_class_for_listing(row),
                 "general_condition": condition_text,
                 "raw_general_condition": raw_condition_text,
                 "dropped_feature_lines": " | ".join(dropped_feature_lines),
@@ -145,17 +151,22 @@ def iter_condition_rows(input_paths: Iterable[Path]) -> Iterable[dict[str, objec
 
 def build_fragment_rows(condition_rows: Iterable[dict[str, object]]) -> tuple[list[dict[str, object]], int]:
     fragment_rows: list[dict[str, object]] = []
-    assessment_cache: dict[str, tuple[str, list[dict[str, object]]]] = {}
+    assessment_cache: dict[tuple[str, str], tuple[str, list[dict[str, object]]]] = {}
     dropped_feature_fragment_count = 0
     for condition_row in condition_rows:
         condition_key = normalize_key(condition_row["general_condition"])
-        if condition_key not in assessment_cache:
-            assessment = assess_repairs(condition_row["general_condition"])
-            assessment_cache[condition_key] = (
+        vehicle_class = safe_text(condition_row.get("vehicle_class"))
+        cache_key = (condition_key, vehicle_class)
+        if cache_key not in assessment_cache:
+            assessment = assess_repairs(
+                condition_row["general_condition"],
+                vehicle_class=vehicle_class,
+            )
+            assessment_cache[cache_key] = (
                 repair_decision_label(assessment),
                 repair_fragments_to_records(assessment),
             )
-        decision, records = assessment_cache[condition_key]
+        decision, records = assessment_cache[cache_key]
         dropped_feature_fragments: list[str] = []
         for index, record in enumerate(records, start=1):
             original_text = safe_text(record.get("original_text"))

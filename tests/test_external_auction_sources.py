@@ -415,6 +415,45 @@ def test_parse_slattery_asset_text_extracts_condition_fragments():
     assert "Damage: Scratches and dents" in row["general_condition"]
 
 
+def test_parse_slattery_embedded_payload_extracts_asset_scoped_live_bid_fields():
+    payload = r'''
+    {\"id\":138753,\"closesAt\":\"2026-08-10T06:34:18Z\",\"startingBidAmount\":18000,\"bidCount\":2,
+    \"auctionAssetBids\":[
+      {\"assetId\":138753,\"bidAmount\":18000},
+      {\"assetId\":138753,\"bidAmount\":18100},
+      {\"assetId\":999999,\"bidAmount\":99900}
+    ]}
+    '''
+
+    row = parse_listing_text(
+        "slattery",
+        "https://slatteryauctions.com.au/assets/138753?auctionId=10529",
+        "2020 Toyota Corolla Ascent Sport",
+        payload,
+    )
+
+    assert row["price"] == "18100"
+    assert row["bids"] == "2"
+    assert row["time_remaining_or_date_sold"] == "2026-08-10T06:34:18Z"
+
+
+def test_parse_slattery_embedded_payload_uses_starting_bid_when_no_bids_exist():
+    payload = r'''
+    {\"id\":138753,\"closesAt\":\"2026-08-10T06:34:18Z\",\"startingBidAmount\":18000,
+    \"bidCount\":0,\"auctionAssetBids\":[]}
+    '''
+
+    row = parse_listing_text(
+        "slattery",
+        "https://slatteryauctions.com.au/assets/138753?auctionId=10529",
+        "2020 Toyota Corolla Ascent Sport",
+        payload,
+    )
+
+    assert row["price"] == "18000"
+    assert row["bids"] == "0"
+
+
 def test_extract_label_values_accepts_colon_and_next_line_forms():
     lines = split_detail_lines(
         """

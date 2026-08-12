@@ -1,3 +1,8 @@
+from pathlib import Path
+
+import pytest
+
+import shared.auth as dashboard_auth
 from shared.auth import (
     AUTH_DISABLED_ENV,
     BLOCKED,
@@ -5,6 +10,7 @@ from shared.auth import (
     OPEN,
     PASSWORD_ENV,
     PASSWORD_PBKDF2_ENV,
+    SESSION_KEY,
     auth_disabled,
     auth_requirement,
     build_pbkdf2_verifier,
@@ -40,6 +46,13 @@ def test_pbkdf2_verifier_env_takes_precedence(monkeypatch):
     monkeypatch.setenv(PASSWORD_PBKDF2_ENV, credential)
     monkeypatch.setenv(PASSWORD_ENV, "from-plaintext")
     assert configured_credential() == credential
+
+
+def test_malformed_pbkdf2_env_fails_closed(monkeypatch):
+    monkeypatch.setenv(PASSWORD_PBKDF2_ENV, "600000$not-hex$also-not-hex")
+    monkeypatch.setenv(PASSWORD_ENV, "plaintext-fallback")
+    assert configured_credential() is None
+    assert auth_requirement(credential=configured_credential(), disabled=False) == BLOCKED
 
 
 def test_pbkdf2_verifier_accepts_only_the_right_password():
@@ -80,6 +93,48 @@ def test_auth_disabled_requires_truthy_flag(monkeypatch):
     assert not auth_disabled()
     monkeypatch.setenv(AUTH_DISABLED_ENV, "yes")
     assert auth_disabled()
+
+
+def test_unconfigured_gate_stops_page_execution(monkeypatch):
+    class GateStopped(RuntimeError):
+        pass
+
+    errors: list[str] = []
+    monkeypatch.delenv(PASSWORD_PBKDF2_ENV, raising=False)
+    monkeypatch.delenv(PASSWORD_ENV, raising=False)
+    monkeypatch.delenv(AUTH_DISABLED_ENV, raising=False)
+    monkeypatch.setattr(dashboard_auth.st, "error", errors.append)
+    monkeypatch.setattr(
+        dashboard_auth.st,
+        "stop",
+        lambda: (_ for _ in ()).throw(GateStopped()),
+    )
+
+    with pytest.raises(GateStopped):
+        dashboard_auth.require_dashboard_auth()
+
+    assert errors and "authentication is not configured" in errors[0]
+
+
+def test_authenticated_session_skips_login_form(monkeypatch):
+    monkeypatch.setenv(PASSWORD_PBKDF2_ENV, _verifier("saved-password"))
+    monkeypatch.delenv(PASSWORD_ENV, raising=False)
+    monkeypatch.delenv(AUTH_DISABLED_ENV, raising=False)
+    monkeypatch.setattr(dashboard_auth.st, "session_state", {SESSION_KEY: True})
+    monkeypatch.setattr(
+        dashboard_auth,
+        "_render_gate",
+        lambda credential: pytest.fail(f"unexpected login form for {credential}"),
+    )
+
+    dashboard_auth.require_dashboard_auth()
+
+
+def test_devcontainer_uses_authenticated_entrypoint_and_security_defaults():
+    config_text = Path(".devcontainer/devcontainer.json").read_text(encoding="utf-8")
+    assert '"server": "streamlit run app.py"' in config_text
+    assert "enableCORS false" not in config_text
+    assert "enableXsrfProtection false" not in config_text
 
 
 def test_scrape_url_allowlist_accepts_expected_hosts():

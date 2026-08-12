@@ -25,6 +25,15 @@ MANIFEST_COLUMNS = [
 ]
 
 
+def _manifest_path_value(path: Path) -> str:
+    """Store repository-owned paths portably while leaving external test paths intact."""
+    repo_root = Path(__file__).resolve().parent.parent
+    try:
+        return path.resolve().relative_to(repo_root).as_posix()
+    except ValueError:
+        return path.as_posix()
+
+
 def _file_sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -83,8 +92,8 @@ def snapshot_curve_version(
                 "version_id": snapshot_path.stem.replace(f"{curves_path.stem}_", "", 1),
                 "created_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
                 "source": source,
-                "curve_path": curves_path.as_posix(),
-                "snapshot_path": snapshot_path.as_posix(),
+                "curve_path": _manifest_path_value(curves_path),
+                "snapshot_path": _manifest_path_value(snapshot_path),
                 "row_count": int(len(curves_df)),
                 "canonical_tag_count": int(curves_df.get("canonical_tag", pd.Series(dtype=object)).nunique()),
                 "sha256": file_hash,

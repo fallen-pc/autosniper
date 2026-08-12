@@ -54,7 +54,7 @@ def build_pbkdf2_verifier(
     return f"{iterations}${salt_bytes.hex()}${derived.hex()}"
 
 
-def _parse_pbkdf2_verifier(verifier: str) -> tuple[int, bytes, str] | None:
+def _parse_pbkdf2_verifier(verifier: str) -> tuple[int, bytes, bytes] | None:
     parts = verifier.split("$")
     if len(parts) != 3:
         return None
@@ -62,18 +62,21 @@ def _parse_pbkdf2_verifier(verifier: str) -> tuple[int, bytes, str] | None:
     try:
         iterations = int(iterations_text)
         salt = bytes.fromhex(salt_hex)
+        derived = bytes.fromhex(derived_hex)
     except ValueError:
         return None
-    if iterations <= 0 or not salt or not derived_hex:
+    if iterations <= 0 or not salt or not derived:
         return None
-    return iterations, salt, derived_hex.strip().lower()
+    return iterations, salt, derived
 
 
 def configured_credential() -> str | None:
     """Return the configured password verifier or plaintext, or None when unset."""
     verifier = os.getenv(PASSWORD_PBKDF2_ENV, "").strip()
     if verifier:
-        return verifier
+        # A damaged verifier must block access instead of silently becoming a
+        # plaintext credential or falling back to a second environment value.
+        return verifier if _parse_pbkdf2_verifier(verifier) is not None else None
     password = os.getenv(PASSWORD_ENV, "")
     return password or None
 
@@ -86,9 +89,9 @@ def password_matches(candidate: str, credential: str) -> bool:
     """Constant-time check of a candidate against a verifier or plaintext secret."""
     parsed = _parse_pbkdf2_verifier(credential)
     if parsed is not None:
-        iterations, salt, derived_hex = parsed
+        iterations, salt, expected = parsed
         derived = hashlib.pbkdf2_hmac("sha256", candidate.encode("utf-8"), salt, iterations)
-        return hmac.compare_digest(derived.hex(), derived_hex)
+        return hmac.compare_digest(derived, expected)
     return hmac.compare_digest(candidate, credential)
 
 

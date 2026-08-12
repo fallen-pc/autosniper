@@ -36,6 +36,64 @@ def _temp_path(destination: Path) -> Path:
 def _lock_path(destination: Path) -> Path:
     return destination.with_name(f".{destination.name}.lock")
 
+def _read_lock_pid(lock_path: Path) -> int | None:
+    try:
+        first_line = lock_path.read_text(encoding="ascii").splitlines()[0]
+        if not first_line.startswith("pid="):
+            return None
+        return int(first_line.removeprefix("pid="))
+    except (FileNotFoundError, IndexError, OSError, UnicodeError, ValueError):
+        return None
+
+
+def _process_is_running(pid: int) -> bool | None:
+    if os.name == "nt":
+        import ctypes
+
+        from ctypes import wintypes
+        process_query_limited_information = 0x1000
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        kernel32.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+        kernel32.OpenProcess.restype = wintypes.HANDLE
+        kernel32.CloseHandle.argtypes = [wintypes.HANDLE]
+        kernel32.CloseHandle.restype = wintypes.BOOL
+        handle = kernel32.OpenProcess(process_query_limited_information, False, pid)
+        if handle:
+            kernel32.CloseHandle(handle)
+            return True
+        error = ctypes.get_last_error()
+        if error == 87:  # ERROR_INVALID_PARAMETER: no such process.
+            return False
+        if error == 5:  # ERROR_ACCESS_DENIED: process exists but cannot be queried.
+            return True
+        return None
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    except OSError:
+        return None
+    return True
+
+
+def _can_reclaim_stale_lock(lock_path: Path) -> bool:
+    age_seconds = time.time() - lock_path.stat().st_mtime
+    if age_seconds <= LOCK_STALE_SECONDS:
+        return False
+    pid = _read_lock_pid(lock_path)
+    return pid is None or _process_is_running(pid) is False
+
+
+def _lock_matches_descriptor(lock_path: Path, descriptor: int) -> bool:
+    try:
+        held = os.fstat(descriptor)
+        current = lock_path.stat()
+    except (FileNotFoundError, OSError):
+        return False
+    return (held.st_dev, held.st_ino) == (current.st_dev, current.st_ino)
+
 
 @contextmanager
 def _csv_write_lock(destination: Path):
@@ -50,8 +108,7 @@ def _csv_write_lock(destination: Path):
             os.write(descriptor, f"pid={os.getpid()}\n".encode("ascii"))
         except FileExistsError:
             try:
-                age_seconds = time.time() - lock_path.stat().st_mtime
-                if age_seconds > LOCK_STALE_SECONDS:
+                if _can_reclaim_stale_lock(lock_path):
                     lock_path.unlink(missing_ok=True)
                     continue
             except FileNotFoundError:
@@ -63,8 +120,10 @@ def _csv_write_lock(destination: Path):
         yield
     finally:
         if descriptor is not None:
+            owns_lock = _lock_matches_descriptor(lock_path, descriptor)
             os.close(descriptor)
-        lock_path.unlink(missing_ok=True)
+            if owns_lock:
+                lock_path.unlink(missing_ok=True)
 
 
 def _replace_with_retry(temp_path: Path, destination: Path) -> None:

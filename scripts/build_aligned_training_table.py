@@ -110,7 +110,7 @@ def _exclude_major_engine_defects(df: pd.DataFrame) -> pd.DataFrame:
 def _run_repair_enrichment(df: pd.DataFrame) -> pd.DataFrame:
     """Apply repair feature extraction inline using build_repair_features."""
     from shared.repair_features import build_repair_features, serialize_tags
-    from shared.repair_pricing import assess_repairs
+    from shared.repair_pricing import assess_repairs, vehicle_class_for_listing
 
     feature_rows = []
     cost_rows = []
@@ -125,7 +125,7 @@ def _run_repair_enrichment(df: pd.DataFrame) -> pd.DataFrame:
             "repair_severity": feats.severity,
             "decision_condition_only": feats.decision_label,
         })
-        assessment = assess_repairs(text)
+        assessment = assess_repairs(text, vehicle_class=vehicle_class_for_listing(row))
         cost_rows.append({
             "estimated_parts_cost_aud": assessment.total_cost,
             "parts_cost_basis": assessment.severity_level,

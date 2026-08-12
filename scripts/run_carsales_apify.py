@@ -7,8 +7,8 @@ import os
 import sys
 import time
 from pathlib import Path
-from typing import Any
-from urllib.parse import quote
+from typing import Any, Sequence
+from urllib.parse import quote, unquote, urlparse
 
 import requests
 
@@ -38,7 +38,11 @@ else:  # pragma: no cover
 
 
 DEFAULT_ACTOR_ID = "memo23~carsales-cheerio"
+ABOTAPI_ACTOR_ID = "abotapi~carsales-au-scraper"
 TERMINAL_STATUSES = {"SUCCEEDED", "FAILED", "ABORTED", "TIMED-OUT"}
+EXPAND_PRICE_BANDS_THRESHOLD = 75
+IMPORT_DEFERRED_EXIT_CODE = 3
+ALLOWED_CARSALES_HOSTS = {"carsales.com.au", "www.carsales.com.au"}
 
 
 def require_token(token: str | None = None) -> str:
@@ -64,11 +68,45 @@ def build_actor_input(
     state: str = "",
     sort_by: str = "featured",
     start_url: str = "",
+    start_urls: Sequence[str] | None = None,
     flatten: bool = False,
     residential_proxy: bool = True,
+    actor_id: str = DEFAULT_ACTOR_ID,
+    max_listings: int = 50,
 ) -> dict[str, Any]:
+    exact_urls = [
+        str(url).strip()
+        for url in ([start_url] if start_url else []) + list(start_urls or [])
+        if str(url).strip()
+    ]
+    exact_urls = list(dict.fromkeys(exact_urls))
+    if actor_id == ABOTAPI_ACTOR_ID:
+        actor_input = {
+            "mode": "url" if exact_urls else "search",
+            "condition": condition,
+            "sellerType": seller_type,
+            "sortBy": str(sort_by or "featured").replace("_", "-"),
+            "make": str(make or "").strip(),
+            "model": str(model or "").strip(),
+            "bodyType": str(body_type or "").strip().lower(),
+            "transmission": str(transmission or "").strip().lower(),
+            "fuelType": str(fuel_type or "").strip().lower(),
+            "state": str(state or "").strip().lower(),
+            "fetchDetails": False,
+            "expandPriceBands": int(max_listings) > EXPAND_PRICE_BANDS_THRESHOLD,
+            "maxListings": int(max_listings),
+            "maxPages": 20,
+            "proxyConfiguration": {
+                "useApifyProxy": True,
+                "apifyProxyGroups": ["RESIDENTIAL"],
+            },
+        }
+        if exact_urls:
+            actor_input["urls"] = exact_urls
+        return actor_input
+
     actor_input: dict[str, Any] = {
-        "mode": "search",
+        "mode": "url" if exact_urls else "search",
         "condition": condition,
         "sellerType": seller_type,
         "sortBy": sort_by,
@@ -89,8 +127,8 @@ def build_actor_input(
         "state": state,
     }.items():
         actor_input[key] = str(value or "").strip().lower()
-    if start_url:
-        actor_input["startUrls"] = [{"url": start_url.strip()}]
+    if exact_urls:
+        actor_input["startUrls"] = [{"url": url} for url in exact_urls]
     if residential_proxy:
         actor_input["proxy"] = {"useApifyProxy": True, "apifyProxyGroups": ["RESIDENTIAL"]}
     else:
@@ -190,37 +228,72 @@ def _print_run_summary(run: dict[str, Any]) -> None:
         print(f"console_url={run.get('consoleUrl')}")
 
 
+def _carsales_url_target(url: str) -> tuple[str, str] | None:
+    parsed = urlparse(url)
+    if parsed.scheme.lower() != "https" or (parsed.hostname or "").lower() not in ALLOWED_CARSALES_HOSTS:
+        return None
+    parts = [unquote(part).strip() for part in parsed.path.split("/") if part.strip()]
+    if len(parts) != 4 or [part.lower() for part in parts[:2]] != ["cars", "private"]:
+        return None
+    return parts[2], parts[3]
+
+
+def _validated_url_targets(urls: Sequence[str]) -> list[tuple[str, str]]:
+    targets: list[tuple[str, str]] = []
+    invalid_urls: list[str] = []
+    for url in urls:
+        target = _carsales_url_target(url)
+        if target is None:
+            invalid_urls.append(url)
+        else:
+            targets.append(target)
+    if invalid_urls:
+        raise RuntimeError(
+            "Every paid exact URL must be an HTTPS Carsales private make/model URL; rejected: "
+            + ", ".join(invalid_urls)
+        )
+    return targets
+
+
 def _run_paid_scrape_preflight(args: argparse.Namespace) -> None:
-    result, summary = run_preflight(
-        make=args.make,
-        model=args.model,
-        body_type=args.body_type,
-        transmission=args.transmission,
-        fuel_type=args.fuel_type,
-        state=args.state,
-        seller_type=args.seller_type,
-        min_new_lane_rows=args.preflight_min_new_lane_rows,
-        max_already_covered_share=args.preflight_max_already_covered_share,
-    )
-    print(f"preflight_status={result.status}")
-    print(f"preflight_target={result.target_label}")
-    print(f"preflight_staging_rows={result.staging_rows}")
-    print(f"preflight_already_covered_rows={result.already_covered_rows}")
-    print(f"preflight_newly_supported_rows={result.newly_supported_rows}")
-    print(f"preflight_still_unclassified_rows={result.still_unclassified_rows}")
-    print(f"preflight_already_covered_share={result.already_covered_share}")
-    print(f"preflight_active_uncovered_rows={result.active_uncovered_rows}")
-    print(f"preflight_buildable_uncovered_groups={result.buildable_uncovered_groups}")
-    print(f"preflight_recommendation={result.recommendation}")
-    if not summary.empty:
-        print("preflight_top_local_groups:")
-        print(summary.to_string(index=False))
-    if result.status == "block" and not args.allow_covered_refresh:
+    exact_urls = list(getattr(args, "start_urls", []) or [])
+    if args.start_url:
+        exact_urls.insert(0, args.start_url)
+    url_targets = _validated_url_targets(exact_urls)
+    targets = url_targets or [(args.make, args.model)]
+    results = []
+    for target_make, target_model in targets:
+        result, summary = run_preflight(
+            make=target_make,
+            model=target_model,
+            body_type=args.body_type,
+            transmission=args.transmission,
+            fuel_type=args.fuel_type,
+            state=args.state,
+            seller_type=args.seller_type,
+            min_new_lane_rows=args.preflight_min_new_lane_rows,
+            max_already_covered_share=args.preflight_max_already_covered_share,
+        )
+        results.append(result)
+        print(f"preflight_status={result.status}")
+        print(f"preflight_target={result.target_label}")
+        print(f"preflight_staging_rows={result.staging_rows}")
+        print(f"preflight_already_covered_rows={result.already_covered_rows}")
+        print(f"preflight_newly_supported_rows={result.newly_supported_rows}")
+        print(f"preflight_still_unclassified_rows={result.still_unclassified_rows}")
+        print(f"preflight_already_covered_share={result.already_covered_share}")
+        print(f"preflight_active_uncovered_rows={result.active_uncovered_rows}")
+        print(f"preflight_buildable_uncovered_groups={result.buildable_uncovered_groups}")
+        print(f"preflight_recommendation={result.recommendation}")
+        if not summary.empty:
+            print("preflight_top_local_groups:")
+            print(summary.to_string(index=False))
+    if any(result.status == "block" for result in results) and not args.allow_covered_refresh:
         raise RuntimeError(
             "Preflight blocked this paid scrape because it appears to duplicate existing curve coverage. "
             "Pass --allow-covered-refresh only for an intentional refresh, extension, or validation run."
         )
-    if result.status == "warn" and not args.allow_preflight_warning and not args.allow_covered_refresh:
+    if any(result.status == "warn" for result in results) and not args.allow_preflight_warning and not args.allow_covered_refresh:
         raise RuntimeError(
             "Preflight warned on this paid scrape. Narrow the target or pass --allow-preflight-warning "
             "after confirming the expected curve-coverage yield."
@@ -241,6 +314,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--state", default="")
     parser.add_argument("--sort-by", default="featured")
     parser.add_argument("--start-url", default="", help="Optional exact Carsales search URL.")
+    parser.add_argument(
+        "--start-url-file",
+        type=Path,
+        help="Optional UTF-8 text file containing one exact Carsales search URL per line.",
+    )
     parser.add_argument("--max-items", type=int, default=50)
     parser.add_argument("--max-total-charge-usd", type=float, default=2.0)
     parser.add_argument("--wait-seconds", type=int, default=0)
@@ -276,6 +354,20 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--preflight-min-new-lane-rows", type=int, default=10)
     parser.add_argument("--preflight-max-already-covered-share", type=float, default=0.35)
     args = parser.parse_args(argv)
+    start_urls: list[str] = []
+    if args.start_url_file:
+        start_urls = [
+            line.strip()
+            for line in args.start_url_file.read_text(encoding="utf-8").splitlines()
+            if line.strip() and not line.lstrip().startswith("#")
+        ]
+        if not start_urls:
+            parser.error("--start-url-file did not contain any Carsales URLs")
+    args.start_urls = start_urls
+
+    exact_urls = ([args.start_url] if args.start_url else []) + start_urls
+    if exact_urls:
+        _validated_url_targets(exact_urls)
 
     if not args.skip_preflight:
         _run_paid_scrape_preflight(args)
@@ -291,8 +383,11 @@ def main(argv: list[str] | None = None) -> int:
         state=args.state,
         sort_by=args.sort_by,
         start_url=args.start_url,
+        start_urls=start_urls,
         flatten=args.flatten,
         residential_proxy=not args.no_residential_proxy,
+        actor_id=args.actor_id,
+        max_listings=args.max_items,
     )
     run = start_actor_run(
         actor_input,
@@ -314,6 +409,14 @@ def main(argv: list[str] | None = None) -> int:
         print("final_run:")
         _print_run_summary(run)
     if args.import_results:
+        status = str(run.get("status") or "").strip().upper()
+        if status not in TERMINAL_STATUSES:
+            print(
+                "import_deferred=true "
+                f"reason=run_still_{status.lower() or 'unknown'} "
+                "rerun scripts/import_carsales_apify_run.py after the actor reaches a terminal status"
+            )
+            return IMPORT_DEFERRED_EXIT_CODE
         imported_count = import_completed_run(
             run,
             token=args.token,
