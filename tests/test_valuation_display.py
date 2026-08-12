@@ -3,18 +3,29 @@ from __future__ import annotations
 import pandas as pd
 
 from shared.valuation_display import (
+    action_signal_tone,
     active_profit_value,
     bid_display_parts,
+    bid_status_signal_tone,
     build_ai_analysis_summary_rows,
     conservative_margin_percent,
     expected_finish_profit_value,
     first_currency_value,
     is_safe_opportunity_row,
+    margin_signal_tone,
     recommended_max_bid_value,
     rank_live_opportunities,
 )
 
 
+
+def test_signal_tones_follow_current_policy_and_preserve_missing_margin() -> None:
+    assert action_signal_tone("Buy") == "signal-good"
+    assert action_signal_tone("Avoid") == "signal-danger"
+    assert bid_status_signal_tone("Below expected") == "signal-good"
+    assert bid_status_signal_tone("At ceiling") == "signal-watch"
+    assert bid_status_signal_tone("Over max") == "signal-danger"
+    assert margin_signal_tone(float("nan")) == "signal-neutral"
 def test_build_ai_analysis_summary_rows_matches_default_visible_ai_scope() -> None:
     active_df = pd.DataFrame(
         [

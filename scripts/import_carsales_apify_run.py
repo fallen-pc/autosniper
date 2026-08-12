@@ -16,9 +16,11 @@ import requests
 if __package__ in (None, ""):
     sys.path.append(str(Path(__file__).resolve().parent.parent))
     from scripts.atomic_csv import write_dataframe_csv_atomic
+    from shared.canonical_tagging import infer_fuel_type_from_series
     from shared.data_loader import dataset_path
 else:  # pragma: no cover
     from scripts.atomic_csv import write_dataframe_csv_atomic
+    from shared.canonical_tagging import infer_fuel_type_from_series
     from shared.data_loader import dataset_path
 
 
@@ -103,11 +105,24 @@ def _numeric(value: Any) -> Any:
     return pd.to_numeric(value, errors="coerce")
 
 
+def _first_present(*values: Any) -> Any:
+    for value in values:
+        if value is None:
+            continue
+        if isinstance(value, str) and not value.strip():
+            continue
+        try:
+            if bool(pd.isna(value)):
+                continue
+        except (TypeError, ValueError):
+            pass
+        return value
+    return ""
+
+
 def _normalise_fuel_type(raw_fuel: str, series: str) -> str:
-    series_code = str(series or "").strip().upper()
-    if series_code.startswith(("AXAH", "AXVH", "ZWE")):
-        return "Hybrid"
-    return str(raw_fuel or "").strip()
+    source_fuel = str(raw_fuel or "").strip()
+    return source_fuel or infer_fuel_type_from_series(series)
 
 
 def _flat_spec_pairs(item: dict[str, Any]) -> dict[str, Any]:
@@ -137,12 +152,13 @@ def normalize_items(
         flat_pairs = _flat_spec_pairs(item)
         series = _nested_text(spec_all, "Series") or _flat_series(item)
         raw_fuel = str(
-            specs.get("fuelType")
-            or _nested_text(spec_all, "Fuel Type")
-            or item.get("fuelType")
-            or item.get("fuel_type")
-            or flat_pairs.get("Fuel Type")
-            or ""
+            _first_present(
+                specs.get("fuelType"),
+                _nested_text(spec_all, "Fuel Type"),
+                item.get("fuelType"),
+                item.get("fuel_type"),
+                flat_pairs.get("Fuel Type"),
+            )
         ).strip()
 
         rows.append(
@@ -152,18 +168,12 @@ def normalize_items(
                 "scraped_at": str(item.get("scrapedAt") or "").strip(),
                 "source": "carsales_apify",
                 "ad_id": str(
-                    item.get("adId")
-                    or item.get("listingId")
-                    or item.get("networkId")
-                    or ""
+                    _first_present(item.get("adId"), item.get("listingId"), item.get("networkId"))
                 ).strip(),
                 "url": str(
-                    item.get("canonicalUrl")
-                    or item.get("url")
-                    or item.get("link")
-                    or ""
+                    _first_present(item.get("canonicalUrl"), item.get("url"), item.get("link"))
                 ).strip(),
-                "title": str(item.get("title") or item.get("name") or "").strip(),
+                "title": str(_first_present(item.get("title"), item.get("name"))).strip(),
                 "make": str(item.get("make") or "").strip(),
                 "model": str(item.get("model") or "").strip(),
                 "year": _numeric(item.get("year")),
@@ -180,10 +190,12 @@ def normalize_items(
                 "variant": str(item.get("variant") or "").strip(),
                 "price": _numeric(item.get("price")),
                 "odometer": _numeric(
-                    specs.get("odometer")
-                    or item.get("odometer")
-                    or item.get("odometerKm")
-                    or item.get("kms")
+                    _first_present(
+                        specs.get("odometer"),
+                        item.get("odometer"),
+                        item.get("odometerKm"),
+                        item.get("kms"),
+                    )
                 ),
                 "body_type": str(
                     specs.get("bodyStyle")
@@ -252,16 +264,32 @@ def merge_output(existing_path: Path, imported: pd.DataFrame) -> pd.DataFrame:
     else:
         combined = imported[OUTPUT_COLUMNS].copy()
         combined["_merge_order"] = 1
-    combined["_sort_scraped_at"] = combined["scraped_at"].fillna("").astype(str)
-    combined = combined.sort_values(["_sort_scraped_at", "_merge_order"])
-    stable_identity = (
-        combined["ad_id"].fillna("").astype(str).str.strip()
-        + "|"
-        + combined["url"].fillna("").astype(str).str.strip()
+    combined["ad_id"] = combined["ad_id"].fillna("").astype(str).str.strip()
+    combined["url"] = combined["url"].fillna("").astype(str).str.strip()
+    combined["_sort_scraped_at"] = pd.to_datetime(
+        combined["scraped_at"], errors="coerce", utc=True, format="mixed"
     )
-    identified = combined[stable_identity != "|"].copy()
-    unidentified = combined[stable_identity == "|"].copy()
-    identified = identified.drop_duplicates(subset=["ad_id", "url"], keep="last")
+    combined = combined.sort_values(
+        ["_sort_scraped_at", "_merge_order"],
+        kind="mergesort",
+        na_position="first",
+    )
+
+    has_ad_id = combined["ad_id"] != ""
+    combined = combined[~has_ad_id | ~combined["ad_id"].duplicated(keep="last")]
+    has_url = combined["url"] != ""
+    combined = combined[~has_url | ~combined["url"].duplicated(keep="last")]
+
+    unidentified_mask = (combined["ad_id"] == "") & (combined["url"] == "")
+    identified = combined[~unidentified_mask]
+    unidentified = combined[unidentified_mask].drop_duplicates(
+        subset=[
+            column
+            for column in OUTPUT_COLUMNS
+            if column not in {"run_id", "dataset_id", "scraped_at", "source", "ad_id", "url"}
+        ],
+        keep="last",
+    )
     combined = pd.concat([identified, unidentified], ignore_index=True)
     combined = combined.drop(columns=["_sort_scraped_at", "_merge_order"]).sort_values(
         ["make", "model", "series", "badge", "year", "odometer", "price"],

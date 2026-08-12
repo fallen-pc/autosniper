@@ -1,5 +1,7 @@
 # Recent Changes
 
+- 2026-08-13: Addressed the post-PR10 source review as an isolated hardening slice. Carsales/Apify imports now preserve source identity and zero values, normalize timestamps, deduplicate by ad ID and URL, validate paid exact URLs, and return a distinct deferred status; canonical tagging uses narrower body/series inference; AI Analysis restores diagnostic context with policy-aligned signal tones; atomic CSV locks verify live ownership; scheduler browser setup is bounded and failed daily runs remain catch-up eligible; merge-governance approval is restricted to the exact merged PR commit.
+
 - 2026-08-12: Fixed governed VPS activation from the repository's Git-archive deployment by running the live governance check with `--skip-dataset-delta`. The VPS still validates schemas, curves, coverage, monotonicity, the governed release manifest, and readiness; Git delta approval remains enforced by CI before the exact synchronized `main` commit can be released.
 
 - 2026-08-12: Fixed Windows-launched VPS deployments by normalizing the embedded Bash script to LF line endings before Base64 transport. This prevents Bash from reading `pipefail\r` and stopping before the remote cleanup trap is installed; a regression test now locks the normalization before encoding.

@@ -58,6 +58,30 @@ def test_concurrent_atomic_appends_preserve_both_writers(tmp_path: Path) -> None
     assert sorted(pd.read_csv(destination)["value"].tolist()) == [1, 2]
 
 
+def test_stale_csv_lock_requires_dead_owner_and_cleanup_checks_identity(
+    monkeypatch, tmp_path: Path
+) -> None:
+    lock_path = tmp_path / ".rows.csv.lock"
+    lock_path.write_text(f"pid={atomic_csv.os.getpid()}\n", encoding="ascii")
+    stale_time = atomic_csv.time.time() - atomic_csv.LOCK_STALE_SECONDS - 1
+    atomic_csv.os.utime(lock_path, (stale_time, stale_time))
+
+    assert atomic_csv._can_reclaim_stale_lock(lock_path) is False
+    monkeypatch.setattr(atomic_csv, "_process_is_running", lambda _pid: False)
+    assert atomic_csv._can_reclaim_stale_lock(lock_path) is True
+
+    owned_path = tmp_path / "owned.lock"
+    replacement_path = tmp_path / "replacement.lock"
+    owned_path.write_text("owned", encoding="ascii")
+    replacement_path.write_text("replacement", encoding="ascii")
+    descriptor = atomic_csv.os.open(owned_path, atomic_csv.os.O_RDONLY)
+    try:
+        assert atomic_csv._lock_matches_descriptor(owned_path, descriptor) is True
+        assert atomic_csv._lock_matches_descriptor(replacement_path, descriptor) is False
+    finally:
+        atomic_csv.os.close(descriptor)
+
+
 def test_audit_snapshot_is_bounded_to_latest_copy(tmp_path: Path) -> None:
     target = tmp_path / "restricted.csv"
 

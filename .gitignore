@@ -45,6 +45,8 @@ CSV_data/model_audit/
 CSV_data/restricted/audit/
 CSV_data/scrapers/*.backup*.csv
 CSV_data/scrapers/active_snapshots.csv
+# Atomic CSV writers create destination-scoped lock files beside tracked data.
+CSV_data/**/*.lock
 .pytest_cache/
 __pycache__/
 *.py[cod]
