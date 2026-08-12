@@ -389,6 +389,52 @@ def _apply_pickles_terminal_fields(row: dict[str, object], terminal: dict[str, s
         row["price"] = terminal["price"]
 
 
+def _slattery_asset_id(url: str) -> str:
+    match = re.search(r"/assets/(\d+)(?:[/?#]|$)", _normalise_url(url))
+    return match.group(1) if match else ""
+
+
+def _extract_slattery_live_fields(url: str, text: str) -> dict[str, str]:
+    normalised = _normalise_embedded_page_text(text)
+    asset_id = _slattery_asset_id(url)
+    if not asset_id:
+        return {"price": "", "bids": "", "closes_at": ""}
+
+    bids_marker = normalised.find('"auctionAssetBids"')
+    asset_window = normalised if bids_marker < 0 else normalised[max(0, bids_marker - 30_000) : bids_marker]
+    bid_amounts = [
+        float(value)
+        for value in re.findall(
+            rf'"assetId"\s*:\s*{re.escape(asset_id)}\b[^{{}}]{{0,500}}?"bidAmount"\s*:\s*([0-9]+(?:\.[0-9]+)?)',
+            normalised,
+            re.DOTALL,
+        )
+    ]
+    starting_bid = _extract_money(_extract_jsonish_value(asset_window, "startingBidAmount"))
+    price = ""
+    if bid_amounts:
+        highest_bid = max(bid_amounts)
+        price = str(int(highest_bid)) if highest_bid.is_integer() else str(highest_bid)
+    elif starting_bid:
+        price = starting_bid
+
+    return {
+        "price": price,
+        "bids": _extract_int(_extract_jsonish_value(asset_window, "bidCount")) or str(len(bid_amounts)),
+        "closes_at": _clean_text(_extract_jsonish_value(asset_window, "closesAt")),
+    }
+
+
+def _apply_slattery_live_fields(row: dict[str, object], fields: dict[str, str]) -> None:
+    for row_field, source_field in (
+        ("price", "price"),
+        ("bids", "bids"),
+        ("time_remaining_or_date_sold", "closes_at"),
+    ):
+        if not row.get(row_field) and fields.get(source_field):
+            row[row_field] = fields[source_field]
+
+
 def _normalise_transmission(value: object) -> str:
     text = _clean_text(value)
     lower = text.lower()
@@ -597,6 +643,8 @@ def parse_listing_text(source: str, url: str, title: str, text: str) -> dict[str
     row["time_remaining_or_date_sold"] = _clean_text(labels.get("time_remaining_or_date_sold", ""))
     if source == "pickles":
         _apply_pickles_terminal_fields(row, _extract_pickles_terminal_fields(url, text))
+    elif source == "slattery":
+        _apply_slattery_live_fields(row, _extract_slattery_live_fields(url, text))
     row["general_condition"] = _extract_pickles_condition_text(lines) if source == "pickles" else _extract_condition_text(lines)
     return row
 
@@ -1075,14 +1123,18 @@ async def scrape_detail(
         text = await page.locator("body").inner_text(timeout=detail_timeout_ms)
         html_text = await page.content()
         row = parse_listing_text(listing.source, page.url, title or listing.title_hint, text)
-        if listing.source == "pickles":
+        if listing.source in {"pickles", "slattery"}:
             response_text = ""
             try:
                 if response is not None:
                     response_text = await response.text()
             except Exception:
                 response_text = ""
-            _apply_pickles_terminal_fields(row, _extract_pickles_terminal_fields(page.url, f"{html_text}\n{response_text}"))
+            embedded_text = f"{html_text}\n{response_text}"
+            if listing.source == "pickles":
+                _apply_pickles_terminal_fields(row, _extract_pickles_terminal_fields(page.url, embedded_text))
+            else:
+                _apply_slattery_live_fields(row, _extract_slattery_live_fields(page.url, embedded_text))
         status_code = response.status if response is not None else ""
         resolved_url = str(page.url or "")
         unavailable = listing.source == "pickles" and (

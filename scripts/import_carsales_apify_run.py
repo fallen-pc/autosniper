@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -102,6 +103,27 @@ def _numeric(value: Any) -> Any:
     return pd.to_numeric(value, errors="coerce")
 
 
+def _normalise_fuel_type(raw_fuel: str, series: str) -> str:
+    series_code = str(series or "").strip().upper()
+    if series_code.startswith(("AXAH", "AXVH", "ZWE")):
+        return "Hybrid"
+    return str(raw_fuel or "").strip()
+
+
+def _flat_spec_pairs(item: dict[str, Any]) -> dict[str, Any]:
+    pairs = item.get("specPairs")
+    return pairs if isinstance(pairs, dict) else {}
+
+
+def _flat_series(item: dict[str, Any]) -> str:
+    explicit = str(item.get("series") or "").strip()
+    if explicit:
+        return explicit
+    description = str(item.get("spec") or item.get("overview") or "").strip()
+    match = re.match(r"^(.+?)\s+MY\d", description, flags=re.IGNORECASE)
+    return match.group(1).strip() if match else ""
+
+
 def normalize_items(
     items: list[dict[str, Any]], *, run_id: str = "", dataset_id: str = ""
 ) -> pd.DataFrame:
@@ -112,6 +134,16 @@ def normalize_items(
         seller = item.get("seller") if isinstance(item.get("seller"), dict) else {}
         location = item.get("location") if isinstance(item.get("location"), dict) else {}
         meta = item.get("meta") if isinstance(item.get("meta"), dict) else {}
+        flat_pairs = _flat_spec_pairs(item)
+        series = _nested_text(spec_all, "Series") or _flat_series(item)
+        raw_fuel = str(
+            specs.get("fuelType")
+            or _nested_text(spec_all, "Fuel Type")
+            or item.get("fuelType")
+            or item.get("fuel_type")
+            or flat_pairs.get("Fuel Type")
+            or ""
+        ).strip()
 
         rows.append(
             {
@@ -119,28 +151,79 @@ def normalize_items(
                 "dataset_id": dataset_id,
                 "scraped_at": str(item.get("scrapedAt") or "").strip(),
                 "source": "carsales_apify",
-                "ad_id": str(item.get("adId") or item.get("networkId") or "").strip(),
-                "url": str(item.get("canonicalUrl") or item.get("link") or "").strip(),
+                "ad_id": str(
+                    item.get("adId")
+                    or item.get("listingId")
+                    or item.get("networkId")
+                    or ""
+                ).strip(),
+                "url": str(
+                    item.get("canonicalUrl")
+                    or item.get("url")
+                    or item.get("link")
+                    or ""
+                ).strip(),
                 "title": str(item.get("title") or item.get("name") or "").strip(),
                 "make": str(item.get("make") or "").strip(),
                 "model": str(item.get("model") or "").strip(),
                 "year": _numeric(item.get("year")),
-                "badge": _nested_text(spec_all, "Badge") or str(specs.get("badge") or "").strip(),
-                "series": _nested_text(spec_all, "Series"),
-                "model_year": _nested_text(spec_all, "Model Year") or _nested_text(spec_all, "Model year"),
+                "badge": (
+                    _nested_text(spec_all, "Badge")
+                    or str(specs.get("badge") or item.get("badge") or "").strip()
+                ),
+                "series": series,
+                "model_year": (
+                    _nested_text(spec_all, "Model Year")
+                    or _nested_text(spec_all, "Model year")
+                    or str(flat_pairs.get("Model year") or item.get("model_year") or "").strip()
+                ),
                 "variant": str(item.get("variant") or "").strip(),
                 "price": _numeric(item.get("price")),
-                "odometer": _numeric(specs.get("odometer")),
-                "body_type": str(specs.get("bodyStyle") or specs.get("categoryType") or "").strip(),
-                "transmission": str(specs.get("transmission") or _nested_text(spec_all, "Gear Type")).strip(),
-                "fuel_type": str(specs.get("fuelType") or _nested_text(spec_all, "Fuel Type")).strip(),
-                "engine": _nested_text(spec_all, "Engine") or _nested_text(spec_all, "Engine Size (L)"),
-                "seller_type": str(seller.get("type") or "").strip(),
-                "state": str(location.get("state") or "").strip(),
-                "region": str(location.get("region") or "").strip(),
-                "suburb": str(location.get("suburb") or "").strip(),
-                "market_indicator": str(item.get("marketIndicator") or "").strip(),
-                "price_assessment": str(meta.get("priceAssessment") or "").strip(),
+                "odometer": _numeric(
+                    specs.get("odometer")
+                    or item.get("odometer")
+                    or item.get("odometerKm")
+                    or item.get("kms")
+                ),
+                "body_type": str(
+                    specs.get("bodyStyle")
+                    or specs.get("categoryType")
+                    or item.get("bodyStyle")
+                    or item.get("bodyType")
+                    or item.get("body_style")
+                    or item.get("categoryType")
+                    or ""
+                ).strip(),
+                "transmission": str(
+                    specs.get("transmission")
+                    or _nested_text(spec_all, "Gear Type")
+                    or item.get("transmission")
+                    or flat_pairs.get("Transmission")
+                    or ""
+                ).strip(),
+                "fuel_type": _normalise_fuel_type(raw_fuel, series),
+                "engine": (
+                    _nested_text(spec_all, "Engine")
+                    or _nested_text(spec_all, "Engine Size (L)")
+                    or str(
+                        flat_pairs.get("Engine")
+                        or item.get("engine")
+                        or item.get("engineSizeL")
+                        or ""
+                    ).strip()
+                ),
+                "seller_type": str(
+                    seller.get("type") or item.get("sellerType") or item.get("seller_type") or ""
+                ).strip(),
+                "state": str(location.get("state") or item.get("state") or item.get("Location") or "").strip(),
+                "region": str(location.get("region") or item.get("region") or item.get("Region") or "").strip(),
+                "suburb": str(location.get("suburb") or item.get("suburb") or "").strip(),
+                "market_indicator": str(
+                    item.get("marketIndicator") or item.get("priceAssessment") or ""
+                ).strip(),
+                "price_assessment": str(
+                    meta.get("priceAssessment") or item.get("priceAssessment") or ""
+                ).strip(),
             }
         )
 
@@ -159,13 +242,28 @@ def merge_output(existing_path: Path, imported: pd.DataFrame) -> pd.DataFrame:
         for column in OUTPUT_COLUMNS:
             if column not in existing.columns:
                 existing[column] = ""
-        combined = pd.concat([existing[OUTPUT_COLUMNS], imported[OUTPUT_COLUMNS]], ignore_index=True)
+        existing["_merge_order"] = 0
+        imported = imported.copy()
+        imported["_merge_order"] = 1
+        combined = pd.concat(
+            [existing[OUTPUT_COLUMNS + ["_merge_order"]], imported[OUTPUT_COLUMNS + ["_merge_order"]]],
+            ignore_index=True,
+        )
     else:
         combined = imported[OUTPUT_COLUMNS].copy()
+        combined["_merge_order"] = 1
     combined["_sort_scraped_at"] = combined["scraped_at"].fillna("").astype(str)
-    dedupe_cols = ["ad_id", "url"]
-    combined = combined.sort_values("_sort_scraped_at").drop_duplicates(subset=dedupe_cols, keep="last")
-    combined = combined.drop(columns=["_sort_scraped_at"]).sort_values(
+    combined = combined.sort_values(["_sort_scraped_at", "_merge_order"])
+    stable_identity = (
+        combined["ad_id"].fillna("").astype(str).str.strip()
+        + "|"
+        + combined["url"].fillna("").astype(str).str.strip()
+    )
+    identified = combined[stable_identity != "|"].copy()
+    unidentified = combined[stable_identity == "|"].copy()
+    identified = identified.drop_duplicates(subset=["ad_id", "url"], keep="last")
+    combined = pd.concat([identified, unidentified], ignore_index=True)
+    combined = combined.drop(columns=["_sort_scraped_at", "_merge_order"]).sort_values(
         ["make", "model", "series", "badge", "year", "odometer", "price"],
         na_position="last",
     )

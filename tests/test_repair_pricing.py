@@ -140,6 +140,14 @@ def test_assess_repairs_glass_case_is_consistent() -> None:
     assert lower.total_cost == 750
 
 
+def test_small_hatch_direct_windscreen_quote_overrides_generic_baseline() -> None:
+    assessment = assess_repairs("windscreen chipped or cracked.", vehicle_class="small_hatch")
+
+    assert assessment.glass_cost == 339
+    assert assessment.pricing_vehicle_class == "small_hatch"
+    assert assessment.pricing_class_uncertain is False
+
+
 def test_assess_repairs_prices_tyre_puncture_as_repairable() -> None:
     assessment = assess_repairs(
         "comment: one tyre has a pin in it.",

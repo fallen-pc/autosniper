@@ -44,6 +44,12 @@ def test_vps_navigation_uses_scraper_operations_landing_page() -> None:
     defaults = [path for path, _title, is_default in pages if is_default]
 
     assert "pages/00_SCRAPER_OPERATIONS.py" in paths
+    assert "pages/15_CURVE_BUILDER_V2.py" not in paths
+    assert "pages/14_CURVE_PIPELINE.py" not in paths
+    assert "pages/18_REPAIR_REVIEW.py" not in paths
+    assert "pages/19_REPAIR_PRICING.py" not in paths
+    assert "pages/7_AUTOTRADER_SCRAPER.py" not in paths
+    assert "OPERATIONS" not in spec
     assert defaults == ["pages/00_SCRAPER_OPERATIONS.py"]
 
 

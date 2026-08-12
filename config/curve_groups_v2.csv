@@ -12,7 +12,6 @@ toyota_camry_ascent_petrol_auto_sedan_asv70r,toyota_camry_asv70r_sedan_auto_petr
 toyota_camry_altise_petrol_auto_sedan_asv50r,toyota_camry_asv50r_sedan_auto_petrol,active,Direct Altise petrol mapping
 toyota_camry_atara-s_petrol_auto_sedan_asv50r,toyota_camry_atara-s_asv50r_sedan_auto_petrol,active,Direct Camry ASV50R Atara S automatic petrol sedan mapping
 toyota_yaris_yr_petrol_auto_hatch_ncp90r,toyota_yaris_ncp90r_hatch_auto_petrol,active,Direct mapping
-mazda_3_neo_petrol_auto_hatch_bl,mazda_3_bl_hatch_auto_petrol,active,Merge trim into base Mazda 3 BL curve
 mazda_3_neo-sport_petrol_auto_hatch_bl,mazda_3_bl_hatch_auto_petrol,active,Merge trim into base Mazda 3 BL curve
 mazda_3_maxx_petrol_auto_hatch_bl,mazda_3_bl_hatch_auto_petrol,active,Merge trim into base Mazda 3 BL curve
 mazda_3_maxx-sport_petrol_auto_hatch_bl,mazda_3_bl_hatch_auto_petrol,active,Merge trim into base Mazda 3 BL curve
@@ -79,6 +78,7 @@ toyota_kluger_kx-r_petrol_auto_suv_gsu40r,toyota_kluger_kx-r_gsu40r_suv_auto_pet
 mitsubishi_outlander_ls_petrol_auto_suv_zh,mitsubishi_outlander_ls_zh_suv_auto_petrol,active,Direct Outlander LS ZH automatic petrol SUV mapping
 nissan_xtrail_st_petrol_auto_suv_t31,nissan_xtrail_st_t31_suv_auto_petrol,active,Direct X-Trail ST T31 automatic petrol SUV mapping
 subaru_forester_x_petrol_auto_suv_s3,subaru_forester_x_s3_suv_auto_petrol,active,Direct Forester X S3 automatic petrol SUV mapping
+subaru_forester_x_petrol_manual_suv_s3,subaru_forester_x_s3_suv_manual_petrol,active,Direct Forester X S3 manual AWD petrol SUV mapping from private Carsales evidence
 toyota_kluger_kx-s_petrol_auto_suv_gsu40r,toyota_kluger_kx-s_gsu40r_suv_auto_petrol,active,Direct Kluger KX-S GSU40R automatic petrol SUV mapping
 toyota_kluger_kx-r_petrol_auto_suv_gsu45r,toyota_kluger_kx-r_gsu45r_suv_auto_petrol,active,Direct Kluger KX-R GSU45R automatic petrol SUV mapping
 toyota_kluger_kx-s_petrol_auto_suv_gsu45r,toyota_kluger_kx-s_gsu45r_suv_auto_petrol,active,Direct Kluger KX-S GSU45R automatic petrol SUV mapping
@@ -109,6 +109,7 @@ ford_focus_sport_petrol_auto_hatch_lw-mkii,ford_focus_sport_lw-mkii_hatch_auto_p
 holden_barina_cd_petrol_auto_sedan_tm,holden_barina_cd_tm_sedan_auto_petrol,active,Direct Barina CD TM automatic petrol sedan mapping from private Carsales evidence
 holden_calais_v_petrol_auto_sedan_ve,holden_calais_v_ve_sedan_auto_petrol,active,Direct VE Calais V automatic petrol sedan mapping from private Carsales evidence
 holden_calais_v_petrol_auto_sedan_ve-series-ii,holden_calais_v_ve-series-ii_sedan_auto_petrol,active,Direct VE Series II Calais V automatic petrol sedan mapping from private Carsales evidence
+holden_calais_v_petrol_auto_sedan_vf,holden_calais_v_vf_sedan_auto_petrol,active,Direct VF Calais V V6 automatic petrol sedan mapping from private Carsales evidence
 toyota_corolla_ascent-sport_petrol_auto_hatch_zre152r,toyota_corolla_ascent-sport_zre152r_hatch_auto_petrol,active,Direct Corolla ZRE152R Ascent Sport automatic petrol hatch mapping from private Carsales evidence
 hyundai_i30_trophy_petrol_auto_hatch_gd2,hyundai_i30_trophy_gd2_hatch_auto_petrol,active,Direct i30 Trophy GD2 automatic petrol hatch mapping from private Carsales evidence
 kia_cerato_gt_petrol_auto_sedan_bd,kia_cerato_gt_bd_sedan_auto_petrol,active,Direct BD GT sedan mapping from private Carsales evidence
@@ -118,3 +119,93 @@ isuzu_mux_lsu_diesel_auto_suv_mux-gen2,isuzu_mux_lsu_gen2_suv_auto_diesel,active
 isuzu_mux_lst_diesel_auto_suv_mux-gen2,isuzu_mux_lst_gen2_suv_auto_diesel,active,Direct newer-generation Isuzu MU-X LS-T automatic diesel SUV mapping from private Carsales evidence
 toyota_kluger_grande_petrol_auto_suv_gsu40r,toyota_kluger_grande_gsu40r_suv_auto_petrol,active,Direct Kluger Grande GSU40R automatic petrol SUV mapping from private Carsales evidence
 mazda_cx5_grand-touring_petrol_auto_wagon_ke,mazda_cx5_grand-touring_ke_wagon_auto_petrol,active,Direct CX-5 Grand Touring KE automatic petrol SUV/wagon mapping from private Carsales evidence
+toyota_rav4_gx_hybrid_auto_suv_axah52r,toyota_rav4_gx_axah52r_suv_auto_hybrid,active,Direct RAV4 GX AXAH52R 2WD hybrid SUV mapping from private Carsales evidence
+toyota_rav4_gx_hybrid_auto_suv_axah54r,toyota_rav4_gx_axah54r_suv_auto_hybrid,active,Direct RAV4 GX AXAH54R eFour hybrid SUV mapping from private Carsales evidence
+ford_falcon_xr6_petrol_auto_sedan_fg,ford_falcon_xr6_fg_sedan_auto_petrol,active,Direct Falcon XR6 FG automatic petrol sedan mapping from private Carsales evidence
+ford_falcon_xr6_petrol_auto_sedan_fgmkii,ford_falcon_xr6_fgmkii_sedan_auto_petrol,active,Direct Falcon XR6 FG MkII automatic petrol sedan mapping from private Carsales evidence
+ford_everest_trend_diesel_auto_suv_ua,ford_everest_trend_ua_suv_auto_diesel,active,Direct Everest Trend UA 3.2L 4WD automatic diesel SUV mapping from private Carsales evidence
+ford_ranger_wildtrak-2.0_diesel_auto_ute_px-mkiii,ford_ranger_wildtrak-2.0_px-mkiii_ute_auto_diesel,active,Direct Ranger Wildtrak 2.0 bi-turbo PX MkIII 4x4 automatic diesel ute mapping from private Carsales evidence
+toyota_rav4_gx_petrol_auto_suv_zsa42r,toyota_rav4_gx_zsa42r_suv_auto_petrol,active,Direct RAV4 GX ZSA42R 2WD automatic petrol SUV mapping from private Carsales evidence
+toyota_rav4_gx_petrol_auto_suv_asa44r,toyota_rav4_gx_asa44r_suv_auto_petrol,active,Direct RAV4 GX ASA44R AWD automatic petrol SUV mapping from private Carsales evidence
+toyota_rav4_gx_petrol_auto_suv_mxaa52r,toyota_rav4_gx_mxaa52r_suv_auto_petrol,active,Direct RAV4 GX MXAA52R 2WD automatic petrol SUV mapping from private Carsales evidence
+toyota_rav4_cv_petrol_auto_suv_aca33r,toyota_rav4_cv_aca33r_suv_auto_petrol,active,Direct RAV4 CV ACA33R 4x4 automatic petrol SUV mapping from private Carsales evidence
+mitsubishi_outlander_es-2wd_petrol_auto_suv_zl,mitsubishi_outlander_es-2wd_zl_suv_auto_petrol,active,Direct Outlander ES ZL 2WD 2.4L automatic petrol SUV mapping from private Carsales evidence
+mitsubishi_outlander_es-awd_petrol_auto_suv_zl,mitsubishi_outlander_es-awd_zl_suv_auto_petrol,active,Direct Outlander ES ZL AWD 2.4L automatic petrol SUV mapping from private Carsales evidence
+mitsubishi_outlander_es-2wd_petrol_auto_suv_zm,mitsubishi_outlander_es-2wd_zm_suv_auto_petrol,active,Direct Outlander ES ZM 2WD 2.5L automatic petrol SUV mapping from private Carsales evidence
+holden_cruze_cd_petrol_auto_sedan_jg,holden_cruze_cd_jg_sedan_auto_petrol,active,Direct JG CD automatic petrol sedan mapping from private Carsales evidence
+holden_barina_tk_petrol_auto_sedan,holden_barina_tk_sedan_auto_petrol,active,Direct TK automatic petrol sedan mapping from private Carsales evidence
+holden_cruze_sri-v_petrol_auto_sedan_jh-series-ii,holden_cruze_sri-v_jh-series-ii_sedan_auto_petrol,active,Direct JH Series II SRi-V automatic petrol sedan mapping from private Carsales evidence
+holden_cruze_sri_petrol_auto_sedan_jh-series-ii,holden_cruze_sri_jh-series-ii_sedan_auto_petrol,active,Direct JH Series II SRi automatic petrol sedan mapping from private Carsales evidence
+nissan_pulsar_st_petrol_auto_sedan_b17,nissan_pulsar_st_b17_sedan_auto_petrol,active,Direct Pulsar ST B17 automatic petrol sedan mapping from private Carsales evidence
+audi_q7_3.0-tdi-quattro_diesel_auto_suv,audi_q7_3.0-tdi-quattro_suv_auto_diesel,active,Direct Q7 3.0 TDI quattro automatic diesel SUV mapping from private Carsales evidence
+bmw_x5_xdrive30d_diesel_auto_suv_e70,bmw_x5_xdrive30d_e70_suv_auto_diesel,active,Direct X5 xDrive30d E70 automatic diesel SUV mapping from private Carsales evidence
+nissan_pathfinder_st_petrol_auto_suv_r52,nissan_pathfinder_st_r52_suv_auto_petrol,active,Direct Pathfinder ST R52 automatic petrol SUV mapping from private Carsales evidence
+hyundai_tucson_active-x_petrol_auto_suv_tl,hyundai_tucson_active-x_tl_suv_auto_petrol,active,Direct Tucson Active X TL 2WD automatic petrol SUV mapping from private Carsales evidence
+holden_trax_ls_petrol_auto_suv_tj,holden_trax_ls_tj_suv_auto_petrol,active,Direct Trax LS TJ automatic petrol SUV mapping from private Carsales evidence
+holden_trax_ltz_petrol_auto_suv_tj,holden_trax_ltz_tj_suv_auto_petrol,active,Direct Trax LTZ TJ automatic petrol SUV mapping from private Carsales evidence
+jeep_grand_cherokee-laredo_diesel_auto_suv_wk,jeep_grand-cherokee_laredo_wk_suv_auto_diesel,active,Direct Grand Cherokee Laredo WK automatic diesel SUV mapping from private Carsales evidence
+jeep_grand_cherokee-limited_diesel_auto_suv_wk,jeep_grand-cherokee_limited_wk_suv_auto_diesel,active,Direct Grand Cherokee Limited WK automatic diesel SUV mapping from private Carsales evidence
+nissan_navara_st-r_diesel_manual_ute_d22,nissan_navara_st-r_d22_dual-cab_manual_diesel,active,Direct Navara ST-R D22 manual diesel dual-cab mapping from private Carsales evidence
+mazda_cx-9_luxury_petrol_auto_wagon_tb,mazda_cx-9_luxury_tb_wagon_auto_petrol,active,Direct CX-9 Luxury TB automatic petrol SUV/wagon mapping from private Carsales evidence
+audi_q5_2.0-tfsi-quattro_petrol_auto_suv_8r,audi_q5_2.0-tfsi_8r_suv_auto_petrol,active,Direct Q5 2.0 TFSI quattro 8R automatic petrol SUV mapping from private Carsales evidence
+nissan_murano_ti_petrol_auto_wagon_z51,nissan_murano_ti_z51_wagon_auto_petrol,active,Direct Murano Ti Z51 automatic petrol SUV/wagon mapping from private Carsales evidence
+holden_cruze_cd_petrol_auto_hatch_jh-series-ii,holden_cruze_cd_jh-series-ii_hatch_auto_petrol,active,Direct Cruze CD JH Series II automatic petrol hatch mapping from private Carsales evidence
+mazda_cx-7_luxury_petrol_auto_wagon_er,mazda_cx-7_luxury_er-series-1_wagon_auto_petrol,active,Direct CX-7 Luxury ER Series 1 automatic petrol SUV/wagon mapping from private Carsales evidence
+audi_q5_2.0-tdi-quattro_diesel_auto_suv_8r,audi_q5_2.0-tdi_8r_suv_auto_diesel,active,Direct Q5 2.0 TDI quattro 8R automatic diesel SUV mapping from private Carsales evidence
+hyundai_i20_active_petrol_auto_hatch_pb,hyundai_i20_active_pb_hatch_auto_petrol,active,Direct i20 Active PB automatic petrol hatch mapping from private Carsales evidence
+volkswagen_tiguan_125-tsi_petrol_auto_wagon_5n,volkswagen_tiguan_125tsi_5n_wagon_auto_petrol,active,Direct Tiguan 125TSI 5N automatic petrol SUV/wagon mapping from private Carsales evidence
+nissan_xtrail_st-l_petrol_auto_suv_t32,nissan_xtrail_st-l_t32_suv_auto_petrol,active,Direct X-Trail ST-L T32 automatic petrol SUV mapping from private Carsales evidence
+audi_a4_2.0-tfsi-quattro_petrol_auto_sedan_b8,audi_a4_2.0-tfsi-quattro_b8_sedan_auto_petrol,active,Direct A4 2.0 TFSI quattro B8 automatic petrol sedan mapping from private Carsales evidence
+bmw_x3_xdrive-20d_diesel_auto_wagon_f25,bmw_x3_xdrive20d_f25_wagon_auto_diesel,active,Direct X3 xDrive20d F25 automatic diesel SUV/wagon mapping from private Carsales evidence
+nissan_pulsar_st_petrol_auto_hatch_c12,nissan_pulsar_st_c12_hatch_auto_petrol,active,Direct Pulsar ST C12 automatic petrol hatch mapping from private Carsales evidence
+hyundai_elantra_active_petrol_auto_sedan_md,hyundai_elantra_active_md_sedan_auto_petrol,active,Direct Elantra Active MD automatic petrol sedan mapping from private Carsales evidence
+volkswagen_touareg_v6-tdi_diesel_auto_wagon_7p,volkswagen_touareg_v6-tdi_7p_wagon_auto_diesel,active,Direct Touareg V6 TDI 7P automatic diesel SUV/wagon mapping from private Carsales evidence
+nissan_pathfinder_st-l_petrol_auto_wagon_r52,nissan_pathfinder_st-l_r52_wagon_auto_petrol,active,Direct Pathfinder ST-L R52 automatic petrol SUV/wagon mapping from private Carsales evidence
+hyundai_ix35_active-fwd_petrol_auto_wagon_lm,hyundai_ix35_active-fwd_lm_wagon_auto_petrol,active,Direct ix35 Active FWD LM automatic petrol SUV/wagon mapping from private Carsales evidence
+mercedes_benz_ml320cdi_diesel_auto_wagon_w164,mercedes_benz_ml320cdi_w164_wagon_auto_diesel,active,Direct Mercedes ML320CDI W164 automatic diesel SUV/wagon mapping from private Carsales evidence
+renault_clio_expression_petrol_auto_hatch_x98,renault_clio_expression_x98_hatch_auto_petrol,active,Direct Clio Expression X98 automatic petrol hatch mapping from private Carsales evidence
+mercedes_benz_ml250-bluetec_diesel_auto_wagon_w166,mercedes_benz_ml250-bluetec_w166_wagon_auto_diesel,active,Direct Mercedes ML250 BlueTEC W166 automatic diesel SUV/wagon mapping from private Carsales evidence
+subaru_xv_2.0i-s_petrol_auto_hatch_g4x,subaru_xv_2.0i-s_g4x_hatch_auto_petrol,active,Direct Subaru XV 2.0i-S G4X automatic petrol hatch/SUV mapping from private Carsales evidence
+mitsubishi_lancer_es_petrol_auto_sedan_cj,mitsubishi_lancer_es_cj_sedan_auto_petrol,active,Direct Mitsubishi Lancer ES CJ automatic petrol sedan mapping from private Carsales evidence
+volkswagen_tiguan_132tsi-pacific_petrol_auto_wagon_5n,volkswagen_tiguan_132tsi-pacific_5n_wagon_auto_petrol,active,Direct Volkswagen Tiguan 132TSI Pacific 5N automatic petrol AWD wagon/SUV mapping from private Carsales evidence
+subaru_outback_2.5i_petrol_auto_wagon_b5a,subaru_outback_2.5i_b5a_wagon_auto_petrol,active,Direct Subaru Outback base 2.5i B5A/4GEN automatic petrol AWD wagon mapping from private Carsales evidence
+holden_sportwagon_omega_petrol_auto_wagon_ve,holden_commodore_omega_ve_wagon_auto_petrol,active,Grays model alias mapping for Holden Sportwagon Omega VE rows to the existing governed Commodore Omega VE wagon curve
+holden_sportwagon_omega_petrol_auto_wagon_ve-series-ii,holden_commodore_omega_ve-series-ii_wagon_auto_petrol,active,Grays model alias mapping for later Holden Sportwagon Omega rows to the existing governed Commodore Omega VE Series II wagon curve
+honda_civic_vti_petrol_auto_sedan_8th-gen,honda_civic_vti_8th-gen_sedan_auto_petrol,active,Direct Honda Civic VTi 8th Gen automatic petrol sedan mapping from private Carsales evidence
+holden_sportwagon_sv6_petrol_auto_wagon_ve,holden_commodore_sv6_ve_wagon_auto_petrol,active,Grays model alias mapping for Holden Sportwagon SV6 VE rows to the existing governed Commodore SV6 VE wagon curve
+holden_sportwagon_sv6_petrol_auto_wagon_ve-series-ii,holden_commodore_sv6_ve-series-ii_wagon_auto_petrol,active,Grays model alias mapping for Holden Sportwagon SV6 VE Series II and Z-Series rows to the existing governed Commodore curve
+holden_sportwagon_sv6_petrol_auto_wagon_vf,holden_commodore_sv6_vf_wagon_auto_petrol,active,Grays model alias mapping for Holden Sportwagon SV6 VF rows to the existing governed Commodore SV6 VF wagon curve
+ford_focus_ambiente_petrol_auto_hatch_lw-mkii,ford_focus_ambiente_lw-mkii_hatch_auto_petrol,active,Direct Ford Focus Ambiente LW MkII automatic petrol hatch mapping from private Carsales evidence
+audi_q5_3.0-tdi-quattro_diesel_auto_suv_8r,audi_q5_3.0-tdi_8r_suv_auto_diesel,active,Direct Audi Q5 3.0 TDI quattro 8R automatic diesel SUV mapping from private Carsales evidence
+volkswagen_tiguan_103tdi_diesel_auto_wagon_5n,volkswagen_tiguan_103tdi_5n_wagon_auto_diesel,active,Direct Volkswagen Tiguan 103TDI 5N automatic diesel AWD wagon/SUV mapping from private Carsales evidence
+bmw_3_20i-executive_petrol_auto_sedan_e90,bmw_320i-executive_e90_sedan_auto_petrol,active,Grays model-3 encoding for the BMW 320i Executive E90 automatic petrol sedan curve
+bmw_320i_executive_petrol_auto_sedan_e90,bmw_320i-executive_e90_sedan_auto_petrol,active,Direct BMW 320i Executive E90 automatic petrol sedan mapping from private Carsales evidence
+bmw_3_series-320i-exec_petrol_auto_sedan_e90,bmw_320i-executive_e90_sedan_auto_petrol,active,Grays Series 320i Exec E90 wording alias for the governed BMW 320i Executive E90 automatic petrol sedan curve
+jeep_grand_cherokee-laredo-4x4_petrol_auto_wagon_wk,jeep_grand-cherokee_laredo-wk_4x4_wagon_auto_petrol,active,Direct Jeep Grand Cherokee Laredo WK explicit 4x4 automatic petrol wagon mapping from private Carsales evidence
+mazda_cx-9_grand-touring_petrol_auto_wagon_tb,mazda_cx-9_grand-touring_tb_wagon_auto_petrol,active,Direct Mazda CX-9 Grand Touring TB automatic petrol AWD wagon/SUV mapping from private Carsales evidence
+hyundai_i20_active_petrol_manual_hatch_pb,hyundai_i20_active_pb_hatch_manual_petrol,active,Direct Hyundai i20 Active PB manual petrol hatch mapping from private Carsales evidence
+dodge_journey_sxt_petrol_auto_people-mover,dodge_journey_sxt_3.6_people-mover_auto_petrol,active,Year-banded Dodge Journey SXT 2012-2014 automatic 3.6 petrol people-mover mapping from private Carsales evidence
+dodge_journey_rt_petrol_auto_people-mover,dodge_journey_rt_3.6_people-mover_auto_petrol,active,Year-banded Dodge Journey R/T 2012-2015 automatic 3.6 petrol people-mover mapping from private Carsales evidence
+mercedes_benz_c250-be-avantgarde_petrol_auto_sedan_w204,mercedes_benz_c250-be-avantgarde_w204_sedan_auto_petrol,active,Direct Mercedes C250 BE/BlueEFFICIENCY/CGI Avantgarde W204 automatic 1.8 turbo petrol sedan mapping from private Carsales evidence
+bmw_1_series-118i_petrol_auto_hatch_f20,bmw_1-series_118i_f20_hatch_auto_petrol,active,Year-banded BMW 1 Series 118i original F20 1.6 turbo automatic petrol hatch mapping from private Carsales evidence
+land_rover_range-rover-evoque-td4-150-se_diesel_auto_wagon_9,land_rover_range-rover-evoque_td4-150-se_9_wagon_auto_diesel,active,Direct Range Rover Evoque TD4 150 SE nine-speed automatic 4x4 diesel wagon mapping from private Carsales evidence
+bmw_1_18i_petrol_auto_hatch_e87,bmw_1-series_118i_e87_hatch_auto_petrol,active,Direct Grays 18i E87 wording mapping to the BMW 1 Series 118i E87 2.0 automatic petrol hatch curve
+audi_q3_2.0-tfsi-quattro_petrol_auto_wagon_8u,audi_q3_2.0-tfsi-quattro_8u_wagon_auto_petrol,active,Direct Audi Q3 2.0 TFSI quattro 8U automatic petrol SUV mapping from private Carsales evidence
+honda_accord-euro_luxury_petrol_auto_sedan_7th-gen,honda_accord-euro_luxury_7th-gen_sedan_auto_petrol,active,Direct Honda Accord Euro Luxury seventh-generation automatic petrol sedan mapping from private Carsales evidence
+honda_accord_euro-luxury_petrol_auto_sedan_7th-gen,honda_accord-euro_luxury_7th-gen_sedan_auto_petrol,active,Grays Accord plus Euro Luxury wording mapped to the same seventh-generation Honda Accord Euro Luxury curve
+mitsubishi_asx_ls_petrol_auto_wagon_xb,mitsubishi_asx_ls_xb_wagon_auto_petrol,,
+mazda_2_neo_petrol_auto_hatch_de,mazda_2_neo_de_hatch_auto_petrol,,
+hyundai_kona_active_petrol_auto_wagon_os,hyundai_kona_active_os_wagon_auto_petrol,,
+nissan_qashqai_ti_petrol_auto_wagon_j11,nissan_qashqai_ti_j11_wagon_auto_petrol,,
+toyota_hiace_slwb-commuter_diesel_auto_bus_h300,toyota_hiace_commuter-slwb_2.8-tdi_h300_bus_auto_diesel,,
+mg_mg3_core_petrol_auto_hatch_szp1,mg_mg3_core_szp1_hatch_auto_petrol,,
+mazda_cx-7_classic_petrol_auto_wagon_er-series-2,mazda_cx-7_classic_er-series-2_wagon_auto_petrol,,
+mazda_cx-7_luxury-sports_petrol_auto_wagon_er-series-2,mazda_cx-7_luxury-sports_er-series-2_wagon_auto_petrol,,
+bmw_x5_xdrive30d_diesel_auto_wagon_f15,bmw_x5_xdrive30d_f15_wagon_auto_diesel,active,"Built from 49 exact private Carsales rows (12 outliers trimmed) and 20 unique live Grays vehicles; adjacent generations, trims, bodies, fuels, transmissions, and drivetrains remain separate."
+audi_a4_1.8-tfsi_petrol_auto_sedan_b8,audi_a4_1.8-tfsi_b8_sedan_auto_petrol,active,"Built from 12 exact private Carsales rows (2 outliers trimmed) and 27 unique live Grays vehicles; adjacent generations, trims, bodies, fuels, transmissions, and drivetrains remain separate."
+mazda_3_neo_petrol_auto_hatch_bl,mazda_3_neo_bl_hatch_auto_petrol,active,"Built from 12 exact private Carsales rows (3 outliers trimmed) and 14 unique live Grays vehicles; adjacent generations, trims, bodies, fuels, transmissions, and drivetrains remain separate."
+jeep_cherokee_sport-4x2_petrol_auto_wagon_kl9,jeep_cherokee_sport-4x2_kl9_wagon_auto_petrol,active,"Built from 15 exact private Carsales rows (0 outliers trimmed) and 14 unique live Grays vehicles; adjacent generations, trims, bodies, fuels, transmissions, and drivetrains remain separate."
+nissan_micra_k12_petrol_auto_hatch,nissan_micra_k12_hatch_auto_petrol,active,"Built from 6 exact private Carsales rows (0 outliers trimmed) and 13 unique live Grays vehicles; adjacent generations, trims, bodies, fuels, transmissions, and drivetrains remain separate."
+mercedes_benz_b200_petrol_auto_hatch_w245,mercedes_benz_b200_w245_hatch_auto_petrol,active,"Built from 10 exact private Carsales rows (0 outliers trimmed) and 13 unique live Grays vehicles; adjacent trims, generations, bodies, fuels, and transmissions remain separate."
+mercedes_benz_c200-be_petrol_auto_sedan_w204,mercedes_benz_c200-be_w204_sedan_auto_petrol,active,"Built from 7 exact private Carsales rows (0 outliers trimmed) and 13 unique live Grays vehicles; adjacent trims, generations, bodies, fuels, and transmissions remain separate."
+nissan_xtrail_st_petrol_auto_suv_t30,nissan_xtrail_st_t30_suv_auto_petrol,active,"Built from 7 exact private Carsales rows (0 outliers trimmed) and 13 unique live Grays vehicles; adjacent trims, generations, bodies, fuels, and transmissions remain separate."

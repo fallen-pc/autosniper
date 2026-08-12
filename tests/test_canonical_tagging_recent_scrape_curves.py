@@ -131,6 +131,12 @@ def test_assign_canonical_tag_accepts_forester_x_s3_only():
         "fuel_type": "Diesel",
         "url": "https://www.example.com/2010-subaru-forester-2-0d-s3-auto-suv",
     }
+    manual_row = {
+        **row,
+        "variant": "X S3 Manual AWD",
+        "transmission": "Manual",
+        "url": "https://www.example.com/2010-subaru-forester-x-s3-manual-suv",
+    }
 
     assert assign_canonical_tag(row, require_price=True)[0:2] == (
         "subaru_forester_x_petrol_auto_suv_s3",
@@ -141,6 +147,10 @@ def test_assign_canonical_tag_accepts_forester_x_s3_only():
         "[OK]",
     )
     assert assign_canonical_tag(diesel_row, require_price=True)[0] == "UNCLASSIFIED"
+    assert assign_canonical_tag(manual_row, require_price=True)[0:2] == (
+        "subaru_forester_x_petrol_manual_suv_s3",
+        "[OK]",
+    )
 
 
 def test_assign_canonical_tag_accepts_second_batch_same_lane_rows():

@@ -23,7 +23,7 @@ from shared.comps_engine import parse_currency, parse_numeric
 from shared.curves import interpolate_base_by_year, list_curve_tags, load_curves, resolve_curve_canonical_tag
 from shared.data_loader import dataset_path
 from shared.location_utils import extract_state
-from shared.repair_pricing import assess_repairs, repair_fragments_to_records
+from shared.repair_pricing import assess_repairs, repair_fragments_to_records, vehicle_class_for_listing
 from shared.repair_review import append_live_review_items
 
 
@@ -195,6 +195,7 @@ def _queue_unclassified_condition_fragments(row: pd.Series, *, source_file: str 
     assessment = assess_repairs(
         condition_notes,
         vehicle_value=parse_currency(row.get("resale_mid")) or parse_currency(row.get("carsales_price_estimate")),
+        vehicle_class=vehicle_class_for_listing(row),
     )
     records = repair_fragments_to_records(assessment)
     review_records = [
