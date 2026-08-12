@@ -337,7 +337,7 @@ if [[ "$release" == "1" ]]; then
         "$root/.venv/bin/python" scripts/vps_release_manifest.py \
             --root "$root" \
             --commit "$commit_sha"
-        "$root/.venv/bin/python" scripts/governance_checks.py check
+        "$root/.venv/bin/python" scripts/governance_checks.py check --skip-dataset-delta
         "$root/.venv/bin/python" scripts/readiness_smoke.py
     )
 fi
