@@ -10,3 +10,10 @@ def test_embedded_remote_script_is_normalized_to_lf_before_encoding():
     assert normalization in script
     assert encoding in script
     assert script.index(normalization) < script.index(encoding)
+
+
+def test_remote_governance_skips_git_delta_for_archive_deploy():
+    script = Path("scripts/deploy_vps.ps1").read_text(encoding="utf-8")
+
+    command = 'scripts/governance_checks.py check --skip-dataset-delta'
+    assert command in script
