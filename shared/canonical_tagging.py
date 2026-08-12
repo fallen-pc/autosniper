@@ -104,7 +104,6 @@ BODY_ALIASES: Tuple[Tuple[str, str], ...] = (
     ("hatch", "hatch"),
     ("sedan", "sedan"),
     ("saloon", "sedan"),
-    ("fastback", "coupe"),
     ("suv", "suv"),
     ("wagon", "wagon"),
     ("dual cab", "dualcab_ute"),
@@ -116,12 +115,20 @@ BODY_ALIASES: Tuple[Tuple[str, str], ...] = (
     ("cab chassis", "cab_chassis"),
     ("crew cab chassis", "cab_chassis"),
     ("van", "van"),
-    ("commercial", "van"),
     ("people mover", "people_mover"),
     ("coupe", "coupe"),
     ("convertible", "convertible"),
     ("bus", "bus"),
+    ("commercial", "van"),
 )
+
+HYBRID_SERIES_PREFIXES: Tuple[str, ...] = ("AXAH", "AXVH", "ZWE")
+
+
+def infer_fuel_type_from_series(series: object) -> str:
+    """Return a source-normalizer fuel label for series codes with known hybrid-only prefixes."""
+    series_code = str(series or "").strip().upper()
+    return "Hybrid" if series_code.startswith(HYBRID_SERIES_PREFIXES) else ""
 
 FUEL_PATTERNS: Tuple[Tuple[str, Tuple[str, ...]], ...] = (
     ("diesel", (r"\bdiesel\b",)),
@@ -245,6 +252,8 @@ def _to_int(value: object) -> int:
 
 def _compile_alias(alias: str) -> re.Pattern:
     escaped = re.escape(alias).replace(r"\ ", r"\s+")
+    # Lookarounds stop word-fragment matches while still allowing aliases that
+    # end in punctuation, such as "ST (4x4)", to match before whitespace.
     return re.compile(rf"(?<!\w){escaped}(?!\w)", re.IGNORECASE)
 
 
@@ -456,8 +465,12 @@ def _normalize_series_code(series_code: str) -> str:
     code = (series_code or "").lower()
     if not code:
         return ""
-    # Ignore model-like tokens that can be mistaken for series codes.
-    if code in {"ix35", "cx5", "cx9"} or re.fullmatch(r"ml\d{3}", code):
+    # Mercedes listing titles use these ML model badges where the platform
+    # series is W164/W166; do not let the badge replace that real series code.
+    mercedes_ml_badge = re.fullmatch(
+        r"ml(?:63|250|280|300|320|350|400|420|450|500|550)", code
+    )
+    if code in {"ix35", "cx5", "cx9"} or mercedes_ml_badge:
         return ""
     # Map common series codes to canonical v2 series buckets.
     if code in {"zre182r"}:

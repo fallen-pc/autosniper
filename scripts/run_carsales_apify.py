@@ -40,6 +40,9 @@ else:  # pragma: no cover
 DEFAULT_ACTOR_ID = "memo23~carsales-cheerio"
 ABOTAPI_ACTOR_ID = "abotapi~carsales-au-scraper"
 TERMINAL_STATUSES = {"SUCCEEDED", "FAILED", "ABORTED", "TIMED-OUT"}
+EXPAND_PRICE_BANDS_THRESHOLD = 75
+IMPORT_DEFERRED_EXIT_CODE = 3
+ALLOWED_CARSALES_HOSTS = {"carsales.com.au", "www.carsales.com.au"}
 
 
 def require_token(token: str | None = None) -> str:
@@ -90,7 +93,7 @@ def build_actor_input(
             "fuelType": str(fuel_type or "").strip().lower(),
             "state": str(state or "").strip().lower(),
             "fetchDetails": False,
-            "expandPriceBands": int(max_listings) > 75,
+            "expandPriceBands": int(max_listings) > EXPAND_PRICE_BANDS_THRESHOLD,
             "maxListings": int(max_listings),
             "maxPages": 20,
             "proxyConfiguration": {
@@ -226,21 +229,37 @@ def _print_run_summary(run: dict[str, Any]) -> None:
 
 
 def _carsales_url_target(url: str) -> tuple[str, str] | None:
-    parts = [unquote(part).strip() for part in urlparse(url).path.split("/") if part.strip()]
-    lowered = [part.lower() for part in parts]
-    if "private" not in lowered:
+    parsed = urlparse(url)
+    if parsed.scheme.lower() != "https" or (parsed.hostname or "").lower() not in ALLOWED_CARSALES_HOSTS:
         return None
-    index = lowered.index("private")
-    if len(parts) <= index + 2:
+    parts = [unquote(part).strip() for part in parsed.path.split("/") if part.strip()]
+    if len(parts) != 4 or [part.lower() for part in parts[:2]] != ["cars", "private"]:
         return None
-    return parts[index + 1], parts[index + 2]
+    return parts[2], parts[3]
+
+
+def _validated_url_targets(urls: Sequence[str]) -> list[tuple[str, str]]:
+    targets: list[tuple[str, str]] = []
+    invalid_urls: list[str] = []
+    for url in urls:
+        target = _carsales_url_target(url)
+        if target is None:
+            invalid_urls.append(url)
+        else:
+            targets.append(target)
+    if invalid_urls:
+        raise RuntimeError(
+            "Every paid exact URL must be an HTTPS Carsales private make/model URL; rejected: "
+            + ", ".join(invalid_urls)
+        )
+    return targets
 
 
 def _run_paid_scrape_preflight(args: argparse.Namespace) -> None:
     exact_urls = list(getattr(args, "start_urls", []) or [])
     if args.start_url:
         exact_urls.insert(0, args.start_url)
-    url_targets = [target for url in exact_urls if (target := _carsales_url_target(url))]
+    url_targets = _validated_url_targets(exact_urls)
     targets = url_targets or [(args.make, args.model)]
     results = []
     for target_make, target_model in targets:
@@ -346,6 +365,10 @@ def main(argv: list[str] | None = None) -> int:
             parser.error("--start-url-file did not contain any Carsales URLs")
     args.start_urls = start_urls
 
+    exact_urls = ([args.start_url] if args.start_url else []) + start_urls
+    if exact_urls:
+        _validated_url_targets(exact_urls)
+
     if not args.skip_preflight:
         _run_paid_scrape_preflight(args)
 
@@ -393,7 +416,7 @@ def main(argv: list[str] | None = None) -> int:
                 f"reason=run_still_{status.lower() or 'unknown'} "
                 "rerun scripts/import_carsales_apify_run.py after the actor reaches a terminal status"
             )
-            return 0
+            return IMPORT_DEFERRED_EXIT_CODE
         imported_count = import_completed_run(
             run,
             token=args.token,

@@ -61,9 +61,13 @@ from shared.sold_comparables import select_km_aware_comparables
 from shared.styling import clean_html, display_banner, inject_global_styles, page_intro
 from shared.validators import validate_sold_cars_df
 from shared.valuation_display import (
+    action_signal_tone,
     bid_display_parts,
+    bid_status_signal_tone,
+    confidence_signal_tone,
     conservative_margin_percent,
     first_currency_value,
+    margin_signal_tone,
     recommended_max_bid_value,
 )
 
@@ -2943,6 +2947,8 @@ st.markdown(
         .vehicle-card.profit-tier-mid {
             --card-glow: 0 0 0 rgba(0, 0, 0, 0);
         }
+        /* Streamlit data-testid selectors are framework internals pinned to the
+           supported Streamlit release; verify them during framework upgrades. */
         [data-testid="stVerticalBlockBorderWrapper"]:has(.listing-shell-marker) {
             border-color: rgba(39, 182, 255, 0.32);
             border-radius: 18px;
@@ -3994,20 +4000,6 @@ def _confidence_badges_html(curve_confidence: str, data_completeness: str, risk_
     return f'<div class="confidence-badge-row">{"".join(badges)}</div>'
 
 
-def _signal_tone(value: object) -> str:
-    normalized = _safe_text(value, fallback="").strip().lower()
-    if any(
-        token in normalized
-        for token in ["avoid", "over max", "no edge", "trap", "low", "high risk", "policy blocked", "no policy bid"]
-    ):
-        return "signal-danger"
-    if any(token in normalized for token in ["watch", "review", "marginal", "conditional", "medium", "unknown"]):
-        return "signal-watch"
-    if any(token in normalized for token in ["buy", "cheap", "strong", "good", "high", "safe"]):
-        return "signal-good"
-    return "signal-neutral"
-
-
 def _risk_signal_tone(value: object) -> str:
     normalized = _safe_text(value, fallback="").strip().lower()
     if normalized == "high":
@@ -4017,18 +4009,6 @@ def _risk_signal_tone(value: object) -> str:
     if normalized == "low":
         return "signal-good"
     return "signal-neutral"
-
-
-def _margin_signal_tone(value: object) -> str:
-    try:
-        numeric = float(value)
-    except (TypeError, ValueError):
-        return "signal-neutral"
-    if numeric >= 25:
-        return "signal-good"
-    if numeric >= 10:
-        return "signal-watch"
-    return "signal-danger"
 
 
 def _build_signal_tile(label: str, value: str, sub: str, tone: str) -> str:
@@ -4168,25 +4148,25 @@ def render_listing_card(row: pd.Series) -> None:
                 "Action",
                 action_label,
                 f"{_display_action_detail(row.get('action_label'))} Verdict: {verdict_label}.",
-                _signal_tone(action_label),
+                action_signal_tone(action_label),
             ),
             _build_signal_tile(
                 "Bid status",
                 bid_status,
                 bid_display["status_detail"],
-                _signal_tone(bid_status),
+                bid_status_signal_tone(bid_status),
             ),
             _build_signal_tile(
                 "Margin",
                 profit_pct_display,
                 hard_max_safety,
-                _margin_signal_tone(row.get("profit_margin_value")),
+                margin_signal_tone(row.get("profit_margin_value")),
             ),
             _build_signal_tile(
                 "Confidence",
                 curve_confidence_label,
                 f"Curve {confidence_text}; data {data_completeness_label.lower()}",
-                _signal_tone(curve_confidence_label),
+                confidence_signal_tone(curve_confidence_label),
             ),
             _build_signal_tile(
                 "Risk",
@@ -4309,6 +4289,30 @@ def render_listing_card(row: pd.Series) -> None:
         )
         with overview_tab:
             st.markdown(card_html, unsafe_allow_html=True)
+            st.markdown(
+                _confidence_badges_html(
+                    curve_confidence_label,
+                    data_completeness_label,
+                    risk_level_label,
+                ),
+                unsafe_allow_html=True,
+            )
+            listing_profile = [
+                f"Canonical tag: {canonical_tag or 'Unclassified'}",
+                f"Curve tag: {_curve_key_for_row(row) or 'N/A'}",
+                f"Expected sale: {resale_display}",
+            ]
+            _render_bullets("Listing profile", listing_profile)
+            analysis_notes = _split_notes(row.get("confidence_notes"))
+            expected_sale_note = _safe_text(row.get("expected_sale_note"), fallback="").strip()
+            if expected_sale_note:
+                analysis_notes.append(f"Expected sale: {expected_sale_note}")
+            if not analysis_notes:
+                analysis_notes = [
+                    f"Confidence: {confidence_text}",
+                    f"Margin: {profit_pct_display}",
+                ]
+            _render_bullets("Analysis notes", analysis_notes)
         with curve_tab:
             _render_curve_tab(row)
         with comparables_tab:

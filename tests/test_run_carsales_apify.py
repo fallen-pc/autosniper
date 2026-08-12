@@ -6,13 +6,15 @@ import pytest
 
 from scripts.run_carsales_apify import (
     ABOTAPI_ACTOR_ID,
+    IMPORT_DEFERRED_EXIT_CODE,
+    _carsales_url_target,
+    _validated_url_targets,
     build_actor_input,
     import_completed_run,
     main,
     poll_run_until_terminal,
     require_token,
     start_actor_run,
-    _carsales_url_target,
 )
 
 
@@ -21,6 +23,28 @@ def test_carsales_url_target_extracts_private_make_and_model():
         "https://www.carsales.com.au/cars/private/mazda/cx-7/"
     ) == ("mazda", "cx-7")
     assert _carsales_url_target("https://www.carsales.com.au/cars/mazda/cx-7/") is None
+    assert _carsales_url_target(
+        "https://www.carsales.com.au/other/private/mazda/cx-7/"
+    ) is None
+    assert _carsales_url_target(
+        "https://www.carsales.com.au/cars/private/mazda/cx-7/extra/"
+    ) is None
+    assert _carsales_url_target(
+        "https://evil.test/cars/private/mazda/cx-7/"
+    ) is None
+
+
+def test_validated_url_targets_rejects_unmapped_or_non_carsales_urls():
+    with pytest.raises(RuntimeError, match="rejected"):
+        _validated_url_targets(
+            [
+                "https://www.carsales.com.au/cars/private/mazda/cx-7/",
+                "https://evil.test/cars/private/mazda/cx-7/",
+            ]
+        )
+
+    with pytest.raises(RuntimeError, match="rejected"):
+        _validated_url_targets(["https://www.carsales.com.au/cars/mazda/cx-7/"])
 
 
 def test_build_actor_input_uses_url_mode_for_an_exact_start_url():
@@ -200,7 +224,7 @@ def test_import_normalizes_known_toyota_hybrid_series(monkeypatch, tmp_path: Pat
                 "specs": {
                     "bodyStyle": "SUV",
                     "transmission": "Automatic",
-                    "fuelType": "Petrol - Unleaded Ulp",
+                    "fuelType": "",
                     "odometer": 42000,
                     "all": {"Series": "AXAH52R", "Badge": "GX"},
                 },
@@ -326,3 +350,42 @@ def test_main_can_override_covered_refresh_preflight(monkeypatch):
 
     assert main(["--token", "token1", "--make", "toyota", "--model", "camry", "--allow-covered-refresh"]) == 0
     assert calls
+
+
+def test_main_rejects_invalid_exact_url_even_when_preflight_is_skipped():
+    with pytest.raises(RuntimeError, match="Every paid exact URL"):
+        main(
+            [
+                "--token",
+                "token1",
+                "--start-url",
+                "https://evil.test/cars/private/toyota/camry/",
+                "--skip-preflight",
+            ]
+        )
+
+
+def test_main_returns_distinct_status_when_import_is_deferred(monkeypatch):
+    monkeypatch.setattr(
+        "scripts.run_carsales_apify.start_actor_run",
+        lambda actor_input, **kwargs: {"id": "run1", "status": "RUNNING"},
+    )
+    monkeypatch.setattr(
+        "scripts.run_carsales_apify.poll_run_until_terminal",
+        lambda run, **kwargs: run,
+    )
+
+    result = main(
+        [
+            "--token",
+            "token1",
+            "--make",
+            "toyota",
+            "--model",
+            "camry",
+            "--skip-preflight",
+            "--import-results",
+        ]
+    )
+
+    assert result == IMPORT_DEFERRED_EXIT_CODE
