@@ -399,7 +399,11 @@ if [[ "$release" == "1" ]]; then
 fi
 '@
 
-    $remoteScriptBase64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($remoteScript))
+    # PowerShell here-strings use the checkout's native line endings. Normalize
+    # the embedded Bash script so Linux does not receive CR characters in tokens
+    # such as `pipefail` when the release is launched from Windows.
+    $normalizedRemoteScript = $remoteScript -replace "`r`n?", "`n"
+    $remoteScriptBase64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($normalizedRemoteScript))
     $forceFlag = if ($Force) { "1" } else { "0" }
     $releaseFlag = if ($Release) { "1" } else { "0" }
     $remoteCommand = "echo '$remoteScriptBase64' | base64 -d | bash -s -- '$remoteArchive' '$RemoteRoot' '$deployId' '$forceFlag' '$commitSha' '$releaseFlag'"

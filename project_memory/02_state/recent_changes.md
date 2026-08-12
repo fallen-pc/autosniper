@@ -1,5 +1,7 @@
 # Recent Changes
 
+- 2026-08-12: Fixed Windows-launched VPS deployments by normalizing the embedded Bash script to LF line endings before Base64 transport. This prevents Bash from reading `pipefail\r` and stopping before the remote cleanup trap is installed; a regression test now locks the normalization before encoding.
+
 - 2026-08-10: Recovered all `1,800` private Carsales listings from Apify run `a0OgyhtH9v8YGHZDa` after the actor exhausted memory with exit code `137` (`$3.1121` charged). Added governed curves for Mercedes-Benz B200 W245 (`10` retail / `13` unique Grays), Mercedes-Benz C200 BlueEFFICIENCY W204 (`7` / `13`), and Nissan X-Trail ST T30 (`7` / `13`). Exact adjacent-trim/generation negatives pass, the focused suites pass `185` tests, curve validation reports no warnings, and restricted sold coverage increased from `4,696` to `4,749`. Kia Grand Carnival Si VQ and Volkswagen Tiguan 147TSI 5N remain recorded holds with only `5` and `3` exact private listings respectively.
 
 - 2026-08-09: Cleared draft PR #10's GitHub Governance lint failure by removing five Ruff-confirmed unused imports from two governed curve builders and the legacy classification-reference PDF generator. This is import-only cleanup with no runtime, curve, or dataset behavior change.
