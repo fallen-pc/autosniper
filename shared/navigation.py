@@ -2,11 +2,12 @@ from __future__ import annotations
 
 from collections import OrderedDict
 import html
-import os
-from pathlib import Path
 import re
 
 import streamlit as st
+
+from shared.auth import require_dashboard_auth
+from shared.runtime import is_vps_runtime
 
 
 NavigationSpec = "OrderedDict[str, list[tuple[str, str, bool]]]"
@@ -15,16 +16,9 @@ HIDDEN_ROUTABLE_GROUP = "_HIDDEN"
 HIDDEN_ROUTABLE_PAGES: list[tuple[str, str, bool]] = []
 
 
-def _is_vps_runtime() -> bool:
-    explicit = os.getenv("AUTOSNIPER_VPS_MODE", "").strip().lower()
-    if explicit:
-        return explicit in {"1", "true", "yes", "on"}
-    return Path(__file__).resolve().parents[1] == Path("/opt/autosniper")
-
-
 def navigation_spec(*, vps_mode: bool | None = None) -> NavigationSpec:
     if vps_mode is None:
-        vps_mode = _is_vps_runtime()
+        vps_mode = is_vps_runtime()
     system_pages = [
         ("DASHBOARD.py", "Dashboard", not vps_mode),
         ("pages/3_ACTIVE_LISTINGS.py", "Active Inventory", False),
@@ -35,50 +29,61 @@ def navigation_spec(*, vps_mode: bool | None = None) -> NavigationSpec:
     if vps_mode:
         system_pages.insert(0, ("pages/00_SCRAPER_OPERATIONS.py", "Scraper Operations", True))
 
-    return OrderedDict(
-        [
-            (
-                "SYSTEM",
-                system_pages,
-            ),
-            (
-                "PIPELINE",
-                [
-                    ("pages/12_GRAYS_PIPELINE.py", "Grays Pipeline", False),
-                    ("pages/05_HEALTH.py", "Health", False),
-                ],
-            ),
-            (
-                "VALUATION",
-                [
-                    ("pages/03_CURVES.py", "Curves", False),
-                    ("pages/15_CURVE_BUILDER_V2.py", "Curve Builder V2", False),
-                    ("pages/14_CURVE_PIPELINE.py", "Curve Pipeline", False),
-                ],
-            ),
-            (
-                "AI",
-                [
-                    ("pages/6_AI_ANALYSIS.py", "AI Analysis", False),
-                    ("pages/17_MODEL_PROOF.py", "Model Proof", False),
-                ],
-            ),
-            (
-                "INTELLIGENCE",
-                [
-                    ("pages/8_MISSED_OPPORTUNITIES.py", "Missed Opportunities", False),
-                    ("pages/18_REPAIR_REVIEW.py", "Repair Review", False),
-                    ("pages/19_REPAIR_PRICING.py", "Repair Pricing", False),
-                ],
-            ),
-            (
-                "OPERATIONS",
-                [
-                    ("pages/7_AUTOTRADER_SCRAPER.py", "Autotrader Scraper", False),
-                ],
-            ),
-        ]
-    )
+    valuation_pages = [
+        ("pages/03_CURVES.py", "Curves", False),
+    ]
+    intelligence_pages = [
+        ("pages/8_MISSED_OPPORTUNITIES.py", "Missed Opportunities", False),
+    ]
+    operations_pages: list[tuple[str, str, bool]] = []
+    if not vps_mode:
+        # Production is intentionally runtime-only. These pages can write governed
+        # inputs or launch scraper work, so they remain development-only surfaces.
+        valuation_pages.extend(
+            [
+                ("pages/15_CURVE_BUILDER_V2.py", "Curve Builder V2", False),
+                ("pages/14_CURVE_PIPELINE.py", "Curve Pipeline", False),
+            ]
+        )
+        intelligence_pages.extend(
+            [
+                ("pages/18_REPAIR_REVIEW.py", "Repair Review", False),
+                ("pages/19_REPAIR_PRICING.py", "Repair Pricing", False),
+            ]
+        )
+        operations_pages.append(("pages/7_AUTOTRADER_SCRAPER.py", "Autotrader Scraper", False))
+
+    groups = [
+        (
+            "SYSTEM",
+            system_pages,
+        ),
+        (
+            "PIPELINE",
+            [
+                ("pages/12_GRAYS_PIPELINE.py", "Grays Pipeline", False),
+                ("pages/05_HEALTH.py", "Health", False),
+            ],
+        ),
+        (
+            "VALUATION",
+            valuation_pages,
+        ),
+        (
+            "AI",
+            [
+                ("pages/6_AI_ANALYSIS.py", "AI Analysis", False),
+                ("pages/17_MODEL_PROOF.py", "Model Proof", False),
+            ],
+        ),
+        (
+            "INTELLIGENCE",
+            intelligence_pages,
+        ),
+    ]
+    if operations_pages:
+        groups.append(("OPERATIONS", operations_pages))
+    return OrderedDict(groups)
 
 
 def build_navigation() -> "OrderedDict[str, list[st.Page]]":
@@ -97,6 +102,7 @@ def build_navigation() -> "OrderedDict[str, list[st.Page]]":
 
 
 def render_sidebar_navigation() -> None:
+    require_dashboard_auth()
     st.sidebar.markdown(
         """
         <style>

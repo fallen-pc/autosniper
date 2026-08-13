@@ -690,14 +690,23 @@ def test_playwright_preflight_installs_missing_chromium(monkeypatch) -> None:
     monkeypatch.setattr(
         scheduled_jobs.subprocess,
         "run",
-        lambda command, check: calls.append(("install", command, check)),
+        lambda command, **kwargs: calls.append(("install", command, kwargs)),
     )
 
     scheduled_jobs._ensure_playwright_chromium_available()
 
     assert calls == [
         "probe",
-        ("install", [sys.executable, "-m", "playwright", "install", "chromium"], True),
+        (
+            "install",
+            [sys.executable, "-m", "playwright", "install", "chromium"],
+            {
+                "check": True,
+                "capture_output": True,
+                "text": True,
+                "timeout": scheduled_jobs.PLAYWRIGHT_INSTALL_TIMEOUT_SECONDS,
+            },
+        ),
         "probe",
     ]
 
@@ -727,8 +736,8 @@ def test_playwright_preflight_reports_install_failure(monkeypatch) -> None:
 
     monkeypatch.setattr(scheduled_jobs, "_probe_playwright_chromium", probe)
 
-    def fail_install(command, check):
-        raise subprocess.CalledProcessError(1, command)
+    def fail_install(command, **kwargs):
+        raise subprocess.CalledProcessError(1, command, stderr="proxy refused connection")
 
     monkeypatch.setattr(scheduled_jobs.subprocess, "run", fail_install)
 
@@ -736,6 +745,7 @@ def test_playwright_preflight_reports_install_failure(monkeypatch) -> None:
         scheduled_jobs._ensure_playwright_chromium_available()
     except RuntimeError as exc:
         assert "automatic installation failed" in str(exc)
+        assert "proxy refused connection" in str(exc)
     else:
         raise AssertionError("Expected install failure to be reported clearly")
 
@@ -750,10 +760,10 @@ def test_explicit_daily_run_counts_today_even_before_schedule(monkeypatch) -> No
     assert scheduled_jobs._latest_due_daily_date_local(before_schedule_utc) == date(2026, 4, 20)
 
 
-def test_should_not_catch_up_if_metrics_already_cover_today(monkeypatch, tmp_path) -> None:
+def test_should_not_catch_up_if_success_metrics_already_cover_today(monkeypatch, tmp_path) -> None:
     metrics_path = tmp_path / "metrics.json"
     metrics_path.write_text(
-        json.dumps({"last_run_utc": "2026-04-21T01:49:24.105072Z"}),
+        json.dumps({"last_success_utc": "2026-04-21T01:49:24.105072Z"}),
         encoding="utf-8",
     )
 
@@ -767,6 +777,26 @@ def test_should_not_catch_up_if_metrics_already_cover_today(monkeypatch, tmp_pat
     )
 
     assert should_run is False
+    assert coverage_date == date(2026, 4, 21)
+
+
+def test_failed_metrics_do_not_suppress_daily_catch_up(monkeypatch, tmp_path) -> None:
+    metrics_path = tmp_path / "metrics.json"
+    metrics_path.write_text(
+        json.dumps({"last_run_utc": "2026-04-21T01:49:24.105072Z", "runs_failed": 1}),
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(scheduled_jobs, "METRICS_PATH", metrics_path)
+    monkeypatch.setattr(scheduled_jobs, "DAILY_STATE_PATH", tmp_path / "daily_run_state.json")
+    monkeypatch.setenv("AUTOSNIPER_LOCAL_TIMEZONE", "Australia/Sydney")
+    monkeypatch.setenv("AUTOSNIPER_DAILY_SCHEDULE_LOCAL_TIME", "09:00")
+
+    should_run, coverage_date = scheduled_jobs._should_run_missed_daily_catchup(
+        now=datetime(2026, 4, 21, 3, 0, tzinfo=timezone.utc)
+    )
+
+    assert should_run is True
     assert coverage_date == date(2026, 4, 21)
 
 

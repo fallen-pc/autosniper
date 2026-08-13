@@ -52,6 +52,7 @@ PLAYWRIGHT_MISSING_BROWSER_MARKERS = (
     "please run the following command to download new browsers",
     "playwright install",
 )
+PLAYWRIGHT_INSTALL_TIMEOUT_SECONDS = 600
 
 LOCK_PATH = ROOT_DIR / "logs" / "scrape.lock"
 LOCK_TTLS = {
@@ -104,19 +105,32 @@ def _ensure_playwright_chromium_available() -> None:
             raise
         if _env_flag_disabled("AUTOSNIPER_PLAYWRIGHT_AUTO_INSTALL"):
             raise RuntimeError(
-                "Playwright Chromium is missing. Run "
-                f"`{sys.executable} -m playwright install chromium` or set "
+                "Playwright Chromium is missing and automatic installation is disabled. Run "
+                f"`{sys.executable} -m playwright install chromium`, or set "
                 "AUTOSNIPER_PLAYWRIGHT_AUTO_INSTALL=1 to allow scheduled jobs to repair it."
             ) from exc
 
     command = [sys.executable, "-m", "playwright", "install", "chromium"]
     print("Playwright Chromium is missing; installing before starting scheduled scrape work.")
     try:
-        subprocess.run(command, check=True)
+        subprocess.run(
+            command,
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=PLAYWRIGHT_INSTALL_TIMEOUT_SECONDS,
+        )
+    except subprocess.TimeoutExpired as exc:
+        raise RuntimeError(
+            "Playwright Chromium automatic installation timed out after "
+            f"{PLAYWRIGHT_INSTALL_TIMEOUT_SECONDS} seconds. Run `{' '.join(command)}` manually and retry."
+        ) from exc
     except subprocess.CalledProcessError as exc:
+        detail = str(exc.stderr or exc.stdout or "").strip()
         raise RuntimeError(
             "Playwright Chromium is missing and automatic installation failed. "
             f"Run `{' '.join(command)}` manually and retry the scheduled job."
+            + (f" Installer output: {detail}" if detail else "")
         ) from exc
 
     try:
@@ -266,7 +280,7 @@ def _last_successful_daily_date_local() -> date | None:
         if explicit is not None:
             return explicit
     metrics = _load_existing_metrics()
-    metrics_time = _parse_iso_datetime(metrics.get("last_run_utc"))
+    metrics_time = _parse_iso_datetime(metrics.get("last_success_utc"))
     if metrics_time is None:
         return None
     return metrics_time.astimezone(_local_timezone()).date()
@@ -409,8 +423,10 @@ def _write_daily_metrics(success: bool, duration_sec: float) -> None:
     active_listings = _count_active_listings()
     runs_total = int(metrics.get("runs_total", 0)) + 1
     runs_failed = int(metrics.get("runs_failed", 0)) + (0 if success else 1)
+    completed_utc = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
     payload = {
-        "last_run_utc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "last_run_utc": completed_utc,
+        "last_success_utc": completed_utc if success else metrics.get("last_success_utc", ""),
         "active_listings": int(active_listings) if active_listings is not None else int(metrics.get("active_listings", 0)),
         "runs_total": runs_total,
         "runs_failed": runs_failed,

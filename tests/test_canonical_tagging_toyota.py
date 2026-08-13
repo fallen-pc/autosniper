@@ -325,3 +325,125 @@ def test_corolla_ascent_sport_zre182r_manual_maps_without_absorbing_ascent_manua
         "[OK]",
     )
     assert assign_canonical_tag(ascent_manual, require_price=True)[0] == "UNCLASSIFIED"
+
+
+def test_rav4_gx_hybrid_drivetrains_map_to_separate_axah_lanes():
+    _load_curve_year_band.cache_clear()
+
+    base_row = {
+        "make": "Toyota",
+        "model": "RAV4",
+        "badge": "GX",
+        "body_type": "Wagon",
+        "transmission": "Automatic",
+        "fuel_type": "Hybrid",
+        "year": "2024",
+        "price": "42500",
+    }
+    cases = [
+        (
+            {**base_row, "variant": "GX (2WD) Hybrid", "url": "https://www.example.com/rav4-gx-2wd"},
+            "toyota_rav4_gx_hybrid_auto_suv_axah52r",
+        ),
+        (
+            {**base_row, "variant": "GX (AWD) Hybrid", "url": "https://www.example.com/rav4-gx-awd"},
+            "toyota_rav4_gx_hybrid_auto_suv_axah54r",
+        ),
+        (
+            {**base_row, "variant": "GX eFour Hybrid", "url": "https://www.example.com/rav4-gx-efour"},
+            "toyota_rav4_gx_hybrid_auto_suv_axah54r",
+        ),
+    ]
+
+    for row, expected_tag in cases:
+        assert assign_canonical_tag(row, require_price=True)[0:2] == (expected_tag, "[OK]")
+
+
+def test_rav4_gx_hybrid_does_not_absorb_gxl_or_petrol_rows():
+    _load_curve_year_band.cache_clear()
+
+    base_row = {
+        "make": "Toyota",
+        "model": "RAV4",
+        "badge": "GX",
+        "body_type": "Wagon",
+        "transmission": "Automatic",
+        "fuel_type": "Hybrid",
+        "year": "2024",
+        "price": "42500",
+        "url": "https://www.example.com/rav4",
+    }
+    rejected_rows = [{**base_row, "badge": "GXL", "variant": "GXL (2WD) Hybrid"}]
+
+    for row in rejected_rows:
+        assert assign_canonical_tag(row, require_price=True)[0] == "UNCLASSIFIED"
+    assert assign_canonical_tag(
+        {**base_row, "fuel_type": "Petrol", "variant": "GX (2WD)"},
+        require_price=True,
+    )[0] == "toyota_rav4_gx_petrol_auto_suv_mxaa52r"
+
+
+def test_rav4_gx_petrol_maps_by_generation_and_drivetrain():
+    _load_curve_year_band.cache_clear()
+    base_row = {
+        "make": "Toyota",
+        "model": "RAV4",
+        "badge": "GX",
+        "body_type": "Wagon",
+        "transmission": "Automatic",
+        "fuel_type": "Petrol",
+        "price": "29000",
+    }
+    cases = [
+        (
+            {**base_row, "year": "2016", "variant": "GX (2WD)", "url": "https://example.test/zsa42r"},
+            "toyota_rav4_gx_petrol_auto_suv_zsa42r",
+        ),
+        (
+            {**base_row, "year": "2016", "variant": "GX (AWD)", "url": "https://example.test/asa44r"},
+            "toyota_rav4_gx_petrol_auto_suv_asa44r",
+        ),
+        (
+            {**base_row, "year": "2021", "variant": "GX (2WD)", "url": "https://example.test/mxaa52r"},
+            "toyota_rav4_gx_petrol_auto_suv_mxaa52r",
+        ),
+    ]
+    for row, expected_tag in cases:
+        assert assign_canonical_tag(row, require_price=True)[0:2] == (expected_tag, "[OK]")
+
+    rejected_rows = [
+        {**base_row, "year": "2021", "variant": "GXL (2WD)", "badge": "GXL", "url": "https://example.test/gxl"},
+        {**base_row, "year": "2025", "variant": "GX (AWD)", "url": "https://example.test/new-awd"},
+    ]
+    for row in rejected_rows:
+        assert assign_canonical_tag(row, require_price=True)[0] == "UNCLASSIFIED"
+
+
+def test_rav4_cv_aca33r_maps_automatic_4x4_only():
+    _load_curve_year_band.cache_clear()
+    base_row = {
+        "make": "Toyota",
+        "model": "RAV4",
+        "badge": "CV",
+        "series": "ACA33R",
+        "variant": "CV Auto 4x4",
+        "body_type": "SUV",
+        "transmission": "Automatic",
+        "fuel_type": "Petrol",
+        "year": "2008",
+        "price": "9500",
+        "url": "https://example.test/rav4-cv-aca33r",
+    }
+
+    assert assign_canonical_tag(base_row, require_price=True)[0:2] == (
+        "toyota_rav4_cv_petrol_auto_suv_aca33r",
+        "[OK]",
+    )
+    assert assign_canonical_tag(
+        {**base_row, "transmission": "Manual", "variant": "CV Manual 4x4"},
+        require_price=True,
+    )[0] == "UNCLASSIFIED"
+    assert assign_canonical_tag(
+        {**base_row, "badge": "CVX", "variant": "CVX Auto 4x4"},
+        require_price=True,
+    )[0] == "UNCLASSIFIED"

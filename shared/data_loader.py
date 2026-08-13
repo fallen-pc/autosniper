@@ -216,7 +216,7 @@ def upload_remote_data_bundle(filenames: Iterable[str] | None = None) -> bool:
         response = requests.put(upload_url, headers=headers, data=payload, timeout=timeout)
         response.raise_for_status()
         return True
-    except (OSError, requests.RequestException) as exc:
+    except Exception as exc:  # noqa: BLE001 - remote publication must not crash the UI
         # Avoid crashing the UI if upload fails, but never fail silently.
         logger.error(
             "Remote data bundle upload failed (%s: %s); local CSVs were not published.",

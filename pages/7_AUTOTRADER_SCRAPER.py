@@ -6,6 +6,7 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 from shared.navigation import render_sidebar_navigation
+from shared.validators import is_allowed_scrape_url
 
 from shared.styling import (
     clean_html,
@@ -20,6 +21,7 @@ DEFAULT_URL = "https://www.autotrader.com.au/for-sale/used/toyota/vic/melbourne"
 DEFAULT_OUTPUT = "autotrader_isolated/output/first_page_results.csv"
 DEFAULT_STORAGE_STATE = "autotrader_isolated/output/storage_state.json"
 ROOT_DIR = Path(__file__).resolve().parent.parent
+ALLOWED_SCRAPE_DOMAINS = ("autotrader.com.au",)
 
 
 st.set_page_config(page_title="AUTOTRADER SCRAPER", layout="wide")
@@ -209,7 +211,17 @@ def _render_command_result(result: subprocess.CompletedProcess[str]) -> None:
 if show_command:
     st.code(_command_preview(_build_scrape_command()), language="powershell")
 
-if create_state_clicked:
+def _reject_unsupported_url(candidate: str) -> bool:
+    if is_allowed_scrape_url(candidate, ALLOWED_SCRAPE_DOMAINS):
+        return False
+    st.error(
+        "Only HTTPS autotrader.com.au URLs can be opened by this page. "
+        f"Rejected: {candidate!r}"
+    )
+    return True
+
+
+if create_state_clicked and not _reject_unsupported_url(state_url):
     with st.spinner("Opening browser to refresh storage state..."):
         result = _run_command(_build_storage_state_command())
         if result.returncode == 0:
@@ -218,7 +230,7 @@ if create_state_clicked:
             st.error("Storage state refresh failed. Check the terminal output.")
         _render_command_result(result)
 
-if run_clicked:
+if run_clicked and not _reject_unsupported_url(url):
     with st.spinner("Running Autotrader scraper..."):
         result = _run_command(_build_scrape_command())
         if result.returncode == 0:

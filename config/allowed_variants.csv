@@ -11,7 +11,6 @@ toyota_camry_ascent-sport_hybrid_auto_sedan_axvh71r,toyota,camry,sedan,hybrid,au
 toyota_camry_ascent_petrol_auto_sedan_asv70r,toyota,camry,sedan,petrol,auto,ascent,asv70r,ascent,sedan|saloon,hybrid|ascent sport|sx|sl|atara|gr|manual|axio|hybrid ex
 toyota_camry_altise_petrol_auto_sedan_asv50r,toyota,camry,sedan,petrol,auto,altise,asv50r,altise,sedan|saloon,hybrid|ascent|ascent sport|sx|sl|atara|gr|manual|csi|csx|ateva|vienta
 toyota_camry_atara-s_petrol_auto_sedan_asv50r,toyota,camry,sedan,petrol,auto,atara s,asv50r,atara s|atara-s,sedan|saloon,hybrid|altise|ascent|ascent sport|atara sx|atara sl|sx|sl|gr|manual|csi|csx|ateva|vienta|acv40r|asv70r
-mazda_3_neo_petrol_auto_hatch_bl,mazda,3,hatch,petrol,auto,neo,bl10f1,neo,hatch|hatchback,manual|diesel|hybrid|sedan|sp25|maxx|touring|neo sport|neo-sport
 mazda_3_neo-sport_petrol_auto_hatch_bl,mazda,3,hatch,petrol,auto,neo sport,bl10f1,neo sport|neo-sport,hatch|hatchback,manual|diesel|hybrid|sedan|sp25|maxx|touring
 mazda_3_maxx_petrol_auto_hatch_bl,mazda,3,hatch,petrol,auto,maxx,bl10f1,maxx,hatch|hatchback,manual|diesel|hybrid|sedan|neo|sp25|touring|maxx sport|maxx-sport
 mazda_3_maxx-sport_petrol_auto_hatch_bl,mazda,3,hatch,petrol,auto,maxx sport,bl10f1,maxx sport|maxx-sport,hatch|hatchback,manual|diesel|hybrid|sedan|neo|sp25|touring
@@ -80,6 +79,7 @@ toyota_kluger_kx-r_petrol_auto_suv_gsu40r,toyota,kluger,suv,petrol,auto,kx-r,gsu
 mitsubishi_outlander_ls_petrol_auto_suv_zh,mitsubishi,outlander,suv,petrol,auto,ls,zh,ls,suv|wagon,manual|diesel|hybrid|phev|es|xls|aspire|vr|vr-x|exceed|activ|safety pack|zg|zj|zk|zl|ze
 nissan_xtrail_st_petrol_auto_suv_t31,nissan,xtrail,suv,petrol,auto,st,t31,st,suv|wagon,manual|diesel|hybrid|st-l|stl|ti|ti-l|ts|tl|n-trek|t30|t32
 subaru_forester_x_petrol_auto_suv_s3,subaru,forester,suv,petrol,auto,x,s3,x,suv|wagon,manual|diesel|hybrid|xs|xs premium|x luxury|xt|2.0d|2.5i|limited|79v|s4
+subaru_forester_x_petrol_manual_suv_s3,subaru,forester,suv,petrol,manual,x,s3,x,suv|wagon,auto|automatic|diesel|hybrid|xs|xs premium|x luxury|xt|2.0d|2.5i|limited|79v|s4
 toyota_kluger_kx-s_petrol_auto_suv_gsu40r,toyota,kluger,suv,petrol,auto,kx-s,gsu40r,kx-s|kxs,suv|wagon,manual|diesel|hybrid|kx-r|kxr|grande|altitude|gx|gxl|cv|cvx|mcu28r|gsu45r|gsu50r|gsu55r
 toyota_kluger_kx-r_petrol_auto_suv_gsu45r,toyota,kluger,suv,petrol,auto,kx-r,gsu45r,kx-r|kxr,suv|wagon,manual|diesel|hybrid|kx-s|kxs|grande|altitude|gx|gxl|cv|cvx|mcu28r|gsu40r|gsu50r|gsu55r
 toyota_kluger_kx-s_petrol_auto_suv_gsu45r,toyota,kluger,suv,petrol,auto,kx-s,gsu45r,kx-s|kxs,suv|wagon,manual|diesel|hybrid|kx-r|kxr|grande|altitude|gx|gxl|cv|cvx|mcu28r|gsu40r|gsu50r|gsu55r
@@ -110,6 +110,7 @@ ford_focus_sport_petrol_auto_hatch_lw-mkii,ford,focus,hatch,petrol,auto,sport,lw
 holden_barina_cd_petrol_auto_sedan_tm,holden,barina,sedan,petrol,auto,cd,tm,cd,sedan|saloon,manual|diesel|hybrid|hatch|wagon|cdx|rs|spark|tk
 holden_calais_v_petrol_auto_sedan_ve,holden,calais,sedan,petrol,auto,v,ve,v ve|calais v ve,sedan|saloon,manual|diesel|hybrid|lpg|gas|wagon|sportwagon|ute|utility|vf|vz|vy|vx|vt|series ii|redline|international|v8|supercharged
 holden_calais_v_petrol_auto_sedan_ve-series-ii,holden,calais,sedan,petrol,auto,v,ve series ii,v ve series ii|calais v ve series ii,sedan|saloon,manual|diesel|hybrid|lpg|gas|wagon|sportwagon|ute|utility|vf|vz|vy|vx|vt|redline|international|v8|supercharged
+holden_calais_v_petrol_auto_sedan_vf,holden,calais,sedan,petrol,auto,v,vf,v vf|calais v vf,sedan|saloon,manual|diesel|hybrid|lpg|gas|wagon|sportwagon|ute|utility|ve|vz|vy|vx|vt|redline|international|v8|supercharged
 toyota_corolla_ascent-sport_petrol_auto_hatch_zre152r,toyota,corolla,hatch,petrol,auto,ascent sport,zre152r,ascent sport|ascent-sport,hatch|hatchback,manual|hybrid|sedan|conquest|sx|zr|levin|gr|zre172r|zre182r|mzea12r|zwe
 hyundai_i30_trophy_petrol_auto_hatch_gd2,hyundai,i30,hatch,petrol,auto,trophy,gd2,trophy,hatch|hatchback,manual|diesel|hybrid|sedan|tourer|wagon|active|elite|premium|sx|se|sr|n line|n-line|fd|pd
 kia_cerato_gt_petrol_auto_sedan_bd,kia,cerato,sedan,petrol,auto,gt,bd,gt,sedan|saloon,manual|diesel|hybrid|hatch|coupe|koup|s|sport|sport+|sport plus|s premium|premium|si|sli|yd|td|ld
@@ -119,3 +120,93 @@ isuzu_mux_lsu_diesel_auto_suv_mux-gen2,isuzu,mux,suv,diesel,auto,ls-u,mux,ls-u|l
 isuzu_mux_lst_diesel_auto_suv_mux-gen2,isuzu,mux,suv,diesel,auto,ls-t,mux,ls-t|lst,suv|wagon,petrol|manual|ls-m|lsm|ls-u|lsu
 toyota_kluger_grande_petrol_auto_suv_gsu40r,toyota,kluger,suv,petrol,auto,grande,gsu40r,grande,suv|wagon,manual|diesel|hybrid|kx-r|kxr|kx-s|kxs|altitude|gx|gxl|cv|cvx|mcu28r|gsu45r|gsu50r|gsu55r
 mazda_cx5_grand-touring_petrol_auto_wagon_ke,mazda,cx5,wagon,petrol,auto,grand touring,ke,grand touring,wagon|suv,manual|diesel|maxx|akera
+toyota_rav4_gx_hybrid_auto_suv_axah52r,toyota,rav4,suv,hybrid,auto,gx,axah52r,gx,suv|wagon,manual|petrol|diesel|gxl|cruiser|edge|awd|efour|4x4|axah54r|axal62r
+toyota_rav4_gx_hybrid_auto_suv_axah54r,toyota,rav4,suv,hybrid,auto,gx,axah54r,gx,suv|wagon,manual|petrol|diesel|gxl|cruiser|edge|2wd|fwd|4x2|axah52r|axal62r
+ford_falcon_xr6_petrol_auto_sedan_fg,ford,falcon,sedan,petrol,auto,xr6,fg,xr6,sedan|saloon,manual|diesel|lpg|turbo|xr6t|xr6 turbo|ute|wagon|g6|g6e|xt|fg-x|fgx
+ford_falcon_xr6_petrol_auto_sedan_fgmkii,ford,falcon,sedan,petrol,auto,xr6,fgmkii,xr6,sedan|saloon,manual|diesel|lpg|turbo|xr6t|xr6 turbo|ute|wagon|g6|g6e|xt|fg-x|fgx
+ford_everest_trend_diesel_auto_suv_ua,ford,everest,suv,diesel,auto,trend,ua,trend,suv|wagon,manual|petrol|rwd|2wd|4x2|sport|platinum|ambiente|titanium|ua ii|uaii|dr
+ford_ranger_wildtrak-2.0_diesel_auto_ute_px-mkiii,ford,ranger,ute,diesel,auto,wildtrak,px-mkiii,wildtrak,wagon|ute|pickup|pick up|double cab pick up|dual cab utility|double cab,manual|petrol|hybrid|phev|3.2|3.0|raptor|xlt|sport|wildtrak x|rwd|2wd|4x2|my24|my25|my26|fulltime|full-time|dr
+toyota_rav4_gx_petrol_auto_suv_zsa42r,toyota,rav4,suv,petrol,auto,gx,zsa42r,gx,suv|wagon,manual|diesel|hybrid|gxl|cruiser|edge|awd|4wd|4x4|zsa44r|asa44r|mxaa52r
+toyota_rav4_gx_petrol_auto_suv_asa44r,toyota,rav4,suv,petrol,auto,gx,asa44r,gx,suv|wagon,manual|diesel|hybrid|gxl|cruiser|edge|2wd|fwd|4x2|zsa42r|mxaa52r
+toyota_rav4_gx_petrol_auto_suv_mxaa52r,toyota,rav4,suv,petrol,auto,gx,mxaa52r,gx,suv|wagon,manual|diesel|hybrid|gxl|cruiser|edge|awd|4wd|4x4|zsa42r|asa44r|axal62r
+toyota_rav4_cv_petrol_auto_suv_aca33r,toyota,rav4,suv,petrol,auto,cv,aca33r,cv,suv|wagon,manual|diesel|hybrid|gx|gxl|cruiser|edge|cvx|2wd|fwd|4x2|aca38r
+mitsubishi_outlander_es-2wd_petrol_auto_suv_zl,mitsubishi,outlander,suv,petrol,auto,es,zl,es,suv|wagon,manual|diesel|hybrid|phev|ls|xls|aspire|vr|vr-x|exceed|activ|safety pack|awd|4wd|4x4|zj|zk|zm
+mitsubishi_outlander_es-awd_petrol_auto_suv_zl,mitsubishi,outlander,suv,petrol,auto,es,zl,es,suv|wagon,manual|diesel|hybrid|phev|ls|xls|aspire|vr|vr-x|exceed|activ|safety pack|2wd|fwd|4x2|zj|zk|zm
+mitsubishi_outlander_es-2wd_petrol_auto_suv_zm,mitsubishi,outlander,suv,petrol,auto,es,zm,es,suv|wagon,manual|diesel|hybrid|phev|ls|xls|aspire|vr|vr-x|exceed|activ|safety pack|awd|4wd|4x4|zj|zk|zl
+holden_cruze_cd_petrol_auto_sedan_jg,holden,cruze,sedan,petrol,auto,cd,jg,cd,sedan|saloon,manual|diesel|hybrid|hatch|wagon|cdx|sri|sri-v|sri v|equipe|z-series|z series|jh|series ii|premium
+holden_barina_tk_petrol_auto_sedan,holden,barina,sedan,petrol,auto,tk,tk,tk,sedan|saloon,manual|diesel|hybrid|hatch|wagon|cd|cdx|rs|spark|tm
+holden_cruze_sri-v_petrol_auto_sedan_jh-series-ii,holden,cruze,sedan,petrol,auto,sri-v,jh series ii,sri-v|sri v,sedan|saloon,manual|diesel|hybrid|hatch|wagon|cd |cdx|equipe|z-series|z series|jg
+holden_cruze_sri_petrol_auto_sedan_jh-series-ii,holden,cruze,sedan,petrol,auto,sri,jh series ii,sri,sedan|saloon,manual|diesel|hybrid|hatch|wagon|cd |cdx|sri-v|sri v|equipe|z-series|z series|jg
+nissan_pulsar_st_petrol_auto_sedan_b17,nissan,pulsar,sedan,petrol,auto,st,b17,st,sedan|saloon,manual|diesel|hybrid|hatch|wagon|st-l|st l|ti|sss|c12|n16|n15
+audi_q7_3.0-tdi-quattro_diesel_auto_suv,audi,q7,suv,diesel,auto,3.0 tdi quattro,,3.0 tdi quattro|3 0 tdi quattro,suv|wagon,manual|petrol|hybrid|tfsi|4.2 tdi|4 2 tdi|45 tdi|50 tdi|sport
+bmw_x5_xdrive30d_diesel_auto_suv_e70,bmw,x5,suv,diesel,auto,xdrive30d,e70,xdrive30d e70|xdrive 30d e70,suv|wagon,manual|petrol|hybrid|3.0d|3 0d|40d|m50d|sdrive25d|sdrive 25d|f15|g05
+nissan_pathfinder_st_petrol_auto_suv_r52,nissan,pathfinder,suv,petrol,auto,st,r52,st,suv|wagon,manual|diesel|hybrid|st-l|st l|ti|ti-l|ti l|r51|r53|n-sport
+hyundai_tucson_active-x_petrol_auto_suv_tl,hyundai,tucson,suv,petrol,auto,active x,tl,active x,suv|wagon,manual|diesel|hybrid|active fwd|elite|highlander|city|go|n line|awd|4wd|nx4
+holden_trax_ls_petrol_auto_suv_tj,holden,trax,suv,petrol,auto,ls,tj,ls,suv|wagon,manual|diesel|hybrid|ltz|lt |black|active|cd|tm
+holden_trax_ltz_petrol_auto_suv_tj,holden,trax,suv,petrol,auto,ltz,tj,ltz,suv|wagon,manual|diesel|hybrid|ls |lt |black|active|cd|tm
+jeep_grand_cherokee-laredo_diesel_auto_suv_wk,jeep,grand,suv,diesel,auto,cherokee laredo,wk,cherokee laredo,suv|wagon,manual|petrol|hybrid|limited|overland|summit|s-limited|night eagle|wh|wg|kl
+jeep_grand_cherokee-limited_diesel_auto_suv_wk,jeep,grand,suv,diesel,auto,cherokee limited,wk,cherokee limited,suv|wagon,manual|petrol|hybrid|laredo|overland|summit|s-limited|night eagle|wh|wg|kl
+nissan_navara_st-r_diesel_manual_ute_d22,nissan,navara,ute,diesel,manual,st-r,d22,st-r|st r|st-r d22|st r d22|4x4 st-r d22|4x4 st r d22,ute|dual cab|cab chassis|double cab|pickup|pick up,automatic|petrol|hybrid|st-x|st x|d40|d23|single cab|king cab
+mazda_cx-9_luxury_petrol_auto_wagon_tb,mazda,cx9,wagon,petrol,auto,luxury,tb,luxury,wagon|suv,manual|diesel|grand touring|classic|touring|sport|azami|gt fwd tc|gt awd tc
+audi_q5_2.0-tfsi-quattro_petrol_auto_suv_8r,audi,q5,suv,petrol,auto,2.0 tfsi quattro,8r,2.0 tfsi quattro|tfsi quattro,suv|wagon,manual|diesel|tdi|3.0 tfsi|45 tfsi|sport edition|80a
+nissan_murano_ti_petrol_auto_wagon_z51,nissan,murano,wagon,petrol,auto,ti,z51,ti,wagon|suv,manual|diesel|st|ti-l|ti l|z50
+holden_cruze_cd_petrol_auto_hatch_jh-series-ii,holden,cruze,hatch,petrol,auto,cd,jh series ii,cd,hatch|hatchback,manual|diesel|sedan|wagon|cdx|sri|sri-v|sri v|equipe|z-series|z series|jg|premium
+mazda_cx-7_luxury_petrol_auto_wagon_er,mazda,cx7,wagon,petrol,auto,luxury,er,luxury,wagon|suv,manual|diesel|luxury sports|classic|classic sports
+audi_q5_2.0-tdi-quattro_diesel_auto_suv_8r,audi,q5,suv,diesel,auto,2.0 tdi quattro,8r,2.0 tdi quattro|tdi quattro,suv|wagon,manual|petrol|tfsi|3.0 tdi|40 tdi|50 tdi|sport edition|80a
+hyundai_i20_active_petrol_auto_hatch_pb,hyundai,i20,hatch,petrol,auto,active,pb,active,hatch|hatchback,manual|diesel|elite|premium|n line
+volkswagen_tiguan_125-tsi_petrol_auto_wagon_5n,volkswagen,tiguan,wagon,petrol,auto,125 tsi,5n,125 tsi|125tsi,wagon|suv,manual|diesel|tdi|110 tsi|118 tsi|132 tsi|147 tsi|155 tsi|162 tsi|allspace|80a
+nissan_xtrail_st-l_petrol_auto_suv_t32,nissan,xtrail,suv,petrol,auto,st-l,t32,st-l|stl,suv|wagon,manual|diesel|hybrid|ti|ti-l|ts|tl|n-trek|t30|t31|t33
+audi_a4_2.0-tfsi-quattro_petrol_auto_sedan_b8,audi,a4,sedan,petrol,auto,2.0 tfsi quattro,b8,2.0 tfsi quattro|2.0 tfsi q ambition,sedan|saloon,manual|diesel|tdi|1.8 tfsi|1.4 tfsi|3.0|b7|b9|avant|wagon
+bmw_x3_xdrive-20d_diesel_auto_wagon_f25,bmw,x3,wagon,diesel,auto,xdrive 20d,f25,xdrive 20d|xdrive20d,wagon|suv,manual|petrol|xdrive 30d|xdrive30d|e83|g01
+nissan_pulsar_st_petrol_auto_hatch_c12,nissan,pulsar,hatch,petrol,auto,st,c12,st,hatch|hatchback,manual|diesel|sedan|b17|n16|st-l|stl|st-s|sss|ti
+hyundai_elantra_active_petrol_auto_sedan_md,hyundai,elantra,sedan,petrol,auto,active,md,active,sedan|saloon,manual|diesel|hybrid|hatch|wagon|elite|premium|se|trophy|sr|turbo|sport|go|ad|md2|md3
+volkswagen_touareg_v6-tdi_diesel_auto_wagon_7p,volkswagen,touareg,wagon,diesel,auto,v6 tdi,7p,v6 tdi,wagon|suv,manual|petrol|v8 tdi|150 tdi|170 tdi|190 tdi|210 tdi|7l|cr
+nissan_pathfinder_st-l_petrol_auto_wagon_r52,nissan,pathfinder,wagon,petrol,auto,st-l,r52,st-l|stl,wagon|suv,manual|diesel|hybrid|ti|ti-l|n-sport|r51|r53
+hyundai_ix35_active-fwd_petrol_auto_wagon_lm,hyundai,ix35,wagon,petrol,auto,active fwd,lm,active fwd|active,wagon|suv,manual|diesel|awd|4x4|se|elite|highlander|trophy|special edition
+mercedes_benz_ml320cdi_diesel_auto_wagon_w164,mercedes,benz,wagon,diesel,auto,ml320cdi,w164,ml320cdi|m-class ml320cdi,wagon|suv,manual|petrol|ml280|ml300|ml350|luxury|edition 10|w163|w166
+renault_clio_expression_petrol_auto_hatch_x98,renault,clio,hatch,petrol,auto,expression,x98,expression,hatch|hatchback,manual|diesel|expression+|expression plus|dynamique|authentique|intens|life|zen|rs|sport|iv|v
+mercedes_benz_ml250-bluetec_diesel_auto_wagon_w166,mercedes,benz,wagon,diesel,auto,ml250 bluetec,w166,ml250 bluetec|ml250,wagon|suv,manual|petrol|ml280|ml300|ml320|ml350|ml400|ml500|amg|luxury|edition|w163|w164
+subaru_xv_2.0i-s_petrol_auto_hatch_g4x,subaru,xv,hatch,petrol,auto,2.0i-s,g4x,2.0i-s|2 0i-s|2.0 i-s,hatch|hatchback|suv,manual|diesel|hybrid|2.0i-l|2 0i-l|2.0i premium|2.0i g4x|g5x|g6x|crosstrek
+mitsubishi_lancer_es_petrol_auto_sedan_cj,mitsubishi,lancer,sedan,petrol,auto,es,cj,es,sedan|saloon,manual|diesel|hybrid|es sport|sportback|lx|ls|xls|vr|vr-x|aspire|platinum|sx|gsr|ralliart|evolution|ch|cg|ce|cf
+volkswagen_tiguan_132tsi-pacific_petrol_auto_wagon_5n,volkswagen,tiguan,wagon,petrol,auto,132tsi pacific,5n,132tsi pacific|132 tsi pacific,wagon|suv,manual|diesel|tdi|comfortline|trendline|highline|r-line|allspace|125tsi|147tsi|155tsi|162tsi|118tsi|110tsi|103tsi|mk2
+subaru_outback_2.5i_petrol_auto_wagon_b5a,subaru,outback,wagon,petrol,auto,2.5i,b5a,2.5i|2 5i,wagon|suv,manual|diesel|hybrid|premium|limited|touring|sport|3.0r|3.6r|xt|b4a|b6a|6gen
+holden_sportwagon_omega_petrol_auto_wagon_ve,holden,sportwagon,wagon,petrol,auto,omega,ve,omega,wagon|sportwagon,manual|diesel|hybrid|sedan|ute|sv6|ss|calais|berlina|international|lumina|lpg|gas|dual fuel|ve series ii|vf
+holden_sportwagon_omega_petrol_auto_wagon_ve-series-ii,holden,sportwagon,wagon,petrol,auto,omega,ve series ii,omega,wagon|sportwagon,manual|diesel|hybrid|sedan|ute|sv6|ss|calais|berlina|international|lumina|lpg|gas|dual fuel|vf
+honda_civic_vti_petrol_auto_sedan_8th-gen,honda,civic,sedan,petrol,auto,vti,8th gen,vti,sedan|saloon,manual|diesel|hybrid|hatch|vti-l|vti-s|sport|type r|si|9th gen|10th gen|11th gen
+holden_sportwagon_sv6_petrol_auto_wagon_ve,holden,sportwagon,wagon,petrol,auto,sv6,ve,sv6 ve,wagon|sportwagon,manual|diesel|hybrid|sedan|ute|omega|ss|calais|berlina|lpg|gas|dual fuel|ve series ii|ve ii|vf
+holden_sportwagon_sv6_petrol_auto_wagon_ve-series-ii,holden,sportwagon,wagon,petrol,auto,sv6,ve series ii,sv6 ve series ii|sv6 z-series ve ii,wagon|sportwagon,manual|diesel|hybrid|sedan|ute|omega|ss|calais|berlina|lpg|gas|dual fuel|vf
+holden_sportwagon_sv6_petrol_auto_wagon_vf,holden,sportwagon,wagon,petrol,auto,sv6,vf,sv6 vf|sv6 black vf|sv6 black edition vf,wagon|sportwagon,manual|diesel|hybrid|sedan|ute|omega|ss|calais|berlina|lpg|gas|dual fuel|ve
+ford_focus_ambiente_petrol_auto_hatch_lw-mkii,ford,focus,hatch,petrol,auto,ambiente,lw,ambiente lw ii|ambiente lw mkii|ambiente lw mk ii,hatch|hatchback,manual|diesel|hybrid|sedan|wagon|suv|convertible|sport|trend|titanium|st|xr5|lz|lv|ls
+audi_q5_3.0-tdi-quattro_diesel_auto_suv_8r,audi,q5,suv,diesel,auto,3.0 tdi quattro,8r,3.0 tdi quattro|3 0 tdi quattro,suv|wagon,manual|petrol|hybrid|tfsi|2.0 tdi|2 0 tdi|40 tdi|45 tdi|50 tdi|sport edition|80a
+volkswagen_tiguan_103tdi_diesel_auto_wagon_5n,volkswagen,tiguan,wagon,diesel,auto,103tdi,5n,103tdi|103 tdi,wagon|suv,manual|petrol|hybrid|tsi|pacific|comfortline|trendline|highline|r-line|allspace|110tdi|130tdi|140tdi|147tdi|mk2
+bmw_3_20i-executive_petrol_auto_sedan_e90,bmw,3,sedan,petrol,auto,20i executive,e90,20i executive e90|20i exec e90,sedan|saloon,manual|diesel|hybrid|touring|wagon|coupe|convertible|320d|323i|325i|330i|335i|f30|e46
+bmw_320i_executive_petrol_auto_sedan_e90,bmw,320i,sedan,petrol,auto,320i executive,e90,320i executive e90|320i exec e90|320i exec. e90,sedan|saloon,manual|diesel|hybrid|touring|wagon|coupe|convertible|320d|f30|e46
+bmw_3_series-320i-exec_petrol_auto_sedan_e90,bmw,3,sedan,petrol,auto,series 320i exec,e90,series 320i executive e90|series 320i exec e90|series 320i exec. e90,sedan|saloon,manual|diesel|hybrid|touring|wagon|coupe|convertible|320d|f30|e46
+jeep_grand_cherokee-laredo-4x4_petrol_auto_wagon_wk,jeep,grand,wagon,petrol,auto,cherokee laredo 4x4,wk,cherokee laredo (4x4) wk|cherokee laredo 4x4 wk,wagon|suv,manual|diesel|hybrid|4x2|wh|wg|wl|limited|overland|srt|summit|trailhawk
+mazda_cx-9_grand-touring_petrol_auto_wagon_tb,mazda,cx9,wagon,petrol,auto,grand touring,tb,grand touring,wagon|suv,manual|diesel|hybrid|classic|luxury|azami|sport|gt|tc|front wheel drive|fwd|2wd
+hyundai_i20_active_petrol_manual_hatch_pb,hyundai,i20,hatch,petrol,manual,active,pb,active pb,hatch|hatchback,automatic|diesel|hybrid|elite|premium|sr|n line|bc3
+dodge_journey_sxt_petrol_auto_people-mover,dodge,journey,people_mover,petrol,auto,sxt,,sxt,people mover|wagon|suv,manual|diesel|hybrid|r t|r/t|rt|blacktop|crossroad
+dodge_journey_rt_petrol_auto_people-mover,dodge,journey,people_mover,petrol,auto,r t,,r t|r/t|rt,people mover|wagon|suv,manual|diesel|hybrid|sxt|blacktop|crossroad
+mercedes_benz_c250-be-avantgarde_petrol_auto_sedan_w204,mercedes,benz,sedan,petrol,auto,c250 be avantgarde,w204,c250 be avantgarde w204|c250 blueefficiency avantgarde w204|c250 cgi avantgarde w204,sedan|saloon,manual|diesel|hybrid|wagon|coupe|cdi|c200|c300|c350|amg|w205
+bmw_1_series-118i_petrol_auto_hatch_f20,bmw,1,hatch,petrol,auto,series 118i,f20,series 118i f20,hatch|hatchback,manual|diesel|hybrid|coupe|convertible|116i|120i|125i|m135i|m140i|f20 lci|f40
+land_rover_range-rover-evoque-td4-150-se_diesel_auto_wagon_9,land,rover,wagon,diesel,auto,range rover evoque td4 150 se,9,range rover evoque td4 150 se 9,wagon|suv,manual|petrol|hybrid|pure|dynamic|hse|d150|d180|sd4|si4|l551
+bmw_1_18i_petrol_auto_hatch_e87,bmw,1,hatch,petrol,auto,18i,e87,18i e87,hatch|hatchback,manual|diesel|hybrid|coupe|convertible|116i|120i|123d|125i|130i|f20|f40
+audi_q3_2.0-tfsi-quattro_petrol_auto_wagon_8u,audi,q3,wagon,petrol,auto,2.0 tfsi quattro,8u,2.0 tfsi quattro 8u|2 0 tfsi quattro 8u,wagon|suv,manual|diesel|hybrid|1.4|35 tfsi|40 tfsi|rs q3|rsq3|8y
+honda_accord-euro_luxury_petrol_auto_sedan_7th-gen,honda,accordeuro,sedan,petrol,auto,luxury,7th gen,luxury,sedan|saloon,manual|diesel|hybrid|luxury navi|navi|cu2|8th gen
+honda_accord_euro-luxury_petrol_auto_sedan_7th-gen,honda,accord,sedan,petrol,auto,euro luxury,7th gen,euro luxury,sedan|saloon,manual|diesel|hybrid|v6|luxury navi|navi|cu2|8th gen
+mitsubishi_asx_ls_petrol_auto_wagon_xb,mitsubishi,asx,wagon,petrol,auto,ls,xb,ls,wagon|suv,manual|diesel|hybrid|xls|exceed|es|mr|gsr|xc|xd
+mazda_2_neo_petrol_auto_hatch_de,mazda,2,hatch,petrol,auto,neo,de,neo,hatch|hatchback,manual|diesel|hybrid|neo sport|maxx|genki|dj|sedan
+hyundai_kona_active_petrol_auto_wagon_os,hyundai,kona,wagon,petrol,auto,active,os,active,wagon|suv,manual|diesel|hybrid|electric|awd|elite|go|highlander|n line|premium
+nissan_qashqai_ti_petrol_auto_wagon_j11,nissan,qashqai,wagon,petrol,auto,ti,j11,ti,wagon|suv,manual|diesel|hybrid|st|n tec|j12|series 2|series 3
+toyota_hiace_slwb-commuter_diesel_auto_bus_h300,toyota,hiace,bus,diesel,auto,slwb commuter,gdh320r,slwb commuter|slwb commuter 12 seats|gdh320r,bus,manual|petrol|hybrid|lwb|3.0
+mg_mg3_core_petrol_auto_hatch_szp1,mg,mg3,hatch,petrol,auto,core,szp1,core|core with navigation,hatch|hatchback,manual|diesel|hybrid|excite|essence
+mazda_cx-7_classic_petrol_auto_wagon_er-series-2,mazda,cx7,wagon,petrol,auto,classic,er series 2,classic|classic petrol|classic petrol suv,wagon|suv,manual|diesel|luxury|luxury sports|classic sports|2.3
+mazda_cx-7_luxury-sports_petrol_auto_wagon_er-series-2,mazda,cx7,wagon,petrol,auto,luxury sports,er series 2,luxury sports|luxury sports 4x4|luxury sports awd|luxury sports awd petrol,wagon|suv,manual|diesel|classic|classic sports|luxury er|2.5
+bmw_x5_xdrive30d_diesel_auto_wagon_f15,bmw,x5,wagon,diesel,auto,xdrive30d,f15,xdrive30d|xdrive 30d|xdrive 30d f15,wagon|suv,manual|petrol|hybrid|sdrive|25d|40d|m50|e70|g05
+audi_a4_1.8-tfsi_petrol_auto_sedan_b8,audi,a4,sedan,petrol,auto,1.8 tfsi,b8,1.8 tfsi|1 8 tfsi,sedan|saloon,manual|diesel|hybrid|quattro|s line|wagon|avant|2.0|1.4
+mazda_3_neo_petrol_auto_hatch_bl,mazda,3,hatch,petrol,auto,neo,bl10f1,neo|neo bl,hatch|hatchback,manual|diesel|hybrid|sedan|maxx|sp25|bm|bn|bk
+jeep_cherokee_sport-4x2_petrol_auto_wagon_kl9,jeep,cherokee,wagon,petrol,auto,sport 4x2,kl9,sport 4x2|sport 4x2 kl 9|sport,wagon|suv,manual|diesel|hybrid|4x4|awd|limited|longitude|trailhawk|3.2
+nissan_micra_k12_petrol_auto_hatch,nissan,micra,hatch,petrol,auto,k12,k12,k12,hatch|hatchback,manual|diesel|hybrid|k13|st|ti
+mercedes_benz_b200_petrol_auto_hatch_w245,mercedes,benz,hatch,petrol,auto,b200,w245,b200|b200 w245,hatch|hatchback,manual|diesel|hybrid|turbo|b180|b250|w246
+mercedes_benz_c200-be_petrol_auto_sedan_w204,mercedes,benz,sedan,petrol,auto,c200 be,w204,c200 be|c200 blueefficiency|c200 be w204,sedan|saloon,manual|diesel|hybrid|coupe|wagon|c180|c250|c300|c63|kompressor|w205
+nissan_xtrail_st_petrol_auto_suv_t30,nissan,xtrail,suv,petrol,auto,st,t30,st|st 4x4|st (4x4),suv|wagon,manual|diesel|hybrid|st-l|stl|ti|ts|tl|t31|t32|t33

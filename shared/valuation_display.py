@@ -7,7 +7,15 @@ from typing import Any, Mapping
 
 import pandas as pd
 
-from shared.decision_policy import ACTION_AVOID, derive_action_label_from_row
+from shared.decision_policy import (
+    ACTION_AVOID,
+    ACTION_BUY,
+    ACTION_REVIEW,
+    ACTION_WATCH,
+    ACTIONABLE_BID_STATUSES,
+    NO_BUY_BID_STATUSES,
+    derive_action_label_from_row,
+)
 
 
 UNSAFE_VERDICT_KEYWORDS = (
@@ -17,6 +25,48 @@ UNSAFE_VERDICT_KEYWORDS = (
     "not eligible",
     "not viable",
 )
+
+def action_signal_tone(value: Any) -> str:
+    action = str(value or "").strip()
+    if action == ACTION_BUY:
+        return "signal-good"
+    if action == ACTION_AVOID:
+        return "signal-danger"
+    if action in {ACTION_REVIEW, ACTION_WATCH}:
+        return "signal-watch"
+    return "signal-neutral"
+
+
+def bid_status_signal_tone(value: Any) -> str:
+    status = str(value or "").strip()
+    if status in NO_BUY_BID_STATUSES or status in {"Policy blocked", "No policy bid", "No bid"}:
+        return "signal-danger"
+    if status in {"Cheap", "Below expected", "Open"}:
+        return "signal-good"
+    if status in ACTIONABLE_BID_STATUSES:
+        return "signal-watch"
+    return "signal-neutral"
+
+
+def confidence_signal_tone(value: Any) -> str:
+    confidence = str(value or "").strip().lower()
+    return {
+        "high": "signal-good",
+        "medium": "signal-watch",
+        "low": "signal-danger",
+        "unknown": "signal-watch",
+    }.get(confidence, "signal-neutral")
+
+
+def margin_signal_tone(value: Any) -> str:
+    numeric = parse_percent_value(value)
+    if numeric is None:
+        return "signal-neutral"
+    if numeric >= 25:
+        return "signal-good"
+    if numeric >= 10:
+        return "signal-watch"
+    return "signal-danger"
 
 
 def parse_currency_value(value: Any) -> float | None:

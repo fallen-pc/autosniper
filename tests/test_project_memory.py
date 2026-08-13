@@ -242,3 +242,8 @@ def test_governance_workflow_enforces_pr_memory_diff_and_label_approval():
     assert 'github.event.pull_request.base.sha' in workflow
     assert 'github.event.pull_request.head.sha' in workflow
     assert "project_memory.py check --base-ref" in workflow
+    assert 'BEFORE_SHA: ${{ github.event.before }}' in workflow
+    assert 'BEFORE_SHA" == "$first_parent' in workflow
+    assert '.merged_at != null' in workflow
+    assert r'.merge_commit_sha == \"$HEAD_SHA\"' in workflow
+    assert 'approved="false"' in workflow

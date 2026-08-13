@@ -1,0 +1,13 @@
+# Live-Grays-backed private Carsales targets, ranked from the refreshed worklist.
+# Exact trim/generation/powertrain filtering occurs after import.
+https://www.carsales.com.au/cars/private/bmw/x5/
+https://www.carsales.com.au/cars/private/audi/a4/
+https://www.carsales.com.au/cars/private/ford/kuga/
+https://www.carsales.com.au/cars/private/mazda/3/
+https://www.carsales.com.au/cars/private/jeep/cherokee/
+https://www.carsales.com.au/cars/private/ford/mondeo/
+https://www.carsales.com.au/cars/private/nissan/micra/
+https://www.carsales.com.au/cars/private/subaru/outback/
+https://www.carsales.com.au/cars/private/ford/fiesta/
+https://www.carsales.com.au/cars/private/honda/accord/
+https://www.carsales.com.au/cars/private/holden/barina/

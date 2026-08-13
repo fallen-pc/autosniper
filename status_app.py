@@ -5,6 +5,8 @@ from pathlib import Path
 
 import streamlit as st
 
+from shared.auth import require_dashboard_auth
+
 METRICS_PATH = Path("status") / "metrics.json"
 NOW = datetime.now(timezone.utc)
 
@@ -28,6 +30,7 @@ def format_minutes_ago(last_run_utc: str) -> float:
 
 
 st.set_page_config(page_title="Grays Scraper Health", layout="wide")
+require_dashboard_auth()
 st.title("🩺 Grays Scraper Health")
 
 metrics = load_metrics()
