@@ -2,11 +2,12 @@ from __future__ import annotations
 
 from collections import OrderedDict
 import html
-import os
-from pathlib import Path
 import re
 
 import streamlit as st
+
+from shared.auth import require_dashboard_auth
+from shared.runtime import is_vps_runtime
 
 
 NavigationSpec = "OrderedDict[str, list[tuple[str, str, bool]]]"
@@ -15,16 +16,9 @@ HIDDEN_ROUTABLE_GROUP = "_HIDDEN"
 HIDDEN_ROUTABLE_PAGES: list[tuple[str, str, bool]] = []
 
 
-def _is_vps_runtime() -> bool:
-    explicit = os.getenv("AUTOSNIPER_VPS_MODE", "").strip().lower()
-    if explicit:
-        return explicit in {"1", "true", "yes", "on"}
-    return Path(__file__).resolve().parents[1] == Path("/opt/autosniper")
-
-
 def navigation_spec(*, vps_mode: bool | None = None) -> NavigationSpec:
     if vps_mode is None:
-        vps_mode = _is_vps_runtime()
+        vps_mode = is_vps_runtime()
     system_pages = [
         ("DASHBOARD.py", "Dashboard", not vps_mode),
         ("pages/3_ACTIVE_LISTINGS.py", "Active Inventory", False),
@@ -108,6 +102,7 @@ def build_navigation() -> "OrderedDict[str, list[st.Page]]":
 
 
 def render_sidebar_navigation() -> None:
+    require_dashboard_auth()
     st.sidebar.markdown(
         """
         <style>

@@ -44,6 +44,30 @@ whole workflow can be shared on GitHub and hosted on Streamlit Cloud.
 
 ---
 
+## Dashboard Access Control
+
+The dashboard exposes controls that launch scrapers, rebuild models, and write datasets, so it
+fails closed on every runtime unless authentication is configured or explicitly disabled.
+
+| Variable | Purpose |
+| -------- | ------- |
+| `AUTOSNIPER_DASHBOARD_PASSWORD` | Shared password required before any page renders. |
+| `AUTOSNIPER_DASHBOARD_PASSWORD_PBKDF2` | PBKDF2-HMAC-SHA256 verifier (`<iterations>$<salt_hex>$<derived_hex>`); preferred over the plaintext variable. |
+| `AUTOSNIPER_DASHBOARD_AUTH_DISABLED` | Set to `1` to run with no gate. Only safe for a loopback-only local session. |
+
+Every runtime refuses to render until one of the password variables is set. For loopback-only
+local development, explicitly set `AUTOSNIPER_DASHBOARD_AUTH_DISABLED=1` for that process. Never
+use the opt-out on a forwarded, shared, or hosted port. Generate a verifier with:
+
+```powershell
+python -c "import getpass;from shared.auth import build_pbkdf2_verifier;print(build_pbkdf2_verifier(getpass.getpass()))"
+```
+
+The password gate is application-level only; keep the deployment behind HTTPS and restrict the
+hosting firewall to the addresses that need it.
+
+---
+
 ## Commit Hygiene
 
 Enable commit-slicing guardrails once per clone:

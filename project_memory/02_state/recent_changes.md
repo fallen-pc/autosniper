@@ -1,5 +1,7 @@
 # Recent Changes
 
+- 2026-08-13: Rebuilt dashboard authentication on current `main`. Every Streamlit entrypoint now fails closed until a password or PBKDF2 verifier is configured, with an explicit local-only opt-out; current VPS/development navigation separation is preserved, Autotrader controls accept only HTTPS `autotrader.com.au` targets, the devcontainer restores CORS/XSRF defaults, and focused authentication coverage accompanies the change.
+
 - 2026-08-13: Addressed the post-PR10 source review as an isolated hardening slice. Carsales/Apify imports now preserve source identity and zero values, normalize timestamps, deduplicate by ad ID and URL, validate paid exact URLs, and return a distinct deferred status; canonical tagging uses narrower body/series inference; AI Analysis restores diagnostic context with policy-aligned signal tones; atomic CSV locks verify live ownership; scheduler browser setup is bounded and failed daily runs remain catch-up eligible; merge-governance approval is restricted to the exact merged PR commit.
 
 - 2026-08-12: Fixed governed VPS activation from the repository's Git-archive deployment by running the live governance check with `--skip-dataset-delta`. The VPS still validates schemas, curves, coverage, monotonicity, the governed release manifest, and readiness; Git delta approval remains enforced by CI before the exact synchronized `main` commit can be released.
