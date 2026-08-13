@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import os
 from datetime import datetime, timezone
 from typing import Optional
@@ -7,7 +8,10 @@ from typing import Optional
 import pandas as pd
 import requests
 
+from shared.csv_utils import CSV_READ_ERRORS
 from shared.data_loader import dataset_path
+
+logger = logging.getLogger(__name__)
 
 
 ALERT_LOG_PATH = dataset_path("ai/telegram_alert_log.csv")
@@ -53,7 +57,13 @@ def _load_alert_log() -> pd.DataFrame:
         return pd.DataFrame(columns=ALERT_LOG_COLUMNS)
     try:
         df = pd.read_csv(ALERT_LOG_PATH)
-    except Exception:
+    except CSV_READ_ERRORS as exc:
+        logger.warning(
+            "Unreadable Telegram alert log %s (%s: %s); duplicate alerts may be re-sent.",
+            ALERT_LOG_PATH,
+            type(exc).__name__,
+            exc,
+        )
         return pd.DataFrame(columns=ALERT_LOG_COLUMNS)
     for column in ALERT_LOG_COLUMNS:
         if column not in df.columns:
@@ -83,7 +93,13 @@ def _load_alert_state() -> pd.DataFrame:
         return pd.DataFrame(columns=ALERT_STATE_COLUMNS)
     try:
         df = pd.read_csv(ALERT_STATE_PATH)
-    except Exception:
+    except CSV_READ_ERRORS as exc:
+        logger.warning(
+            "Unreadable Telegram alert state %s (%s: %s); state-change alerts may be re-sent.",
+            ALERT_STATE_PATH,
+            type(exc).__name__,
+            exc,
+        )
         return pd.DataFrame(columns=ALERT_STATE_COLUMNS)
     for column in ALERT_STATE_COLUMNS:
         if column not in df.columns:

@@ -3,10 +3,17 @@
 from __future__ import annotations
 
 import csv
+import logging
 from pathlib import Path
 from typing import Any
 
 import pandas as pd
+
+logger = logging.getLogger(__name__)
+
+# Failures expected when a CSV exists but cannot be parsed as tabular data.
+# pandas parser errors (ParserError, EmptyDataError) all derive from ValueError.
+CSV_READ_ERRORS: tuple[type[BaseException], ...] = (OSError, ValueError, csv.Error)
 
 
 def count_csv_records(path: Path | str) -> int | None:
@@ -17,7 +24,8 @@ def count_csv_records(path: Path | str) -> int | None:
     try:
         with file_path.open("r", encoding="utf-8", errors="ignore", newline="") as handle:
             return max(sum(1 for _ in csv.reader(handle)) - 1, 0)
-    except (OSError, csv.Error):
+    except (OSError, csv.Error) as exc:
+        logger.warning("Could not count records in %s (%s: %s).", file_path, type(exc).__name__, exc)
         return None
 
 
@@ -35,5 +43,11 @@ def read_csv_or_empty(path: Path | str, **kwargs: Any) -> pd.DataFrame:
         return pd.DataFrame()
     try:
         return read_csv_stable(file_path, **kwargs)
-    except (FileNotFoundError, ValueError, pd.errors.EmptyDataError):
+    except CSV_READ_ERRORS as exc:
+        logger.warning(
+            "Unreadable CSV %s (%s: %s); continuing with an empty frame.",
+            file_path,
+            type(exc).__name__,
+            exc,
+        )
         return pd.DataFrame()

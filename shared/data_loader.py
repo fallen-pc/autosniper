@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import io
 import json
+import logging
 import os
 import time
 import zipfile
@@ -35,6 +36,8 @@ from pathlib import Path
 from typing import Iterable, List
 
 import requests
+
+logger = logging.getLogger(__name__)
 
 DATA_DIR = Path(os.getenv("AUTOSNIPER_DATA_DIR", "CSV_data"))
 
@@ -118,13 +121,19 @@ def _should_refresh(cache_minutes: int) -> bool:
         return True
     try:
         info = json.loads(_SYNC_MARKER.read_text(encoding="utf-8"))
-    except Exception:
+        timestamp = float(info.get("timestamp", 0))
+    except (OSError, ValueError, TypeError, AttributeError) as exc:
+        logger.warning(
+            "Unreadable data sync marker %s (%s: %s); forcing a refresh.",
+            _SYNC_MARKER,
+            type(exc).__name__,
+            exc,
+        )
         return True
-    timestamp = info.get("timestamp", 0)
     url = info.get("url")
     if url != os.getenv("AUTOSNIPER_DATA_URL"):
         return True
-    return (time.time() - float(timestamp)) > cache_minutes * 60
+    return (time.time() - timestamp) > cache_minutes * 60
 
 
 def _extract_zip(content: bytes) -> None:
@@ -207,8 +216,13 @@ def upload_remote_data_bundle(filenames: Iterable[str] | None = None) -> bool:
         response = requests.put(upload_url, headers=headers, data=payload, timeout=timeout)
         response.raise_for_status()
         return True
-    except Exception:
-        # Avoid crashing the UI if upload fails.
+    except Exception as exc:  # noqa: BLE001 - remote publication must not crash the UI
+        # Avoid crashing the UI if upload fails, but never fail silently.
+        logger.error(
+            "Remote data bundle upload failed (%s: %s); local CSVs were not published.",
+            type(exc).__name__,
+            exc,
+        )
         return False
 
 

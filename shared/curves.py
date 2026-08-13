@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from functools import lru_cache
 from pathlib import Path
 from typing import Iterable, List, Mapping, Optional, Sequence, Tuple
@@ -9,9 +10,12 @@ from typing import Iterable, List, Mapping, Optional, Sequence, Tuple
 import pandas as pd
 
 from shared.audit import append_audit_snapshot
+from shared.csv_utils import CSV_READ_ERRORS
 from shared.curve_groups_v2 import load_curve_groups_v2, resolve_base_curve_tag
 from shared.curve_versioning import snapshot_curve_version
 from shared.data_loader import dataset_path
+
+logger = logging.getLogger(__name__)
 
 
 CURVE_COLUMNS: Sequence[str] = (
@@ -111,7 +115,13 @@ def load_saved_curve_tags(path: Path | None = None) -> set[str]:
         return set()
     try:
         df = pd.read_csv(curve_path, usecols=["canonical_tag"])
-    except Exception:
+    except CSV_READ_ERRORS as exc:
+        logger.error(
+            "Unreadable curve file %s (%s: %s); treating the curve universe as empty.",
+            curve_path,
+            type(exc).__name__,
+            exc,
+        )
         return set()
     return {
         str(value).strip()

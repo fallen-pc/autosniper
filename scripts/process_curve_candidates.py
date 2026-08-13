@@ -22,12 +22,14 @@ if __package__ in (None, ""):
     from scripts.atomic_csv import write_dataframe_csv_atomic
     from scripts.curve_validator import build_curve_warnings
     from shared.canonical_tagging import tag_dataframe
+    from shared.csv_utils import CSV_READ_ERRORS
     from shared.curves import CURVE_COLUMNS, resolve_curve_canonical_tag
     from shared.data_loader import dataset_path
 else:  # pragma: no cover
     from scripts.atomic_csv import write_dataframe_csv_atomic
     from scripts.curve_validator import build_curve_warnings
     from shared.canonical_tagging import tag_dataframe
+    from shared.csv_utils import CSV_READ_ERRORS
     from shared.curves import CURVE_COLUMNS, resolve_curve_canonical_tag
     from shared.data_loader import dataset_path
 
@@ -222,7 +224,8 @@ def load_carsales_apify_market(path: Path | None = None) -> pd.DataFrame:
         return pd.DataFrame()
     try:
         df = pd.read_csv(csv_path, low_memory=False)
-    except Exception:
+    except CSV_READ_ERRORS as exc:
+        print(f"WARNING: unreadable Autotrader market file {csv_path} ({type(exc).__name__}: {exc}).")
         return pd.DataFrame()
     if df.empty:
         return pd.DataFrame()

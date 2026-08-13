@@ -128,7 +128,12 @@ async def run_bid_update(links: list[str] | None = None, limit: int | None = Non
         target_links = target_links[:limit_arg]
         limit_arg = None
     with st.spinner("Updating bid and time data..."):
-        df, skipped_urls = await update_bids(input_links=target_links, limit=limit_arg)
+        try:
+            df, skipped_urls = await update_bids(input_links=target_links, limit=limit_arg)
+        except Exception as exc:  # noqa: BLE001 - surface scraper failures in the UI
+            st.error(f"Bid update failed: {type(exc).__name__}: {exc}")
+            st.exception(exc)
+            return
         st.session_state.skipped_urls = skipped_urls
         if not df.empty:
             st.success(f"Updated {len(df)} listings in {CSV_FILE}.")

@@ -16,12 +16,15 @@ so the caller can fall through to the legacy comps_median path.
 from __future__ import annotations
 
 import json
+import logging
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Mapping, Optional
 
 import numpy as np
 import pandas as pd
+
+logger = logging.getLogger(__name__)
 
 _ARTIFACTS = Path(__file__).resolve().parent.parent / "artifacts"
 _MODEL_Q50_PATH = _ARTIFACTS / "auction_ratio_q50.cbm"
@@ -76,7 +79,12 @@ def _try_load_models() -> bool:
         _models_available = True
         return True
 
-    except Exception:
+    except Exception as exc:  # noqa: BLE001 - model load failures degrade to curve-only pricing
+        logger.error(
+            "Auction model load failed (%s: %s); valuations fall back to curve-only pricing.",
+            type(exc).__name__,
+            exc,
+        )
         _models_available = False
         return False
 
@@ -275,7 +283,12 @@ def predict_auction_price(
             "calibration_multiplier": _calibration_multiplier,
             "comps_p50": comps_p50,
         }
-    except Exception:
+    except Exception as exc:  # noqa: BLE001 - prediction failures degrade to curve-only pricing
+        logger.error(
+            "Auction model prediction failed (%s: %s); returning no model prediction.",
+            type(exc).__name__,
+            exc,
+        )
         return None
 
 

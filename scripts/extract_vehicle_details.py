@@ -18,6 +18,7 @@ if __package__ in (None, ""):
 
     sys.path.append(str(Path(__file__).resolve().parent.parent))
     from scripts.atomic_csv import append_dataframe_csv_atomic, write_dataframe_csv_atomic
+    from shared.csv_utils import CSV_READ_ERRORS
     from shared.data_loader import dataset_path
     from shared.schema import ACTIVE_DETAIL_SCHEMA, SOLD_RAW_SCRAPE_COLUMNS, STATIC_VEHICLE_SCHEMA
     from shared.sold_cleaning import (
@@ -256,7 +257,11 @@ def load_make_whitelist(existing_df: pd.DataFrame) -> set[str]:
                 for make in sold_df["make"].dropna().unique().tolist()
                 if str(make).strip()
             }
-        except Exception:
+        except CSV_READ_ERRORS as exc:
+            print(
+                f"WARNING: could not build make whitelist from {sold_path} "
+                f"({type(exc).__name__}: {exc}); falling back to existing listings."
+            )
             whitelist = set()
     if not whitelist and "make" in existing_df.columns:
         whitelist = {
@@ -723,10 +728,10 @@ def _parse_literal(raw: str) -> Any:
     normalized = _normalize_js_literals(raw)
     try:
         return ast.literal_eval(normalized)
-    except Exception:
+    except (ValueError, SyntaxError, MemoryError, RecursionError):
         try:
             return json.loads(raw)
-        except Exception:
+        except ValueError:
             return None
 
 
