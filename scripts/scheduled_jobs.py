@@ -980,7 +980,11 @@ def _run_external_auction_scrape_if_enabled() -> list[str]:
     output_dir = Path(os.getenv("AUTOSNIPER_EXTERNAL_AUCTIONS_OUTPUT_DIR") or EXTERNAL_AUCTION_OUTPUT_DIR)
     detail_timeout_ms = _env_int("AUTOSNIPER_EXTERNAL_DETAIL_TIMEOUT_MS", 12_000, minimum=5_000)
     detail_wait_ms = _env_int("AUTOSNIPER_EXTERNAL_DETAIL_WAIT_MS", 1_000)
-    detail_browser_recycle_size = _env_int("AUTOSNIPER_EXTERNAL_BROWSER_RECYCLE_DETAILS", 40, minimum=4)
+    detail_browser_recycle_size = _env_int("AUTOSNIPER_EXTERNAL_BROWSER_RECYCLE_DETAILS", 40, minimum=2)
+    detail_batch_size = _env_int("AUTOSNIPER_EXTERNAL_DETAIL_BATCH_SIZE", 2, minimum=1)
+    discovery_browser_recycle_pages = _env_int(
+        "AUTOSNIPER_EXTERNAL_DISCOVERY_BROWSER_RECYCLE_PAGES", 10, minimum=1
+    )
     headless = not _env_flag_enabled("AUTOSNIPER_EXTERNAL_AUCTIONS_HEADED")
     prefilter_list_to_curves = not _env_flag_disabled("AUTOSNIPER_EXTERNAL_PREFILTER_TO_CURVES")
     seed_listings = _load_external_auction_seed_listings(output_dir)
@@ -999,6 +1003,8 @@ def _run_external_auction_scrape_if_enabled() -> list[str]:
                 detail_timeout_ms=detail_timeout_ms,
                 detail_wait_ms=detail_wait_ms,
                 detail_browser_recycle_size=detail_browser_recycle_size,
+                discovery_browser_recycle_pages=discovery_browser_recycle_pages,
+                detail_batch_size=detail_batch_size,
                 seed_listings=[listing for listing in seed_listings if listing.source == source],
             )
         )

@@ -2,13 +2,15 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import ctypes
+import gc
 import html
 import re
 import sys
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Iterable
+from typing import Awaitable, Callable, Iterable
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 import pandas as pd
@@ -95,6 +97,7 @@ MAX_AUTO_LIST_PAGES: dict[str, int] = {
 }
 DETAIL_BATCH_SIZE = 4
 DEFAULT_DETAIL_BROWSER_RECYCLE_SIZE = 40
+DEFAULT_DISCOVERY_BROWSER_RECYCLE_PAGES = 10
 
 DETAIL_PATTERNS: dict[str, re.Pattern[str]] = {
     "pickles": re.compile(r"/used/details/cars/[^/?#]+/\d+", re.IGNORECASE),
@@ -836,6 +839,17 @@ def tag_discovered_links(listings: Iterable[BrowserListing]) -> pd.DataFrame:
     return pd.DataFrame(out_rows).reindex(columns=LINK_COLUMNS, fill_value="")
 
 
+def _trim_process_memory() -> None:
+    gc.collect()
+    if not sys.platform.startswith("linux"):
+        return
+    try:
+        libc = ctypes.CDLL("libc.so.6")
+        malloc_trim = libc.malloc_trim
+    except (AttributeError, OSError):
+        return
+    malloc_trim(0)
+
 async def _new_browser_context(playwright: object, *, headless: bool) -> tuple[object, object]:
     browser = await playwright.chromium.launch(headless=headless)
     context = await browser.new_context(
@@ -857,9 +871,11 @@ async def _scrape_detail_batches(
     detail_timeout_ms: int,
     detail_wait_ms: int,
     browser_recycle_size: int,
+    detail_batch_size: int = DETAIL_BATCH_SIZE,
 ) -> list[dict[str, object]]:
     records: list[dict[str, object]] = []
-    recycle_size = max(DETAIL_BATCH_SIZE, browser_recycle_size)
+    batch_size = max(1, detail_batch_size)
+    recycle_size = max(batch_size, browser_recycle_size)
     for recycle_start in range(0, len(listings), recycle_size):
         recycle_group = listings[recycle_start : recycle_start + recycle_size]
         print(
@@ -868,8 +884,8 @@ async def _scrape_detail_batches(
         )
         browser, context = await _new_browser_context(playwright, headless=headless)
         try:
-            for batch_start in range(0, len(recycle_group), DETAIL_BATCH_SIZE):
-                detail_batch = recycle_group[batch_start : batch_start + DETAIL_BATCH_SIZE]
+            for batch_start in range(0, len(recycle_group), batch_size):
+                detail_batch = recycle_group[batch_start : batch_start + batch_size]
                 detail_rows = await asyncio.gather(
                     *(
                         scrape_detail(
@@ -888,8 +904,55 @@ async def _scrape_detail_batches(
         finally:
             await context.close()
             await browser.close()
+            _trim_process_memory()
     return records
 
+
+async def _discover_source_links_with_browser_recycling(
+    playwright: object,
+    source: str,
+    urls: list[str],
+    *,
+    headless: bool,
+    browser_recycle_pages: int,
+) -> DiscoveryResult:
+    browser: object | None = None
+    context: object | None = None
+    pages_in_cycle = 0
+    recycle_pages = max(1, browser_recycle_pages)
+
+    async def load_page_batch(batch_urls: list[str]) -> list[tuple[int, list[list[str]], str]]:
+        nonlocal browser, context, pages_in_cycle
+        if context is None or (pages_in_cycle and pages_in_cycle + len(batch_urls) > recycle_pages):
+            if context is not None:
+                await context.close()
+            if browser is not None:
+                await browser.close()
+            _trim_process_memory()
+            browser, context = await _new_browser_context(playwright, headless=headless)
+            pages_in_cycle = 0
+            print(
+                f"{source}: discovery browser cycle for next {min(recycle_pages, len(urls))} page(s)",
+                flush=True,
+            )
+        page_results = await asyncio.gather(*(_discover_list_page(context, url) for url in batch_urls))
+        pages_in_cycle += len(batch_urls)
+        return page_results
+
+    try:
+        return await discover_source_links(
+            None,
+            source,
+            urls,
+            max_details=0,
+            page_batch_loader=load_page_batch,
+        )
+    finally:
+        if context is not None:
+            await context.close()
+        if browser is not None:
+            await browser.close()
+        _trim_process_memory()
 
 async def scrape_sources(
     sources: Iterable[str],
@@ -901,6 +964,8 @@ async def scrape_sources(
     detail_timeout_ms: int,
     detail_wait_ms: int,
     detail_browser_recycle_size: int = DEFAULT_DETAIL_BROWSER_RECYCLE_SIZE,
+    discovery_browser_recycle_pages: int = DEFAULT_DISCOVERY_BROWSER_RECYCLE_PAGES,
+    detail_batch_size: int = DETAIL_BATCH_SIZE,
     seed_listings: Iterable[BrowserListing] = (),
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     try:
@@ -914,19 +979,16 @@ async def scrape_sources(
     seeds_by_source: dict[str, list[BrowserListing]] = {}
     for listing in seed_listings:
         seeds_by_source.setdefault(listing.source, []).append(listing)
+    _trim_process_memory()
     async with async_playwright() as playwright:
         for source in sources:
-            discovery_browser, discovery_context = await _new_browser_context(playwright, headless=headless)
-            try:
-                discovery = await discover_source_links(
-                    discovery_context,
-                    source,
-                    build_source_list_urls(source, max_list_pages_per_source),
-                    max_details=0,
-                )
-            finally:
-                await discovery_context.close()
-                await discovery_browser.close()
+            discovery = await _discover_source_links_with_browser_recycling(
+                playwright,
+                source,
+                build_source_list_urls(source, max_list_pages_per_source),
+                headless=headless,
+                browser_recycle_pages=discovery_browser_recycle_pages,
+            )
 
             listings = discovery.listings
             links_df = tag_discovered_links(listings)
@@ -963,6 +1025,7 @@ async def scrape_sources(
                     detail_timeout_ms=detail_timeout_ms,
                     detail_wait_ms=detail_wait_ms,
                     browser_recycle_size=detail_browser_recycle_size,
+                    detail_batch_size=detail_batch_size,
                 )
             )
             source_records = [row for row in records if str(row.get("source", "")) == source]
@@ -1043,7 +1106,18 @@ async def _discover_list_page(
         await page.close()
 
 
-async def discover_source_links(context: object, source: str, urls: Iterable[str], *, max_details: int) -> DiscoveryResult:
+async def discover_source_links(
+    context: object,
+    source: str,
+    urls: Iterable[str],
+    *,
+    max_details: int,
+    page_batch_loader: Callable[
+        [list[str]],
+        Awaitable[list[tuple[int, list[list[str]], str]]],
+    ]
+    | None = None,
+) -> DiscoveryResult:
     pattern = DETAIL_PATTERNS[source]
     fallback_pattern = DETAIL_URL_FALLBACKS[source]
     listings_by_url: dict[str, BrowserListing] = {}
@@ -1069,7 +1143,11 @@ async def discover_source_links(context: object, source: str, urls: Iterable[str
     stop_discovery = False
     for batch_start in range(0, len(list_urls), batch_size):
         batch_urls = list_urls[batch_start : batch_start + batch_size]
-        page_results = await asyncio.gather(*(_discover_list_page(context, url) for url in batch_urls))
+        page_results = (
+            await page_batch_loader(batch_urls)
+            if page_batch_loader is not None
+            else await asyncio.gather(*(_discover_list_page(context, url) for url in batch_urls))
+        )
         pages_visited += len(page_results)
         for status_code, anchors, content in page_results:
             before_count = len(listings_by_url)
@@ -1267,6 +1345,18 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--detail-timeout-ms", type=int, default=20_000)
     parser.add_argument("--detail-wait-ms", type=int, default=1_500)
     parser.add_argument(
+        "--discovery-browser-recycle-pages",
+        type=int,
+        default=DEFAULT_DISCOVERY_BROWSER_RECYCLE_PAGES,
+        help="Restart Chromium after this many discovery pages to bound long-run memory use.",
+    )
+    parser.add_argument(
+        "--detail-batch-size",
+        type=int,
+        default=DETAIL_BATCH_SIZE,
+        help="Concurrent detail pages per browser batch.",
+    )
+    parser.add_argument(
         "--detail-browser-recycle-size",
         type=int,
         default=DEFAULT_DETAIL_BROWSER_RECYCLE_SIZE,
@@ -1292,7 +1382,9 @@ def main() -> None:
             prefilter_list_to_curves=not args.no_prefilter_list_to_curves,
             detail_timeout_ms=max(5_000, args.detail_timeout_ms),
             detail_wait_ms=max(0, args.detail_wait_ms),
-            detail_browser_recycle_size=max(DETAIL_BATCH_SIZE, args.detail_browser_recycle_size),
+            detail_browser_recycle_size=max(1, args.detail_batch_size, args.detail_browser_recycle_size),
+            discovery_browser_recycle_pages=max(1, args.discovery_browser_recycle_pages),
+            detail_batch_size=max(1, args.detail_batch_size),
         )
     )
     links_path, all_path, matched_path = write_outputs(raw_df, links_df, args.output_dir)

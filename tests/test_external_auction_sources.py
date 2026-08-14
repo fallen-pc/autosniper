@@ -12,6 +12,7 @@ from scripts.scrape_external_auction_sources import (
     scrape_detail,
     split_detail_lines,
     _scrape_detail_batches,
+    _discover_source_links_with_browser_recycling,
     tag_discovered_links,
     tag_with_curve_support,
     BrowserListing,
@@ -133,8 +134,15 @@ def test_detail_batches_recycle_and_close_browsers(monkeypatch):
         BrowserListing(source="pickles", url=f"https://example.test/{index}", title_hint=str(index))
         for index in range(85)
     ]
+    active = 0
+    max_active = 0
 
     async def fake_scrape_detail(_context, listing, **_kwargs):
+        nonlocal active, max_active
+        active += 1
+        max_active = max(max_active, active)
+        await asyncio.sleep(0)
+        active -= 1
         return {"source": listing.source, "url": listing.url, "title": listing.title_hint}
 
     monkeypatch.setattr("scripts.scrape_external_auction_sources.scrape_detail", fake_scrape_detail)
@@ -147,14 +155,43 @@ def test_detail_batches_recycle_and_close_browsers(monkeypatch):
             detail_timeout_ms=5_000,
             detail_wait_ms=0,
             browser_recycle_size=40,
+            detail_batch_size=2,
         )
     )
 
     assert len(rows) == 85
+    assert max_active == 2
     assert len(playwright.chromium.browsers) == 3
     assert all(browser.closed for browser in playwright.chromium.browsers)
     assert all(browser.context.closed for browser in playwright.chromium.browsers)
 
+
+def test_discovery_recycles_and_closes_browsers(monkeypatch):
+    playwright = _FakePlaywright()
+    list_urls = [f"https://example.test/list/{index}" for index in range(25)]
+
+    async def fake_discover_page(_context, url):
+        index = url.rsplit("/", 1)[-1]
+        detail_url = f"https://www.pickles.com.au/used/details/cars/2020-toyota-camry/{index}"
+        return 200, [[detail_url, f"2020 Toyota Camry {index}"]], ""
+
+    monkeypatch.setattr("scripts.scrape_external_auction_sources._discover_list_page", fake_discover_page)
+
+    result = asyncio.run(
+        _discover_source_links_with_browser_recycling(
+            playwright,
+            "pickles",
+            list_urls,
+            headless=True,
+            browser_recycle_pages=10,
+        )
+    )
+
+    assert result.pages_visited == 25
+    assert len(result.listings) == 25
+    assert len(playwright.chromium.browsers) == 3
+    assert all(browser.closed for browser in playwright.chromium.browsers)
+    assert all(browser.context.closed for browser in playwright.chromium.browsers)
 def test_discovery_stops_after_pagination_is_exhausted():
     detail_url = "https://www.pickles.com.au/used/details/cars/2019-toyota-hilux/62341652"
     context = _FakeListContext(
