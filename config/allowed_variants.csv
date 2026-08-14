@@ -210,3 +210,12 @@ nissan_micra_k12_petrol_auto_hatch,nissan,micra,hatch,petrol,auto,k12,k12,k12,ha
 mercedes_benz_b200_petrol_auto_hatch_w245,mercedes,benz,hatch,petrol,auto,b200,w245,b200|b200 w245,hatch|hatchback,manual|diesel|hybrid|turbo|b180|b250|w246
 mercedes_benz_c200-be_petrol_auto_sedan_w204,mercedes,benz,sedan,petrol,auto,c200 be,w204,c200 be|c200 blueefficiency|c200 be w204,sedan|saloon,manual|diesel|hybrid|coupe|wagon|c180|c250|c300|c63|kompressor|w205
 nissan_xtrail_st_petrol_auto_suv_t30,nissan,xtrail,suv,petrol,auto,st,t30,st|st 4x4|st (4x4),suv|wagon,manual|diesel|hybrid|st-l|stl|ti|ts|tl|t31|t32|t33
+ford_kuga_awd-trend_diesel_auto_wagon_tf,ford,kuga,wagon,diesel,auto,awd trend,tf,awd trend|trend|awd trend tf,wagon|suv,manual|petrol|hybrid|mkii|mk ii|titanium|ambiente|2wd
+ford_kuga_awd-titanium_diesel_auto_wagon_tf,ford,kuga,wagon,diesel,auto,awd titanium,tf,awd titanium|titanium|awd titanium tf,wagon|suv,manual|petrol|hybrid|mkii|mk ii|trend|ambiente|2wd
+mazda_3_neo_petrol_auto_sedan_bl,mazda,3,sedan,petrol,auto,neo,bl10f1,neo|neo bl,sedan,manual|diesel|hybrid|hatch|maxx|sp25|bm|bn|bk
+holden_barina_tk_petrol_manual_hatch,holden,barina,hatch,petrol,manual,tk,tk,tk,hatch|hatchback,automatic|diesel|hybrid|sedan|tm|xc|spark
+hyundai_i45_active_petrol_auto_sedan_yf,hyundai,i45,sedan,petrol,auto,active,yf,active|active yf,sedan,manual|diesel|hybrid|premium|elite|2.0l
+nissan_dualis_st_petrol_cvt_wagon_j10,nissan,dualis,wagon,petrol,auto,st,j10,st|st j10,wagon|suv,manual|diesel|hybrid|+2|j107|ti|ts|awd|4x4
+ford_mondeo_lx-tdci_diesel_auto_wagon_mc,ford,mondeo,wagon,diesel,auto,lx tdci,mc,lx tdci|lx tdci mc,wagon,manual|petrol|hybrid|hatch|sedan|ambiente|zetec|titanium|md|ma|mb
+volkswagen_golf_gti_petrol_auto_hatch_vi,volkswagen,golf,hatch,petrol,auto,gti,vi,gti|gti a6|gti vi,hatch|hatchback,manual|diesel|hybrid|wagon|golf r|r32|comfortline|trendline|highline|vii|7|a7|v|a5
+volvo_xc60_t5_petrol_auto_wagon_dz,volvo,xc60,wagon,petrol,auto,t5,dz,t5,wagon|suv,manual|diesel|hybrid|teknik|luxury|kinetic|r-design|r design|momentum|inscription|uz|t6|d4|d5
