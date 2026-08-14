@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from typing import Dict, Iterable, Optional, Tuple
 from urllib.parse import urlparse
 
@@ -166,7 +166,7 @@ def _parse_year(value: object) -> int | None:
     parsed = _parse_non_negative_int(value)
     if parsed is None:
         return None
-    current_year = datetime.utcnow().year
+    current_year = datetime.now(timezone.utc).year
     if 1950 <= parsed <= current_year + 1:
         return parsed
     return None
@@ -248,7 +248,7 @@ def validate_static_row(row: Dict[str, object], cfg: ValidatorConfig) -> tuple[b
     year_val = _parse_signed_int(year_text)
     if year_val is None:
         return False, R.BAD_YEAR, clean
-    year_max = datetime.utcnow().year + cfg.year_max_offset
+    year_max = datetime.now(timezone.utc).year + cfg.year_max_offset
     if year_val < cfg.year_min or year_val > year_max:
         return False, R.BAD_YEAR_RANGE, clean
     clean["year"] = year_val
@@ -361,7 +361,7 @@ def validate_sold_row(row: Dict[str, object], cfg: ValidatorConfig) -> tuple[boo
     year_val = _parse_signed_int(year_text)
     if year_val is None:
         return False, R.BAD_YEAR, clean
-    year_max = datetime.utcnow().year + cfg.year_max_offset
+    year_max = datetime.now(timezone.utc).year + cfg.year_max_offset
     if year_val < cfg.year_min or year_val > year_max:
         return False, R.BAD_YEAR_RANGE, clean
     clean["year"] = year_val

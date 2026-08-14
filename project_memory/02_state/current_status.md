@@ -4,7 +4,7 @@
 
 - The DigitalOcean VPS at `/opt/autosniper` is the live production runtime and owns scraper output, scheduler state, logs, browser sessions, health reports, and generated CSV data. The laptop checkout is the development workspace; disabled laptop Task Scheduler jobs and stale local runtime CSVs are not evidence of a production outage. For any freshness, scraper, scheduler, active-listing, or valuation-runtime audit, inspect the VPS first through read-only Scraper Operations or read-only SSH checks. See `docs/vps_sync_workflow.md` and `project_memory/02_state/vps_runtime_authority_2026-08-02.md`.
 
-- The 2026-08-03 audit branch passes its full committed test suite (`590 passed`), readiness smoke, governance, and project-memory validation from a separate clean checkout. A replay against the fresh VPS snapshot checked 2,503 curve-covered sold rows with zero mismatches between AI Analysis and Missed Opportunities for proxy max bid, downside profit, hard-safety state, or action.
+- The 2026-08-14 remediation branch passes its full committed test suite (`974 passed`) from an isolated clean clone. Production uses application authentication plus trusted HTTPS on the VPS IP, and deployment backups are root-only with browser sessions excluded from new rollback archives. A prior fresh-VPS replay checked 2,503 curve-covered sold rows with zero mismatches between AI Analysis and Missed Opportunities for proxy max bid, downside profit, hard-safety state, or action.
 
 - The valuation path is now curve-first only. The old non-curve LLM pricing path has been removed, and current AI pricing behavior depends on saved curve coverage plus the active buying rules.
 

@@ -13,6 +13,18 @@ The laptop checkout is the development and review workspace. Approved code, curv
 
 The VPS navigation intentionally omits Curve Builder, Curve Pipeline, Repair Review, Repair Pricing, and the interactive Autotrader Scraper. Those are development/authoring surfaces, not production controls.
 
+## Production HTTPS
+
+The production dashboard is served at `https://134.199.144.141`. Nginx redirects ordinary HTTP requests to HTTPS and proxies only to Streamlit on loopback. The service environment must keep `AUTOSNIPER_APP_URL=https://134.199.144.141` so alerts and links do not downgrade users to HTTP.
+
+The VPS uses a Let’s Encrypt short-lived IP-address certificate. IP certificates expire after roughly six days, so renewal automation is part of the production safety boundary:
+
+- Certbot is installed from the official snap and `snap.certbot.renew.timer` must remain enabled;
+- the lineage is `/etc/letsencrypt/renewal/134.199.144.141.conf` with the `shortlived` profile and `/var/www/certbot` webroot;
+- `/etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh` validates and reloads Nginx after renewal; and
+- `certbot renew --dry-run --run-deploy-hooks --no-random-sleep-on-renew` is the end-to-end renewal check.
+
+The deployment rollback archives under `/opt/autosniper-deploy-backups` are root-only (`0700` directory, `0600` archives). New code backups exclude `autotrader_isolated/output` so browser cookies and storage state are not copied into rollback archives.
 ## Governed production release
 
 After the intended work is tested, committed, merged to `main`, and pushed:

@@ -4,7 +4,7 @@ import argparse
 import asyncio
 import random
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable
 
@@ -209,7 +209,7 @@ async def run_scrape(
                 rows = []
                 reserve_met = False
             payload = []
-            timestamp = datetime.utcnow().isoformat()
+            timestamp = datetime.now(timezone.utc).isoformat()
             for row_index, row in enumerate(rows, start=1):
                 if "col_1" in row and not row.get("bidding_details"):
                     fallback = [row.get(f"col_{i}", "") for i in range(1, 6)]

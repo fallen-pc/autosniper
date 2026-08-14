@@ -53,10 +53,6 @@ def test_parse_currency_numeric_inputs(value, expected) -> None:
     assert parse_currency(value) == expected
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="parse_currency's digit pattern is double-escaped, so no string amount ever matches",
-)
 def test_parse_currency_parses_formatted_strings() -> None:
     assert parse_currency("$1,200") == 1200.0
 

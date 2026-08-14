@@ -778,8 +778,6 @@ rh a pillar panel damage refer image 2,rh a pillar panel damage (refer image 2).
 rh apillar,rh apillar.,Unknown,Add dictionary rule,structural,structural_damage,high,hard_avoid,bulk high-confidence review 2026-06-26
 rh c pillar,rh c pillar.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 severe corrosion visible underbody and chassis rails,severe corrosion visible underbody and chassis rails.,Real repair gap,Add dictionary rule,structural,structural_damage,high,hard_avoid,bulk high-confidence review 2026-06-26
-roof,roof.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
-bonnet,bonnet.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 rear bumper,rear bumper.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 boot,boot.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 rhr quarter panel,rhr quarter panel.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
@@ -787,24 +785,17 @@ stored,stored.,Ignore / boilerplate,Ignore as boilerplate,boilerplate,boilerplat
 vehicles previously from a mine site,vehicles previously from a mine site.,Usage risk,Mark usage risk,usage_risk,usage_risk_history,medium,no_cost,bulk high-confidence review 2026-06-26
 lhr quarter panel,lhr quarter panel.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 comment this vehicle is listed on the written off vehicle register wovr,Comment: This vehicle is listed on the Written Off Vehicle Register (WOVR).,Ignore / boilerplate,Ignore as boilerplate,boilerplate,boilerplate_noise,low,no_cost,bulk high-confidence review 2026-06-26
-driver side rear door,driver side rear door.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 front bumper,front bumper.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 inspected,inspected.,Ignore / boilerplate,Ignore as boilerplate,boilerplate,boilerplate_noise,low,no_cost,bulk high-confidence review 2026-06-26
-bonnet struts require attention,bonnet struts require attention.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 roof rail,roof rail.,Feature-list leak,Mark feature-list leak,feature_leak,feature_list_leak,low,no_cost,bulk high-confidence review 2026-06-26
-bootlid,bootlid.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 bumper,bumper.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 rear panels,rear panels.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
-rear spoiler,rear spoiler.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 rhf quarter panel,rhf quarter panel.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 this vehicle is listed on the written off vehicle register wovr,this vehicle is listed on the written off vehicle register (wovr).,Ignore / boilerplate,Ignore as boilerplate,boilerplate,boilerplate_noise,low,no_cost,bulk high-confidence review 2026-06-26
 driver side rear quarter panel,driver side rear quarter panel.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
-front bar,front bar.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 lhf quarter panel,lhf quarter panel.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 reverse camera,reverse camera.,Feature-list leak,Mark feature-list leak,feature_leak,feature_list_leak,low,no_cost,bulk high-confidence review 2026-06-26
 sunroof,sunroof.,Feature-list leak,Mark feature-list leak,feature_leak,feature_list_leak,low,no_cost,bulk high-confidence review 2026-06-26
-dislodge front bumper,dislodge front bumper.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
-front bumper out of alignment,front bumper out of alignment.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 front fender,front fender.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 lhf bumper,lhf bumper.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 rhf door,rhf door.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
@@ -819,14 +810,12 @@ front and rear bumper,front and rear bumper.,Context fragment,Mark context fragm
 passenger side sill panel,passenger side sill panel.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 boot door,boot door.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 drivers airbag,drivers airbag.,Feature-list leak,Mark feature-list leak,feature_leak,feature_list_leak,low,no_cost,bulk high-confidence review 2026-06-26
-lh rear door,lh rear door.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 passenger side front pillar,passenger side front pillar.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 rear fender,rear fender.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 roof racks,roof racks.,Feature-list leak,Mark feature-list leak,feature_leak,feature_list_leak,low,no_cost,bulk high-confidence review 2026-06-26
 satellite navigation system,satellite navigation system.,Feature-list leak,Mark feature-list leak,feature_leak,feature_list_leak,low,no_cost,bulk high-confidence review 2026-06-26
 uhf,UHF.,Feature-list leak,Mark feature-list leak,feature_leak,feature_list_leak,low,no_cost,bulk high-confidence review 2026-06-26
 bonnet and guards,bonnet and guards.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
-bullbar,bullbar.,Feature-list leak,Mark feature-list leak,feature_leak,feature_list_leak,low,no_cost,bulk high-confidence review 2026-06-26
 driver side front pillar,driver side front pillar.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 driver side mirror,driver side mirror.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 drivers guard mould adrift,drivers guard mould adrift.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
@@ -835,7 +824,6 @@ exterior bonnet struts require attention,exterior: bonnet struts require attenti
 exterior dislodge front bumper,exterior: dislodge front bumper.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 front bumper needs attention,front bumper needs attention.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 front bumper not sitting properly,front bumper not sitting properly.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
-guard,guard.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 holes drilled into front bumper,holes drilled into front bumper.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 lamp failure light showing,lamp failure light showing.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 multiple panels,multiple panels.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
@@ -849,13 +837,11 @@ and boot,and boot.,Context fragment,Mark context fragment,context_fragment,conte
 and rear bumper,and rear bumper.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 back bumper,back bumper.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 bonnet difficult to open,bonnet difficult to open.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
-bonnet doesn t stay up,bonnet doesn’t stay up.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 boot floor,boot floor.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 boot lid,boot lid.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 boot not opening,boot not opening.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 boot spoiler,boot spoiler.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 both bumper bars,Both bumper bars.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
-colour mismatch spoiler,colour mismatch spoiler.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 comment front bumper dislodged,comment: front bumper dislodged.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 comment tailgate struts need attention,comment: tailgate struts need attention.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 detached window trim on rear driverside door window,detached window trim on rear driverside door window.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
@@ -871,7 +857,6 @@ driver side panels,driver side panels.,Context fragment,Mark context fragment,co
 exterior bonnet doesn t close,exterior: bonnet doesn’t close.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 front bar misaigned,front bar misaigned.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 front bumper scraped,front bumper scraped.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
-headlight,headlight.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 hole drilled into roof,hole drilled into roof.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 inspected i01b impact,inspected•i01b [impact.,Ignore / boilerplate,Ignore as boilerplate,boilerplate,boilerplate_noise,low,no_cost,bulk high-confidence review 2026-06-26
 left panel discoloured,left panel discoloured.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
@@ -903,15 +888,11 @@ side mirror driver side,side mirror driver side.,Context fragment,Mark context f
 side panels on,side panels on.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 splattered substance near fuel door,splattered substance near fuel door.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 stored code engine oil deteriorated,stored code engine oil deteriorated.,Ignore / boilerplate,Ignore as boilerplate,boilerplate,boilerplate_noise,low,no_cost,bulk high-confidence review 2026-06-26
-tailgate bonnet,tailgate & bonnet.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
-top of boot,top of boot.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 top of guard,top of guard.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
-tops of door rails,tops of door rails.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 tops of doors,tops of doors.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 tops of roof rails,tops of roof rails.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 various panels,various panels.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 all doors,all doors.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
-also impacting shut of tailgate alignment,also impacting shut of tailgate / alignment.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 and passengers sliding door,and passengers sliding door.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 and roof,and roof.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 and side door,and side door.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
@@ -1014,7 +995,6 @@ front bumper loose,front bumper loose.,Context fragment,Mark context fragment,co
 front bumper passenger side,front bumper passenger side.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 front bumper passenger side rear panel,front bumper & passenger side rear panel.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 front bumper poor respray evident,front bumper poor respray evident.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
-front bumper right corner,front bumper right corner.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 front bumper scrapes,front bumper scrapes.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 front bumper trim dislodged,front bumper trim dislodged.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 front door seals taped up,front door seals taped up.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
@@ -1040,7 +1020,6 @@ left front guard,left front guard.,Context fragment,Mark context fragment,contex
 left hand side door left hand raer door,left hand side door& left hand raer door.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 left quarter and left right tail lamps,left quarter and left & right tail lamps.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 left quarter panel,left quarter panel.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
-left side door,left side door.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 left side doors,left side doors.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 lh door handle and roof,lh door handle and roof.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 lh front and rear guard,lh front and rear guard.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
@@ -1076,7 +1055,6 @@ passenger quarter,passenger quarter.,Context fragment,Mark context fragment,cont
 passenger rear door,passenger rear door.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 passenger rear door amp,passenger rear door &amp.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 passenger rear door and wheel arch,passenger rear door and wheel arch.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
-passenger side and drivers side doors,passenger side and drivers side doors.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 passenger side back door won t open,passenger side back door won’t open.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 passenger side door does not lock,passenger side door does not lock.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 passenger side door mirror needs attention,passenger-side door mirror needs attention.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
@@ -1095,13 +1073,10 @@ quarter panel and rear bar,quarter panel and rear bar.,Context fragment,Mark con
 quarter panel and rear bumper bar,quarter panel and rear bumper bar.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 rear bumper and bonnetr,rear bumper and bonnetr.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 rear bumper and front lh door,rear bumper and front lh door.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
-rear bumper and mirrors,rear bumper and mirrors.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 rear bumper and passenger side back wheel arch,Rear bumper and Passenger side back wheel arch.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 rear bumper front bumper and fenders,rear bumper front bumper and fenders.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 rear bumper loose,rear bumper loose.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
-rear bumper needs attention,rear bumper needs attention.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 rear bumper passenger side,rear bumper passenger side.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
-rear bumper trim loose,rear bumper trim loose.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 rear door only locks manually,rear door only locks manually.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 rear doors and quarter panels,rear doors and quarter panels.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 rear driver side and rear bumper,rear driver side and rear bumper.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
@@ -1151,7 +1126,6 @@ satellite navigation,satellite navigation.,Feature-list leak,Mark feature-list l
 semi automatic roof,semi automatic roof.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 side door panels,side door panels.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 side quarter panels,side quarter panels.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
-sill door,sill & door.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 sill panel and tray,sill panel and tray.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 sliding door ra,sliding door ra.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 small paint smudge on passenger rear door,small paint smudge on passenger rear door.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
@@ -1167,7 +1141,6 @@ tail gate spoiler loose,tail gate spoiler loose.,Context fragment,Mark context f
 tailgate mismatched paint,tailgate mismatched paint.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 tailgate right rear wheel arch,tailgate right rear wheel arch.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 tailgate struts require attention,tailgate struts require attention.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
-tailgate taped,tailgate taped.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 top of doors,top of doors.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 top of drivers door,top of drivers door.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 top of front roof,top of front roof.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
@@ -1180,7 +1153,6 @@ tops of all doors,tops of all doors.,Context fragment,Mark context fragment,cont
 tops of guards,tops of guards.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 touch up evident on driver side rear door rear quarter panel,touch up evident on driver side rear door/rear quarter panel.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 uhf bracket or uhf antenna,uhf bracket or uhf antenna.,Feature-list leak,Mark feature-list leak,feature_leak,feature_list_leak,low,no_cost,bulk high-confidence review 2026-06-26
-unable to open bonnet,unable to open bonnet.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 under bonnet,under bonnet.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 under fin break light bar loose,Under fin break light bar loose.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
 visible repair on lhr door quarter panel,visible repair on lhr door/quarter panel.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26
@@ -1205,7 +1177,6 @@ seat torn driver s,seat torn driver’s.,Hard-avoid skipped,Add dictionary rule,
 medium scratch on body,medium scratch on body.,Hard-avoid skipped,Add dictionary rule,cosmetic,cosmetic_surface_damage,low,cosmetic_panel,bulk high-confidence review 2026-06-26 pass 2
 medium scuff on body,medium scuff on body.,Hard-avoid skipped,Add dictionary rule,cosmetic,cosmetic_surface_damage,low,cosmetic_panel,bulk high-confidence review 2026-06-26 pass 2
 front disjointed cracked bumper,front (disjointed) cracked bumper.,Hard-avoid skipped,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26 pass 2
-passenger,passenger.,Hard-avoid skipped,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26 pass 2
 door mirror broken driver side,door mirror broken driver side.,Hard-avoid skipped,Add dictionary rule,replacement,mirror_light_damage,medium,fixed_replacement,bulk high-confidence review 2026-06-26 pass 2
 front seat worn driver passenger,front seat worn driver & passenger.,Hard-avoid skipped,Add dictionary rule,interior,seat_damage,medium,fixed_replacement,bulk high-confidence review 2026-06-26 pass 2
 front and rear cracked bumper,front and rear cracked bumper.,Hard-avoid skipped,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26 pass 2
@@ -1215,7 +1186,6 @@ large scratch on front bumper bar,large scratch on front bumper bar.,Hard-avoid 
 front seat worn driver s,front seat worn driver’s.,Hard-avoid skipped,Add dictionary rule,interior,seat_damage,medium,fixed_replacement,bulk high-confidence review 2026-06-26 pass 2
 front seat stains driver,front seat stains driver.,Hard-avoid skipped,Add dictionary rule,interior,seat_damage,medium,fixed_replacement,bulk high-confidence review 2026-06-26 pass 2
 paint fading over vehicle,paint fading over vehicle.,Hard-avoid skipped,Add dictionary rule,cosmetic,paint_damage,low,cosmetic_panel,bulk high-confidence review 2026-06-26 pass 2
-tailgate,tailgate.,Hard-avoid skipped,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26 pass 2
 front seat worn both front seats,front seat worn both front seats.,Hard-avoid skipped,Add dictionary rule,interior,seat_damage,medium,fixed_replacement,bulk high-confidence review 2026-06-26 pass 2
 front seat stains driver and passenger,front seat stains driver and passenger.,Hard-avoid skipped,Add dictionary rule,interior,seat_damage,medium,fixed_replacement,bulk high-confidence review 2026-06-26 pass 2
 tilt tray required for collection,tilt tray required for collection.,Hard-avoid skipped,Add dictionary rule,mechanical,tow_or_no_drive_required,high,hard_avoid,bulk high-confidence review 2026-06-26 pass 2
@@ -1241,7 +1211,6 @@ paint fading various,paint fading various.,Hard-avoid skipped,Add dictionary rul
 medium dent on lh rear door,medium dent on lh rear door.,Hard-avoid skipped,Add dictionary rule,cosmetic,cosmetic_surface_damage,low,cosmetic_panel,bulk high-confidence review 2026-06-26 pass 2
 paint peeling front bar,paint peeling front bar.,Hard-avoid skipped,Add dictionary rule,cosmetic,paint_damage,low,cosmetic_panel,bulk high-confidence review 2026-06-26 pass 2
 paint peeling some places,paint peeling some places.,Hard-avoid skipped,Add dictionary rule,cosmetic,paint_damage,low,cosmetic_panel,bulk high-confidence review 2026-06-26 pass 2
-passenger side rear quarter panel,passenger side rear quarter panel.,Hard-avoid skipped,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26 pass 2
 large dent on rhr guard,large dent on rhr guard.,Hard-avoid skipped,Add dictionary rule,cosmetic,cosmetic_surface_damage,low,cosmetic_panel,bulk high-confidence review 2026-06-26 pass 2
 seat torn front,seat torn front.,Hard-avoid skipped,Add dictionary rule,interior,seat_damage,medium,fixed_replacement,bulk high-confidence review 2026-06-26 pass 2
 lhf door,lhf door.,Hard-avoid skipped,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26 pass 2
@@ -1260,16 +1229,13 @@ body panel damage bonnet,body/panel damage bonnet.,Hard-avoid skipped,Add dictio
 large scuff on various places,large scuff on various places.,Hard-avoid skipped,Add dictionary rule,cosmetic,cosmetic_surface_damage,low,cosmetic_panel,bulk high-confidence review 2026-06-26 pass 2
 medium dent on lhr guard,medium dent on lhr guard.,Hard-avoid skipped,Add dictionary rule,cosmetic,cosmetic_surface_damage,low,cosmetic_panel,bulk high-confidence review 2026-06-26 pass 2
 paint fading various places,paint fading various places.,Hard-avoid skipped,Add dictionary rule,cosmetic,paint_damage,low,cosmetic_panel,bulk high-confidence review 2026-06-26 pass 2
-sill panels,sill panels.,Hard-avoid skipped,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26 pass 2
 large scratch on drivers door,large scratch on drivers door.,Hard-avoid skipped,Add dictionary rule,cosmetic,cosmetic_surface_damage,low,cosmetic_panel,bulk high-confidence review 2026-06-26 pass 2
 medium dent on passenger side front guard,medium dent on passenger side front guard.,Hard-avoid skipped,Add dictionary rule,cosmetic,cosmetic_surface_damage,low,cosmetic_panel,bulk high-confidence review 2026-06-26 pass 2
 medium scratch on various,medium scratch on various.,Hard-avoid skipped,Add dictionary rule,cosmetic,cosmetic_surface_damage,low,cosmetic_panel,bulk high-confidence review 2026-06-26 pass 2
 paint peeling front bumper bar,paint peeling front bumper bar.,Hard-avoid skipped,Add dictionary rule,cosmetic,paint_damage,low,cosmetic_panel,bulk high-confidence review 2026-06-26 pass 2
 paint peeling mirrors,paint peeling mirrors.,Hard-avoid skipped,Add dictionary rule,cosmetic,paint_damage,low,cosmetic_panel,bulk high-confidence review 2026-06-26 pass 2
-driver side front guard,driver side front guard.,Hard-avoid skipped,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26 pass 2
 large scuff on rear passenger side,large scuff on rear passenger side.,Hard-avoid skipped,Add dictionary rule,cosmetic,cosmetic_surface_damage,low,cosmetic_panel,bulk high-confidence review 2026-06-26 pass 2
 large scuff on rhf bumper,large scuff on rhf bumper.,Hard-avoid skipped,Add dictionary rule,cosmetic,cosmetic_surface_damage,low,cosmetic_panel,bulk high-confidence review 2026-06-26 pass 2
-lhf guard,lhf guard.,Hard-avoid skipped,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26 pass 2
 medium scratch on lh front door,medium scratch on lh front door.,Hard-avoid skipped,Add dictionary rule,cosmetic,cosmetic_surface_damage,low,cosmetic_panel,bulk high-confidence review 2026-06-26 pass 2
 medium scratch on lh rear guard,medium scratch on lh rear guard.,Hard-avoid skipped,Add dictionary rule,cosmetic,cosmetic_surface_damage,low,cosmetic_panel,bulk high-confidence review 2026-06-26 pass 2
 medium scuff on lhf bumper,medium scuff on lhf bumper.,Hard-avoid skipped,Add dictionary rule,cosmetic,cosmetic_surface_damage,low,cosmetic_panel,bulk high-confidence review 2026-06-26 pass 2
@@ -1316,7 +1282,6 @@ medium dent on rear,medium dent on rear.,Hard-avoid skipped,Add dictionary rule,
 medium dent on rhr quarter panel,Medium Dent on RHR quarter panel.,Hard-avoid skipped,Add dictionary rule,cosmetic,cosmetic_surface_damage,low,cosmetic_panel,bulk high-confidence review 2026-06-26 pass 2
 rear bar,rear bar.,Hard-avoid skipped,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26 pass 2
 body panel damage front end,body/panel damage front end.,Hard-avoid skipped,Add dictionary rule,cosmetic,generic_damage,low,cosmetic_panel,bulk high-confidence review 2026-06-26 pass 2
-corrosion doors,corrosion doors.,Hard-avoid skipped,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26 pass 2
 damaged rear,damaged rear.,Hard-avoid skipped,Add dictionary rule,cosmetic,generic_damage,low,cosmetic_panel,bulk high-confidence review 2026-06-26 pass 2
 damaged rhr tail light,damaged rhr tail light.,Hard-avoid skipped,Add dictionary rule,cosmetic,generic_damage,low,cosmetic_panel,bulk high-confidence review 2026-06-26 pass 2
 door mirror broken driver side mirror,door mirror broken driver side mirror.,Hard-avoid skipped,Add dictionary rule,replacement,mirror_light_damage,medium,fixed_replacement,bulk high-confidence review 2026-06-26 pass 2
@@ -1352,7 +1317,6 @@ medium scratch on rear bumper driver side,medium scratch on rear bumper driver s
 medium scuff on rhf door,medium scuff on rhf door.,Hard-avoid skipped,Add dictionary rule,cosmetic,cosmetic_surface_damage,low,cosmetic_panel,bulk high-confidence review 2026-06-26 pass 2
 paint fading all panels,paint fading all panels.,Hard-avoid skipped,Add dictionary rule,cosmetic,paint_damage,low,cosmetic_panel,bulk high-confidence review 2026-06-26 pass 2
 passenger side front guard,passenger side front guard.,Hard-avoid skipped,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26 pass 2
-spoiler,spoiler.,Hard-avoid skipped,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26 pass 2
 body panel damage rear passenger side,body/panel damage rear passenger side.,Hard-avoid skipped,Add dictionary rule,cosmetic,generic_damage,low,cosmetic_panel,bulk high-confidence review 2026-06-26 pass 2
 centre console worn,centre console worn.,Hard-avoid skipped,Add dictionary rule,interior,interior_trim_damage,low,fixed_replacement,bulk high-confidence review 2026-06-26 pass 2
 corrosion visible rear,corrosion visible rear.,Hard-avoid skipped,Add dictionary rule,cosmetic,corrosion_damage,high,cosmetic_panel,bulk high-confidence review 2026-06-26 pass 2
@@ -1646,7 +1610,6 @@ large scuff on driver side,large scuff on driver side.,Hard-avoid skipped,Add di
 large scuff on lh rear door,large scuff on lh rear door.,Hard-avoid skipped,Add dictionary rule,cosmetic,cosmetic_surface_damage,low,cosmetic_panel,bulk high-confidence review 2026-06-26 pass 2
 large scuff on rh front bumper and guard,large scuff on rh front bumper and guard.,Hard-avoid skipped,Add dictionary rule,cosmetic,cosmetic_surface_damage,low,cosmetic_panel,bulk high-confidence review 2026-06-26 pass 2
 left side tyres flat,left side tyres flat.,Hard-avoid skipped,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26 pass 2
-lh quarter panel,lh quarter panel.,Hard-avoid skipped,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26 pass 2
 lhf guard engine smoke visible,lhf guard engine smoke visible.,Hard-avoid skipped,Add dictionary rule,mechanical,engine_smoke_visible,high,hard_avoid,bulk high-confidence review 2026-06-26 pass 2
 light panel i09a impact,light panel]•i09a [impact.,Hard-avoid skipped,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26 pass 2
 lower front cracked bumper,lower front cracked bumper.,Hard-avoid skipped,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26 pass 2
@@ -2477,7 +2440,6 @@ wiper blades require replacement to obtain roadworthy,wiper blades require repla
 srs fault light showing,srs fault light showing.,Real repair gap,Add dictionary rule,mechanical,airbag_warning_light,high,hard_avoid,bulk high-confidence review 2026-06-26 pass 2
 tailgate door not working,tailgate door not working.,Real repair gap,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26 pass 2
 cracked various panels,cracked various panels.,Real repair gap,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26 pass 2
-door handles worn,door handles worn.,Real repair gap,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26 pass 2
 driver door card leather peeling,driver door card leather peeling.,Real repair gap,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26 pass 2
 fading and peeling various parts on panels,fading and peeling various parts on panels.,Real repair gap,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26 pass 2
 peeling various parts on panels,peeling various parts on panels.,Real repair gap,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26 pass 2
@@ -2488,7 +2450,6 @@ driver door step broken engine mechanical drivers side electric window not funct
 front passenger door door not working,front passenger door door not working.,Real repair gap,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26 pass 2
 handle broken door not working,handle broken door not working.,Real repair gap,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26 pass 2
 left sliding door and rear door door not working,left sliding door and rear door door not working.,Real repair gap,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26 pass 2
-paint worn on rear bumper,paint worn on rear bumper.,Real repair gap,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26 pass 2
 passenger door not working,passenger door not working.,Real repair gap,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26 pass 2
 rear hatch door not working,rear hatch door not working.,Real repair gap,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26 pass 2
 back doors and roof peeling,back doors and roof peeling.,Real repair gap,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26 pass 2
@@ -2517,7 +2478,6 @@ minor peeling on various other panels,minor peeling on various other panels.,Rea
 passenger door door not working,passenger door door not working.,Real repair gap,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26 pass 2
 passenger door handles has tape on it door not working,passenger door handles has tape on it door not working.,Real repair gap,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26 pass 2
 passenger side back door door not working,passenger side back door door not working.,Real repair gap,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26 pass 2
-rear driver door will not close door not working,rear driver door will not close door not working.,Real repair gap,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26 pass 2
 requires fob to open door not working,requires fob to open door not working.,Real repair gap,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26 pass 2
 rhr door door not working,RHR door Door not Working.,Real repair gap,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26 pass 2
 rhr door not working,rhr door not working.,Real repair gap,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26 pass 2
@@ -2530,9 +2490,7 @@ tailgate struts require attention door not working,tailgate struts require atten
 tailgate wont stay open door not working,tailgate wont stay open door not working.,Real repair gap,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26 pass 2
 trim piece on left rear passenger door broken,trim piece on left rear passenger door broken.,Real repair gap,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk high-confidence review 2026-06-26 pass 2
 glovebox would not open close,glovebox would not open/close.,Hard-avoid skipped,Add dictionary rule,interior,interior_trim_damage,medium,fixed_replacement,bulk default-queue review 2026-06-26
-reverse camera not working,reverse camera not working.,Hard-avoid skipped,Add dictionary rule,interior,control_damage,medium,fixed_replacement,bulk default-queue review 2026-06-26
 inspection highly recommended,inspection highly recommended.,Hard-avoid skipped,Ignore as boilerplate,boilerplate,boilerplate_reviewed_noise,low,no_cost,bulk default-queue review 2026-06-26
-rough idle,rough idle.,Hard-avoid skipped,Add dictionary rule,mechanical,engine_running_fault,high,hard_avoid,bulk default-queue review 2026-06-26
 amp,amp.,Hard-avoid skipped,Add dictionary rule,interior,control_damage,medium,fixed_replacement,bulk default-queue review 2026-06-26
 engine fluid leak,engine fluid leak.,Hard-avoid skipped,Add dictionary rule,mechanical,engine_cooling_issue,high,hard_avoid,bulk default-queue review 2026-06-26
 inspection highly recommended by qualified third party,inspection highly recommended by qualified third party.,Hard-avoid skipped,Ignore as boilerplate,boilerplate,boilerplate_reviewed_noise,low,no_cost,bulk default-queue review 2026-06-26
@@ -2540,7 +2498,6 @@ battery flat,battery flat.,Hard-avoid skipped,Add dictionary rule,replacement,ba
 boot requires attention,boot requires attention.,Hard-avoid skipped,Add dictionary rule,replacement,replacement_required,medium,fixed_replacement,bulk default-queue review 2026-06-26
 engine requires attention,engine requires attention.,Hard-avoid skipped,Add dictionary rule,mechanical,engine_requires_attention,high,hard_avoid,bulk default-queue review 2026-06-26
 see attached history report,see attached history report.,Hard-avoid skipped,Ignore as boilerplate,boilerplate,boilerplate_reviewed_noise,low,no_cost,bulk default-queue review 2026-06-26
-stains on various places,stains on various places.,Hard-avoid skipped,Add dictionary rule,cosmetic,cosmetic_surface_damage,low,cosmetic_panel,bulk default-queue review 2026-06-26
 odometer discrepancy detected,Odometer discrepancy detected.,Hard-avoid skipped,Ignore as boilerplate,boilerplate,boilerplate_reviewed_noise,low,no_cost,bulk default-queue review 2026-06-26
 battery requires attention,battery requires attention.,Hard-avoid skipped,Add dictionary rule,replacement,battery_issue,medium,fixed_replacement,bulk default-queue review 2026-06-26
 coolant leak,coolant leak.,Hard-avoid skipped,Add dictionary rule,mechanical,engine_cooling_issue,high,hard_avoid,bulk default-queue review 2026-06-26
@@ -2552,8 +2509,6 @@ other warning lights on,other warning lights on.,Hard-avoid skipped,Add dictiona
 tow required on collection,tow required on collection.,Hard-avoid skipped,Add dictionary rule,mechanical,tow_or_no_drive_required,high,hard_avoid,bulk default-queue review 2026-06-26
 non runner,non runner.,Hard-avoid skipped,Add dictionary rule,mechanical,engine_lacks_power,high,hard_avoid,bulk default-queue review 2026-06-26
 rear bumper requires attention,rear bumper requires attention.,Hard-avoid skipped,Add dictionary rule,replacement,replacement_required,medium,fixed_replacement,bulk default-queue review 2026-06-26
-tray,tray.,Hard-avoid skipped,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk default-queue review 2026-06-26
-aerial requires attention,aerial requires attention.,Hard-avoid skipped,Add dictionary rule,interior,control_damage,medium,fixed_replacement,bulk default-queue review 2026-06-26
 details of the status can be found below,details of the status can be found below.,Hard-avoid skipped,Ignore as boilerplate,boilerplate,boilerplate_reviewed_noise,low,no_cost,bulk default-queue review 2026-06-26
 engine misfire,engine misfire.,Hard-avoid skipped,Add dictionary rule,mechanical,engine_running_fault,high,hard_avoid,bulk default-queue review 2026-06-26
 engine vibration in cabin,engine vibration in cabin.,Hard-avoid skipped,Add dictionary rule,mechanical,engine_running_fault,high,hard_avoid,bulk default-queue review 2026-06-26
@@ -2840,7 +2795,6 @@ water evident in vehicle,water evident in vehicle.,Hard-avoid skipped,Leave uncl
 engine mechanical wear tear,engine & mechanical: wear & tear.,Unknown,Leave unclassified,,,,,bulk default-queue review 2026-06-26
 exterior poor,exterior: poor.,Real repair gap,Add dictionary rule,cosmetic,cosmetic_surface_damage,low,cosmetic_panel,bulk default-queue review 2026-06-26
 interior poor,interior: poor.,Real repair gap,Add dictionary rule,interior,interior_trim_damage,medium,fixed_replacement,bulk default-queue review 2026-06-26
-mirrors,mirrors.,Unknown,Leave unclassified,,,,,bulk default-queue review 2026-06-26
 2066,2066.,Unknown,Leave unclassified,,,,,bulk default-queue review 2026-06-26
 holes in carpet,holes in carpet.,Real repair gap,Add dictionary rule,interior,interior_trim_damage,medium,fixed_replacement,bulk default-queue review 2026-06-26
 paint fair,paint: fair.,Real repair gap,Add dictionary rule,cosmetic,cosmetic_surface_damage,low,cosmetic_panel,bulk default-queue review 2026-06-26
@@ -2850,16 +2804,12 @@ etc,etc.,Unknown,Leave unclassified,,,,,bulk default-queue review 2026-06-26
 no key,No key.,Unknown,Add dictionary rule,replacement,key_missing,medium,fixed_replacement,bulk default-queue review 2026-06-26
 controls dash fair,controls & dash: fair.,Real repair gap,Add dictionary rule,interior,control_damage,medium,fixed_replacement,bulk default-queue review 2026-06-26
 comment odometer discrepancy detected,Comment: Odometer discrepancy detected.,Unknown,Ignore as boilerplate,boilerplate,boilerplate_reviewed_noise,low,no_cost,bulk default-queue review 2026-06-26
-service light on,service light on.,Real repair gap,Add dictionary rule,mechanical,service_warning_light,high,hard_avoid,bulk default-queue review 2026-06-26
 controls dash good,controls & dash: good.,Unknown,Add dictionary rule,interior,control_damage,medium,fixed_replacement,bulk default-queue review 2026-06-26
-dash requires attention,dash requires attention.,Real repair gap,Add dictionary rule,interior,control_damage,medium,fixed_replacement,bulk default-queue review 2026-06-26
 engine bay,engine bay.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk default-queue review 2026-06-26
 engine tick observed,engine tick observed.,Unknown,Add dictionary rule,mechanical,engine_running_fault,high,hard_avoid,bulk default-queue review 2026-06-26
-interior stains on various places,interior: stains on various places.,Real repair gap,Add dictionary rule,interior,interior_trim_damage,medium,fixed_replacement,bulk default-queue review 2026-06-26
 lacks power,lacks power.,Unknown,Add dictionary rule,mechanical,engine_lacks_power,high,hard_avoid,bulk default-queue review 2026-06-26
 left sill,left sill.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk default-queue review 2026-06-26
 no battery,No battery.,Unknown,Add dictionary rule,replacement,battery_issue,medium,fixed_replacement,bulk default-queue review 2026-06-26
-traction light on,traction light on.,Real repair gap,Add dictionary rule,mechanical,traction_control_warning_light,high,hard_avoid,bulk default-queue review 2026-06-26
 tyre pressure light on,tyre pressure light on.,Real repair gap,Add dictionary rule,mechanical,tyre_pressure_warning_light,high,hard_avoid,bulk default-queue review 2026-06-26
 consistent with age and km s,consistent with age and km`s.,Unknown,Leave unclassified,,,,,bulk default-queue review 2026-06-26
 curb rash on rims,curb rash on rims.,Unknown,Add dictionary rule,cosmetic,cosmetic_surface_damage,low,cosmetic_panel,bulk default-queue review 2026-06-26
@@ -2918,39 +2868,27 @@ steering wheel,steering wheel.,Unknown,Add dictionary rule,mechanical,steering_r
 transmission thumps into gear,transmission thumps into gear.,Unknown,Add dictionary rule,mechanical,transmission_requires_attention,high,hard_avoid,bulk default-queue review 2026-06-26
 transmission whine when warm,transmission whine when warm.,Unknown,Add dictionary rule,mechanical,transmission_requires_attention,high,hard_avoid,bulk default-queue review 2026-06-26
 unable to start,unable to start.,Unknown,Leave unclassified,,,,,bulk default-queue review 2026-06-26
-underbody components,underbody components.,Unknown,Leave unclassified,,,,,bulk default-queue review 2026-06-26
 unknown running condition,unknown running condition.,Unknown,Leave unclassified,,,,,bulk default-queue review 2026-06-26
 vehicle has a whistle at idle,vehicle has a whistle at idle.,Unknown,Leave unclassified,,,,,bulk default-queue review 2026-06-26
 vehicle has rear wheelchair access modification,vehicle has rear wheelchair access modification.,Context fragment,Mark context fragment,context_fragment,context_fragment,low,no_cost,bulk default-queue review 2026-06-26
-ticking noise from engine,ticking noise from engine.,Real repair gap,Add dictionary rule,mechanical,engine_noise_ticking,high,hard_avoid,bulk live AI repair review 2026-07-13
 ticking noise from engine.,ticking noise from engine.,Real repair gap,Add dictionary rule,mechanical,engine_noise_ticking,high,hard_avoid,bulk live AI repair review 2026-07-13
-reverse gears slipping,reverse/gears slipping.,Real repair gap,Add dictionary rule,mechanical,gearbox_slipping,high,hard_avoid,bulk live AI repair review 2026-07-13
 reverse/gears slipping.,reverse/gears slipping.,Real repair gap,Add dictionary rule,mechanical,gearbox_slipping,high,hard_avoid,bulk live AI repair review 2026-07-13
 coolant issue,coolant issue.,Real repair gap,Add dictionary rule,mechanical,cooling_system_issue,high,hard_avoid,bulk live AI repair review 2026-07-13
 coolant issue.,coolant issue.,Real repair gap,Add dictionary rule,mechanical,cooling_system_issue,high,hard_avoid,bulk live AI repair review 2026-07-13
-dash says service required soon,dash says service required soon.,Real repair gap,Add dictionary rule,mechanical,service_warning_message,medium,fixed_replacement,bulk live AI repair review 2026-07-13
 dash says service required soon.,dash says service required soon.,Real repair gap,Add dictionary rule,mechanical,service_warning_message,medium,fixed_replacement,bulk live AI repair review 2026-07-13
 rear tailgate needs attention cannot open,rear tailgate needs attention cannot open.,Real repair gap,Add dictionary rule,replacement,tailgate_latch_or_tailgate_repair,medium,fixed_replacement,bulk live AI repair review 2026-07-13
-clear coat peeling on door handles,clear coat peeling on door handles.,Real repair gap,Add dictionary rule,cosmetic,paint_clear_coat_peeling,low,cosmetic_panel,bulk live AI repair review 2026-07-13
-paint spots along driver side,paint spots along driver side.,Real repair gap,Add dictionary rule,cosmetic,paint_damage,low,cosmetic_panel,bulk live AI repair review 2026-07-13
 paint spots along driver side.,paint spots along driver side.,Real repair gap,Add dictionary rule,cosmetic,paint_damage,low,cosmetic_panel,bulk live AI repair review 2026-07-13
 exterior: poor touch up paint evident on front bumper.,exterior: poor touch up paint evident on front bumper.,Real repair gap,Add dictionary rule,cosmetic,poor_touch_up_paint,low,cosmetic_panel,bulk live AI repair review 2026-07-13
-front punctured bumper,front punctured bumper.,Real repair gap,Add dictionary rule,replacement,bumper_punctured_or_torn,medium,fixed_replacement,bulk live AI repair review 2026-07-13
 front punctured bumper.,front punctured bumper.,Real repair gap,Add dictionary rule,replacement,bumper_punctured_or_torn,medium,fixed_replacement,bulk live AI repair review 2026-07-13
 front end (front bar) - tear.,front end (front bar) - tear.,Real repair gap,Add dictionary rule,replacement,bumper_torn,medium,fixed_replacement,bulk live AI repair review 2026-07-13
-grille requires attention,grille requires attention.,Real repair gap,Add dictionary rule,replacement,grille_damage,low,fixed_replacement,bulk live AI repair review 2026-07-13
 grille requires attention.,grille requires attention.,Real repair gap,Add dictionary rule,replacement,grille_damage,low,fixed_replacement,bulk live AI repair review 2026-07-13
-passenger side rear light reflector requires attention,passenger side rear light reflector requires attention.,Real repair gap,Add dictionary rule,replacement,rear_light_reflector_damage,low,fixed_replacement,bulk live AI repair review 2026-07-13
 passenger side rear light reflector requires attention.,passenger side rear light reflector requires attention.,Real repair gap,Add dictionary rule,replacement,rear_light_reflector_damage,low,fixed_replacement,bulk live AI repair review 2026-07-13
 condensation in left brake light.,condensation in left brake light.,Real repair gap,Add dictionary rule,replacement,tail_light_condensation,low,fixed_replacement,bulk live AI repair review 2026-07-13
 bonnet struts not working.,bonnet struts not working.,Real repair gap,Add dictionary rule,replacement,bonnet_struts_not_working,low,fixed_replacement,bulk live AI repair review 2026-07-13
 bonnet doesn't stay up.,bonnet doesn't stay up.,Real repair gap,Add dictionary rule,replacement,bonnet_struts_not_working,low,fixed_replacement,bulk live AI repair review 2026-07-13
 lhr guard window smashed.,lhr guard window smashed.,Real repair gap,Add dictionary rule,glass,side_window_smashed,high,glass,bulk live AI repair review 2026-07-13
-carpet torn,carpet torn.,Real repair gap,Add dictionary rule,interior,carpet_torn,medium,fixed_replacement,bulk live AI repair review 2026-07-13
-sun visor driver side needs attention,sun visor driver side needs attention.,Real repair gap,Add dictionary rule,interior,sun_visor_damage,low,fixed_replacement,bulk live AI repair review 2026-07-13
 sunglasses holder requires attention,sunglasses holder requires attention.,Real repair gap,Add dictionary rule,interior,sunglasses_holder_damage,low,fixed_replacement,bulk live AI repair review 2026-07-13
 sunglasses holder requires attention.,sunglasses holder requires attention.,Real repair gap,Add dictionary rule,interior,sunglasses_holder_damage,low,fixed_replacement,bulk live AI repair review 2026-07-13
-interior lining worn,interior lining worn.,Real repair gap,Add dictionary rule,interior,interior_lining_worn,medium,fixed_replacement,bulk live AI repair review 2026-07-13
 interior lining worn.,interior lining worn.,Real repair gap,Add dictionary rule,interior,interior_lining_worn,medium,fixed_replacement,bulk live AI repair review 2026-07-13
 head lining sagging.,head lining sagging.,Real repair gap,Add dictionary rule,interior,headlining_sagging,medium,fixed_replacement,bulk live AI repair review 2026-07-13
 headlining requires repair.,headlining requires repair.,Real repair gap,Add dictionary rule,interior,headlining_sagging,medium,fixed_replacement,bulk live AI repair review 2026-07-13
@@ -2959,7 +2897,6 @@ centre console torn.,centre console torn.,Real repair gap,Add dictionary rule,in
 interior: sticky dashboard.,interior: sticky dashboard.,Real repair gap,Add dictionary rule,interior,sticky_dashboard,medium,fixed_replacement,bulk live AI repair review 2026-07-13
 coating on console coming off and stickypaint cracked on various panels,coating on console coming off and stickypaint cracked on various panels.,Real repair gap,Add dictionary rule,interior,console_coating_sticky_or_peeling,medium,fixed_replacement,bulk live AI repair review 2026-07-13
 coating on console coming off and stickypaint cracked on various panels.,coating on console coming off and stickypaint cracked on various panels.,Real repair gap,Add dictionary rule,interior,console_coating_sticky_or_peeling,medium,fixed_replacement,bulk live AI repair review 2026-07-13
-1 key faulty,1 key faulty.,Real repair gap,Add dictionary rule,replacement,key_faulty,low,fixed_replacement,bulk live AI repair review 2026-07-13
 1 key faulty.,1 key faulty.,Real repair gap,Add dictionary rule,replacement,key_faulty,low,fixed_replacement,bulk live AI repair review 2026-07-13
 interior: spare key requires attention.,interior: spare key requires attention.,Real repair gap,Add dictionary rule,replacement,key_faulty,low,fixed_replacement,bulk live AI repair review 2026-07-13
 low tire pressure,low tire pressure.,Usage risk,Mark usage risk,usage_risk,tyre_pressure_warning,low,no_cost,bulk live AI repair review 2026-07-13
@@ -2970,7 +2907,6 @@ sold as salvage vehicle.,sold as salvage vehicle.,Real repair gap,Add dictionary
 low fuel,low fuel.,Usage risk,Mark usage risk,usage_risk,low_fuel,low,no_cost,bulk live AI repair review 2026-07-13
 reversing camera.,reversing camera.,Feature-list leak,Mark feature-list leak,feature_leak,reversing_camera_feature,,no_cost,bulk live AI repair review 2026-07-13
 dvd player untested.,dvd player untested.,Feature-list leak,Mark feature-list leak,feature_leak,dvd_player_feature_untested,,no_cost,bulk live AI repair review 2026-07-13
-build plate requires attention,build plate requires attention.,Context fragment,Mark context fragment,context_fragment,build_plate_attention_context,low,no_cost,bulk live AI repair review 2026-07-13
 passenger side (passenger rear door including window) - null.,passenger side (passenger rear door including window) - null.,Context fragment,Mark context fragment,context_fragment,grays_null_condition_row,,no_cost,bulk live AI repair review 2026-07-13
 roof (roof) - null.,roof (roof) - null.,Context fragment,Mark context fragment,context_fragment,grays_null_condition_row,,no_cost,bulk live AI repair review 2026-07-13
 front end (bonnet) - null.,front end (bonnet) - null.,Context fragment,Mark context fragment,context_fragment,grays_null_condition_row,,no_cost,bulk live AI repair review 2026-07-13
@@ -2995,7 +2931,6 @@ unable to open bonnet,unable to open bonnet.,Real repair gap,Add dictionary rule
 dash screen not working,dash screen not working.,Real repair gap,Add dictionary rule,interior,control_damage,medium,fixed_replacement,operator-approved runtime-effective active repair classification 2026-07-23
 roof,roof.,Context fragment,Mark context fragment,context_fragment,body_location_context,low,no_cost,operator-approved runtime-effective missed-opportunity classification 2026-07-23
 bonnet,bonnet.,Context fragment,Mark context fragment,context_fragment,body_location_context,low,no_cost,operator-approved runtime-effective missed-opportunity classification 2026-07-23
-service light on,service light on.,Real repair gap,Add dictionary rule,maintenance,service_warning_message,low,fixed_replacement,operator-approved runtime-effective missed-opportunity classification 2026-07-23
 lh rear door,lh rear door.,Context fragment,Mark context fragment,context_fragment,body_location_context,low,no_cost,operator-approved runtime-effective missed-opportunity classification 2026-07-23
 sill panels,sill panels.,Context fragment,Mark context fragment,context_fragment,body_location_context,low,no_cost,operator-approved runtime-effective missed-opportunity classification 2026-07-23
 tailgate bonnet,tailgate bonnet.,Context fragment,Mark context fragment,context_fragment,body_location_context,low,no_cost,operator-approved runtime-effective missed-opportunity classification 2026-07-23
@@ -3046,7 +2981,6 @@ wheels,wheels.,Context fragment,Mark context fragment,context_fragment,body_loca
 hole in drivers footwell carpet,hole in drivers footwell carpet.,Real repair gap,Add dictionary rule,interior,carpet_torn,medium,fixed_replacement,operator-approved runtime-effective missed-opportunity classification 2026-07-23
 also impacting shut of tailgate alignment,also impacting shut of tailgate alignment.,Real repair gap,Add dictionary rule,replacement,panel_alignment_damage,medium,fixed_replacement,operator-approved runtime-effective missed-opportunity classification 2026-07-23
 interior wear on interior components,interior wear on interior components.,Real repair gap,Add dictionary rule,interior,interior_trim_damage,low,fixed_replacement,operator-approved runtime-effective missed-opportunity classification 2026-07-23
-interior washer fluid indicator light on,interior washer fluid indicator light on.,Real repair gap,Add dictionary rule,maintenance,washer_fluid_warning,low,fixed_replacement,operator-approved runtime-effective missed-opportunity classification 2026-07-23
 lhf guard,lhf guard.,Context fragment,Mark context fragment,context_fragment,body_location_context,low,no_cost,operator-approved runtime-effective missed-opportunity classification 2026-07-23
 rear bumper and mirrors,rear bumper and mirrors.,Context fragment,Mark context fragment,context_fragment,body_location_context,low,no_cost,operator-approved runtime-effective missed-opportunity classification 2026-07-23
 comment reversing camera screen requireas attention,comment reversing camera screen requires attention.,Real repair gap,Add dictionary rule,interior,control_damage,medium,fixed_replacement,operator-approved runtime-effective missed-opportunity classification 2026-07-23
@@ -3091,7 +3025,6 @@ bonnet struts not working,bonnet struts not working.,Real repair gap,Add diction
 exterior poor touch up paint evident on front bumper,exterior poor touch up paint evident on front bumper.,Real repair gap,Add dictionary rule,cosmetic,poor_touch_up_paint,low,cosmetic_panel,operator-approved runtime-effective missed-opportunity classification 2026-07-23
 centre console torn,centre console torn.,Real repair gap,Add dictionary rule,interior,interior_trim_damage,medium,fixed_replacement,operator-approved runtime-effective missed-opportunity classification 2026-07-23
 reversing camera,reversing camera.,Context fragment,Mark context fragment,context_fragment,feature_or_location_context,low,no_cost,operator-approved runtime-effective missed-opportunity classification 2026-07-23
-dash says service required soon,dash says service required soon.,Real repair gap,Add dictionary rule,maintenance,service_warning_message,low,fixed_replacement,operator-approved runtime-effective missed-opportunity classification 2026-07-23
 passenger side passenger rear door including window null,passenger side (passenger rear door including window) - null.,Context fragment,Mark context fragment,context_fragment,grays_null_condition_row,low,no_cost,operator-approved runtime-effective missed-opportunity classification 2026-07-23
 roof roof null,roof (roof) - null.,Context fragment,Mark context fragment,context_fragment,grays_null_condition_row,low,no_cost,operator-approved runtime-effective missed-opportunity classification 2026-07-23
 vi170526094518935,vi170526094518935.,Context fragment,Mark context fragment,context_fragment,grays_internal_identifier,low,no_cost,operator-approved runtime-effective missed-opportunity classification 2026-07-23

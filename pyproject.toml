@@ -25,3 +25,6 @@ ignore = [
 [tool.ruff.lint.per-file-ignores]
 # Streamlit pages use module-level side effects and wide imports by design.
 "pages/*" = ["F401"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

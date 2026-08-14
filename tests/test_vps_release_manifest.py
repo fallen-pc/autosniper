@@ -57,6 +57,18 @@ def test_release_rejects_duplicate_repair_pricing_keys(tmp_path: Path) -> None:
     assert any("Duplicate canonical defect/vehicle class rows" in error for error in errors)
 
 
+def test_release_rejects_duplicate_repair_decision_keys(tmp_path: Path) -> None:
+    release_root = _copy_release_fixture(tmp_path)
+    decisions_path = release_root / "CSV_data/reports/repair_review_decisions.csv"
+    decisions = pd.read_csv(decisions_path)
+    decisions = pd.concat([decisions, decisions.iloc[[0]]], ignore_index=True)
+    decisions.to_csv(decisions_path, index=False)
+
+    errors = validate_release(release_root)
+
+    assert any("duplicate repair_key rows" in error for error in errors)
+
+
 def test_release_rejects_curve_snapshot_drift(tmp_path: Path) -> None:
     release_root = _copy_release_fixture(tmp_path)
     curves_path = release_root / "CSV_data/restricted/curves.csv"

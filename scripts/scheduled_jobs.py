@@ -272,13 +272,13 @@ def _parse_iso_datetime(value: Any) -> datetime | None:
 
 def _last_successful_daily_date_local() -> date | None:
     state = _load_daily_run_state()
-    explicit = _parse_iso_date(state.get("last_success_coverage_date_local"))
-    if explicit is not None:
-        return explicit
-    if str(state.get("last_status") or "").strip().lower() == "success":
+    if str(state.get("last_status") or "").strip().lower() in {"success", "degraded"}:
         explicit = _parse_iso_date(state.get("last_coverage_date_local"))
         if explicit is not None:
             return explicit
+    explicit = _parse_iso_date(state.get("last_success_coverage_date_local"))
+    if explicit is not None:
+        return explicit
     metrics = _load_existing_metrics()
     metrics_time = _parse_iso_datetime(metrics.get("last_success_utc"))
     if metrics_time is None:
@@ -375,6 +375,28 @@ def _record_daily_run_finish(
     _write_daily_run_state(state)
 
 
+def _record_daily_run_degraded(
+    *,
+    trigger: str,
+    coverage_date_local: date,
+    detail: str,
+) -> None:
+    state = _load_daily_run_state()
+    completed_utc = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    state.update(
+        {
+            "last_completed_utc": completed_utc,
+            "last_status": "degraded",
+            "last_trigger": trigger,
+            "last_coverage_date_local": coverage_date_local.isoformat(),
+            "last_error_message": detail.strip(),
+            "last_degraded_utc": completed_utc,
+            "last_degraded_coverage_date_local": coverage_date_local.isoformat(),
+        }
+    )
+    _write_daily_run_state(state)
+
+
 def _should_run_missed_daily_catchup(now: datetime | None = None) -> tuple[bool, date]:
     enabled = os.getenv("AUTOSNIPER_ENABLE_MISSED_DAILY_CATCHUP", "1").strip().lower()
     if enabled in {"0", "false", "no", "off"}:
@@ -418,11 +440,12 @@ def _count_active_listings() -> Optional[int]:
         return None
 
 
-def _write_daily_metrics(success: bool, duration_sec: float) -> None:
+def _write_daily_metrics(success: bool, duration_sec: float, *, degraded: bool = False) -> None:
     metrics = _load_existing_metrics()
     active_listings = _count_active_listings()
     runs_total = int(metrics.get("runs_total", 0)) + 1
-    runs_failed = int(metrics.get("runs_failed", 0)) + (0 if success else 1)
+    runs_failed = int(metrics.get("runs_failed", 0)) + (0 if success or degraded else 1)
+    runs_degraded = int(metrics.get("runs_degraded", 0)) + (1 if degraded else 0)
     completed_utc = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
     payload = {
         "last_run_utc": completed_utc,
@@ -430,6 +453,7 @@ def _write_daily_metrics(success: bool, duration_sec: float) -> None:
         "active_listings": int(active_listings) if active_listings is not None else int(metrics.get("active_listings", 0)),
         "runs_total": runs_total,
         "runs_failed": runs_failed,
+        "runs_degraded": runs_degraded,
         "duration_sec": float(duration_sec),
     }
     METRICS_PATH.parent.mkdir(parents=True, exist_ok=True)
@@ -685,14 +709,14 @@ def _run_repair_ai_classifier_if_enabled() -> None:
     )
 
 
-def run_daily_pipeline() -> None:
+def run_daily_pipeline() -> list[str]:
     extract_links.extract_all_vehicle_links()
     extract_vehicle_details.main()
     asyncio.run(update_bids.update_bids(skip_master=True))
     _run_autotrader_scrape()
     _run_autotrader_exit_poll_if_enabled()
     update_master.update_master_database()
-    _run_external_auction_scrape_if_enabled()
+    external_coverage_issues = _run_external_auction_scrape_if_enabled() or []
     revalue_active_listings(stale_minutes=0, force_refresh=True)
     _run_repair_ai_classifier_if_enabled()
     report_bundle = write_governance_report_bundle(GOVERNANCE_REPORT_DIR)
@@ -705,6 +729,7 @@ def run_daily_pipeline() -> None:
         f"monotonicity errors={monotonicity_summary['errors']}, "
         f"warnings={monotonicity_summary['warnings']}."
     )
+    return external_coverage_issues
 
 
 def run_hourly_monitor() -> None:
@@ -881,10 +906,10 @@ def _load_external_auction_seed_listings(output_dir: Path) -> list[scrape_extern
     return seeds
 
 
-def _run_external_auction_scrape_if_enabled() -> None:
+def _run_external_auction_scrape_if_enabled() -> list[str]:
     if _env_flag_disabled("AUTOSNIPER_EXTERNAL_AUCTIONS_DAILY"):
         print("External auction daily scrape disabled by AUTOSNIPER_EXTERNAL_AUCTIONS_DAILY=0.")
-        return
+        return []
 
     output_dir = Path(os.getenv("AUTOSNIPER_EXTERNAL_AUCTIONS_OUTPUT_DIR") or EXTERNAL_AUCTION_OUTPUT_DIR)
     detail_timeout_ms = _env_int("AUTOSNIPER_EXTERNAL_DETAIL_TIMEOUT_MS", 12_000, minimum=5_000)
@@ -925,13 +950,22 @@ def _run_external_auction_scrape_if_enabled() -> None:
         f"{len(matched_df):,} saved-curve matches. "
         f"Outputs: {links_path}, {all_path}, {matched_path}, {audit_path}"
     )
-    if not audit_df.empty:
+    coverage_issues: list[str] = []
+    if audit_df.empty:
+        coverage_issues.append("external auction audit was empty")
+    else:
         for _, audit_row in audit_df.iterrows():
+            source = str(audit_row.get("source") or "unknown").strip()
+            completeness = str(audit_row.get("completeness_status") or "unknown").strip().lower()
+            notes = str(audit_row.get("notes") or "").strip()
             print(
                 "External auction coverage: "
-                f"{audit_row.get('source')}={audit_row.get('completeness_status')} "
-                f"({audit_row.get('notes') or 'all selected curve candidates scraped'})."
+                f"{source}={completeness} "
+                f"({notes or 'all selected curve candidates scraped'})."
             )
+            if completeness != "complete":
+                coverage_issues.append(f"{source}={completeness}" + (f" ({notes})" if notes else ""))
+    return coverage_issues
 
 
 def run_daily_smoke() -> None:
@@ -989,11 +1023,22 @@ def _run_daily_job(*, trigger: str, coverage_date_local: date) -> None:
     started = time.time()
     _record_daily_run_start(trigger=trigger, coverage_date_local=coverage_date_local)
     try:
-        run_daily_pipeline()
+        coverage_issues = run_daily_pipeline() or []
         _run_runtime_backup_if_configured()
-        write_scraper_health_report(job_name="daily" if trigger == "scheduled" else f"daily-{trigger}", job_status="success")
-        _record_daily_run_finish(trigger=trigger, coverage_date_local=coverage_date_local, success=True)
-        _write_daily_metrics(success=True, duration_sec=time.time() - started)
+        job_name = "daily" if trigger == "scheduled" else f"daily-{trigger}"
+        if coverage_issues:
+            detail = "External auction coverage incomplete: " + "; ".join(coverage_issues)
+            write_scraper_health_report(job_name=job_name, job_status="degraded", error_message=detail)
+            _record_daily_run_degraded(
+                trigger=trigger,
+                coverage_date_local=coverage_date_local,
+                detail=detail,
+            )
+            _write_daily_metrics(success=False, degraded=True, duration_sec=time.time() - started)
+        else:
+            write_scraper_health_report(job_name=job_name, job_status="success")
+            _record_daily_run_finish(trigger=trigger, coverage_date_local=coverage_date_local, success=True)
+            _write_daily_metrics(success=True, duration_sec=time.time() - started)
         _send_daily_ai_analysis_summary(trigger=trigger, coverage_date_local=coverage_date_local)
     except Exception as exc:
         error_message = f"{type(exc).__name__}: {exc}"

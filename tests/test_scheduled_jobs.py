@@ -429,7 +429,7 @@ def test_external_auction_daily_scrape_uses_source_specific_caps(monkeypatch, tm
                 [
                     {
                         "source": source,
-                        "completeness_status": "complete",
+                        "completeness_status": "incomplete" if source == "manheim" else "complete",
                         "notes": "",
                     }
                 ]
@@ -455,7 +455,7 @@ def test_external_auction_daily_scrape_uses_source_specific_caps(monkeypatch, tm
         lambda audit_df, output_dir: tmp_path / "external_auction_scrape_audit.csv",
     )
 
-    scheduled_jobs._run_external_auction_scrape_if_enabled()
+    coverage_issues = scheduled_jobs._run_external_auction_scrape_if_enabled()
 
     assert calls == [
         {
@@ -490,6 +490,7 @@ def test_external_auction_daily_scrape_uses_source_specific_caps(monkeypatch, tm
     assert len(written[0][0]) == 3
     assert len(written[0][1]) == 3
     assert written[0][2] == tmp_path / "daily"
+    assert coverage_issues == ["manheim=incomplete"]
 
 
 def test_external_auction_daily_scrape_can_be_disabled(monkeypatch) -> None:
@@ -502,9 +503,10 @@ def test_external_auction_daily_scrape_can_be_disabled(monkeypatch) -> None:
         lambda *args, **kwargs: calls.append((args, kwargs)),
     )
 
-    scheduled_jobs._run_external_auction_scrape_if_enabled()
+    coverage_issues = scheduled_jobs._run_external_auction_scrape_if_enabled()
 
     assert calls == []
+    assert coverage_issues == []
 
 
 def test_scheduled_autotrader_uses_seed_urls_file(monkeypatch, tmp_path) -> None:
@@ -822,6 +824,48 @@ def test_should_not_catch_up_if_success_state_already_covers_today(monkeypatch, 
         now=datetime(2026, 4, 21, 3, 0, tzinfo=timezone.utc)
     )
 
+    assert should_run is False
+    assert coverage_date == date(2026, 4, 21)
+
+
+def test_degraded_daily_coverage_is_visible_without_triggering_full_catchup(monkeypatch, tmp_path) -> None:
+    daily_state_path = tmp_path / "daily_run_state.json"
+    daily_state_path.write_text(
+        json.dumps(
+            {
+                "last_status": "success",
+                "last_coverage_date_local": "2026-04-20",
+                "last_success_coverage_date_local": "2026-04-20",
+            }
+        ),
+        encoding="utf-8",
+    )
+    health_calls: list[dict[str, object]] = []
+    metric_calls: list[dict[str, object]] = []
+
+    monkeypatch.setattr(scheduled_jobs, "DAILY_STATE_PATH", daily_state_path)
+    monkeypatch.setattr(scheduled_jobs, "METRICS_PATH", tmp_path / "metrics.json")
+    monkeypatch.setattr(scheduled_jobs, "LOCK_PATH", tmp_path / "scrape.lock")
+    monkeypatch.setattr(scheduled_jobs, "run_daily_pipeline", lambda: ["manheim=incomplete (HTTP 403)"])
+    monkeypatch.setattr(scheduled_jobs, "_run_runtime_backup_if_configured", lambda: None)
+    monkeypatch.setattr(scheduled_jobs, "write_scraper_health_report", lambda **kwargs: health_calls.append(kwargs))
+    monkeypatch.setattr(scheduled_jobs, "_write_daily_metrics", lambda **kwargs: metric_calls.append(kwargs))
+    monkeypatch.setattr(scheduled_jobs, "_send_daily_ai_analysis_summary", lambda **kwargs: False)
+
+    scheduled_jobs._run_daily_job(trigger="scheduled", coverage_date_local=date(2026, 4, 21))
+
+    state = json.loads(daily_state_path.read_text(encoding="utf-8"))
+    assert state["last_status"] == "degraded"
+    assert state["last_coverage_date_local"] == "2026-04-21"
+    assert "manheim=incomplete" in state["last_error_message"]
+    assert health_calls[0]["job_status"] == "degraded"
+    assert metric_calls[0]["degraded"] is True
+
+    monkeypatch.setenv("AUTOSNIPER_LOCAL_TIMEZONE", "Australia/Sydney")
+    monkeypatch.setenv("AUTOSNIPER_DAILY_SCHEDULE_LOCAL_TIME", "09:00")
+    should_run, coverage_date = scheduled_jobs._should_run_missed_daily_catchup(
+        now=datetime(2026, 4, 21, 3, 0, tzinfo=timezone.utc)
+    )
     assert should_run is False
     assert coverage_date == date(2026, 4, 21)
 
