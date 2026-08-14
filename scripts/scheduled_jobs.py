@@ -314,8 +314,6 @@ def _lock_owner_is_alive(payload: Dict[str, Any]) -> bool:
     try:
         pid = int(payload.get("pid"))
     except (TypeError, ValueError):
-        if str(payload.get("job") or "").strip() == "daily":
-            return _legacy_daily_process_is_running()
         return True
     if pid <= 0 or pid == os.getpid():
         return True
@@ -333,7 +331,14 @@ def _reconcile_orphaned_daily_run() -> bool:
         return False
     payload = _read_lock_payload()
     if payload is not None:
-        if str(payload.get("job") or "").strip() != "daily" or _lock_owner_is_alive(payload):
+        if str(payload.get("job") or "").strip() != "daily":
+            return False
+        owner_alive = (
+            _lock_owner_is_alive(payload)
+            if payload.get("pid") is not None
+            else _legacy_daily_process_is_running()
+        )
+        if owner_alive:
             return False
         _release_lock()
     coverage_date = _parse_iso_date(state.get("last_coverage_date_local")) or _now_local().date()
