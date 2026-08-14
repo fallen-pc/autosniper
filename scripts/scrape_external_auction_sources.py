@@ -94,6 +94,7 @@ MAX_AUTO_LIST_PAGES: dict[str, int] = {
     "slattery": 1,
 }
 DETAIL_BATCH_SIZE = 4
+DEFAULT_DETAIL_BROWSER_RECYCLE_SIZE = 40
 
 DETAIL_PATTERNS: dict[str, re.Pattern[str]] = {
     "pickles": re.compile(r"/used/details/cars/[^/?#]+/\d+", re.IGNORECASE),
@@ -835,6 +836,61 @@ def tag_discovered_links(listings: Iterable[BrowserListing]) -> pd.DataFrame:
     return pd.DataFrame(out_rows).reindex(columns=LINK_COLUMNS, fill_value="")
 
 
+async def _new_browser_context(playwright: object, *, headless: bool) -> tuple[object, object]:
+    browser = await playwright.chromium.launch(headless=headless)
+    context = await browser.new_context(
+        user_agent=(
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/131.0.0.0 Safari/537.36"
+        ),
+        locale="en-AU",
+    )
+    return browser, context
+
+
+async def _scrape_detail_batches(
+    playwright: object,
+    listings: list[BrowserListing],
+    *,
+    headless: bool,
+    detail_timeout_ms: int,
+    detail_wait_ms: int,
+    browser_recycle_size: int,
+) -> list[dict[str, object]]:
+    records: list[dict[str, object]] = []
+    recycle_size = max(DETAIL_BATCH_SIZE, browser_recycle_size)
+    for recycle_start in range(0, len(listings), recycle_size):
+        recycle_group = listings[recycle_start : recycle_start + recycle_size]
+        print(
+            f"Detail browser cycle {recycle_start // recycle_size + 1}: {len(recycle_group)} listing(s)",
+            flush=True,
+        )
+        browser, context = await _new_browser_context(playwright, headless=headless)
+        try:
+            for batch_start in range(0, len(recycle_group), DETAIL_BATCH_SIZE):
+                detail_batch = recycle_group[batch_start : batch_start + DETAIL_BATCH_SIZE]
+                detail_rows = await asyncio.gather(
+                    *(
+                        scrape_detail(
+                            context,
+                            listing,
+                            detail_timeout_ms=detail_timeout_ms,
+                            detail_wait_ms=detail_wait_ms,
+                        )
+                        for listing in detail_batch
+                    )
+                )
+                records.extend(detail_rows)
+                for listing, row in zip(detail_batch, detail_rows):
+                    title = _clean_text(row.get("title", ""))
+                    print(f"  parsed {listing.source}: {title[:90] or listing.url}", flush=True)
+        finally:
+            await context.close()
+            await browser.close()
+    return records
+
+
 async def scrape_sources(
     sources: Iterable[str],
     *,
@@ -844,6 +900,7 @@ async def scrape_sources(
     prefilter_list_to_curves: bool,
     detail_timeout_ms: int,
     detail_wait_ms: int,
+    detail_browser_recycle_size: int = DEFAULT_DETAIL_BROWSER_RECYCLE_SIZE,
     seed_listings: Iterable[BrowserListing] = (),
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     try:
@@ -858,22 +915,19 @@ async def scrape_sources(
     for listing in seed_listings:
         seeds_by_source.setdefault(listing.source, []).append(listing)
     async with async_playwright() as playwright:
-        browser = await playwright.chromium.launch(headless=headless)
-        context = await browser.new_context(
-            user_agent=(
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                "AppleWebKit/537.36 (KHTML, like Gecko) "
-                "Chrome/131.0.0.0 Safari/537.36"
-            ),
-            locale="en-AU",
-        )
         for source in sources:
-            discovery = await discover_source_links(
-                context,
-                source,
-                build_source_list_urls(source, max_list_pages_per_source),
-                max_details=0,
-            )
+            discovery_browser, discovery_context = await _new_browser_context(playwright, headless=headless)
+            try:
+                discovery = await discover_source_links(
+                    discovery_context,
+                    source,
+                    build_source_list_urls(source, max_list_pages_per_source),
+                    max_details=0,
+                )
+            finally:
+                await discovery_context.close()
+                await discovery_browser.close()
+
             listings = discovery.listings
             links_df = tag_discovered_links(listings)
             link_frames.append(links_df)
@@ -901,23 +955,16 @@ async def scrape_sources(
                 f"selected {len(selected_listings)} for detail scrape",
                 flush=True,
             )
-            for batch_start in range(0, len(selected_listings), DETAIL_BATCH_SIZE):
-                detail_batch = selected_listings[batch_start : batch_start + DETAIL_BATCH_SIZE]
-                detail_rows = await asyncio.gather(
-                    *(
-                        scrape_detail(
-                            context,
-                            listing,
-                            detail_timeout_ms=detail_timeout_ms,
-                            detail_wait_ms=detail_wait_ms,
-                        )
-                        for listing in detail_batch
-                    )
+            records.extend(
+                await _scrape_detail_batches(
+                    playwright,
+                    selected_listings,
+                    headless=headless,
+                    detail_timeout_ms=detail_timeout_ms,
+                    detail_wait_ms=detail_wait_ms,
+                    browser_recycle_size=detail_browser_recycle_size,
                 )
-                for listing, row in zip(detail_batch, detail_rows):
-                    records.append(row)
-                    title = _clean_text(row.get("title", ""))
-                    print(f"  parsed {source}: {title[:90] or listing.url}", flush=True)
+            )
             source_records = [row for row in records if str(row.get("source", "")) == source]
             selected_urls = {listing.url for listing in selected_from_discovery}
             scraped_selected_urls = {
@@ -971,13 +1018,10 @@ async def scrape_sources(
                     "notes": "; ".join(incomplete_reasons),
                 }
             )
-        await context.close()
-        await browser.close()
     raw_df = pd.DataFrame(records).reindex(columns=LISTING_COLUMNS, fill_value="") if records else pd.DataFrame(columns=LISTING_COLUMNS)
     links_df = pd.concat(link_frames, ignore_index=True, sort=False).reindex(columns=LINK_COLUMNS, fill_value="") if link_frames else pd.DataFrame(columns=LINK_COLUMNS)
     audit_df = pd.DataFrame(audit_rows).reindex(columns=AUDIT_COLUMNS, fill_value="")
     return raw_df, links_df, audit_df
-
 
 async def _discover_list_page(
     context: object,
@@ -1223,6 +1267,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--detail-timeout-ms", type=int, default=20_000)
     parser.add_argument("--detail-wait-ms", type=int, default=1_500)
     parser.add_argument(
+        "--detail-browser-recycle-size",
+        type=int,
+        default=DEFAULT_DETAIL_BROWSER_RECYCLE_SIZE,
+        help="Restart Chromium after this many detail pages to bound long-run memory use.",
+    )
+    parser.add_argument(
         "--no-prefilter-list-to-curves",
         action="store_true",
         help="Detail-scrape every discovered URL instead of prefiltering list titles to saved curves.",
@@ -1242,6 +1292,7 @@ def main() -> None:
             prefilter_list_to_curves=not args.no_prefilter_list_to_curves,
             detail_timeout_ms=max(5_000, args.detail_timeout_ms),
             detail_wait_ms=max(0, args.detail_wait_ms),
+            detail_browser_recycle_size=max(DETAIL_BATCH_SIZE, args.detail_browser_recycle_size),
         )
     )
     links_path, all_path, matched_path = write_outputs(raw_df, links_df, args.output_dir)

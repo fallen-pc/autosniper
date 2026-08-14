@@ -408,6 +408,7 @@ def test_external_auction_daily_scrape_uses_source_specific_caps(monkeypatch, tm
         prefilter_list_to_curves,
         detail_timeout_ms,
         detail_wait_ms,
+        detail_browser_recycle_size,
         seed_listings=(),
     ):
         source = list(sources)[0]
@@ -420,6 +421,7 @@ def test_external_auction_daily_scrape_uses_source_specific_caps(monkeypatch, tm
                 "prefilter_list_to_curves": prefilter_list_to_curves,
                 "detail_timeout_ms": detail_timeout_ms,
                 "detail_wait_ms": detail_wait_ms,
+                "detail_browser_recycle_size": detail_browser_recycle_size,
             }
         )
         return (
@@ -466,6 +468,7 @@ def test_external_auction_daily_scrape_uses_source_specific_caps(monkeypatch, tm
             "prefilter_list_to_curves": True,
             "detail_timeout_ms": 12000,
             "detail_wait_ms": 1000,
+            "detail_browser_recycle_size": 40,
         },
         {
             "source": "manheim",
@@ -475,6 +478,7 @@ def test_external_auction_daily_scrape_uses_source_specific_caps(monkeypatch, tm
             "prefilter_list_to_curves": True,
             "detail_timeout_ms": 12000,
             "detail_wait_ms": 1000,
+            "detail_browser_recycle_size": 40,
         },
         {
             "source": "slattery",
@@ -484,6 +488,7 @@ def test_external_auction_daily_scrape_uses_source_specific_caps(monkeypatch, tm
             "prefilter_list_to_curves": True,
             "detail_timeout_ms": 12000,
             "detail_wait_ms": 1000,
+            "detail_browser_recycle_size": 40,
         },
     ]
     assert len(written) == 1
@@ -962,6 +967,63 @@ def test_should_not_catch_up_if_daily_lock_covers_today_after_state_was_overwrit
     assert should_run is False
     assert coverage_date == date(2026, 4, 21)
 
+
+def test_reconcile_orphaned_daily_run_marks_failure(monkeypatch, tmp_path) -> None:
+    daily_state_path = tmp_path / "daily_run_state.json"
+    daily_state_path.write_text(
+        json.dumps(
+            {
+                "last_status": "running",
+                "last_trigger": "scheduled",
+                "last_coverage_date_local": "2026-04-21",
+                "last_success_coverage_date_local": "2026-04-20",
+            }
+        ),
+        encoding="utf-8",
+    )
+    lock_path = tmp_path / "scrape.lock"
+    lock_path.write_text(json.dumps({"job": "daily", "pid": 99999999, "started_at": time.time()}), encoding="utf-8")
+    health_calls = []
+
+    monkeypatch.setattr(scheduled_jobs, "DAILY_STATE_PATH", daily_state_path)
+    monkeypatch.setattr(scheduled_jobs, "LOCK_PATH", lock_path)
+    monkeypatch.setattr(scheduled_jobs, "_lock_owner_is_alive", lambda _payload: False)
+    monkeypatch.setattr(scheduled_jobs, "write_scraper_health_report", lambda **kwargs: health_calls.append(kwargs))
+
+    assert scheduled_jobs._reconcile_orphaned_daily_run() is True
+
+    state = json.loads(daily_state_path.read_text(encoding="utf-8"))
+    assert state["last_status"] == "failure"
+    assert state["last_failure_coverage_date_local"] == "2026-04-21"
+    assert "orphaned running state" in state["last_error_message"]
+    assert not lock_path.exists()
+    assert health_calls == [
+        {
+            "job_name": "daily-recovery",
+            "job_status": "failure",
+            "error_message": "Daily process ended without completing; recovered orphaned running state.",
+        }
+    ]
+
+
+def test_reconcile_orphaned_daily_run_preserves_live_process(monkeypatch, tmp_path) -> None:
+    daily_state_path = tmp_path / "daily_run_state.json"
+    original_state = {
+        "last_status": "running",
+        "last_trigger": "scheduled",
+        "last_coverage_date_local": "2026-04-21",
+    }
+    daily_state_path.write_text(json.dumps(original_state), encoding="utf-8")
+    lock_path = tmp_path / "scrape.lock"
+    lock_path.write_text(json.dumps({"job": "daily", "pid": 1234, "started_at": time.time()}), encoding="utf-8")
+
+    monkeypatch.setattr(scheduled_jobs, "DAILY_STATE_PATH", daily_state_path)
+    monkeypatch.setattr(scheduled_jobs, "LOCK_PATH", lock_path)
+    monkeypatch.setattr(scheduled_jobs, "_lock_owner_is_alive", lambda _payload: True)
+
+    assert scheduled_jobs._reconcile_orphaned_daily_run() is False
+    assert json.loads(daily_state_path.read_text(encoding="utf-8")) == original_state
+    assert lock_path.exists()
 
 def test_should_not_catch_up_inside_daily_grace_window(monkeypatch, tmp_path) -> None:
     monkeypatch.setattr(scheduled_jobs, "METRICS_PATH", tmp_path / "metrics.json")

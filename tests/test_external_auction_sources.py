@@ -11,6 +11,7 @@ from scripts.scrape_external_auction_sources import (
     parse_title_parts,
     scrape_detail,
     split_detail_lines,
+    _scrape_detail_batches,
     tag_discovered_links,
     tag_with_curve_support,
     BrowserListing,
@@ -90,6 +91,69 @@ class _FakeUnavailableDetailPage:
     async def close(self):
         return None
 
+
+class _FakeRecycledContext:
+    def __init__(self):
+        self.closed = False
+
+    async def close(self):
+        self.closed = True
+
+
+class _FakeRecycledBrowser:
+    def __init__(self):
+        self.context = _FakeRecycledContext()
+        self.closed = False
+
+    async def new_context(self, **_kwargs):
+        return self.context
+
+    async def close(self):
+        self.closed = True
+
+
+class _FakeChromium:
+    def __init__(self):
+        self.browsers = []
+
+    async def launch(self, **_kwargs):
+        browser = _FakeRecycledBrowser()
+        self.browsers.append(browser)
+        return browser
+
+
+class _FakePlaywright:
+    def __init__(self):
+        self.chromium = _FakeChromium()
+
+
+def test_detail_batches_recycle_and_close_browsers(monkeypatch):
+    playwright = _FakePlaywright()
+    listings = [
+        BrowserListing(source="pickles", url=f"https://example.test/{index}", title_hint=str(index))
+        for index in range(85)
+    ]
+
+    async def fake_scrape_detail(_context, listing, **_kwargs):
+        return {"source": listing.source, "url": listing.url, "title": listing.title_hint}
+
+    monkeypatch.setattr("scripts.scrape_external_auction_sources.scrape_detail", fake_scrape_detail)
+
+    rows = asyncio.run(
+        _scrape_detail_batches(
+            playwright,
+            listings,
+            headless=True,
+            detail_timeout_ms=5_000,
+            detail_wait_ms=0,
+            browser_recycle_size=40,
+        )
+    )
+
+    assert len(rows) == 85
+    assert len(playwright.chromium.browsers) == 3
+    assert all(browser.closed for browser in playwright.chromium.browsers)
+    assert all(browser.context.closed for browser in playwright.chromium.browsers)
 
 def test_discovery_stops_after_pagination_is_exhausted():
     detail_url = "https://www.pickles.com.au/used/details/cars/2019-toyota-hilux/62341652"
