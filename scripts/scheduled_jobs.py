@@ -296,6 +296,57 @@ def _read_lock_payload() -> Dict[str, Any] | None:
         return None
 
 
+def _legacy_daily_process_is_running() -> bool:
+    proc_root = Path("/proc")
+    if not proc_root.is_dir():
+        return True
+    for command_path in proc_root.glob("[0-9]*/cmdline"):
+        try:
+            command = command_path.read_bytes().replace(bytes([0]), b" ").decode("utf-8", errors="ignore")
+        except (OSError, PermissionError):
+            continue
+        if "scheduled_jobs.py" in command and "--job daily" in command:
+            return True
+    return False
+
+
+def _lock_owner_is_alive(payload: Dict[str, Any]) -> bool:
+    try:
+        pid = int(payload.get("pid"))
+    except (TypeError, ValueError):
+        if str(payload.get("job") or "").strip() == "daily":
+            return _legacy_daily_process_is_running()
+        return True
+    if pid <= 0 or pid == os.getpid():
+        return True
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except (OSError, PermissionError):
+        return True
+    return True
+
+def _reconcile_orphaned_daily_run() -> bool:
+    state = _load_daily_run_state()
+    if str(state.get("last_status") or "").strip().lower() != "running":
+        return False
+    payload = _read_lock_payload()
+    if payload is not None:
+        if str(payload.get("job") or "").strip() != "daily" or _lock_owner_is_alive(payload):
+            return False
+        _release_lock()
+    coverage_date = _parse_iso_date(state.get("last_coverage_date_local")) or _now_local().date()
+    detail = "Daily process ended without completing; recovered orphaned running state."
+    _record_daily_run_finish(
+        trigger=str(state.get("last_trigger") or "recovery"),
+        coverage_date_local=coverage_date,
+        success=False,
+        error_message=detail,
+    )
+    write_scraper_health_report(job_name="daily-recovery", job_status="failure", error_message=detail)
+    return True
+
 def _active_daily_run_covers_date(coverage_date_local: date) -> bool:
     state = _load_daily_run_state()
     lock_state_running = (
@@ -306,6 +357,8 @@ def _active_daily_run_covers_date(coverage_date_local: date) -> bool:
     if payload is None:
         return False
     if str(payload.get("job") or "").strip() != "daily":
+        return False
+    if not _lock_owner_is_alive(payload):
         return False
     try:
         age = time.time() - LOCK_PATH.stat().st_mtime
@@ -606,12 +659,20 @@ def _acquire_lock(job: str) -> bool:
             fd = os.open(str(LOCK_PATH), os.O_CREAT | os.O_EXCL | os.O_WRONLY)
             payload = {
                 "job": job,
+                "pid": os.getpid(),
                 "started_at": time.time(),
             }
             os.write(fd, json.dumps(payload).encode("utf-8"))
             os.close(fd)
             return True
         except FileExistsError:
+            existing_payload = _read_lock_payload()
+            if existing_payload is not None and not _lock_owner_is_alive(existing_payload):
+                try:
+                    LOCK_PATH.unlink()
+                    continue
+                except FileNotFoundError:
+                    continue
             try:
                 age = time.time() - LOCK_PATH.stat().st_mtime
             except FileNotFoundError:
@@ -914,6 +975,7 @@ def _run_external_auction_scrape_if_enabled() -> list[str]:
     output_dir = Path(os.getenv("AUTOSNIPER_EXTERNAL_AUCTIONS_OUTPUT_DIR") or EXTERNAL_AUCTION_OUTPUT_DIR)
     detail_timeout_ms = _env_int("AUTOSNIPER_EXTERNAL_DETAIL_TIMEOUT_MS", 12_000, minimum=5_000)
     detail_wait_ms = _env_int("AUTOSNIPER_EXTERNAL_DETAIL_WAIT_MS", 1_000)
+    detail_browser_recycle_size = _env_int("AUTOSNIPER_EXTERNAL_BROWSER_RECYCLE_DETAILS", 40, minimum=4)
     headless = not _env_flag_enabled("AUTOSNIPER_EXTERNAL_AUCTIONS_HEADED")
     prefilter_list_to_curves = not _env_flag_disabled("AUTOSNIPER_EXTERNAL_PREFILTER_TO_CURVES")
     seed_listings = _load_external_auction_seed_listings(output_dir)
@@ -931,6 +993,7 @@ def _run_external_auction_scrape_if_enabled() -> list[str]:
                 prefilter_list_to_curves=prefilter_list_to_curves,
                 detail_timeout_ms=detail_timeout_ms,
                 detail_wait_ms=detail_wait_ms,
+                detail_browser_recycle_size=detail_browser_recycle_size,
                 seed_listings=[listing for listing in seed_listings if listing.source == source],
             )
         )
@@ -1090,6 +1153,9 @@ def main() -> None:
         return
 
     _run_playwright_preflight(args.job)
+
+    if args.job not in {"daily", "daily-smoke"}:
+        _reconcile_orphaned_daily_run()
 
     if args.job not in {"daily", "daily-smoke"} and _run_missed_daily_catchup_if_due(args.job):
         return
