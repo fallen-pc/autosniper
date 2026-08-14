@@ -17,3 +17,12 @@ def test_remote_governance_skips_git_delta_for_archive_deploy():
 
     command = 'scripts/governance_checks.py check --skip-dataset-delta'
     assert command in script
+
+def test_deployment_backups_are_private_and_exclude_browser_sessions():
+    script = Path("scripts/deploy_vps.ps1").read_text(encoding="utf-8")
+
+    assert "umask 077" in script
+    assert 'chmod 700 "$backup_dir"' in script
+    assert "--exclude='./autotrader_isolated/output'" in script
+    assert 'chmod 600 "$backup"' in script
+    assert 'chmod 600 "$governed_backup"' in script

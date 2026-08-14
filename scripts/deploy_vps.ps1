@@ -204,6 +204,7 @@ try {
 
     $remoteScript = @'
 set -euo pipefail
+umask 077
 
 archive="$1"
 root="$2"
@@ -279,6 +280,7 @@ if [[ "$force" != "1" ]]; then
 fi
 
 mkdir -p "$stage" "$backup_dir"
+chmod 700 "$backup_dir"
 tar -xzf "$archive" -C "$stage"
 
 "$root/.venv/bin/python" -m compileall -q \
@@ -308,6 +310,7 @@ tar \
     --exclude='./status' \
     --exclude='./tmp' \
     --exclude='./__pycache__' \
+    --exclude='./autotrader_isolated/output' \
     -czf "$backup" -C "$root" .
 
 if [[ "$release" == "1" ]]; then
@@ -316,6 +319,10 @@ if [[ "$release" == "1" ]]; then
         CSV_data/restricted/versions \
         CSV_data/reports/repair_pricing_schedule.csv \
         CSV_data/reports/repair_review_decisions.csv
+fi
+chmod 600 "$backup"
+if [[ -f "$governed_backup" ]]; then
+    chmod 600 "$governed_backup"
 fi
 rollback_needed=1
 

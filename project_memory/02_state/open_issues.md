@@ -7,6 +7,7 @@
 - Any later Toyota hatch repricing review must stay separate from the tag-alignment task that fixed the evidence lanes.
 - Curve Builder V2 expansion blockers are now better mapped; the current Toyota work is operational rebuilding, not silent legacy merging.
 - Scraper and extractor surfaces remain high sensitivity and should not be reopened casually.
+- Manheim discovery remains externally blocked by HTTP access controls from the VPS. This is now surfaced as a blocked source, an Attention overall status, and a degraded daily outcome rather than success; do not treat it as complete until live discovery and detail reconciliation pass.
 - Runtime memory enforcement still depends on using `scripts/start_ai_task.ps1` or an equivalent wrapper as the only front door into Codex/OpenClaw work for this repo.
 - The hourly monitor should remain scoped to AI Analysis current viable listings, not the broad `508`-row active Grays working file.
 - Production daily/hourly automation runs on the DigitalOcean VPS. Do not diagnose production scheduler health from the disabled laptop tasks or the laptop's generated CSV timestamps; inspect VPS systemd timers, `status/daily_run_state.json`, `output/health/scraper_health.json`, and the VPS-owned CSVs.

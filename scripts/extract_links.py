@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import re
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 import pandas as pd
@@ -215,7 +215,7 @@ def extract_all_vehicle_links(max_pages: int | None = None) -> None:
     skipped_compliance = 0
     skipped_excluded = 0
     new_links: list[str] = []
-    discovered_at = datetime.utcnow().isoformat()
+    discovered_at = datetime.now(timezone.utc).isoformat()
     for link in sorted(all_links):
         norm = _normalize_url(link)
         if not norm:
@@ -267,7 +267,7 @@ def extract_all_vehicle_links(max_pages: int | None = None) -> None:
 
     pipeline_before = len(pipeline_df) - len(new_links)
     summary = {
-        "generated_at": datetime.utcnow().isoformat(),
+        "generated_at": datetime.now(timezone.utc).isoformat(),
         "total_links_found": len(all_links),
         "pipeline_before": pipeline_before if pipeline_before >= 0 else len(pipeline_df),
         "pipeline_after": len(pipeline_df),

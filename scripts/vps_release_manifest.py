@@ -152,6 +152,14 @@ def validate_release(root: Path) -> list[str]:
             "Repair review decision schema mismatch; "
             f"missing={missing_decisions or []} unexpected={unexpected_decisions or []}"
         )
+    elif decisions["repair_key"].astype(str).str.strip().duplicated(keep=False).any():
+        duplicate_mask = decisions["repair_key"].astype(str).str.strip().duplicated(keep=False)
+        duplicate_keys = sorted(
+            decisions.loc[duplicate_mask, "repair_key"].astype(str).str.strip().unique()
+        )
+        sample = ", ".join(duplicate_keys[:10])
+        suffix = "" if len(duplicate_keys) <= 10 else f" (+{len(duplicate_keys) - 10} more)"
+        errors.append(f"Repair review decisions contain duplicate repair_key rows: {sample}{suffix}")
     return errors
 
 

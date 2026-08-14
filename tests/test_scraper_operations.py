@@ -114,7 +114,7 @@ def test_snapshot_reports_healthy_sources_and_manheim_block(tmp_path: Path) -> N
     )
 
     by_source = {row["source"]: row for row in snapshot["source_rows"]}
-    assert snapshot["overall_status"] == "Operational"
+    assert snapshot["overall_status"] == "Attention"
     assert snapshot["last_daily_status"] == "Success"
     assert snapshot["next_hourly_run"] == "29 Jul 2026, 10:13 AM"
     assert by_source["Grays"]["status"] == "Healthy"
@@ -137,7 +137,7 @@ def test_snapshot_surfaces_disabled_autotrader(tmp_path: Path) -> None:
 
     by_source = {row["source"]: row for row in snapshot["source_rows"]}
     assert by_source["Autotrader"]["status"] == "Disabled"
-    assert snapshot["overall_status"] == "Operational"
+    assert snapshot["overall_status"] == "Attention"
 
 
 def test_snapshot_sanitizes_daily_error_and_marks_running_lock(tmp_path: Path) -> None:

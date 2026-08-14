@@ -311,16 +311,22 @@ def build_scraper_operations_snapshot(
     lock_age = _hours_old(lock_path, current_time)
     running = bool(lock_path.exists() and lock_age is not None and lock_age < 8)
 
-    important_statuses = {row["status"] for row in source_rows if row["source"] in {"Grays", "Autotrader"}}
-    overall_status = "Running" if running else "Operational"
-    if important_statuses & {"Failed"}:
+    important_statuses = {row["status"] for row in source_rows}
+    if running:
+        overall_status = "Running"
+    elif important_statuses & {"Failed", "Blocked"}:
         overall_status = "Attention"
     elif important_statuses & {"Stale", "Degraded"}:
         overall_status = "Degraded"
+    else:
+        overall_status = "Operational"
 
     latest_error = str(daily_state.get("last_error_message") or "").strip()
     if latest_error:
-        latest_error = "The latest daily pipeline did not complete. Existing data remains available."
+        if str(daily_state.get("last_status") or "").strip().lower() == "degraded":
+            latest_error = "The latest daily pipeline completed with incomplete external source coverage."
+        else:
+            latest_error = "The latest daily pipeline did not complete. Existing data remains available."
 
     return {
         "generated_at": _format_local(current_time),

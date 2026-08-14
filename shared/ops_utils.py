@@ -108,7 +108,7 @@ def parse_currency(value: object) -> float | None:
     text = str(value).strip().replace(",", "")
     if not text:
         return None
-    matches = re.findall(r"-?\\d+(?:\\.\\d+)?", text)
+    matches = re.findall(r"-?\d+(?:\.\d+)?", text)
     if not matches:
         return None
     numbers = [float(match) for match in matches]
