@@ -207,6 +207,8 @@ PICKLES_CONDITION_IGNORE_LINES = {
 }
 
 PICKLES_CONDITION_STOP_LINES = {
+    "item info",
+    "item info (print)",
     "tyres",
     "location",
     "item location",
@@ -716,6 +718,9 @@ def _extract_pickles_condition_text(lines: list[str]) -> str:
             index = lookahead + 1
         else:
             index += 1
+
+    if not snippets:
+        return ""
 
     return "\n".join(dict.fromkeys(snippets)) or _extract_condition_text(lines)
 

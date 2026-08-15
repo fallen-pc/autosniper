@@ -317,6 +317,41 @@ def test_parse_pickles_condition_details_into_repair_fragments():
     assert "Battery Std Light Commercial flat." in condition
 
 
+def test_parse_pickles_condition_details_stops_before_item_info_metadata():
+    text = """
+    STOCK 62363135
+    2020 Ford Ranger
+    PX MkIII MY21.25 Wildtrak Pick-up Double Cab 4dr Spts Auto 10sp 4x4 954kg 2.0DTT
+    Condition Details
+    Item Info (Print)
+    Keys
+    No
+    Spare Keys
+    Grey
+    Compliance Date
+    12/2020
+    Build Date
+    11/2020
+    Odometer (Showing on)
+    117,116 km
+    Transmission
+    10 Spd Sports Automatic
+    Registration
+    No Registration
+    VIN
+    MPBUMFF60LX313235
+    """
+
+    row = parse_listing_text(
+        "pickles",
+        "https://www.pickles.com.au/used/details/cars/2020-ford-ranger/62363135",
+        "2020 Ford Ranger, 62363135 - Pickles AU",
+        text,
+    )
+
+    assert row["general_condition"] == ""
+
+
 def test_parse_pickles_embedded_sold_fields_into_grays_like_columns():
     text = r"""
     STOCK 62146160
