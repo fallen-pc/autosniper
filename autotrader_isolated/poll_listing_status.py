@@ -476,6 +476,13 @@ async def _poll_urls_playwright(
 ) -> list[dict[str, Any]]:
     from playwright.async_api import Error as PlaywrightError, async_playwright
 
+    # The verdict needs only the response status and the redirect target unless
+    # content patterns are configured. When none are, stop at "commit" (headers
+    # received) instead of waiting for the DOM, and never serialise the page body.
+    # On this site that is the difference between ~11s and ~1s per listing.
+    need_html = bool(tuple(gone_patterns)) or capture_html
+    wait_state = "domcontentloaded" if need_html else "commit"
+
     results: list[dict[str, Any]] = []
     queue: asyncio.Queue[str] = asyncio.Queue()
     for url in urls:
@@ -539,13 +546,13 @@ async def _poll_urls_playwright(
                     try:
                         response = await page.goto(
                             absolute_listing_url(url),
-                            wait_until="domcontentloaded",
+                            wait_until=wait_state,
                             timeout=timeout * 1000,
                         )
                         final_url = page.url or ""
                         if response is not None:
                             status_code = response.status
-                            if status_code == 200:
+                            if status_code == 200 and need_html:
                                 html = await page.content()
                         else:
                             error = "no_response"
@@ -650,6 +657,28 @@ def _read_cookie(cookie_file: Path | None) -> str | None:
     return cookie_file.read_text(encoding="utf-8").strip() or None
 
 
+def relisted_urls(history_path: Path) -> set[str]:
+    """URLs the scraper marked sold and then saw again.
+
+    scrape_first_page.py emits a `relisted` event precisely when a URL whose state
+    is `sold` reappears in a scrape, so the presence of that event is exactly the
+    "this sold flag was later contradicted" signal. 26,197 of 55,021 sold events
+    were contradicted this way, which is why these are excluded from the backfill:
+    their exit history is known-noisy and a retroactive check would be scored
+    against an unreliable baseline.
+    """
+    if not history_path.exists():
+        return set()
+    try:
+        frame = pd.read_csv(history_path, usecols=["event", "url"], low_memory=False)
+    except Exception:
+        return set()
+    if frame.empty or "event" not in frame.columns:
+        return set()
+    relisted = frame[frame["event"].astype(str).str.strip() == "relisted"]
+    return set(relisted["url"].astype(str).str.strip())
+
+
 def _tagged_url_set(path: Path) -> set[str] | None:
     if not path.exists():
         return None
@@ -685,6 +714,17 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
                    help="Poll only listings carrying a canonical_tag.")
     p.add_argument("--active-only", action="store_true",
                    help="Poll only listings the legacy scraper still believes are active.")
+    p.add_argument("--status", choices=("any", "active", "sold"), default="any",
+                   help="Filter by the legacy status column. --active-only is a shorthand "
+                        "for --status active. Use --status sold to backfill past exits.")
+    p.add_argument("--exclude-relisted", action="store_true",
+                   help="Drop listings the scraper ever saw reappear after marking them sold. "
+                        "Use with --status sold so the backfill only checks clean exits.")
+    p.add_argument("--history-input", type=Path, default=OUTPUT_DIR / "listing_history.csv",
+                   help="listing_history.csv, read by --exclude-relisted.")
+    p.add_argument("--require-price", action="store_true",
+                   help="Skip listings with no recorded last_price. They cannot become resale "
+                        "observations, so polling them is wasted work during a backfill.")
     p.add_argument("--max-listings", type=int, default=None,
                    help="Cap listings polled this run.")
     p.add_argument("--min-hours-between-polls", type=float, default=12.0,
@@ -844,8 +884,27 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     state_df = pd.read_csv(args.state_input, low_memory=False)
-    if args.active_only and "status" in state_df.columns:
-        state_df = state_df[state_df["status"].astype(str).str.strip() == "active"]
+    total_rows = len(state_df)
+
+    wanted_status = "active" if args.active_only else args.status
+    if wanted_status != "any" and "status" in state_df.columns:
+        state_df = state_df[state_df["status"].astype(str).str.strip() == wanted_status]
+        print(f"status filter '{wanted_status}': {total_rows:,} -> {len(state_df):,}")
+
+    if args.exclude_relisted:
+        before = len(state_df)
+        ever_relisted = relisted_urls(args.history_input)
+        state_df = state_df[~state_df["url"].astype(str).str.strip().isin(ever_relisted)]
+        print(
+            f"excluding ever-relisted ({len(ever_relisted):,} urls): "
+            f"{before:,} -> {len(state_df):,}"
+        )
+
+    if args.require_price and "last_price" in state_df.columns:
+        before = len(state_df)
+        prices = pd.to_numeric(state_df["last_price"], errors="coerce")
+        state_df = state_df[prices.notna() & (prices > 0)]
+        print(f"requiring a recorded price: {before:,} -> {len(state_df):,}")
 
     tagged_urls = None
     if args.tagged_only:

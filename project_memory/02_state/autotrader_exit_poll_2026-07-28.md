@@ -110,11 +110,55 @@ correctly, `poll_count` and streak counters advancing as designed.
 4. Remember exit price is an **asking** price, not a realised sale price — cars sell below
    asking by an amount that still needs calibrating. Design the validation to demand a wide
    margin so it stays robust to that error.
-5. Backfill opportunity: the legacy `sold` flag is unreliable in aggregate, but the ~12,871
-   listings marked sold and never relisted can be re-checked directly by this poller with
-   `--recheck-confirmed`-style targeting. A `removed=true` redirect confirms those exits
-   retroactively, which could seed the ledger without waiting for new data. Their `last_price`
-   is already recorded. Worth doing before waiting weeks for fresh accumulation.
+5. ~~Backfill opportunity~~ — BUILT, see below.
+
+## Backfill — built and sampled 2026-07-28
+
+`--status sold --exclude-relisted --require-price` selects past exits for retroactive
+verification. Funnel: 36,281 state rows -> 28,824 sold -> 18,018 never relisted -> **17,957**
+with a recorded price.
+
+**Sample of 80 polled: 73.8% confirmed gone, 26.2% still LIVE.**
+
+That is the headline number. Even on the *cleanest* subset — everything ever relisted already
+excluded — better than one in four "sold" flags is simply wrong; the car is on Autotrader right
+now. Combined with the 47.6% relist contradiction rate, the legacy flag is wrong most of the
+time. Every confirmed exit came via `redirect_removed_flag`; zero ambiguous verdicts.
+
+Extrapolating: roughly **13,000 verified exits** available from the backfill.
+
+### Performance fix
+
+With content patterns empty the verdict needs only status + redirect target, so navigation now
+stops at `wait_until="commit"` and never serialises the page body. Median 11,245ms -> 6,622ms.
+Verified safe: 40 URLs polled under both wait states produced **zero verdict changes**, proving
+the `removed=true` redirect is a real HTTP redirect resolved before commit.
+
+Full backfill: ~4 hours at concurrency 8 (was ~6.8).
+
+## Retail exit ledger
+
+`scripts/build_retail_exit_ledger.py` turns confirmed exits into resale observations: spec,
+canonical/curve tag, days on market, initial and final asking price, total reduction, reduction
+percentage, price-change count, exit reason.
+
+From the 87-exit sample:
+
+- median final asking price **$26,488**
+- **69 rows at $15k+** — against only 23 rows in that band on the Grays side, which is why the
+  earlier anchor work could not test the money band at all
+- all 87 curve-tagged
+- **34 of 87 (39%) cut price before exiting**, median $1,000 / 4.8%
+
+That last figure is directly observed and is a partial calibration of the asking-vs-sale gap —
+it captures what sellers conceded publicly, though not what buyers negotiated after.
+
+**Column naming is deliberate.** `final_asking_price`, never `sale_price`. Do not rename it and
+do not build a profit number treating it as a realised sale without a haircut.
+
+A production bug was caught by the ledger tests: `frame.get(missing)` returns `None`, and
+subtracting two of those raises rather than yielding NaT, so any state file lacking
+`first_seen`/`last_seen` would have aborted the whole build.
 
 ## Unrelated pre-existing failure
 
