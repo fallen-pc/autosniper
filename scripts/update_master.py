@@ -250,7 +250,7 @@ def _clean_sold_rows(
         odometer, odo_suspect = _normalize_odometer(row_dict.get("odometer_reading"))
         vin = str(row_dict.get("vin", "") or "").strip().upper()
         if (not vin or vin.lower() in {"nan", "none"}) and url in static_lookup:
-            fallback = static_lookup.get(url, "")
+            fallback = str(static_lookup.get(url, "") or "").strip().upper()
             if fallback and fallback.lower() not in {"nan", "none"}:
                 vin = fallback
                 row_dict["vin"] = vin
