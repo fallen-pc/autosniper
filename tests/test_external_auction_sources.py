@@ -389,6 +389,44 @@ def test_parse_pickles_condition_details_stops_before_item_info_metadata():
     assert row["general_condition"] == ""
 
 
+def test_parse_pickles_metadata_sequence_preserves_explicit_transport_risk():
+    text = """
+    STOCK 62335694
+    2023 Toyota Hilux
+    Condition Details
+    2023 Toyota Hilux GUN126R SR Cab Chassis Dual Cab
+    Keys
+    Spare Keys
+    White
+    Compliance Date
+    03/2023
+    Build Date
+    02/2023
+    Odometer (Showing on)
+    54,642 km
+    Service History
+    No Service History
+    Owners Manual
+    None
+    Transmission
+    6 Spd Sports Automatic
+    Registration
+    No Registration
+    VIN
+    MR0KA3CD601288270
+    ******this asset is a non runner, tilt tray required for collection *******
+    """
+
+    row = parse_listing_text(
+        "pickles",
+        "https://www.pickles.com.au/used/details/cars/2023-toyota-hilux/62335694",
+        "2023 Toyota Hilux, 62335694 - Pickles AU",
+        text,
+    )
+
+    assert row["general_condition"] == "this asset is a non runner, tilt tray required for collection"
+
+
 def test_parse_pickles_embedded_sold_fields_into_grays_like_columns():
     text = r"""
     STOCK 62146160

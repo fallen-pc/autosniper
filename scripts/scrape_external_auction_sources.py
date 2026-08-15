@@ -229,6 +229,21 @@ PICKLES_CONDITION_STOP_LINES = {
     "contact",
 }
 
+PICKLES_METADATA_SECTION_MARKERS = {
+    "keys",
+    "spare keys",
+    "compliance date",
+    "build date",
+    "odometer (showing on)",
+}
+PICKLES_RISK_NOTE_MARKERS = (
+    "please note",
+    "this vehicle will need to be transported",
+    "this asset is a non runner",
+    "this asset is a non-runner",
+    "tilt tray required",
+)
+
 
 @dataclass(frozen=True)
 class BrowserListing:
@@ -678,6 +693,32 @@ def _normalise_pickles_damage(value: str) -> str:
     return text.lower()
 
 
+def _looks_like_pickles_metadata_section(lines: list[str], start_index: int) -> bool:
+    probe = {
+        _strip_pickles_condition_number(line).lower().rstrip(":")
+        for line in lines[start_index : start_index + 30]
+    }
+    identity_markers = {"keys", "spare keys"}
+    dated_markers = {"compliance date", "build date", "odometer (showing on)"}
+    return identity_markers.issubset(probe) and bool(dated_markers & probe)
+
+
+def _extract_pickles_metadata_risk_notes(lines: list[str], start_index: int) -> str:
+    notes: list[str] = []
+    for line in lines[start_index:]:
+        cleaned = _clean_text(line).strip(" *.")
+        lowered = cleaned.lower()
+        for marker in PICKLES_RISK_NOTE_MARKERS:
+            marker_index = lowered.find(marker)
+            if marker_index < 0:
+                continue
+            note = cleaned[marker_index:].strip(" *.")
+            if note:
+                notes.append(note)
+            break
+    return "\n".join(dict.fromkeys(notes))
+
+
 def _extract_pickles_condition_text(lines: list[str]) -> str:
     start_index = None
     for index, line in enumerate(lines):
@@ -686,6 +727,8 @@ def _extract_pickles_condition_text(lines: list[str]) -> str:
             break
     if start_index is None:
         return _extract_condition_text(lines)
+    if _looks_like_pickles_metadata_section(lines, start_index):
+        return _extract_pickles_metadata_risk_notes(lines, start_index)
 
     snippets: list[str] = []
     index = start_index
