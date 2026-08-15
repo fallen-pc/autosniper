@@ -409,6 +409,8 @@ def test_external_auction_daily_scrape_uses_source_specific_caps(monkeypatch, tm
         detail_timeout_ms,
         detail_wait_ms,
         detail_browser_recycle_size,
+        discovery_browser_recycle_pages,
+        detail_batch_size,
         seed_listings=(),
     ):
         source = list(sources)[0]
@@ -422,6 +424,8 @@ def test_external_auction_daily_scrape_uses_source_specific_caps(monkeypatch, tm
                 "detail_timeout_ms": detail_timeout_ms,
                 "detail_wait_ms": detail_wait_ms,
                 "detail_browser_recycle_size": detail_browser_recycle_size,
+                "discovery_browser_recycle_pages": discovery_browser_recycle_pages,
+                "detail_batch_size": detail_batch_size,
             }
         )
         return (
@@ -469,6 +473,8 @@ def test_external_auction_daily_scrape_uses_source_specific_caps(monkeypatch, tm
             "detail_timeout_ms": 12000,
             "detail_wait_ms": 1000,
             "detail_browser_recycle_size": 40,
+            "discovery_browser_recycle_pages": 10,
+            "detail_batch_size": 2,
         },
         {
             "source": "manheim",
@@ -479,6 +485,8 @@ def test_external_auction_daily_scrape_uses_source_specific_caps(monkeypatch, tm
             "detail_timeout_ms": 12000,
             "detail_wait_ms": 1000,
             "detail_browser_recycle_size": 40,
+            "discovery_browser_recycle_pages": 10,
+            "detail_batch_size": 2,
         },
         {
             "source": "slattery",
@@ -489,6 +497,8 @@ def test_external_auction_daily_scrape_uses_source_specific_caps(monkeypatch, tm
             "detail_timeout_ms": 12000,
             "detail_wait_ms": 1000,
             "detail_browser_recycle_size": 40,
+            "discovery_browser_recycle_pages": 10,
+            "detail_batch_size": 2,
         },
     ]
     assert len(written) == 1
