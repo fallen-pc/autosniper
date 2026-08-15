@@ -1,0 +1,12 @@
+# Targeted continuation for highest-demand Grays lanes that remain retail-evidence short.
+# Exact trim, generation, body, fuel, and transmission filtering occurs after import.
+https://www.carsales.com.au/cars/private/ford/kuga/
+https://www.carsales.com.au/cars/private/mazda/3/
+https://www.carsales.com.au/cars/private/bmw/x5/
+https://www.carsales.com.au/cars/private/holden/barina/
+https://www.carsales.com.au/cars/private/holden/colorado/
+https://www.carsales.com.au/cars/private/hyundai/i45/
+https://www.carsales.com.au/cars/private/nissan/dualis/
+https://www.carsales.com.au/cars/private/ford/mondeo/
+https://www.carsales.com.au/cars/private/volkswagen/golf/
+https://www.carsales.com.au/cars/private/kia/grand-carnival/

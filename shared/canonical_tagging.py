@@ -450,13 +450,13 @@ def _extract_series_code(text: str) -> str:
         if candidate.startswith("my"):
             continue
         # Ignore model-like tokens that can look like series codes.
-        if candidate in {"ix35", "cx5", "cx9"}:
+        if candidate in {"ix35", "cx5", "cx9", "xc60"}:
             continue
         return candidate
 
     # Some series/platform codes appear as short alpha tokens in the variant text.
     short_match = re.search(
-        r"\b(BL|BM|KE|KF|LM|TB|TQ|SZ|SY|NT|NW|NX|MN|MQ|CG|VI|ZH|ZJ|ZK|T30|T31|T32|S3|S4|79V|LW|LZ)\b",
+        r"\b(BL|BM|KE|KF|LM|TB|TQ|SZ|SY|NT|NW|NX|MN|MQ|CG|VI|ZH|ZJ|ZK|T30|T31|T32|S3|S4|79V|LW|LZ|DZ)\b",
         text,
         re.IGNORECASE,
     )

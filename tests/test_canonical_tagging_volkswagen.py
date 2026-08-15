@@ -44,7 +44,6 @@ def test_volkswagen_golf_vi_comfortline_lanes_map_to_expected_tags(
 @pytest.mark.parametrize(
     ("variant", "fuel_type"),
     [
-        ("GTI VI Auto MY10", "Petrol - Premium ULP"),
         ("R VI Auto MY12", "Petrol - Premium ULP"),
         ("118TSI Comfortline VI Manual MY11", "Petrol - Premium ULP"),
     ],
@@ -151,4 +150,7 @@ def test_volkswagen_golf_v_gti_maps_without_absorbing_vi_gti():
         "volkswagen_golf_gti_petrol_auto_hatch_v",
         "[OK]",
     )
-    assert assign_canonical_tag(golf_vi_gti, require_price=True)[0] == "UNCLASSIFIED"
+    assert assign_canonical_tag(golf_vi_gti, require_price=True)[0:2] == (
+        "volkswagen_golf_gti_petrol_auto_hatch_vi",
+        "[OK]",
+    )

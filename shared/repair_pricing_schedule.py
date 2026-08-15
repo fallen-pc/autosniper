@@ -490,6 +490,8 @@ def apply_quote_response(
     for column in QUOTE_COLUMNS:
         if column not in out.columns:
             out[column] = ""
+    for column in ("quoted_low", "quoted_high", "quoted_default"):
+        out[column] = out[column].astype(object)
     request = safe_text(request_id)
     mask = out["request_id"].map(safe_text) == request
     if not mask.any():

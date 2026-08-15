@@ -58,31 +58,107 @@ excluded every never-polled listing.
 | `AUTOSNIPER_AUTOTRADER_EXIT_POLL_MAX` | cap listings per run, default uncapped |
 | `AUTOSNIPER_AUTOTRADER_EXIT_POLL_TAGGED_ONLY` | restrict to curve-tagged lanes |
 
-## NOT YET DONE — calibration is required before enabling
+## Calibration — DONE 2026-07-28, verified against the live site
 
-The removal-content patterns in `DEFAULT_GONE_PATTERNS` are **unverified guesses**. The exact
-markup Autotrader serves for a withdrawn listing has not been observed. The primary signals
-(404/410, redirect off listing id) need no calibration and should carry most cases, but the
-patterns must be checked before the flag is turned on.
+**Autotrader announces removal explicitly.** A listing removed back in January redirected to
+`https://www.autotrader.com.au/for-sale?removed=true`, while a live listing stayed on its own
+URL and returned its real title. That `removed=true` flag is the site's own signal and is now
+the primary detector (`REMOVED_REDIRECT_MARKERS` -> reason `redirect_removed_flag`).
 
-Calibrate with `--probe` against one known-live and one known-gone listing, then refine via
-`--gone-patterns-file`. If over half of polls come back `unknown`, the run prints a warning —
-that usually means auth is stale and `--cookie-file` is needed.
+| probe | result |
+|---|---|
+| `car/14810075/toyota/landcruiser/...` (active) | `live` — title "2016 Toyota Landcruiser Sahara (4X4) for sale $63,777" |
+| `car/14928703/toyota/corolla-cross-hybrid/...` (removed Jan) | `gone` — redirect to `/for-sale?removed=true` |
 
-## Sizing
+**`DEFAULT_GONE_PATTERNS` is now deliberately empty.** Both probes matched zero content
+patterns, so the guesses earned nothing — while carrying real downside: a live page containing
+"has been sold" in a recommendations module would have been classified gone, exactly the failure
+this module exists to prevent. The mechanism stays available via `--gone-patterns-file` if a
+soft-404 ever appears.
+
+**Plain `requests` is not viable.** Autotrader 403s it regardless of cookie, matching what
+`scrape_first_page.py` already worked around. The poller now tries requests once, then switches
+the whole run to Playwright. Headless Chrome works here, so the scheduler's headful workaround
+is not needed for polling.
+
+## Measured throughput
 
 7,457 active listings; 6,595 at $10k+; 101 distinct curve tags in the tagged feed.
-At concurrency 4 with a 0.5s delay, a full pass is roughly 30 minutes.
+
+Median **4.9s per listing** (Playwright, headless, resources blocked). Effective rate is that
+divided by concurrency:
+
+| concurrency | full 7,457 pass |
+|---|---|
+| 3 | ~3.3 hours |
+| 8 | ~75 min |
+
+A full daily pass is unnecessary. `--min-hours-between-polls` already spreads load, so cap the
+batch instead — roughly 2,500/day at concurrency 8 (~25 min) polls every listing about every
+three days, which is ample for detecting exits.
+
+Verified end to end on a real 12-listing batch: all 12 classified `live`, state and log written
+correctly, `poll_count` and streak counters advancing as designed.
 
 ## Next steps
 
-1. Calibrate the gone patterns with `--probe` (blocking — do this first)
-2. Enable the flag and let clean exit data accumulate
+1. ~~Calibrate the gone patterns~~ — DONE, see above. The detector is verified.
+2. Enable `AUTOSNIPER_AUTOTRADER_EXIT_POLL=1` and let clean exit data accumulate.
+   Suggested: `_CONCURRENCY=8`, `_MAX=2500`.
 3. Build the resale ledger: join confirmed exits to Grays sold rows by spec to produce
-   simulated profit, then run `scripts/evaluate_buy_selection.py` against it
+   simulated profit, then run `scripts/evaluate_buy_selection.py` against it.
 4. Remember exit price is an **asking** price, not a realised sale price — cars sell below
    asking by an amount that still needs calibrating. Design the validation to demand a wide
    margin so it stays robust to that error.
+5. ~~Backfill opportunity~~ — BUILT, see below.
+
+## Backfill — built and sampled 2026-07-28
+
+`--status sold --exclude-relisted --require-price` selects past exits for retroactive
+verification. Funnel: 36,281 state rows -> 28,824 sold -> 18,018 never relisted -> **17,957**
+with a recorded price.
+
+**Sample of 80 polled: 73.8% confirmed gone, 26.2% still LIVE.**
+
+That is the headline number. Even on the *cleanest* subset — everything ever relisted already
+excluded — better than one in four "sold" flags is simply wrong; the car is on Autotrader right
+now. Combined with the 47.6% relist contradiction rate, the legacy flag is wrong most of the
+time. Every confirmed exit came via `redirect_removed_flag`; zero ambiguous verdicts.
+
+Extrapolating: roughly **13,000 verified exits** available from the backfill.
+
+### Performance fix
+
+With content patterns empty the verdict needs only status + redirect target, so navigation now
+stops at `wait_until="commit"` and never serialises the page body. Median 11,245ms -> 6,622ms.
+Verified safe: 40 URLs polled under both wait states produced **zero verdict changes**, proving
+the `removed=true` redirect is a real HTTP redirect resolved before commit.
+
+Full backfill: ~4 hours at concurrency 8 (was ~6.8).
+
+## Retail exit ledger
+
+`scripts/build_retail_exit_ledger.py` turns confirmed exits into resale observations: spec,
+canonical/curve tag, days on market, initial and final asking price, total reduction, reduction
+percentage, price-change count, exit reason.
+
+From the 87-exit sample:
+
+- median final asking price **$26,488**
+- **69 rows at $15k+** — against only 23 rows in that band on the Grays side, which is why the
+  earlier anchor work could not test the money band at all
+- all 87 curve-tagged
+- **34 of 87 (39%) cut price before exiting**, median $1,000 / 4.8%
+
+That last figure is directly observed and is a partial calibration of the asking-vs-sale gap —
+it captures what sellers conceded publicly, though not what buyers negotiated after.
+
+**Column naming is deliberate.** `final_asking_price`, never `sale_price`. Do not rename it and
+do not build a profit number treating it as a realised sale without a haircut.
+
+A production bug was caught by the ledger tests: `frame.get(missing)` returns `None`, and
+subtracting two of those raises rather than yielding NaT, so any state file lacking
+`first_seen`/`last_seen` would have aborted the whole build.
 
 ## Unrelated pre-existing failure
 

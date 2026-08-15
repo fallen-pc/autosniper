@@ -86,14 +86,49 @@ def test_redirect_to_a_different_listing_is_gone() -> None:
     assert reason == "redirected_to_other_listing"
 
 
-def test_gone_content_pattern_detected() -> None:
-    verdict, reason = _classify(html="<html>This vehicle is no longer available.</html>")
+def test_removed_flag_redirect_is_gone() -> None:
+    # Confirmed live against Autotrader 2026-07-28: a removed listing redirects to
+    # /for-sale?removed=true. This is the primary detector.
+    verdict, reason = _classify(
+        final_url="https://www.autotrader.com.au/for-sale?removed=true"
+    )
+    assert verdict == VERDICT_GONE
+    assert reason == "redirect_removed_flag"
+
+
+def test_removed_flag_wins_even_with_listing_id_still_present() -> None:
+    verdict, reason = _classify(
+        final_url="https://www.autotrader.com.au/car/14810823/x?removed=true"
+    )
+    assert verdict == VERDICT_GONE
+    assert reason == "redirect_removed_flag"
+
+
+def test_default_gone_patterns_are_empty_by_design() -> None:
+    # Unverified phrases would misfire on live pages (e.g. a "recently sold" module),
+    # which is the exact failure mode this module exists to prevent.
+    assert DEFAULT_GONE_PATTERNS == ()
+
+
+def test_live_page_containing_sold_text_is_not_gone_by_default() -> None:
+    verdict, _ = _classify(html="<div>Similar cars that have been sold near you</div>")
+    assert verdict == VERDICT_LIVE
+
+
+def test_gone_content_pattern_detected_when_supplied() -> None:
+    verdict, reason = _classify(
+        html="<html>This vehicle is no longer available.</html>",
+        gone_patterns=("no longer available",),
+    )
     assert verdict == VERDICT_GONE
     assert reason.startswith("content:")
 
 
 def test_gone_pattern_matching_is_case_insensitive() -> None:
-    assert _classify(html="<h1>NO LONGER AVAILABLE</h1>")[0] == VERDICT_GONE
+    verdict, _ = _classify(
+        html="<h1>NO LONGER AVAILABLE</h1>", gone_patterns=("no longer available",)
+    )
+    assert verdict == VERDICT_GONE
 
 
 def test_custom_gone_patterns_are_honoured() -> None:
