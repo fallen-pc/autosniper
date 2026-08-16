@@ -74,12 +74,13 @@ LEDGER_COLUMNS = [
     "url",
     "canonical_tag",
     "curve_tag",
+    "tag_source",
     *SPEC_COLUMNS,
     "first_listed",
     "last_seen",
     "exit_confirmed_date",
     "exit_reason",
-    "days_on_market",
+    "days_visible_in_scrape",
     "initial_asking_price",
     "final_asking_price",
     "total_reduction",
@@ -87,6 +88,15 @@ LEDGER_COLUMNS = [
     "price_change_count",
     "price_basis",
 ]
+
+# Values that look like a tag but are not one. The --tagged-only filter originally
+# tested only for the empty string, so "nan" and "UNCLASSIFIED" both slipped
+# through and inflated the apparent usable row count by more than 20x.
+UNUSABLE_TAGS = {"", "nan", "none", "nat", "unclassified"}
+
+
+def is_real_tag(series: pd.Series) -> pd.Series:
+    return ~series.astype(str).str.strip().str.lower().isin(UNUSABLE_TAGS)
 
 
 def _numeric(frame: pd.DataFrame, column: str) -> pd.Series:
@@ -110,8 +120,9 @@ def confirmed_exits(exit_state: pd.DataFrame) -> pd.DataFrame:
     """Rows whose exit was verified by a direct poll."""
     if exit_state.empty or "confirmed_gone_date" not in exit_state.columns:
         return pd.DataFrame(columns=exit_state.columns)
-    confirmed = exit_state["confirmed_gone_date"].astype(str).str.strip()
-    keep = confirmed.ne("") & ~confirmed.isin({"nan", "NaT", "None"})
+    source = exit_state["confirmed_gone_date"]
+    confirmed = source.astype(str).str.strip()
+    keep = source.notna() & confirmed.ne("") & ~confirmed.str.lower().isin({"nan", "nat", "none", "<na>"})
     return exit_state[keep].copy()
 
 
@@ -145,6 +156,51 @@ def price_trajectory(history: pd.DataFrame, urls: set[str]) -> pd.DataFrame:
     )
 
     return initial.merge(counts, on="url", how="outer")
+
+
+def _tag_from_spec(ledger: pd.DataFrame) -> pd.DataFrame:
+    """Canonically tag rows the tagged feed did not cover, using their own spec.
+
+    The feed (`autotrader_recent_market_tagged.csv`) only spans the recent market
+    window, so backfilled exits from months ago are mostly absent from it. Those
+    rows still carry year/make/model/variant/body/transmission/fuel, which is what
+    the tagger needs, so they can be classified directly.
+    """
+    needs = ~is_real_tag(ledger["canonical_tag"])
+    if not needs.any():
+        return ledger
+
+    try:
+        from shared.canonical_tagging import tag_dataframe
+    except Exception as exc:  # noqa: BLE001
+        print(f"  direct tagging unavailable ({type(exc).__name__}), keeping feed tags only")
+        return ledger
+
+    subset = ledger.loc[needs].copy()
+    # The tagger reads a `price` column; the ledger stores it under its own name.
+    subset["price"] = subset["final_asking_price"]
+    try:
+        retagged = tag_dataframe(
+            subset,
+            source="autotrader_exit_ledger",
+            require_price=False,
+            append_log=False,
+        )
+    except Exception as exc:  # noqa: BLE001
+        print(f"  direct tagging failed ({type(exc).__name__}: {exc})")
+        return ledger
+
+    if "canonical_tag" not in retagged.columns:
+        return ledger
+
+    new_tags = retagged["canonical_tag"].to_numpy()
+    ledger.loc[needs, "canonical_tag"] = new_tags
+    gained = is_real_tag(pd.Series(new_tags)).sum()
+    ledger.loc[needs, "tag_source"] = [
+        "spec" if real else "" for real in is_real_tag(pd.Series(new_tags))
+    ]
+    print(f"  direct tagging recovered {int(gained):,} of {int(needs.sum()):,} untagged rows")
+    return ledger
 
 
 def build_ledger(
@@ -191,9 +247,13 @@ def build_ledger(
         (ledger["total_reduction"] / initial * 100.0).where(initial.notna() & (initial > 0))
     ).round(2)
 
+    # NOT time-to-sell. first_seen/last_seen come from the legacy scrape's presence
+    # in search results, which churns with scope and pagination - the observed
+    # median is ~4 days, far too short for a real used-car sale. Named for what it
+    # actually measures so nobody reads it as days on market.
     listed = _datetime(ledger, "first_listed")
     seen = _datetime(ledger, "last_seen")
-    ledger["days_on_market"] = ((seen - listed).dt.total_seconds() / 86400).round(1)
+    ledger["days_visible_in_scrape"] = ((seen - listed).dt.total_seconds() / 86400).round(1)
 
     if tagged is not None and not tagged.empty and "url" in tagged.columns:
         tags = tagged.copy()
@@ -204,6 +264,13 @@ def build_ledger(
 
     if "canonical_tag" not in ledger.columns:
         ledger["canonical_tag"] = ""
+    ledger["tag_source"] = ["feed" if real else "" for real in is_real_tag(ledger["canonical_tag"])]
+
+    # The tagged feed only covers the recent market window, so most backfilled
+    # exits are absent from it. Tag those directly from the spec the ledger
+    # already carries rather than discarding them.
+    ledger = _tag_from_spec(ledger)
+
     if curves_df is not None:
         ledger["curve_tag"] = (
             ledger["canonical_tag"].astype(str).str.strip().apply(
@@ -273,17 +340,24 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.tagged_only:
         before = len(ledger)
-        ledger = ledger[ledger["curve_tag"].astype(str).str.strip().ne("")]
+        ledger = ledger[is_real_tag(ledger["curve_tag"])]
         print(f"  curve-tagged only: {before:,} -> {len(ledger):,}")
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     write_dataframe_csv_atomic(ledger, args.output, index=False)
 
     price = _numeric(ledger, "final_asking_price")
+    real_tags = is_real_tag(ledger["curve_tag"])
     print(f"\nwritten: {args.output} ({len(ledger):,} rows)")
     print(f"  final asking price  median ${price.median():,.0f}")
     print(f"    >= $10k: {(price >= 10000).sum():,}    >= $15k: {(price >= 15000).sum():,}")
-    print(f"  curve-tagged        {ledger['curve_tag'].astype(str).str.strip().ne('').sum():,}")
+    print(f"  curve-tagged        {int(real_tags.sum()):,} of {len(ledger):,}")
+    if real_tags.any():
+        lanes = ledger.loc[real_tags, "curve_tag"].value_counts()
+        print(f"  distinct lanes      {len(lanes):,}")
+        for depth in (3, 5, 10):
+            deep = lanes[lanes >= depth]
+            print(f"    lanes with >={depth:2d} obs: {len(deep):3,} covering {int(deep.sum()):,} rows")
     reduced = _numeric(ledger, "total_reduction")
     had_cut = reduced.notna() & (reduced > 0)
     if had_cut.any():
