@@ -6,8 +6,39 @@ from scripts.build_retail_exit_ledger import (
     LEDGER_COLUMNS,
     build_ledger,
     confirmed_exits,
+    is_real_tag,
     price_trajectory,
 )
+
+
+# ---------------------------------------------------------------------------
+# is_real_tag
+#
+# The --tagged-only filter originally tested only for the empty string, so
+# "nan" and "UNCLASSIFIED" both passed. That reported 7,838 usable rows when
+# the true count was 353 - a 22x overstatement.
+# ---------------------------------------------------------------------------
+
+
+def test_unclassified_is_not_a_real_tag() -> None:
+    assert not is_real_tag(pd.Series(["UNCLASSIFIED"])).iloc[0]
+
+
+def test_nan_string_is_not_a_real_tag() -> None:
+    values = pd.Series(["nan", "NaT", "None", ""])
+    assert not is_real_tag(values).any()
+
+
+def test_actual_nan_is_not_a_real_tag() -> None:
+    assert not is_real_tag(pd.Series([None])).iloc[0]
+
+
+def test_tag_matching_is_case_insensitive() -> None:
+    assert not is_real_tag(pd.Series(["unclassified", "Nan"])).any()
+
+
+def test_a_genuine_tag_is_real() -> None:
+    assert is_real_tag(pd.Series(["toyota_corolla_zwe219r_hatch_auto_hybrid"])).iloc[0]
 
 
 URL_A = "car/111/toyota/camry/vic/x/sedan"
@@ -160,13 +191,13 @@ def test_falls_back_to_last_price_when_exit_price_missing() -> None:
     assert ledger.iloc[0]["price_basis"] == "last_price"
 
 
-def test_days_on_market_computed_from_listing_dates() -> None:
+def test_days_visible_computed_from_listing_dates() -> None:
     ledger = _build(
         [{"url": URL_A, "confirmed_gone_date": "2026-07-28", "exit_price": 25000}],
         [{"url": URL_A, "first_seen": "2026-01-01T00:00:00", "last_seen": "2026-01-31T00:00:00",
           "last_price": 25000}],
     )
-    assert ledger.iloc[0]["days_on_market"] == 30.0
+    assert ledger.iloc[0]["days_visible_in_scrape"] == 30.0
 
 
 def test_reduction_and_pct_computed_from_trajectory() -> None:
