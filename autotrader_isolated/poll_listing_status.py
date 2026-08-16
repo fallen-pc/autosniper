@@ -473,6 +473,8 @@ async def _poll_urls_playwright(
     delay: float,
     progress_every: int = 250,
     capture_html: bool = False,
+    on_checkpoint: Any = None,
+    checkpoint_every: int = 0,
 ) -> list[dict[str, Any]]:
     from playwright.async_api import Error as PlaywrightError, async_playwright
 
@@ -484,6 +486,22 @@ async def _poll_urls_playwright(
     wait_state = "domcontentloaded" if need_html else "commit"
 
     results: list[dict[str, Any]] = []
+    # Index of the first result not yet handed to on_checkpoint. Long runs must
+    # persist as they go: a single write at the end means an interrupted run
+    # loses everything, which is exactly what happened to the first backfill.
+    flushed = 0
+
+    def _flush_pending(force: bool = False) -> None:
+        nonlocal flushed
+        if on_checkpoint is None:
+            return
+        pending = len(results) - flushed
+        if pending <= 0:
+            return
+        if force or (checkpoint_every and pending >= checkpoint_every):
+            on_checkpoint(results[flushed:])
+            flushed = len(results)
+
     queue: asyncio.Queue[str] = asyncio.Queue()
     for url in urls:
         queue.put_nowait(url)
@@ -581,13 +599,21 @@ async def _poll_urls_playwright(
                         record["_html"] = html
                     results.append(record)
                     if progress_every and len(results) % progress_every == 0:
-                        print(f"  polled {len(results):,}/{len(urls):,}")
+                        print(f"  polled {len(results):,}/{len(urls):,}", flush=True)
+                    _flush_pending()
             finally:
                 await page.close()
 
-        await asyncio.gather(*[worker() for _ in range(max(1, concurrency))])
-        await context.close()
-        await browser.close()
+        try:
+            await asyncio.gather(*[worker() for _ in range(max(1, concurrency))])
+        finally:
+            # Persist whatever completed, including on interrupt or a mid-run failure.
+            _flush_pending(force=True)
+            try:
+                await context.close()
+                await browser.close()
+            except Exception:  # noqa: BLE001 - teardown must not mask the real error
+                pass
 
     return results
 
@@ -725,6 +751,9 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     p.add_argument("--require-price", action="store_true",
                    help="Skip listings with no recorded last_price. They cannot become resale "
                         "observations, so polling them is wasted work during a backfill.")
+    p.add_argument("--checkpoint-every", type=int, default=200,
+                   help="Persist state and log every N results (default 200). Long runs must "
+                        "checkpoint: an interrupted run otherwise loses everything.")
     p.add_argument("--max-listings", type=int, default=None,
                    help="Cap listings polled this run.")
     p.add_argument("--min-hours-between-polls", type=float, default=12.0,
@@ -962,68 +991,89 @@ def main(argv: list[str] | None = None) -> int:
     else:
         print(f"fetch mode   : {mode}")
 
-    if mode == "requests":
-        with ThreadPoolExecutor(max_workers=max(1, args.concurrency)) as pool:
-            futures = [
-                pool.submit(
-                    poll_one,
-                    url,
+    counts = {VERDICT_LIVE: 0, VERDICT_GONE: 0, VERDICT_UNKNOWN: 0}
+    newly_confirmed = 0
+    persisted = 0
+
+    def persist(batch: list[dict[str, Any]]) -> None:
+        """Fold a batch into state and write it out. Safe to call repeatedly."""
+        nonlocal newly_confirmed, persisted
+        if not batch:
+            return
+        for result in batch:
+            url = result["url"]
+            counts[result["verdict"]] = counts.get(result["verdict"], 0) + 1
+            row = existing.get(url) or blank_exit_state(url)
+            was_confirmed = bool(str(row.get("confirmed_gone_date", "")).strip())
+            row = update_exit_state(
+                row,
+                verdict=result["verdict"],
+                reason=result["reason"],
+                http_status=result["http_status"],
+                poll_ts=poll_ts,
+                confirm_threshold=args.confirm_threshold,
+                known_price=price_by_url.get(url, ""),
+            )
+            if not was_confirmed and str(row.get("confirmed_gone_date", "")).strip():
+                newly_confirmed += 1
+            existing[url] = row
+
+        append_exit_log([{"poll_ts": poll_ts, **r} for r in batch], args.exit_log)
+        write_exit_state(existing, args.exit_state)
+        persisted += len(batch)
+        print(f"  checkpoint: {persisted:,}/{len(targets):,} persisted", flush=True)
+
+    checkpoint_every = max(1, args.checkpoint_every)
+    try:
+        if mode == "requests":
+            with ThreadPoolExecutor(max_workers=max(1, args.concurrency)) as pool:
+                futures = [
+                    pool.submit(
+                        poll_one,
+                        url,
+                        cookie_header=cookie_header,
+                        timeout=args.timeout,
+                        gone_patterns=gone_patterns,
+                        delay=worker_delay,
+                    )
+                    for url in targets
+                ]
+                batch: list[dict[str, Any]] = []
+                for future in futures:
+                    record = future.result()
+                    results.append(record)
+                    batch.append(record)
+                    if len(batch) >= checkpoint_every:
+                        persist(batch)
+                        batch = []
+                persist(batch)
+        else:
+            browser = _default_browser_name(args.playwright_browser)
+            print(
+                f"  browser={browser} headless={not args.playwright_headful} "
+                f"concurrency={args.concurrency} checkpoint_every={checkpoint_every}"
+            )
+            results = _run_async(
+                _poll_urls_playwright(
+                    targets,
+                    storage_state=args.storage_state,
                     cookie_header=cookie_header,
                     timeout=args.timeout,
                     gone_patterns=gone_patterns,
+                    browser_name=browser,
+                    headless=not args.playwright_headful,
+                    block_resources=args.playwright_block_resources,
+                    concurrency=args.concurrency,
                     delay=worker_delay,
+                    on_checkpoint=persist,
+                    checkpoint_every=checkpoint_every,
                 )
-                for url in targets
-            ]
-            for done, future in enumerate(futures, start=1):
-                results.append(future.result())
-                if done % 250 == 0:
-                    print(f"  polled {done:,}/{len(targets):,}")
-    else:
-        browser = _default_browser_name(args.playwright_browser)
-        print(
-            f"  browser={browser} headless={not args.playwright_headful} "
-            f"concurrency={args.concurrency}"
-        )
-        results = _run_async(
-            _poll_urls_playwright(
-                targets,
-                storage_state=args.storage_state,
-                cookie_header=cookie_header,
-                timeout=args.timeout,
-                gone_patterns=gone_patterns,
-                browser_name=browser,
-                headless=not args.playwright_headful,
-                block_resources=args.playwright_block_resources,
-                concurrency=args.concurrency,
-                delay=worker_delay,
             )
-        )
+    except KeyboardInterrupt:
+        print(f"\ninterrupted - {persisted:,} results already persisted, rerun to continue")
+        return 130
 
-    counts = {VERDICT_LIVE: 0, VERDICT_GONE: 0, VERDICT_UNKNOWN: 0}
-    newly_confirmed = 0
-    for result in results:
-        url = result["url"]
-        counts[result["verdict"]] = counts.get(result["verdict"], 0) + 1
-        row = existing.get(url) or blank_exit_state(url)
-        was_confirmed = bool(str(row.get("confirmed_gone_date", "")).strip())
-        row = update_exit_state(
-            row,
-            verdict=result["verdict"],
-            reason=result["reason"],
-            http_status=result["http_status"],
-            poll_ts=poll_ts,
-            confirm_threshold=args.confirm_threshold,
-            known_price=price_by_url.get(url, ""),
-        )
-        if not was_confirmed and str(row.get("confirmed_gone_date", "")).strip():
-            newly_confirmed += 1
-        existing[url] = row
-
-    append_exit_log([{"poll_ts": poll_ts, **r} for r in results], args.exit_log)
-    write_exit_state(existing, args.exit_state)
-
-    total = len(results)
+    total = max(1, persisted)
     print(f"\nlive    : {counts[VERDICT_LIVE]:,} ({counts[VERDICT_LIVE]/total*100:.1f}%)")
     print(f"gone    : {counts[VERDICT_GONE]:,} ({counts[VERDICT_GONE]/total*100:.1f}%)")
     print(f"unknown : {counts[VERDICT_UNKNOWN]:,} ({counts[VERDICT_UNKNOWN]/total*100:.1f}%)")
