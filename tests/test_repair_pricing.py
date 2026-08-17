@@ -827,3 +827,97 @@ def test_apply_repairs_to_max_bid_marks_only_heavier_repairs_not_viable() -> Non
 
     assert adjusted_bid == 2750
     assert verdict == "Not Viable"
+
+
+# ---------------------------------------------------------------------------
+# pricing_uncertainty_blocks_decision
+#
+# The schedule carries cosmetic canonicals only for `small_hatch`, so a scratch on
+# any SUV/ute/van/sedan read as "uncertain" and refused a decision. Replayed over
+# 989 historical sold rows that gate alone turned 65 winnable cars into Review.
+# Relaxing it for cosmetics only took Buy 20 -> 76 and recall 3.2% -> 12.0% with
+# precision unchanged at 100%.
+# ---------------------------------------------------------------------------
+
+
+class _Assessment:
+    def __init__(self, uncertain, canonicals):
+        self.pricing_class_uncertain = uncertain
+        self.pricing_incompatible_canonicals = canonicals
+
+
+def test_certain_pricing_never_blocks() -> None:
+    from shared.repair_pricing import pricing_uncertainty_blocks_decision
+
+    assert not pricing_uncertainty_blocks_decision(_Assessment(False, []))
+    assert not pricing_uncertainty_blocks_decision(_Assessment(False, ["engine_replacement"]))
+
+
+def test_cosmetic_only_gap_does_not_block() -> None:
+    from shared.repair_pricing import pricing_uncertainty_blocks_decision
+
+    assert not pricing_uncertainty_blocks_decision(
+        _Assessment(True, ["cosmetic_surface_damage"])
+    )
+    assert not pricing_uncertainty_blocks_decision(
+        _Assessment(True, ["paint_damage", "seat_damage", "carpet_torn"])
+    )
+
+
+def test_mechanical_gap_blocks() -> None:
+    from shared.repair_pricing import pricing_uncertainty_blocks_decision
+
+    assert pricing_uncertainty_blocks_decision(_Assessment(True, ["engine_replacement"]))
+
+
+def test_one_mechanical_among_cosmetics_still_blocks() -> None:
+    from shared.repair_pricing import pricing_uncertainty_blocks_decision
+
+    assert pricing_uncertainty_blocks_decision(
+        _Assessment(True, ["cosmetic_surface_damage", "paint_damage", "gearbox_replacement"])
+    )
+
+
+def test_uncertain_without_a_named_cause_stays_cautious() -> None:
+    # Flagged uncertain but nothing identified - we cannot prove it is cosmetic.
+    from shared.repair_pricing import pricing_uncertainty_blocks_decision
+
+    assert pricing_uncertainty_blocks_decision(_Assessment(True, []))
+    assert pricing_uncertainty_blocks_decision(_Assessment(True, None))
+
+
+def test_blank_and_whitespace_canonicals_are_ignored() -> None:
+    from shared.repair_pricing import pricing_uncertainty_blocks_decision
+
+    assert not pricing_uncertainty_blocks_decision(
+        _Assessment(True, ["  cosmetic_surface_damage  ", "", "   "])
+    )
+
+
+def test_cosmetic_set_holds_the_canonicals_that_blocked_the_replay() -> None:
+    from shared.repair_pricing import COSMETIC_PRICING_CANONICALS
+
+    # Every canonical observed blocking a winnable row in the 989-row replay.
+    for canonical in (
+        "cosmetic_surface_damage",
+        "seat_damage",
+        "paint_damage",
+        "interior_trim_damage",
+        "seat_issue",
+        "carpet_torn",
+        "panel_alignment_damage",
+    ):
+        assert canonical in COSMETIC_PRICING_CANONICALS
+
+
+def test_cosmetic_set_excludes_mechanical_canonicals() -> None:
+    from shared.repair_pricing import COSMETIC_PRICING_CANONICALS
+
+    for canonical in (
+        "engine_replacement",
+        "gearbox_replacement",
+        "transmission_replacement",
+        "structural_damage",
+        "hail_damage",
+    ):
+        assert canonical not in COSMETIC_PRICING_CANONICALS

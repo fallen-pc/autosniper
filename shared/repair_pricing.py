@@ -549,6 +549,53 @@ HARD_AVOID_BUCKETS = {
     "unknown": {"pill": "UNKNOWN", "cost": 4_000},
 }
 
+# Cosmetic and interior wear. When one of these has no class-specific price it is a
+# gap in repair_pricing_schedule.csv, not a signal that the vehicle is risky.
+COSMETIC_PRICING_CANONICALS = frozenset(
+    {
+        "cosmetic_surface_damage",
+        "paint_damage",
+        "paint_surface_issue",
+        "interior_trim_damage",
+        "seat_damage",
+        "seat_issue",
+        "carpet_torn",
+        "panel_alignment_damage",
+        "generic_damage",
+    }
+)
+
+
+def pricing_uncertainty_blocks_decision(assessment: "RepairAssessment") -> bool:
+    """Should unpriceable repair items force a Review rather than a decision?
+
+    Yes when something MECHANICAL cannot be priced - that is a real reason to stop.
+    No when only cosmetic or interior wear is unpriceable.
+
+    The schedule currently carries 28 rows across two vehicle classes (`generic` and
+    `small_hatch`), and every cosmetic canonical exists only under `small_hatch`. So
+    a scratch on any SUV, ute, van or sedan came back "uncertain" and blocked the
+    decision. Replayed over 989 historical sold rows that gate alone turned 65
+    winnable cars into Review; 38 of them had sold BELOW the system's own max bid
+    and every one was profitable against independently observed retail exits.
+    Relaxing it for cosmetics took Buy from 20 to 76 and recall from 3.2% to 12.0%
+    while precision stayed at 100% - it added no false positives.
+
+    Shared by scripts/ai_listing_valuation.py and shared/missed_opportunities.py so
+    the live path and the replay cannot drift apart.
+    """
+    if not getattr(assessment, "pricing_class_uncertain", False):
+        return False
+    incompatible = {
+        str(canonical).strip()
+        for canonical in (getattr(assessment, "pricing_incompatible_canonicals", None) or [])
+        if str(canonical).strip()
+    }
+    if not incompatible:
+        # Flagged uncertain without naming a cause - stay cautious.
+        return True
+    return not incompatible.issubset(COSMETIC_PRICING_CANONICALS)
+
 REPAIR_GATE_GOOD_MAX = 600
 REPAIR_GATE_MARGINAL_MAX = 2_500
 REPAIR_GATE_NOT_VIABLE_MAX = 4_000
