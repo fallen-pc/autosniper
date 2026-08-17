@@ -82,14 +82,10 @@ def test_missed_decision_metrics_blocks_buy_when_repair_is_unresolved(monkeypatc
     assert result["unresolved_repairs"] == "mystery mechanical noise"
 
 
-def test_missed_decision_metrics_blocks_buy_when_repair_quote_class_is_incompatible(monkeypatch) -> None:
-    assessment = _repair_assessment(total_cost=300, risk_buffer=0)
-    assessment.pricing_vehicle_class = "medium_suv"
-    assessment.pricing_class_uncertain = True
-    assessment.pricing_incompatible_canonicals = ["cosmetic_surface_damage"]
-    row = pd.Series(
+def _pricing_gap_row(url: str) -> pd.Series:
+    return pd.Series(
         {
-            "url": "test://missed-pricing-class-gap",
+            "url": url,
             "price_numeric": 1_000,
             "price": "$1,000",
             "body_type": "SUV",
@@ -98,15 +94,69 @@ def test_missed_decision_metrics_blocks_buy_when_repair_quote_class_is_incompati
             "general_condition": "Front guard scratched.",
         }
     )
+
+
+def test_missed_decision_metrics_decides_when_only_cosmetics_are_unpriceable(monkeypatch) -> None:
+    """An unpriceable scratch must not block the decision.
+
+    The schedule carries cosmetic canonicals only for `small_hatch`, so a scratch on
+    any SUV/ute/van/sedan came back "uncertain". Replayed over 989 historical sold
+    rows that alone turned 65 winnable cars into Review - 38 of which had sold below
+    the system's own max bid, and all of which were profitable against independently
+    observed retail exits. The uncertainty is still surfaced on the row; it just no
+    longer refuses to decide.
+    """
+    assessment = _repair_assessment(total_cost=300, risk_buffer=0)
+    assessment.pricing_vehicle_class = "medium_suv"
+    assessment.pricing_class_uncertain = True
+    assessment.pricing_incompatible_canonicals = ["cosmetic_surface_damage"]
     monkeypatch.setattr(missed_opportunities, "assess_repairs", lambda condition, **_kwargs: assessment)
 
-    result = missed_opportunities.compute_decision_metrics(row, 20_000, include_repairs=True)
+    result = missed_opportunities.compute_decision_metrics(
+        _pricing_gap_row("test://missed-cosmetic-pricing-gap"), 20_000, include_repairs=True
+    )
 
-    assert result["computed_verdict"] == "Review (repair pricing evidence)"
-    assert result["action_label"] == "Review"
+    assert result["computed_verdict"] != "Review (repair pricing evidence)"
+    assert result["action_label"] != "Review"
+    # The uncertainty is still reported, so the operator can see it.
     assert result["repair_pricing_vehicle_class"] == "medium_suv"
     assert result["repair_pricing_class_uncertain"] is True
     assert result["repair_pricing_incompatible_canonicals"] == "cosmetic_surface_damage"
+
+
+def test_missed_decision_metrics_still_blocks_when_mechanicals_are_unpriceable(monkeypatch) -> None:
+    """A mechanical item that cannot be priced must still force Review."""
+    assessment = _repair_assessment(total_cost=300, risk_buffer=0)
+    assessment.pricing_vehicle_class = "medium_suv"
+    assessment.pricing_class_uncertain = True
+    assessment.pricing_incompatible_canonicals = ["transmission_replacement"]
+    monkeypatch.setattr(missed_opportunities, "assess_repairs", lambda condition, **_kwargs: assessment)
+
+    result = missed_opportunities.compute_decision_metrics(
+        _pricing_gap_row("test://missed-mechanical-pricing-gap"), 20_000, include_repairs=True
+    )
+
+    assert result["computed_verdict"] == "Review (repair pricing evidence)"
+    assert result["action_label"] == "Review"
+
+
+def test_missed_decision_metrics_blocks_on_a_mixed_cosmetic_and_mechanical_gap(monkeypatch) -> None:
+    """One unpriceable mechanical item is enough, even alongside cosmetics."""
+    assessment = _repair_assessment(total_cost=300, risk_buffer=0)
+    assessment.pricing_vehicle_class = "medium_suv"
+    assessment.pricing_class_uncertain = True
+    assessment.pricing_incompatible_canonicals = [
+        "cosmetic_surface_damage",
+        "engine_replacement",
+    ]
+    monkeypatch.setattr(missed_opportunities, "assess_repairs", lambda condition, **_kwargs: assessment)
+
+    result = missed_opportunities.compute_decision_metrics(
+        _pricing_gap_row("test://missed-mixed-pricing-gap"), 20_000, include_repairs=True
+    )
+
+    assert result["computed_verdict"] == "Review (repair pricing evidence)"
+    assert result["action_label"] == "Review"
 
 
 def test_load_external_auction_sold_rows_keeps_only_settled_price_rows(tmp_path) -> None:
