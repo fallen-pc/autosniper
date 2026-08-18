@@ -25,6 +25,10 @@ SIMULATED_METRICS_PATH = Path("output") / "eval" / "simulated_verdict_proxy" / "
 SIMULATED_JOIN_PATH = Path("output") / "eval" / "simulated_verdict_proxy" / "buy_selection_join.csv"
 SIMULATED_OUTCOMES_PATH = dataset_path("simulated_sold_outcomes.csv")
 REAL_OUTCOMES_PATH = dataset_path("scored_listings_enriched.csv")
+# Current policy replayed over historical sold rows, scored against retail exits whose
+# removal was verified by polling each listing's own URL. Independent of the resale
+# estimate the decision used, so it is not circular. See scripts/build_replay_outcomes.py.
+REPLAY_OUTCOMES_PATH = dataset_path("model_audit/replay_outcomes.csv")
 RETAIL_MEDIAN_OUTCOMES_PATH = dataset_path("model_audit/simulated_retail_median_outcomes.csv")
 RETAIL_MEDIAN_METRICS_PATH = Path("output") / "eval" / "simulated_retail_median" / "buy_selection_classification.csv"
 
@@ -116,12 +120,14 @@ sim_metrics_df = load_csv(SIMULATED_METRICS_PATH)
 sim_join_df = load_csv(SIMULATED_JOIN_PATH)
 sim_outcomes_df = load_csv(SIMULATED_OUTCOMES_PATH)
 real_df = load_csv(REAL_OUTCOMES_PATH)
+replay_df = load_csv(REPLAY_OUTCOMES_PATH)
 
 real_profit = numeric_series(real_df, "actual_profit")
 real_rows = int(real_profit.notna().sum())
+replay_rows = len(replay_df)
 
 section_heading("Proof Level", "Real outcomes and proxy outcomes are intentionally separate.")
-status_cols = st.columns(2)
+status_cols = st.columns(3)
 with status_cols[0]:
     st.subheader("Real settled-profit benchmark")
     if real_rows:
@@ -143,6 +149,73 @@ with status_cols[1]:
     else:
         render_status_badge("Available", "ok")
         st.caption("Proxy evidence only: simulated sale prices come from resale estimate fields, not real sales.")
+
+with status_cols[2]:
+    st.subheader("Verified retail-exit replay")
+    if replay_df.empty:
+        render_status_badge("Not generated", "warn")
+        st.caption("Run `python -m scripts.build_replay_outcomes`.")
+    else:
+        render_status_badge("Available", "ok")
+        st.metric("Historical rows replayed", format_int(replay_rows))
+        st.caption(
+            "Strongest evidence currently available. The decision uses the curve resale the "
+            "live page had; the outcome uses retail exits verified by polling each listing's "
+            "own URL. Independent sources, so the test is not circular."
+        )
+
+if not replay_df.empty:
+    section_heading(
+        "Verified Retail-Exit Replay",
+        "The current Buy / Avoid / Review policy replayed over historical sold rows.",
+    )
+
+    y_pred = replay_df.get("y_pred_buy")
+    y_true = replay_df.get("is_profitable_actual")
+    if y_pred is not None and y_true is not None:
+        pred = y_pred.astype(str).str.strip().str.lower().isin({"true", "1"})
+        true = y_true.astype(str).str.strip().str.lower().isin({"true", "1"})
+        tp = int((pred & true).sum())
+        fp = int((pred & ~true).sum())
+        fn = int((~pred & true).sum())
+        tn = int((~pred & ~true).sum())
+        precision = tp / (tp + fp) if tp + fp else None
+        recall = tp / (tp + fn) if tp + fn else None
+
+        cols = st.columns(6)
+        cols[0].metric("Rows replayed", format_int(len(replay_df)))
+        cols[1].metric("Would have bought", format_int(tp + fp))
+        cols[2].metric("Profitable in period", format_int(tp + fn))
+        cols[3].metric("Precision", format_ratio(precision))
+        cols[4].metric("Recall", format_ratio(recall))
+        cols[5].metric("False positives", format_int(fp))
+
+        matrix_cols = st.columns(4)
+        matrix_cols[0].metric("True positive", format_int(tp))
+        matrix_cols[1].metric("False positive", format_int(fp), help="Bought, not profitable.")
+        matrix_cols[2].metric("False negative", format_int(fn), help="Passed, would have profited.")
+        matrix_cols[3].metric("True negative", format_int(tn))
+
+        if "action_label" in replay_df.columns:
+            st.caption(
+                "Action labels assigned: "
+                + ", ".join(
+                    f"{label} {count:,}"
+                    for label, count in replay_df["action_label"].value_counts().items()
+                )
+            )
+
+    st.warning(
+        "This measures SELECTION QUALITY, not realised profit. The outcome side uses a "
+        "median of retail ASKING prices, and the gap to a realised sale is not calibrated - "
+        "only the ~3.7% median public price cut before delisting is observable. Read the "
+        "margin, not the decimal: a verdict that survives a wide error is meaningful, one "
+        "that needs a few percent of accuracy is not supported by this data.",
+        icon="⚠️",
+    )
+
+    with st.expander("Rows behind the replay"):
+        st.dataframe(replay_df, width="stretch", hide_index=True)
 
 if not sim_metrics_df.empty:
     metrics = sim_metrics_df.iloc[0]
