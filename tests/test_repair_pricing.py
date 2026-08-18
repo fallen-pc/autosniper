@@ -706,7 +706,9 @@ def test_vehicle_class_mapping_is_shared_for_listing_body_types() -> None:
     assert vehicle_class_for_listing({"body_type": "Hatchback"}) == "small_hatch"
     assert vehicle_class_for_listing({"body_type": "Sedan"}) == "small_sedan"
     assert vehicle_class_for_listing({"body_type": "SUV"}) == "medium_suv"
-    assert vehicle_class_for_listing({"body_type": "Wagon"}) == ""
+    # `wagon` is overwhelmingly SUVs in this dataset (Territory, CX-5, X-Trail,
+    # Kluger, CR-V ...), so it now resolves rather than stranding the listing.
+    assert vehicle_class_for_listing({"body_type": "Wagon"}) == "medium_suv"
     assert vehicle_class_for_listing({"body_type": "Dual Cab Ute"}) == "ute"
     assert vehicle_class_for_listing({"body_type": "People Mover"}) == "van"
     assert vehicle_class_for_listing({"vehicle_class": "large_suv", "body_type": "Wagon"}) == "large_suv"
@@ -921,3 +923,67 @@ def test_cosmetic_set_excludes_mechanical_canonicals() -> None:
         "hail_damage",
     ):
         assert canonical not in COSMETIC_PRICING_CANONICALS
+
+
+# ---------------------------------------------------------------------------
+# infer_vehicle_class
+#
+# `wagon` previously resolved to nothing, stranding 7,566 sold listings with no
+# vehicle class. That is why medium_suv never appeared in the pricing coverage
+# matrix despite SUVs being a large share of the market.
+# ---------------------------------------------------------------------------
+
+
+def test_wagon_resolves_to_medium_suv() -> None:
+    from shared.repair_pricing import infer_vehicle_class
+
+    assert infer_vehicle_class("wagon") == "medium_suv"
+    assert infer_vehicle_class("Wagon") == "medium_suv"
+
+
+def test_cabriolet_is_not_swallowed_by_the_cab_ute_check() -> None:
+    from shared.repair_pricing import infer_vehicle_class
+
+    assert infer_vehicle_class("cabriolet") == "small_sedan"
+    assert infer_vehicle_class("convertible") == "small_sedan"
+
+
+def test_ute_cab_styles_resolve_to_ute() -> None:
+    from shared.repair_pricing import infer_vehicle_class
+
+    for body in ("extra cab", "Extra Cab", "cab", "Utility", "dual cab",
+                 "single cab", "cab chassis", "Double Cab Pick Up",
+                 "Dual Cab Pick-up", "crew cab", "truck"):
+        assert infer_vehicle_class(body) == "ute", body
+
+
+def test_utes_win_over_suv_tokens() -> None:
+    # A "dual cab 4x4" is a ute, not an SUV.
+    from shared.repair_pricing import infer_vehicle_class
+
+    assert infer_vehicle_class("dual cab 4x4") == "ute"
+
+
+def test_van_and_motor_home_resolve_to_van() -> None:
+    from shared.repair_pricing import infer_vehicle_class
+
+    for body in ("van", "bus", "people mover", "motor home"):
+        assert infer_vehicle_class(body) == "van", body
+
+
+def test_existing_classes_are_unchanged() -> None:
+    from shared.repair_pricing import infer_vehicle_class
+
+    assert infer_vehicle_class("hatchback") == "small_hatch"
+    assert infer_vehicle_class("sedan") == "small_sedan"
+    assert infer_vehicle_class("coupe") == "small_sedan"
+    assert infer_vehicle_class("SUV") == "medium_suv"
+    assert infer_vehicle_class("crossover") == "medium_suv"
+
+
+def test_blank_and_unknown_still_return_empty() -> None:
+    from shared.repair_pricing import infer_vehicle_class
+
+    assert infer_vehicle_class("") == ""
+    assert infer_vehicle_class(None) == ""
+    assert infer_vehicle_class("   ") == ""
