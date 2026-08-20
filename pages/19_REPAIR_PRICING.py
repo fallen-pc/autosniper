@@ -259,7 +259,13 @@ with quotes_tab:
         q_row = quote_source[quote_source["canonical_defect"] == q_item].iloc[0]
         q1, q2, q3 = st.columns(3)
         with q1:
-            q_vehicle_class = st.selectbox("Vehicle class", VEHICLE_CLASSES, key="quote_vehicle_class")
+            q_suggested_class = safe_text(q_row.get("suggested_vehicle_class"))
+            q_vehicle_class = st.selectbox(
+                "Vehicle class",
+                VEHICLE_CLASSES,
+                index=VEHICLE_CLASSES.index(q_suggested_class) if q_suggested_class in VEHICLE_CLASSES else 0,
+                key="quote_vehicle_class",
+            )
             representative_vehicle = st.text_input(
                 "Representative vehicle",
                 value="2016 Toyota Corolla hatch" if q_vehicle_class == "small_hatch" else "",
