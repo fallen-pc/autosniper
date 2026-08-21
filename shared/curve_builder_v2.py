@@ -41,7 +41,9 @@ def _isotonic_fit(x_values: list[int], y_values: list[float], *, increasing: boo
     return [int(round(max(1.0, value))) for value in fitted.tolist()]
 
 
-def _prepare_market_rows(df: pd.DataFrame) -> pd.DataFrame:
+def _prepare_market_rows(
+    df: pd.DataFrame, *, buckets: list[int] | None = None
+) -> pd.DataFrame:
     if df.empty:
         return pd.DataFrame()
     working = df.copy()
@@ -52,7 +54,9 @@ def _prepare_market_rows(df: pd.DataFrame) -> pd.DataFrame:
     if working.empty:
         return working
     working["year_numeric"] = working["year_numeric"].round().astype(int)
-    working["km_bucket"] = working["odometer_numeric"].astype(float).apply(nearest_km_bucket)
+    working["km_bucket"] = working["odometer_numeric"].astype(float).apply(
+        lambda value: nearest_km_bucket(value, buckets)
+    )
     return working
 
 
@@ -85,8 +89,10 @@ def _trim_price_outliers(active_df: pd.DataFrame) -> tuple[pd.DataFrame, int]:
     return working, trimmed_rows
 
 
-def prepare_active_market_for_proposal(active_market_df: pd.DataFrame) -> tuple[pd.DataFrame, int]:
-    prepared = _prepare_market_rows(active_market_df)
+def prepare_active_market_for_proposal(
+    active_market_df: pd.DataFrame, *, buckets: list[int] | None = None
+) -> tuple[pd.DataFrame, int]:
+    prepared = _prepare_market_rows(active_market_df, buckets=buckets)
     return _trim_price_outliers(prepared)
 
 
@@ -177,8 +183,14 @@ def propose_curve_from_evidence(
         evidence_source: Description of data source (e.g., "Carsales", "Autotrader").
     """
     bucket_list = buckets or REQUIRED_KM_BUCKETS
-    active_rows, trimmed_rows = prepare_active_market_for_proposal(active_market_df)
-    sold_rows = _prepare_market_rows(sold_df.copy()) if sold_df is not None and not sold_df.empty else pd.DataFrame()
+    active_rows, trimmed_rows = prepare_active_market_for_proposal(
+        active_market_df, buckets=bucket_list
+    )
+    sold_rows = (
+        _prepare_market_rows(sold_df.copy(), buckets=bucket_list)
+        if sold_df is not None and not sold_df.empty
+        else pd.DataFrame()
+    )
 
     if anchor_years:
         anchors = sorted({int(value) for value in anchor_years})
