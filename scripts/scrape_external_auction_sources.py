@@ -708,6 +708,12 @@ def _extract_pickles_metadata_risk_notes(lines: list[str], start_index: int) -> 
     for line in lines[start_index:]:
         cleaned = _clean_text(line).strip(" *.")
         lowered = cleaned.lower()
+        if (
+            lowered in PICKLES_CONDITION_STOP_LINES
+            or lowered in PICKLES_CONDITION_IGNORE_LINES
+            or re.match(r"^[A-Za-z .'-]+,\s*(NSW|VIC|QLD|SA|WA|TAS|ACT|NT)$", cleaned, re.IGNORECASE)
+        ):
+            break
         for marker in PICKLES_RISK_NOTE_MARKERS:
             marker_index = lowered.find(marker)
             if marker_index < 0:
@@ -717,6 +723,20 @@ def _extract_pickles_metadata_risk_notes(lines: list[str], start_index: int) -> 
                 notes.append(note)
             break
     return "\n".join(dict.fromkeys(notes))
+
+
+def _looks_like_pickles_metadata_condition(condition: str) -> bool:
+    normalized = _clean_text(condition).lower()
+    dated_or_identity_markers = (
+        "compliance date",
+        "build date",
+        "odometer (showing on)",
+        "registration",
+        " vin",
+    )
+    return "keys spare keys" in normalized and sum(
+        marker in normalized for marker in dated_or_identity_markers
+    ) >= 2
 
 
 def _extract_pickles_condition_text(lines: list[str]) -> str:
@@ -768,7 +788,10 @@ def _extract_pickles_condition_text(lines: list[str]) -> str:
     if not snippets:
         return ""
 
-    return "\n".join(dict.fromkeys(snippets)) or _extract_condition_text(lines)
+    condition = "\n".join(dict.fromkeys(snippets))
+    if _looks_like_pickles_metadata_condition(condition):
+        return _extract_pickles_metadata_risk_notes(lines, start_index)
+    return condition
 
 
 def _extract_condition_text(lines: list[str]) -> str:
