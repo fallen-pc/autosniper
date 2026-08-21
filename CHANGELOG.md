@@ -1,5 +1,8 @@
 # Changelog
 
+## 2026-08-22
+- Added governed BMW X5 sDrive25d F15 automatic diesel and Nissan Micra ST K13 automatic petrol hatch curves from 46 exact private Carsales listings and 20 unique current-source Grays vehicles, adding 42 curve rows and increasing restricted sold coverage from 5,006 to 5,026 without new Apify spend. Tightened generation aliases and rejection-ledger normalization keep adjacent or previously assessed lanes separate.
+
 ## 2026-08-21
 - Added a governed Mazda 3 SP25 BL automatic sedan curve from 8 exact private Carsales listings and 6 unique Grays vehicles, adding 21 curve rows and increasing restricted Grays sold coverage from 5,000 to 5,006 without new Apify spend. Custom mileage buckets now propagate through evidence preparation so high-mileage observations are fitted in their intended 225k/300k buckets.
 - Added governed Hyundai i30 SX FD manual, Toyota Camry CSi SXV20R, Ford Falcon XT BA, and Toyota Camry Sportivo ACV40R curves from accumulated exact private Carsales evidence, adding 84 curve rows and increasing restricted Grays sold coverage from 4,958 to 5,000 without new Apify spend.
