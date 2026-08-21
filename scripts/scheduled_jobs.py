@@ -44,7 +44,7 @@ MAX_WAIT_HOURS = int(os.getenv("AUTOSNIPER_MAX_WAIT_HOURS", "24"))
 GOVERNANCE_REPORT_DIR = ROOT_DIR / "output" / "governance"
 METRICS_PATH = ROOT_DIR / "status" / "metrics.json"
 DAILY_STATE_PATH = ROOT_DIR / "status" / "daily_run_state.json"
-RUNTIME_BACKUP_SCRIPT = ROOT_DIR / "scripts" / "backup_runtime_data.ps1"
+RUNTIME_BACKUP_SCRIPT = ROOT_DIR / "scripts" / "backup_runtime_data.py"
 AUTOTRADER_SEED_URLS_PATH = ROOT_DIR / "autotrader_isolated" / "seed_urls.txt"
 EXTERNAL_AUCTION_OUTPUT_DIR = ROOT_DIR / "output" / "external_auction_scrape" / "daily"
 PLAYWRIGHT_MISSING_BROWSER_MARKERS = (
@@ -166,17 +166,9 @@ def _run_runtime_backup_if_configured() -> None:
     if not RUNTIME_BACKUP_SCRIPT.exists():
         raise FileNotFoundError(f"Missing runtime backup script: {RUNTIME_BACKUP_SCRIPT}")
 
-    command = [
-        "powershell",
-        "-ExecutionPolicy",
-        "Bypass",
-        "-File",
-        str(RUNTIME_BACKUP_SCRIPT),
-        "-BackupDir",
-        backup_dir,
-    ]
+    command = [sys.executable, str(RUNTIME_BACKUP_SCRIPT), "--backup-dir", backup_dir]
     if _env_flag_enabled("AUTOSNIPER_BACKUP_INCLUDE_AUTOTRADER_SESSION"):
-        command.append("-IncludeAutotraderSession")
+        command.append("--include-autotrader-session")
     subprocess.run(command, check=True)
 
 

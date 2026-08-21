@@ -220,6 +220,7 @@ Recommended first choice: OneDrive zip backups. Avoid casual two-way sync.
 The repo includes:
 
 ```text
+scripts/backup_runtime_data.py
 scripts/backup_runtime_data.ps1
 ```
 
@@ -230,12 +231,21 @@ CSV_data/scrapers/
 CSV_data/restricted/
 CSV_data/ai/
 CSV_data/model_audit/
+CSV_data/reports/
 status/
 output/health/
 logs/scheduled/
 ```
 
-Set the backup directory on the VPS:
+On Linux/VPS, set `AUTOSNIPER_BACKUP_DIR` in the service environment and test the same interpreter used by the scheduler:
+
+```bash
+/opt/autosniper/.venv/bin/python scripts/backup_runtime_data.py --backup-dir /opt/autosniper-runtime-backups
+```
+
+The Python command creates the zip and verifies its CRC, required files, and core CSV row counts before returning success. Keep the backup directory outside `/opt/autosniper`; archives are written atomically with private file permissions.
+
+On Windows, set the backup directory:
 
 ```powershell
 [Environment]::SetEnvironmentVariable(
