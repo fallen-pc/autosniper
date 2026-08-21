@@ -24,7 +24,9 @@ def _clean(value: object) -> str:
     text = str(value or "").strip()
     text = re.sub(r"\*+\s*no reserve\s*\*+", "", text, flags=re.I)
     text = re.sub(r"\s+", " ", text)
-    return text.strip(" -")
+    # Identity fields arrive with inconsistent casing across scraper runs. Lane
+    # grouping must not split otherwise identical vehicles into separate rows.
+    return text.strip(" -").lower()
 
 
 def _key(value: object) -> str:
