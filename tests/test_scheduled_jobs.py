@@ -648,8 +648,8 @@ def test_runtime_backup_skips_when_backup_dir_not_configured(monkeypatch) -> Non
 
 def test_runtime_backup_runs_configured_script(monkeypatch, tmp_path) -> None:
     calls: list[tuple[list[str], bool]] = []
-    script_path = tmp_path / "backup_runtime_data.ps1"
-    script_path.write_text("Write-Host backup", encoding="utf-8")
+    script_path = tmp_path / "backup_runtime_data.py"
+    script_path.write_text("print('backup')", encoding="utf-8")
 
     monkeypatch.setenv("AUTOSNIPER_BACKUP_DIR", r"C:\Backups\AutoSniper")
     monkeypatch.delenv("AUTOSNIPER_BACKUP_INCLUDE_AUTOTRADER_SESSION", raising=False)
@@ -665,12 +665,9 @@ def test_runtime_backup_runs_configured_script(monkeypatch, tmp_path) -> None:
     assert calls == [
         (
             [
-                "powershell",
-                "-ExecutionPolicy",
-                "Bypass",
-                "-File",
+                sys.executable,
                 str(script_path),
-                "-BackupDir",
+                "--backup-dir",
                 r"C:\Backups\AutoSniper",
             ],
             True,
@@ -680,8 +677,8 @@ def test_runtime_backup_runs_configured_script(monkeypatch, tmp_path) -> None:
 
 def test_runtime_backup_can_include_autotrader_session(monkeypatch, tmp_path) -> None:
     calls: list[list[str]] = []
-    script_path = tmp_path / "backup_runtime_data.ps1"
-    script_path.write_text("Write-Host backup", encoding="utf-8")
+    script_path = tmp_path / "backup_runtime_data.py"
+    script_path.write_text("print('backup')", encoding="utf-8")
 
     monkeypatch.setenv("AUTOSNIPER_BACKUP_DIR", r"C:\Backups\AutoSniper")
     monkeypatch.setenv("AUTOSNIPER_BACKUP_INCLUDE_AUTOTRADER_SESSION", "1")
@@ -690,7 +687,7 @@ def test_runtime_backup_can_include_autotrader_session(monkeypatch, tmp_path) ->
 
     scheduled_jobs._run_runtime_backup_if_configured()
 
-    assert calls[0][-1] == "-IncludeAutotraderSession"
+    assert calls[0][-1] == "--include-autotrader-session"
 
 
 def test_playwright_preflight_installs_missing_chromium(monkeypatch) -> None:

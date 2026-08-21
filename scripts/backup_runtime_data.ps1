@@ -24,6 +24,7 @@ $relativePaths = @(
     "CSV_data/restricted",
     "CSV_data/ai",
     "CSV_data/model_audit",
+    "CSV_data/reports",
     "status",
     "output/health",
     "logs/scheduled"
