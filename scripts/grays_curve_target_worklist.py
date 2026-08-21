@@ -30,7 +30,11 @@ def _clean(value: object) -> str:
 
 
 def _key(value: object) -> str:
-    return re.sub(r"[^a-z0-9]+", " ", _clean(value).lower()).strip()
+    text = _clean(value).lower()
+    # Treat compact badge/engine tokens (147TSI, 2.0i) the same as their
+    # space-separated forms in readable rejection-ledger descriptions.
+    text = re.sub(r"(?<=\d)(?=[a-z])|(?<=[a-z])(?=\d)", " ", text)
+    return re.sub(r"[^a-z0-9]+", " ", text).strip()
 
 
 def _year_band_map(years: pd.Series) -> dict[int, str]:
