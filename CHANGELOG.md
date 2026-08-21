@@ -1,6 +1,7 @@
 # Changelog
 
 ## 2026-08-21
+- Added governed Hyundai i30 SX FD manual, Toyota Camry CSi SXV20R, Ford Falcon XT BA, and Toyota Camry Sportivo ACV40R curves from accumulated exact private Carsales evidence, adding 84 curve rows and increasing restricted Grays sold coverage from 4,958 to 5,000 without new Apify spend.
 - Added governed Ford Kuga Ambiente TF AWD petrol, Holden Barina TK automatic hatch, and Volkswagen Golf 103TSI Highline A7 curves from exact private Carsales evidence backed by live Grays demand, adding 56 curve rows and increasing canonical curve coverage from 208 to 211 tags.
 
 ## 2026-08-14
