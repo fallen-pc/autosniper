@@ -1,5 +1,8 @@
 # Changelog
 
+## 2026-08-21
+- Added governed Ford Kuga Ambiente TF AWD petrol, Holden Barina TK automatic hatch, and Volkswagen Golf 103TSI Highline A7 curves from exact private Carsales evidence backed by live Grays demand, adding 56 curve rows and increasing canonical curve coverage from 208 to 211 tags.
+
 ## 2026-08-14
 - Added governed Ford Kuga Trend and Titanium TF diesel, Mazda 3 Neo BL automatic sedan, and Holden Barina TK manual curves from exact private Carsales evidence, increasing restricted Grays sold coverage from 4,749 to 4,829 vehicles.
 - Added governed Hyundai i45 Active YF, Nissan Dualis ST J10 CVT, Ford Mondeo LX TDCi MC wagon, Volkswagen Golf GTI VI automatic, and Volvo XC60 T5 DZ curves from exact private Carsales evidence, increasing restricted Grays sold coverage from 4,829 to 4,920 vehicles.

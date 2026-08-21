@@ -20,6 +20,7 @@ from shared.repair_pricing import (
     REPAIR_PRICING_SCHEDULE_PATH,
     V2_DICTIONARY_PATH,
     assess_repairs,
+    pricing_uncertainty_blocks_decision,
     vehicle_class_for_listing,
 )
 from shared.repair_review import DECISIONS_PATH
@@ -2065,7 +2066,7 @@ def run_curve_listing_analysis(
         else:
             computed_verdict = "Review (unresolved repairs)"
             action_label = "Review"
-    elif repair_assessment.pricing_class_uncertain and action_label != "Avoid":
+    elif pricing_uncertainty_blocks_decision(repair_assessment) and action_label != "Avoid":
         computed_verdict = "Review (repair pricing evidence)"
         action_label = "Review"
     edge_note = ""

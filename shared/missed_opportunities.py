@@ -33,7 +33,12 @@ from shared.csv_utils import CSV_READ_ERRORS
 from shared.decision_economics import calculate_curve_decision_economics, derive_curve_verdict
 from shared.decision_policy import derive_action_label_from_row
 from shared.curves import resolve_curve_canonical_tag
-from shared.repair_pricing import assess_repairs, repair_decision_label, vehicle_class_for_listing
+from shared.repair_pricing import (
+    assess_repairs,
+    pricing_uncertainty_blocks_decision,
+    repair_decision_label,
+    vehicle_class_for_listing,
+)
 from shared.sold_comparables import select_km_aware_comparables
 
 logger = logging.getLogger(__name__)
@@ -525,7 +530,7 @@ def compute_decision_metrics(
         if unresolved_repair_items and action_label != "Avoid":
             computed_verdict = "Review (unresolved repairs)"
             action_label = "Review"
-        elif repair_assessment.pricing_class_uncertain and action_label != "Avoid":
+        elif pricing_uncertainty_blocks_decision(repair_assessment) and action_label != "Avoid":
             computed_verdict = "Review (repair pricing evidence)"
             action_label = "Review"
 
