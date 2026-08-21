@@ -427,6 +427,43 @@ def test_parse_pickles_metadata_sequence_preserves_explicit_transport_risk():
     assert row["general_condition"] == "this asset is a non runner, tilt tray required for collection"
 
 
+def test_parse_pickles_late_metadata_sequence_fails_closed_before_legal_disclaimer():
+    filler = "\n".join(f"Observation {index}\nValue {index}" for index in range(16))
+    text = f"""
+    STOCK 62288698
+    2024 Toyota Hilux
+    Condition Details (6)
+    {filler}
+    Keys
+    Spare Keys
+    White
+    Compliance Date
+    02/2024
+    Build Date
+    01/2024
+    Odometer (Showing on)
+    102,133 km
+    Registration
+    Last registered as 553KB2
+    VIN
+    MR0KA3CD206807270
+    Please note - This Vehicle will need to be transported on Suitable Transport
+    Moranbah, QLD
+    Damage and Description Disclaimer
+    Please Note: This description is generic legal boilerplate.
+    """
+
+    row = parse_listing_text(
+        "pickles",
+        "https://www.pickles.com.au/used/details/cars/2024-toyota-hilux/62288698",
+        "2024 Toyota Hilux, 62288698 - Pickles AU",
+        text,
+    )
+
+    assert row["general_condition"] == "Please note - This Vehicle will need to be transported on Suitable Transport"
+    assert "legal boilerplate" not in row["general_condition"]
+
+
 def test_parse_pickles_embedded_sold_fields_into_grays_like_columns():
     text = r"""
     STOCK 62146160
