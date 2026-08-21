@@ -338,3 +338,58 @@ def test_duplicate_urls_are_collapsed() -> None:
 def test_blank_urls_are_dropped() -> None:
     picked = select_listings_to_poll(_state(["a", "", "  "]), pd.DataFrame())
     assert picked == ["a"]
+
+
+# ---------------------------------------------------------------------------
+# Resumability
+#
+# The first full backfill ran for hours, was killed, and persisted NOTHING,
+# because results were only written after the whole run finished. These cover
+# the two properties that make an interrupted run recoverable.
+# ---------------------------------------------------------------------------
+
+
+def test_already_polled_listings_are_skipped_on_a_rerun() -> None:
+    """A resumed run must not redo completed work."""
+    now = datetime(2026, 7, 28, 12, 0, tzinfo=UTC)
+    done = [
+        {"url": f"u{i}", "last_polled": now.isoformat(), "confirmed_gone_date": ""}
+        for i in range(3)
+    ]
+    state = _state([f"u{i}" for i in range(5)])
+    picked = select_listings_to_poll(
+        state, pd.DataFrame(done), min_hours_between_polls=12.0, now=now
+    )
+    assert sorted(picked) == ["u3", "u4"]
+
+
+def test_partial_progress_narrows_the_remaining_work() -> None:
+    """Each checkpointed batch must shrink what a rerun picks up."""
+    now = datetime(2026, 7, 28, 12, 0, tzinfo=UTC)
+    state = _state([f"u{i}" for i in range(10)])
+    remaining = select_listings_to_poll(state, pd.DataFrame(), now=now)
+    assert len(remaining) == 10
+
+    checkpointed = pd.DataFrame(
+        [
+            {"url": u, "last_polled": now.isoformat(), "confirmed_gone_date": ""}
+            for u in remaining[:4]
+        ]
+    )
+    after = select_listings_to_poll(
+        state, checkpointed, min_hours_between_polls=12.0, now=now
+    )
+    assert len(after) == 6
+    assert not set(after) & set(remaining[:4])
+
+
+def test_confirmed_exits_stay_excluded_across_reruns() -> None:
+    now = datetime(2026, 7, 28, 12, 0, tzinfo=UTC)
+    prior = pd.DataFrame(
+        [{"url": "gone", "last_polled": (now - timedelta(days=30)).isoformat(),
+          "confirmed_gone_date": (now - timedelta(days=30)).isoformat()},
+         {"url": "open", "last_polled": (now - timedelta(days=30)).isoformat(),
+          "confirmed_gone_date": ""}]
+    )
+    picked = select_listings_to_poll(_state(["gone", "open"]), prior, now=now)
+    assert picked == ["open"]

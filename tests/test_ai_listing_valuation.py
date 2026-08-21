@@ -726,8 +726,12 @@ def test_curve_analysis_forces_review_when_repair_quote_class_is_incompatible(mo
         force_refresh=True,
     )
 
-    assert result["computed_verdict"] == "Review (repair pricing evidence)"
-    assert result["action_label"] == "Review"
+    # A scratch that cannot be class-priced is a gap in the pricing schedule, not a
+    # reason to refuse the decision. The uncertainty is still surfaced on the row and
+    # still raises the risk flag - it just no longer forces Review. See
+    # shared.repair_pricing.pricing_uncertainty_blocks_decision.
+    assert result["computed_verdict"] != "Review (repair pricing evidence)"
+    assert result["action_label"] != "Review"
     assert result["potential_buy_repair_pricing_uncertain"] is True
     assert result["repair_pricing_vehicle_class"] == "medium_suv"
     assert result["repair_pricing_incompatible_canonicals"] == "cosmetic_surface_damage"

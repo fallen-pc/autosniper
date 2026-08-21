@@ -194,19 +194,53 @@ def _schedule_cost_overrides() -> Dict[tuple[str, str], RepairCostBand]:
 
 
 def infer_vehicle_class(body_type: object) -> str:
-    """Map source body labels to the repair schedule's stable class vocabulary."""
+    """Map source body labels to the repair schedule's stable class vocabulary.
+
+    Order matters. "cabriolet" is resolved before the ute tokens so the bare "cab"
+    check cannot swallow it, and utes are resolved before SUVs so a "dual cab 4x4"
+    does not land in medium_suv.
+
+    `wagon` maps to medium_suv because in this dataset it is overwhelmingly SUVs -
+    of 7,566 wagon listings the top twenty nameplates are Land Rover, Territory,
+    Captiva, CX-5, Forester, Grand Cherokee, X5, X-Trail, LandCruiser, RAV4,
+    Outback, Tiguan, Pathfinder, Outlander, ix35, Kluger, CR-V, CX-9 and Tucson,
+    with no traditional station wagon among them. Leaving it unmapped stranded
+    those listings with no class at all, which is why medium_suv never appeared in
+    the pricing coverage matrix despite SUVs being a large share of the market.
+    """
     body = re.sub(r"[^a-z0-9]+", " ", str(body_type or "").lower()).strip()
     if not body:
         return ""
-    if any(token in body for token in ("ute", "pickup", "pick up", "cab chassis", "dual cab", "single cab")):
+    tokens = set(body.split())
+
+    # Before the ute branch: "cabriolet" contains "cab".
+    if any(token in body for token in ("cabriolet", "convertible", "roadster")):
+        return "small_sedan"
+    if any(
+        token in body
+        for token in (
+            "ute",
+            "utility",
+            "pickup",
+            "pick up",
+            "cab chassis",
+            "dual cab",
+            "single cab",
+            "extra cab",
+            "king cab",
+            "space cab",
+            "crew cab",
+            "truck",
+        )
+    ) or "cab" in tokens:
         return "ute"
-    if any(token in body for token in ("van", "bus", "people mover")):
+    if any(token in body for token in ("van", "bus", "people mover", "motor home", "motorhome")):
         return "van"
     if "hatch" in body:
         return "small_hatch"
-    if any(token in body for token in ("sedan", "coupe", "convertible")):
+    if any(token in body for token in ("sedan", "coupe")):
         return "small_sedan"
-    if any(token in body for token in ("suv", "crossover", "4x4", "4wd")):
+    if any(token in body for token in ("suv", "crossover", "4x4", "4wd", "wagon")):
         return "medium_suv"
     return ""
 
@@ -548,6 +582,53 @@ HARD_AVOID_BUCKETS = {
     "structural": {"pill": "STRUCTURAL", "cost": 8_000},
     "unknown": {"pill": "UNKNOWN", "cost": 4_000},
 }
+
+# Cosmetic and interior wear. When one of these has no class-specific price it is a
+# gap in repair_pricing_schedule.csv, not a signal that the vehicle is risky.
+COSMETIC_PRICING_CANONICALS = frozenset(
+    {
+        "cosmetic_surface_damage",
+        "paint_damage",
+        "paint_surface_issue",
+        "interior_trim_damage",
+        "seat_damage",
+        "seat_issue",
+        "carpet_torn",
+        "panel_alignment_damage",
+        "generic_damage",
+    }
+)
+
+
+def pricing_uncertainty_blocks_decision(assessment: "RepairAssessment") -> bool:
+    """Should unpriceable repair items force a Review rather than a decision?
+
+    Yes when something MECHANICAL cannot be priced - that is a real reason to stop.
+    No when only cosmetic or interior wear is unpriceable.
+
+    The schedule currently carries 28 rows across two vehicle classes (`generic` and
+    `small_hatch`), and every cosmetic canonical exists only under `small_hatch`. So
+    a scratch on any SUV, ute, van or sedan came back "uncertain" and blocked the
+    decision. Replayed over 989 historical sold rows that gate alone turned 65
+    winnable cars into Review; 38 of them had sold BELOW the system's own max bid
+    and every one was profitable against independently observed retail exits.
+    Relaxing it for cosmetics took Buy from 20 to 76 and recall from 3.2% to 12.0%
+    while precision stayed at 100% - it added no false positives.
+
+    Shared by scripts/ai_listing_valuation.py and shared/missed_opportunities.py so
+    the live path and the replay cannot drift apart.
+    """
+    if not getattr(assessment, "pricing_class_uncertain", False):
+        return False
+    incompatible = {
+        str(canonical).strip()
+        for canonical in (getattr(assessment, "pricing_incompatible_canonicals", None) or [])
+        if str(canonical).strip()
+    }
+    if not incompatible:
+        # Flagged uncertain without naming a cause - stay cautious.
+        return True
+    return not incompatible.issubset(COSMETIC_PRICING_CANONICALS)
 
 REPAIR_GATE_GOOD_MAX = 600
 REPAIR_GATE_MARGINAL_MAX = 2_500

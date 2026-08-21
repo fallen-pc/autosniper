@@ -4,12 +4,15 @@ import pytest
 from shared.repair_pricing_schedule import (
     EXCLUDED_PRICING_CANONICALS,
     HARD_AVOID_PRICING_CANONICALS,
+    REAL_VEHICLE_CLASSES,
+    SINGLE_PRICE_CANONICALS,
     apply_quote_response,
     build_quote_followup_body,
     build_quote_request_body,
     build_quote_request_subject,
     canonical_pricing_candidates,
     dictionary_pricing_candidates,
+    missing_vehicle_classes_for,
     needs_pricing,
     next_request_id,
     overdue_quote_followup_candidates,
@@ -21,6 +24,7 @@ from shared.repair_pricing_schedule import (
     suggest_supplier_type,
     save_pricing_schedule,
     validate_pricing_schedule,
+    _class_priority_order,
 )
 
 
@@ -361,3 +365,167 @@ def test_apply_quote_response_and_promote_to_pricing_row() -> None:
     assert pricing is not None
     assert pricing["canonical_defect"] == "seat_damage"
     assert pricing["default_estimate"] == 250
+
+
+# ---------------------------------------------------------------------------
+# missing_vehicle_classes_for / needs_pricing class-awareness
+#
+# needs_pricing() used to drop a canonical the moment ANY vehicle_class had a
+# schedule row, and always suggested "small_hatch" as the next class to quote.
+# Replayed over the 989-row policy replay, that single bug meant 22,902 unpriced
+# listing-hits across 252 (canonical, class) cells never got a follow-up quote
+# request - cosmetic_surface_damage alone was 5,127 hits on medium_suv, invisible
+# to the old logic because small_hatch had already been quoted once.
+# ---------------------------------------------------------------------------
+
+
+def test_class_varying_canonical_reports_the_still_missing_classes() -> None:
+    schedule = pd.DataFrame([_pricing_row("small_hatch")])  # canonical_defect="panel_damage"
+    cost_models = {"panel_damage": "cosmetic_panel"}
+
+    missing = missing_vehicle_classes_for(
+        "panel_damage", schedule, cost_models=cost_models, priority_order=REAL_VEHICLE_CLASSES
+    )
+
+    assert missing == ["small_sedan", "medium_suv", "ute", "van"]
+
+
+def test_class_varying_canonical_fully_priced_reports_nothing_missing() -> None:
+    schedule = pd.DataFrame([_pricing_row(cls) for cls in REAL_VEHICLE_CLASSES])
+    cost_models = {"panel_damage": "cosmetic_panel"}
+
+    missing = missing_vehicle_classes_for("panel_damage", schedule, cost_models=cost_models)
+
+    assert missing == []
+
+
+def test_generic_only_priced_class_is_not_mistaken_for_full_coverage() -> None:
+    # A single generic-labelled row must NOT satisfy a class-varying canonical -
+    # the whole point of "class-varying" is that one price does not cover every class.
+    schedule = pd.DataFrame([_pricing_row("generic")])
+    cost_models = {"panel_damage": "cosmetic_panel"}
+
+    missing = missing_vehicle_classes_for(
+        "panel_damage", schedule, cost_models=cost_models, priority_order=REAL_VEHICLE_CLASSES
+    )
+
+    assert set(missing) == set(REAL_VEHICLE_CLASSES)
+
+
+def test_missing_classes_are_ordered_by_the_supplied_priority() -> None:
+    schedule = pd.DataFrame(columns=["canonical_defect", "vehicle_class"])
+    cost_models = {"panel_damage": "cosmetic_panel"}
+    priority = ["ute", "van", "medium_suv", "small_sedan", "small_hatch"]
+
+    missing = missing_vehicle_classes_for(
+        "panel_damage", schedule, cost_models=cost_models, priority_order=priority
+    )
+
+    assert missing == priority
+
+
+def test_non_varying_canonical_needs_only_one_row() -> None:
+    schedule = pd.DataFrame([dict(_pricing_row("generic"), canonical_defect="key_missing")])
+    cost_models = {"key_missing": "wrecker_part_price"}
+
+    missing = missing_vehicle_classes_for("key_missing", schedule, cost_models=cost_models)
+
+    assert missing == []
+
+
+def test_non_varying_canonical_with_no_row_needs_a_generic_price() -> None:
+    schedule = pd.DataFrame(columns=["canonical_defect", "vehicle_class"])
+    cost_models = {"key_missing": "wrecker_part_price"}
+
+    missing = missing_vehicle_classes_for("key_missing", schedule, cost_models=cost_models)
+
+    assert missing == ["generic"]
+
+
+def test_single_price_override_wins_even_when_cost_model_says_class_varying() -> None:
+    # battery_issue's decision-file cost_model is "fixed_replacement" (class-varying),
+    # but it is deliberately kept as a single generic price - see SINGLE_PRICE_CANONICALS.
+    assert "battery_issue" in SINGLE_PRICE_CANONICALS
+    schedule = pd.DataFrame([dict(_pricing_row("generic"), canonical_defect="battery_issue")])
+    cost_models = {"battery_issue": "fixed_replacement"}
+
+    missing = missing_vehicle_classes_for("battery_issue", schedule, cost_models=cost_models)
+
+    assert missing == []
+
+
+def test_unknown_cost_model_defaults_to_not_varying() -> None:
+    # A canonical with no cost_model on record should not silently demand five
+    # quotes - treat it like the other single-price items until it is triaged.
+    schedule = pd.DataFrame(columns=["canonical_defect", "vehicle_class"])
+
+    missing = missing_vehicle_classes_for("mystery_defect", schedule, cost_models={})
+
+    assert missing == ["generic"]
+
+
+def test_needs_pricing_keeps_a_partially_priced_canonical_with_its_real_gap() -> None:
+    # Uses a real canonical (cost_model="cosmetic_panel" in the production decisions
+    # file) rather than a fabricated one, since needs_pricing() looks cost_model up
+    # from disk internally and a fictional canonical would silently resolve to
+    # "no cost_model on record" instead of exercising the class-varying path.
+    candidates = pd.DataFrame(
+        [{"canonical_defect": "cosmetic_surface_damage", "category": "cosmetic", "examples": "", "decision_count": 5}]
+    )
+    schedule = pd.DataFrame(
+        [dict(_pricing_row("small_hatch"), canonical_defect="cosmetic_surface_damage")]
+    )
+
+    out = needs_pricing(candidates, schedule)
+
+    assert len(out) == 1
+    row = out.iloc[0]
+    assert row["missing_vehicle_classes"] != []
+    assert "small_hatch" not in row["missing_vehicle_classes"]
+    # The suggestion must be a class that is actually still missing, never the one
+    # already priced - that inversion was the original bug.
+    assert row["suggested_vehicle_class"] in row["missing_vehicle_classes"]
+    assert row["suggested_vehicle_class"] != "small_hatch"
+
+
+def test_needs_pricing_drops_a_canonical_once_every_real_class_is_priced() -> None:
+    # Same reasoning as above: use a real class-varying canonical so this genuinely
+    # exercises "fully priced across all 5 classes", not just "has one row on record".
+    candidates = pd.DataFrame(
+        [{"canonical_defect": "cosmetic_surface_damage", "category": "cosmetic", "examples": "", "decision_count": 5}]
+    )
+    schedule = pd.DataFrame(
+        [dict(_pricing_row(cls), canonical_defect="cosmetic_surface_damage") for cls in REAL_VEHICLE_CLASSES]
+    )
+
+    out = needs_pricing(candidates, schedule)
+
+    assert "cosmetic_surface_damage" not in set(out["canonical_defect"])
+
+
+def test_class_priority_order_ranks_by_real_missing_occurrence_volume(tmp_path, monkeypatch) -> None:
+    matrix_path = tmp_path / "repair_pricing_matrix.csv"
+    pd.DataFrame(
+        [
+            {"canonical_defect": "a", "vehicle_class": "van", "status": "MISSING", "occurrences": 5},
+            {"canonical_defect": "b", "vehicle_class": "ute", "status": "MISSING", "occurrences": 500},
+            {"canonical_defect": "c", "vehicle_class": "medium_suv", "status": "MISSING", "occurrences": 50},
+            {"canonical_defect": "d", "vehicle_class": "small_hatch", "status": "priced", "occurrences": 9999},
+        ]
+    ).to_csv(matrix_path, index=False)
+
+    order = _class_priority_order(matrix_path)
+
+    assert order[0] == "ute"
+    assert order[1] == "medium_suv"
+    assert order[2] == "van"
+    # small_hatch and small_sedan have no MISSING rows in this fixture, so both fall
+    # through to the end, in REAL_VEHICLE_CLASSES order.
+    assert order[-2:] == ["small_hatch", "small_sedan"]
+    assert set(order) == set(REAL_VEHICLE_CLASSES)
+
+
+def test_class_priority_order_falls_back_when_matrix_is_absent(tmp_path) -> None:
+    order = _class_priority_order(tmp_path / "does_not_exist.csv")
+
+    assert order == REAL_VEHICLE_CLASSES

@@ -635,6 +635,112 @@ def canonical_pricing_candidates(decisions: pd.DataFrame | None = None) -> pd.Da
     return grouped
 
 
+# Real vehicle classes infer_vehicle_class() can actually produce. "large_suv" and
+# "generic" are valid VEHICLE_CLASSES values but are not body-class buckets a listing
+# resolves to, so they are handled separately, not fanned out over.
+REAL_VEHICLE_CLASSES = ["small_hatch", "small_sedan", "medium_suv", "ute", "van"]
+
+# cost_model values whose true cost meaningfully differs by vehicle body class - a ute
+# panel or an SUV seat is not priced the same as a small hatch's. Confirmed against the
+# full 20,406-listing pricing matrix: glass canonicals (windscreen/window/tint) were
+# already correctly covered end-to-end by a single generic row (real quote evidence,
+# not a guess), so glass is deliberately excluded here rather than fanned out too.
+CLASS_VARYING_COST_MODELS = {"cosmetic_panel", "fixed_replacement"}
+
+# battery_issue's decision-file cost_model is "fixed_replacement" (in
+# CLASS_VARYING_COST_MODELS), but this predates that data: an earlier version of this
+# module already special-cased it, alongside the glass items, as a single generic
+# price - a commodity part where the coarse 5-class body bucket is not how suppliers
+# actually quote it, and it already has one successful "generic" quote on record.
+# Keeping that call rather than silently overturning it; revisit if evidence says
+# otherwise.
+SINGLE_PRICE_CANONICALS = {"battery_issue", "windscreen_damage", "window_damage", "window_tint_damage"}
+
+REPAIR_PRICING_MATRIX_PATH = Path("CSV_data") / "model_audit" / "repair_pricing_matrix.csv"
+
+
+def _cost_model_lookup(decisions: pd.DataFrame | None = None) -> dict[str, str]:
+    """canonical_defect -> most common cost_model from repair review decisions."""
+    source = load_repair_review_decisions(DECISIONS_PATH) if decisions is None else decisions
+    if source.empty or "cost_model" not in source.columns:
+        return {}
+    rows = source[source["decision"] == "Add dictionary rule"].copy()
+    rows["canonical_defect"] = rows["canonical_defect"].map(safe_text)
+    rows["cost_model"] = rows["cost_model"].map(safe_text)
+    rows = rows[(rows["canonical_defect"] != "") & (rows["cost_model"] != "")]
+    if rows.empty:
+        return {}
+    grouped = rows.groupby("canonical_defect")["cost_model"].agg(lambda values: _most_common(values, ""))
+    return grouped.to_dict()
+
+
+def _class_priority_order(matrix_path: Path = REPAIR_PRICING_MATRIX_PATH) -> list[str]:
+    """Real vehicle classes ranked by how many unpriced listing-hits they carry.
+
+    So the first suggested class to quote is the one that actually moves the needle,
+    not an arbitrary fixed order. Falls back to REAL_VEHICLE_CLASSES order if the
+    coverage matrix has not been generated yet (build_repair_pricing_matrix.py).
+    """
+    if matrix_path.exists():
+        try:
+            matrix = pd.read_csv(matrix_path, usecols=["vehicle_class", "occurrences", "status"])
+            missing = matrix[matrix["status"] == "MISSING"]
+            ranked = missing.groupby("vehicle_class")["occurrences"].sum().sort_values(ascending=False)
+            order = [cls for cls in ranked.index if cls in REAL_VEHICLE_CLASSES]
+            order += [cls for cls in REAL_VEHICLE_CLASSES if cls not in order]
+            return order
+        except Exception:
+            pass
+    return list(REAL_VEHICLE_CLASSES)
+
+
+def missing_vehicle_classes_for(
+    canonical_defect: object,
+    schedule_df: pd.DataFrame,
+    *,
+    cost_models: dict[str, str] | None = None,
+    priority_order: list[str] | None = None,
+) -> list[str]:
+    """Which real vehicle classes still lack a price for this canonical.
+
+    A canonical whose cost_model does not vary by class (glass, wrecker parts,
+    batteries, ...) needs exactly one row, under vehicle_class == "generic" - once
+    that exists it is priced for every class, same as the live pricing lookup's
+    exact -> generic -> fallback order. A class-varying canonical (cosmetic_panel /
+    fixed_replacement) needs a row PER class: a generic or single-class row does
+    NOT count as covering the others, because the whole reason it varies is that a
+    ute panel and a small hatch panel are not the same repair. Ordered by real-world
+    impact via priority_order (see _class_priority_order) so index [0] is the class
+    worth quoting next, not just the first alphabetically.
+    """
+    canonical = safe_text(canonical_defect)
+    if not canonical:
+        return []
+
+    if "canonical_defect" in schedule_df.columns and not schedule_df.empty:
+        rows = schedule_df[schedule_df["canonical_defect"].map(safe_text) == canonical]
+    else:
+        rows = schedule_df.iloc[0:0]
+    priced_classes = set(rows["vehicle_class"].map(safe_text)) if "vehicle_class" in rows.columns else set()
+    priced_classes.discard("")
+
+    if canonical in SINGLE_PRICE_CANONICALS:
+        varies_by_class = False
+    else:
+        models = cost_models if cost_models is not None else _cost_model_lookup()
+        varies_by_class = models.get(canonical) in CLASS_VARYING_COST_MODELS
+
+    if not varies_by_class:
+        # Any existing row counts as priced, not specifically a "generic"-labelled
+        # one - matches the original canonical-only check for these items, and keeps
+        # a bare canonical_defect-only schedule fixture (no vehicle_class column) a
+        # valid "already priced" state rather than a false gap.
+        return [] if not rows.empty else ["generic"]
+
+    order = priority_order if priority_order is not None else _class_priority_order()
+    return [cls for cls in order if cls not in priced_classes]
+
+
 def needs_pricing(
     candidates: pd.DataFrame | None = None,
     schedule: pd.DataFrame | None = None,
@@ -647,9 +753,24 @@ def needs_pricing(
         lambda row: CATEGORY_OVERRIDES.get(safe_text(row.get("canonical_defect")), safe_text(row.get("category"))),
         axis=1,
     )
-    priced = set(schedule_df["canonical_defect"].map(safe_text)) if "canonical_defect" in schedule_df.columns else set()
-    out = candidate_df[~candidate_df["canonical_defect"].isin(priced)].copy()
-    out["suggested_vehicle_class"] = out["canonical_defect"].map(suggest_vehicle_class)
+
+    cost_models = _cost_model_lookup()
+    priority_order = _class_priority_order()
+    candidate_df["missing_vehicle_classes"] = candidate_df["canonical_defect"].map(
+        lambda c: missing_vehicle_classes_for(
+            c, schedule_df, cost_models=cost_models, priority_order=priority_order
+        )
+    )
+
+    out = candidate_df[candidate_df["missing_vehicle_classes"].map(len) > 0].copy()
+    # First entry is the highest-impact still-missing class (see _class_priority_order),
+    # NOT a fixed default - the old suggest_vehicle_class() always suggested small_hatch,
+    # which was usually the one class already priced, so it kept steering new quote
+    # requests at coverage the schedule already had instead of the gap that mattered.
+    out["suggested_vehicle_class"] = out["missing_vehicle_classes"].map(
+        lambda classes: classes[0] if classes else "small_hatch"
+    )
+    out["missing_vehicle_classes_display"] = out["missing_vehicle_classes"].map(", ".join)
     out["suggested_pricing_method"] = out["canonical_defect"].map(suggest_pricing_method)
     out["suggested_supplier_type"] = out["canonical_defect"].map(suggest_supplier_type)
     out["vehicle_specific"] = out["canonical_defect"].map(lambda value: "yes" if is_vehicle_specific(value) else "no")
