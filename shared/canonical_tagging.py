@@ -450,7 +450,7 @@ def _extract_series_code(text: str) -> str:
         if candidate.startswith("my"):
             continue
         # Ignore model-like tokens that can look like series codes.
-        if candidate in {"ix35", "cx5", "cx9", "xc60"}:
+        if candidate in {"ix35", "cx5", "cx9", "xc60", "sp25"}:
             continue
         return candidate
 
