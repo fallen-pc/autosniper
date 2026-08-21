@@ -18,8 +18,11 @@ from shared.curves import CURVE_COLUMNS
 
 ROOT = Path(__file__).resolve().parent.parent
 RETAIL_PATHS = [
-    ROOT / "CSV_data" / "quality" / "carsales_apify_listings.csv",
-    *sorted((ROOT / "CSV_data" / "scrapers").glob("carsales_grays_targets_batch*.csv")),
+    ROOT
+    / "notes"
+    / "curve_decisions"
+    / "evidence"
+    / "carsales_apify_batch7_exact_private.csv"
 ]
 SOLD_PATH = ROOT / "CSV_data" / "scrapers" / "sold_cars.csv"
 BUCKETS = [30000, 60000, 100000, 150000, 200000, 225000, 300000]
@@ -145,7 +148,7 @@ def main() -> int:
         proposal, metadata = propose_curve_from_evidence(
             base_curve_tag=lane["base"], active_market_df=market, sold_df=auction,
             anchor_years=lane["anchors"], buckets=BUCKETS,
-            evidence_source="accumulated exact private Carsales evidence through batch 5",
+            evidence_source="tracked Batch 7 exact private Carsales evidence extract",
         )
         for column in ("price_low", "price_mid", "price_high"):
             proposal[column] = (pd.to_numeric(proposal[column]) / 100).round().astype(int) * 100
