@@ -721,8 +721,12 @@ def test_pajero_nx_trim_lanes_do_not_fall_into_glx(row):
     assert reason == "[OK]"
 
 
-@pytest.mark.parametrize("variant", ["Grande ACV40R", "Sportivo ACV40R"])
-def test_camry_acv40r_altise_does_not_absorb_other_trims(variant):
+@pytest.mark.parametrize(
+    ("variant", "expected_tag", "expected_reason"),
+    [("Grande ACV40R", "UNCLASSIFIED", "[DISALLOWED_VARIANT]"),
+     ("Sportivo ACV40R", "toyota_camry_sportivo_petrol_auto_sedan_acv40r", "[OK]")],
+)
+def test_camry_acv40r_altise_does_not_absorb_other_trims(variant, expected_tag, expected_reason):
     _load_curve_year_band.cache_clear()
 
     row = {
@@ -739,8 +743,8 @@ def test_camry_acv40r_altise_does_not_absorb_other_trims(variant):
 
     tag, reason = assign_canonical_tag(row, require_price=True)
 
-    assert tag == "UNCLASSIFIED"
-    assert reason == "[DISALLOWED_VARIANT]"
+    assert tag == expected_tag
+    assert reason == expected_reason
 
 
 @pytest.mark.parametrize(
