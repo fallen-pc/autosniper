@@ -46,6 +46,7 @@ from shared.repair_pricing import (
     assess_repairs,
     infer_vehicle_class,
 )
+from shared.repair_review import latest_repair_decisions
 
 DEFAULT_SOLD = ROOT_DIR / "CSV_data" / "scrapers" / "sold_cars.csv"
 DEFAULT_DECISIONS = ROOT_DIR / "CSV_data" / "reports" / "repair_review_decisions.csv"
@@ -86,7 +87,7 @@ def canonicals_needing_price(path: Path) -> dict:
     """canonical -> cost_model, for decisions that imply a real per-class cost."""
     if not path.exists():
         return {}
-    frame = pd.read_csv(path, low_memory=False)
+    frame = latest_repair_decisions(pd.read_csv(path, low_memory=False).fillna(""))
     out: dict = {}
     for _, row in frame.iterrows():
         canonical = str(row.get("canonical_defect") or "").strip()

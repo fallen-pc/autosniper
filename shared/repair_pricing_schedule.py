@@ -9,7 +9,12 @@ import pandas as pd
 import yaml
 
 from shared.csv_utils import CSV_READ_ERRORS
-from shared.repair_review import DECISIONS_PATH, load_repair_review_decisions, safe_text
+from shared.repair_review import (
+    DECISIONS_PATH,
+    latest_repair_decisions,
+    load_repair_review_decisions,
+    safe_text,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -591,6 +596,7 @@ def dictionary_pricing_candidates(path: Path = DICTIONARY_PATH) -> pd.DataFrame:
 
 def reviewed_pricing_candidates(decisions: pd.DataFrame | None = None) -> pd.DataFrame:
     source = load_repair_review_decisions(DECISIONS_PATH) if decisions is None else decisions
+    source = latest_repair_decisions(source)
     if source.empty:
         return pd.DataFrame(columns=["canonical_defect", "category", "examples", "decision_count"])
     rows = source[source["decision"] == "Add dictionary rule"].copy()
@@ -662,6 +668,7 @@ REPAIR_PRICING_MATRIX_PATH = Path("CSV_data") / "model_audit" / "repair_pricing_
 def _cost_model_lookup(decisions: pd.DataFrame | None = None) -> dict[str, str]:
     """canonical_defect -> most common cost_model from repair review decisions."""
     source = load_repair_review_decisions(DECISIONS_PATH) if decisions is None else decisions
+    source = latest_repair_decisions(source)
     if source.empty or "cost_model" not in source.columns:
         return {}
     rows = source[source["decision"] == "Add dictionary rule"].copy()

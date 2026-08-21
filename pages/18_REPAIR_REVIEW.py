@@ -10,7 +10,11 @@ from shared.navigation import render_sidebar_navigation
 
 from shared.csv_utils import CSV_READ_ERRORS
 from shared.repair_ai_classifier import AI_SUGGESTIONS_PATH, load_ai_suggestions
-from shared.repair_review import LIVE_QUEUE_PATH
+from shared.repair_review import LIVE_QUEUE_PATH, latest_repair_decisions
+from shared.repair_workbench import (
+    dictionary_phrase_rows,
+    repair_dictionary_nodes,
+)
 from shared.styling import clean_html, display_banner, escape_html, inject_global_styles, page_intro
 
 
@@ -247,6 +251,25 @@ def canonical_from_repair_key(repair_key: object) -> str:
     return cleaned[:80]
 
 
+def dictionary_node_layout(nodes: pd.DataFrame) -> pd.DataFrame:
+    """Give the native scatter chart stable category clusters."""
+    if nodes.empty:
+        return nodes.copy()
+    categories = sorted(nodes["category"].dropna().unique().tolist())
+    category_x = {category: index for index, category in enumerate(categories)}
+    laid_out = nodes.copy()
+    laid_out["x"] = [
+        category_x.get(row.category, 0) + ((index % 5) - 2) * 0.12
+        for index, row in enumerate(laid_out.itertuples(index=False))
+    ]
+    laid_out["y"] = [
+        (index // max(len(categories), 1)) + ((index % 3) - 1) * 0.08
+        for index in range(len(laid_out))
+    ]
+    laid_out["node_size"] = laid_out["phrase_count"].clip(lower=1)
+    return laid_out
+
+
 def suggested_review_defaults(selected: pd.Series, existing: pd.Series) -> dict[str, str]:
     status = safe_text(selected.get("status"))
     category = safe_text(selected.get("category"))
@@ -378,7 +401,7 @@ lines_df["occurrences"] = pd.to_numeric(lines_df["occurrences"], errors="coerce"
 lines_df["listing_count"] = pd.to_numeric(lines_df["listing_count"], errors="coerce").fillna(0).astype(int)
 lines_df["review_bucket"] = lines_df.apply(review_bucket, axis=1)
 
-decisions_df = load_decisions()
+decisions_df = latest_repair_decisions(load_decisions())
 lines_df = apply_decisions(lines_df, decisions_df)
 suggestions_df = load_suggestions()
 lines_df = apply_ai_suggestions(lines_df, suggestions_df)
@@ -446,7 +469,109 @@ bucket_counts = (
     .sort_values("occurrences", ascending=False)
 )
 
-bucket_tab, queue_tab, decision_tab = st.tabs(["Buckets", "Review Queue", "Saved Decisions"])
+dictionary_tab, bucket_tab, queue_tab, decision_tab = st.tabs(
+    ["Dictionary Map", "Buckets", "Review Queue", "Saved Decisions"]
+)
+
+with dictionary_tab:
+    st.markdown("### Repair Dictionary Map")
+    st.caption(
+        "Each point is one current canonical repair type. Point size is the number of active phrases mapped to it; "
+        "hard-avoid types are called out in the detail panel. Superseded decisions are excluded."
+    )
+    nodes_df = repair_dictionary_nodes(decisions_df)
+    if nodes_df.empty:
+        st.info("No active dictionary rules are available yet.")
+    else:
+        node_metrics = "".join(
+            [
+                display_metric("Repair types", f"{len(nodes_df):,}", "current canonicals"),
+                display_metric("Phrase mappings", f"{int(nodes_df['phrase_count'].sum()):,}", "latest decisions only"),
+                display_metric("Hard avoid", f"{int(nodes_df['hard_avoid'].sum()):,}", "flat avoid policy"),
+                display_metric("Categories", f"{nodes_df['category'].nunique():,}", "active rule groups"),
+            ]
+        )
+        st.markdown(
+            f'<div class="repair-review-grid autosniper-repair-grid">{node_metrics}</div>',
+            unsafe_allow_html=True,
+        )
+
+        filter_left, filter_right = st.columns([1.4, 1])
+        with filter_left:
+            dictionary_search = st.text_input(
+                "Search repair type or phrase",
+                key="dictionary_search",
+                placeholder="engine light, paint damage, seat...",
+            )
+        with filter_right:
+            category_filter = st.multiselect(
+                "Categories",
+                sorted(nodes_df["category"].unique().tolist()),
+                default=[],
+                key="dictionary_categories",
+            )
+
+        visible_nodes = nodes_df.copy()
+        if category_filter:
+            visible_nodes = visible_nodes[visible_nodes["category"].isin(category_filter)].copy()
+        needle = dictionary_search.strip().lower()
+        if needle:
+            visible_nodes = visible_nodes[
+                visible_nodes.apply(
+                    lambda row: needle in safe_text(row.get("canonical_defect")).lower()
+                    or any(needle in safe_text(phrase).lower() for phrase in row.get("phrases", [])),
+                    axis=1,
+                )
+            ].copy()
+
+        if visible_nodes.empty:
+            st.info("No dictionary nodes match those filters.")
+        else:
+            chart_df = dictionary_node_layout(visible_nodes)
+            st.scatter_chart(
+                chart_df,
+                x="x",
+                y="y",
+                color="category",
+                size="node_size",
+                height=430,
+                use_container_width=True,
+            )
+            st.caption("The chart is an overview; use the selector below to inspect the exact active phrase list.")
+
+            canonical_options = visible_nodes["canonical_defect"].tolist()
+            selected_canonical = st.selectbox(
+                "Inspect repair type",
+                canonical_options,
+                format_func=lambda value: value.replace("_", " "),
+                key="dictionary_canonical",
+            )
+            selected_node = visible_nodes[visible_nodes["canonical_defect"] == selected_canonical].iloc[0]
+            st.markdown(
+                clean_html(
+                    f"""
+                    <div class="repair-review-selection-grid">
+                        {display_selection("Canonical", selected_canonical)}
+                        {display_selection("Category", selected_node.get("category"))}
+                        {display_selection("Active phrases", selected_node.get("phrase_count"))}
+                        {display_selection("Cost model", selected_node.get("cost_model"))}
+                    </div>
+                    """
+                ),
+                unsafe_allow_html=True,
+            )
+            if bool(selected_node.get("hard_avoid")):
+                st.error("This type uses the flat hard-avoid policy, not the per-class repair pricing schedule.")
+            if bool(selected_node.get("mixed_category")):
+                st.warning("Active phrases for this canonical span more than one category and need consistency review.")
+
+            phrase_rows = dictionary_phrase_rows(decisions_df, selected_canonical)
+            phrase_filter = st.text_input("Filter phrases in this type", key="dictionary_phrase_filter")
+            if phrase_filter.strip():
+                phrase_rows = phrase_rows[
+                    phrase_rows["repair_item"].astype(str).str.contains(phrase_filter.strip(), case=False, regex=False)
+                ]
+            st.dataframe(phrase_rows, use_container_width=True, hide_index=True, height=320)
 
 with bucket_tab:
     st.markdown("### Review Buckets")
@@ -706,7 +831,7 @@ with queue_tab:
 
 with decision_tab:
     st.markdown("### Saved Decisions")
-    decisions_df = load_decisions()
+    decisions_df = latest_repair_decisions(load_decisions())
     if decisions_df.empty:
         st.info("No review decisions saved yet.")
     else:
