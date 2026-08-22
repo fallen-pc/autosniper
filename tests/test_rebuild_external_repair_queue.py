@@ -42,7 +42,7 @@ def test_rebuild_prunes_only_stale_active_monitor_rows_with_parsed_evidence() ->
             {
                 "source": "pickles",
                 "url": pickles_url,
-                "scrape_status": "parsed",
+                "scrape_status": "parsed_http_200",
                 "general_condition": "Please note: tilt tray required for collection.",
             },
             {
