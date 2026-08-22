@@ -93,11 +93,29 @@ def load_repair_review_decisions(path: Path = DECISIONS_PATH) -> pd.DataFrame:
     return df[REVIEW_COLUMNS]
 
 
+def latest_repair_decisions(decisions: pd.DataFrame) -> pd.DataFrame:
+    """Return the current decision for each repair key.
+
+    The review CSV has historically been used both as an append-only audit trail
+    and as an upserted current-state file. Downstream counts must collapse it
+    before counting phrases, canonicals, or pricing requirements.
+    """
+    if decisions.empty or "repair_key" not in decisions.columns:
+        return pd.DataFrame(columns=REVIEW_COLUMNS)
+    out = decisions.copy()
+    for column in REVIEW_COLUMNS:
+        if column not in out.columns:
+            out[column] = ""
+    out["repair_key"] = out["repair_key"].map(safe_text)
+    out = out[out["repair_key"] != ""]
+    return out.drop_duplicates(subset=["repair_key"], keep="last")[REVIEW_COLUMNS].reset_index(drop=True)
+
+
 def latest_decision_lookup(decisions: pd.DataFrame | None = None) -> dict[str, dict[str, str]]:
     df = load_repair_review_decisions() if decisions is None else decisions
-    if df.empty or "repair_key" not in df.columns:
+    latest = latest_repair_decisions(df)
+    if latest.empty:
         return {}
-    latest = df.drop_duplicates(subset=["repair_key"], keep="last")
     lookup: dict[str, dict[str, str]] = {}
     for _, row in latest.iterrows():
         record = {column: safe_text(row.get(column)) for column in REVIEW_COLUMNS}
