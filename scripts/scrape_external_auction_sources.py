@@ -765,7 +765,14 @@ def _extract_pickles_condition_text(lines: list[str]) -> str:
             start_index = index + 1
             break
     if start_index is None:
-        return _extract_condition_text(lines)
+        fallback = _extract_condition_text(lines)
+        fallback_lines = [
+            line
+            for line in fallback.splitlines()
+            if not re.fullmatch(r"damage details(?:\s*\(\d+\))?", _clean_text(line), re.IGNORECASE)
+            and not _is_pickles_condition_boundary(line)
+        ]
+        return "\n".join(fallback_lines)
     if _looks_like_pickles_metadata_section(lines, start_index):
         return _extract_pickles_metadata_risk_notes(lines, start_index)
 
