@@ -464,6 +464,37 @@ def test_parse_pickles_late_metadata_sequence_fails_closed_before_legal_disclaim
     assert "legal boilerplate" not in row["general_condition"]
 
 
+def test_parse_pickles_condition_stops_before_prefixed_terminal_disclaimer():
+    text = """
+    STOCK 62330787
+    2021 Toyota Hilux
+    Condition Details (4)
+    Vehicle Body
+    Minor Stone Chips, Scratches & Dents
+    Sill Panel (Passenger)
+    Corrosion Evident, Scratches
+    No longer available
+    Sorry this item is no longer available. Find similar items. view similar items.
+    ENDED
+    Please Note: This description indicates the motor vehicle has a body appraisal based purely on an external walk around.
+    Without limiting the generality of this disclaimer, there may be other damage.
+    """
+
+    row = parse_listing_text(
+        "pickles",
+        "https://www.pickles.com.au/used/details/cars/2021-toyota-hilux/62330787",
+        "2021 Toyota Hilux, 62330787 - Pickles AU",
+        text,
+    )
+
+    assert row["general_condition"] == (
+        "Vehicle Body minor stone chips, scratches & dents.\n"
+        "Sill Panel (Passenger) corrosion evident, scratches."
+    )
+    assert "no longer available" not in row["general_condition"].lower()
+    assert "body appraisal" not in row["general_condition"].lower()
+
+
 def test_parse_pickles_embedded_sold_fields_into_grays_like_columns():
     text = r"""
     STOCK 62146160

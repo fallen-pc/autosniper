@@ -229,6 +229,16 @@ PICKLES_CONDITION_STOP_LINES = {
     "contact",
 }
 
+PICKLES_CONDITION_BOUNDARY_PHRASES = (
+    "this description indicates the motor vehicle has a body appraisal",
+    "damage and description disclaimer",
+    "sorry this item is no longer available",
+    "find similar items",
+    "view similar items",
+    "we're not accepting more bids for this item",
+    "please refresh browser for updated status",
+)
+
 PICKLES_METADATA_SECTION_MARKERS = {
     "keys",
     "spare keys",
@@ -686,6 +696,13 @@ def _is_pickles_condition_noise(line: str) -> bool:
     )
 
 
+def _is_pickles_condition_boundary(line: str) -> bool:
+    lower = _clean_text(line).lower().rstrip(":")
+    return lower in PICKLES_CONDITION_STOP_LINES or any(
+        phrase in lower for phrase in PICKLES_CONDITION_BOUNDARY_PHRASES
+    )
+
+
 def _normalise_pickles_damage(value: str) -> str:
     text = _clean_text(value)
     text = re.sub(r"\s*,\s*", ", ", text)
@@ -709,7 +726,7 @@ def _extract_pickles_metadata_risk_notes(lines: list[str], start_index: int) -> 
         cleaned = _clean_text(line).strip(" *.")
         lowered = cleaned.lower()
         if (
-            lowered in PICKLES_CONDITION_STOP_LINES
+            _is_pickles_condition_boundary(cleaned)
             or lowered in PICKLES_CONDITION_IGNORE_LINES
             or re.match(r"^[A-Za-z .'-]+,\s*(NSW|VIC|QLD|SA|WA|TAS|ACT|NT)$", cleaned, re.IGNORECASE)
         ):
@@ -760,7 +777,7 @@ def _extract_pickles_condition_text(lines: list[str]) -> str:
             continue
         if snippets and re.match(r"^[A-Za-z .'-]+,\s*(NSW|VIC|QLD|SA|WA|TAS|ACT|NT)$", raw_component, re.IGNORECASE):
             break
-        if component_lower in PICKLES_CONDITION_STOP_LINES:
+        if _is_pickles_condition_boundary(raw_component):
             break
         if _is_pickles_condition_noise(raw_component):
             index += 1
@@ -770,8 +787,7 @@ def _extract_pickles_condition_text(lines: list[str]) -> str:
         lookahead = index + 1
         while lookahead < len(lines):
             candidate = _strip_pickles_condition_number(lines[lookahead])
-            candidate_lower = candidate.lower().rstrip(":")
-            if candidate_lower in PICKLES_CONDITION_STOP_LINES:
+            if _is_pickles_condition_boundary(candidate):
                 break
             if _is_pickles_condition_noise(candidate):
                 lookahead += 1

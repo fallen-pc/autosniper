@@ -37,9 +37,10 @@ def _require_columns(df: pd.DataFrame, required: set[str], *, label: str) -> Non
 
 def _current_condition_evidence(external_df: pd.DataFrame, *, source: str) -> dict[str, str]:
     _require_columns(external_df, REQUIRED_EXTERNAL_COLUMNS, label="External listing data")
+    statuses = external_df["scrape_status"].astype(str).str.strip().str.lower()
+    successful = statuses.eq("parsed") | statuses.str.fullmatch(r"parsed_http_2\d\d")
     scoped = external_df[
-        external_df["source"].astype(str).str.strip().str.lower().eq(source.lower())
-        & external_df["scrape_status"].astype(str).str.strip().str.lower().eq("parsed")
+        external_df["source"].astype(str).str.strip().str.lower().eq(source.lower()) & successful
     ]
     evidence: dict[str, list[str]] = {}
     for _, row in scoped.iterrows():
