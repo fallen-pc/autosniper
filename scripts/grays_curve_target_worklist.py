@@ -30,11 +30,25 @@ def _clean(value: object) -> str:
 
 
 def _key(value: object) -> str:
-    text = _clean(value).lower()
-    # Treat compact badge/engine tokens (147TSI, 2.0i) the same as their
-    # space-separated forms in readable rejection-ledger descriptions.
-    text = re.sub(r"(?<=\d)(?=[a-z])|(?<=[a-z])(?=\d)", " ", text)
-    return re.sub(r"[^a-z0-9]+", " ", text).strip()
+    parts = re.findall(r"[a-z0-9]+", _clean(value).lower())
+    compacted: list[str] = []
+    for part in parts:
+        if compacted:
+            previous = compacted[-1]
+            join_badge_token = (
+                (previous.isdigit() and part.isalpha())
+                or (len(previous) == 1 and previous.isalpha() and part.isdigit())
+                or (
+                    re.fullmatch(r"[a-z]\d+", previous) is not None
+                    and len(part) == 1
+                    and part.isalpha()
+                )
+            )
+            if join_badge_token:
+                compacted[-1] += part
+                continue
+        compacted.append(part)
+    return " ".join(compacted)
 
 
 def _year_band_map(years: pd.Series) -> dict[int, str]:

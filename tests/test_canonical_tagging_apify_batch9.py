@@ -22,7 +22,7 @@ from shared.canonical_tagging import _load_curve_year_band, assign_canonical_tag
             {
                 "make": "Nissan", "model": "Micra", "variant": "ST K13",
                 "body_type": "Hatchback", "transmission": "Automatic",
-                "fuel_type": "Petrol", "year": "2013", "price": "4500",
+                "fuel_type": "Petrol", "year": "2016", "price": "4500",
                 "url": "https://example.test/nissan-micra-st-k13",
             },
             "nissan_micra_st_k13_petrol_auto_hatch",

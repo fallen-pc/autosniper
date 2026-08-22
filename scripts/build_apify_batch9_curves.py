@@ -38,7 +38,7 @@ LANES = [
         key="nissan_micra_st_k13_auto_petrol",
         make="nissan", model="micra",
         title_pattern=r"\bMicra\b.*\bST\b(?!-L\b).*\bK13\b",
-        sold_variant="st k13", years=(2011, 2016), anchors=[2011, 2013, 2015],
+        sold_variant="st k13", years=(2011, 2016), anchors=[2011, 2014, 2016],
         body="hatch", body_aliases="hatch|hatchback", transmission="auto",
         sold_transmission="automatic", fuel="petrol", engine=r"1\.2L",
         badge="st", aliases="st k13", series="k13",

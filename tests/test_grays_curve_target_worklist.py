@@ -19,6 +19,7 @@ def test_key_normalizes_compact_alphanumeric_badges():
         "Volkswagen Tiguan 147 TSI 5 N"
     )
     assert _key("Subaru XV 2.0i G4X") == _key("Subaru XV 2 0 i G 4 X")
+    assert _key("Hyundai i30 Elite GD").split()[:2] == ["hyundai", "i30"]
 
 
 def test_compact_rejection_badge_marks_lane_previously_assessed():
@@ -34,3 +35,16 @@ def test_compact_rejection_badge_marks_lane_previously_assessed():
     )
     signatures = {_key("Volkswagen Tiguan 147TSI 5N automatic petrol SUV")}
     assert _looks_previously_assessed(row, signatures)
+
+    distinct_i30 = pd.Series(
+        {
+            "make": "hyundai",
+            "model": "i30",
+            "variant": "premium gd",
+            "body_type": "hatchback",
+            "fuel_type": "petrol",
+            "transmission": "automatic",
+        }
+    )
+    i30_signatures = {_key("Hyundai i30 Elite GD hatch automatic petrol")}
+    assert not _looks_previously_assessed(distinct_i30, i30_signatures)
