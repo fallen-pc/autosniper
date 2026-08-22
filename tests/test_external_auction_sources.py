@@ -469,6 +469,7 @@ def test_parse_pickles_condition_stops_before_prefixed_terminal_disclaimer():
     STOCK 62330787
     2021 Toyota Hilux
     Condition Details (4)
+    Attachments (1)
     Vehicle Body
     Minor Stone Chips, Scratches & Dents
     Sill Panel (Passenger)
@@ -492,6 +493,7 @@ def test_parse_pickles_condition_stops_before_prefixed_terminal_disclaimer():
         "Sill Panel (Passenger) corrosion evident, scratches."
     )
     assert "no longer available" not in row["general_condition"].lower()
+    assert "attachments" not in row["general_condition"].lower()
     assert "body appraisal" not in row["general_condition"].lower()
 
 

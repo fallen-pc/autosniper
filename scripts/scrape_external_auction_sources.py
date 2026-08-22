@@ -225,6 +225,7 @@ PICKLES_CONDITION_STOP_LINES = {
     "overview",
     "item details",
     "description",
+    "no longer available",
     "documents",
     "contact",
 }
@@ -690,6 +691,7 @@ def _is_pickles_condition_noise(line: str) -> bool:
         not lower
         or lower in PICKLES_CONDITION_STATUS_LINES
         or lower in PICKLES_CONDITION_IGNORE_LINES
+        or bool(re.fullmatch(r"attachments?\s*\(\d+\)", lower))
         or lower.startswith("rr & p")
         or lower.startswith("rr&p")
         or lower.startswith("pdr")
