@@ -496,6 +496,55 @@ def test_parse_pickles_condition_stops_before_prefixed_terminal_disclaimer():
     assert "attachments" not in row["general_condition"].lower()
     assert "body appraisal" not in row["general_condition"].lower()
 
+def test_parse_pickles_logged_out_damage_summary_fails_closed():
+    text = """
+    STOCK 62299680
+    2016 Holden Captiva
+    The photo gallery is for the verified purchaser only.
+    LOG IN
+    Overview
+    Accessories & Extras
+    Damage Details (25)
+    2016 Holden Captiva
+    WOVR Status
+    WOVR N/A
+    Incident Type
+    Hail
+    No longer available
+    Sorry this item is no longer available. Find similar items.
+    SOLD
+    Damage and Description Disclaimer
+    Please Note: This description indicates the motor vehicle has a body appraisal based purely on an external walk around.
+    Products
+    """
+
+    row = parse_listing_text(
+        "pickles",
+        "https://www.pickles.com.au/used/details/cars/2016-holden-captiva/62299680",
+        "2016 Holden Captiva, 62299680 - Pickles AU",
+        text,
+    )
+
+    assert row["general_condition"] == ""
+
+
+def test_parse_pickles_fallback_preserves_specific_damage_line():
+    text = """
+    STOCK 62299680
+    2016 Holden Captiva
+    Damage to front guard
+    Damage and Description Disclaimer
+    """
+
+    row = parse_listing_text(
+        "pickles",
+        "https://www.pickles.com.au/used/details/cars/2016-holden-captiva/62299680",
+        "2016 Holden Captiva, 62299680 - Pickles AU",
+        text,
+    )
+
+    assert row["general_condition"] == "Damage to front guard"
+
 
 def test_parse_pickles_embedded_sold_fields_into_grays_like_columns():
     text = r"""
