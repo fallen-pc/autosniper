@@ -470,11 +470,11 @@ def test_parse_pickles_condition_stops_before_prefixed_terminal_disclaimer():
     2021 Toyota Hilux
     Condition Details (4)
     Attachments (1)
+    No longer available
     Vehicle Body
     Minor Stone Chips, Scratches & Dents
     Sill Panel (Passenger)
     Corrosion Evident, Scratches
-    No longer available
     Sorry this item is no longer available. Find similar items. view similar items.
     ENDED
     Please Note: This description indicates the motor vehicle has a body appraisal based purely on an external walk around.

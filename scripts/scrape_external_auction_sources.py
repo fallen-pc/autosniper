@@ -207,6 +207,7 @@ PICKLES_CONDITION_IGNORE_LINES = {
     "pdr** = paintless dent repair",
     "no visible damage",
     "no damage visible",
+    "no longer available",
 }
 
 PICKLES_CONDITION_STOP_LINES = {
@@ -225,7 +226,6 @@ PICKLES_CONDITION_STOP_LINES = {
     "overview",
     "item details",
     "description",
-    "no longer available",
     "documents",
     "contact",
 }
