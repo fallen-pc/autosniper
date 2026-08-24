@@ -915,10 +915,6 @@ def _external_auction_daily_plan() -> dict[str, dict[str, int]]:
             "max_list_pages_per_source": _env_int("AUTOSNIPER_EXTERNAL_PICKLES_PAGES", 0),
             "max_details_per_source": _env_int("AUTOSNIPER_EXTERNAL_PICKLES_DETAILS", 0),
         },
-        "manheim": {
-            "max_list_pages_per_source": _env_int("AUTOSNIPER_EXTERNAL_MANHEIM_PAGES", 0),
-            "max_details_per_source": _env_int("AUTOSNIPER_EXTERNAL_MANHEIM_DETAILS", 0),
-        },
         "slattery": {
             "max_list_pages_per_source": _env_int("AUTOSNIPER_EXTERNAL_SLATTERY_PAGES", 0),
             "max_details_per_source": _env_int("AUTOSNIPER_EXTERNAL_SLATTERY_DETAILS", 0),

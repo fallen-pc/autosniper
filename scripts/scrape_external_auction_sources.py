@@ -29,7 +29,7 @@ else:  # pragma: no cover
 
 
 DEFAULT_OUTPUT_DIR = Path("output") / "external_auction_scrape"
-DEFAULT_SOURCES = ("pickles", "manheim", "slattery")
+DEFAULT_SOURCES = ("pickles", "slattery")
 
 LISTING_COLUMNS = list(
     dict.fromkeys(
@@ -1421,13 +1421,13 @@ def write_scrape_audit(audit_df: pd.DataFrame, output_dir: Path) -> Path:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Scrape Pickles, Manheim, and Slattery listings into an isolated curve-matched evidence CSV."
+        description="Scrape Pickles and Slattery listings into an isolated curve-matched evidence CSV."
     )
     parser.add_argument(
         "--source",
         action="append",
-        choices=sorted(SOURCE_URLS),
-        help="Source to scrape. Can be passed multiple times. Defaults to Pickles, Manheim, and Slattery.",
+        choices=sorted(DEFAULT_SOURCES),
+        help="Source to scrape. Can be passed multiple times. Defaults to Pickles and Slattery.",
     )
     parser.add_argument("--max-list-pages-per-source", type=int, default=2)
     parser.add_argument(
