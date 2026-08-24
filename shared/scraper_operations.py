@@ -231,7 +231,7 @@ def build_scraper_operations_snapshot(
         )
     )
 
-    for source_name, label in (("pickles", "Pickles"), ("slattery", "Slattery"), ("manheim", "Manheim")):
+    for source_name, label in (("pickles", "Pickles"), ("slattery", "Slattery")):
         link_mask = (
             external_links.get("source", pd.Series(dtype=str)).astype(str).str.lower().eq(source_name)
             if not external_links.empty
@@ -282,12 +282,9 @@ def build_scraper_operations_snapshot(
             else:
                 status = "Degraded"
                 detail = audit_notes or "External auction completeness was not proved"
-        elif source_name == "manheim" and forbidden:
-            status = "Blocked"
-            detail = "Manheim returned HTTP 403 from the VPS"
-        elif errors:
+        elif errors or forbidden:
             status = "Degraded"
-            detail = f"{errors} detail request(s) failed"
+            detail = f"{errors + forbidden} detail request(s) failed"
         source_rows.append(
             _source_row(
                 label,

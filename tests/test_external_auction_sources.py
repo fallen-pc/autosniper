@@ -3,6 +3,7 @@ import asyncio
 import pandas as pd
 
 from scripts.scrape_external_auction_sources import (
+    DEFAULT_SOURCES,
     build_source_list_urls,
     discover_source_links,
     extract_label_values,
@@ -865,6 +866,10 @@ def test_build_source_list_urls_expands_pickles_pages():
     assert len(urls) == 3
     assert "page=1" in urls[0]
     assert "page=3" in urls[2]
+
+
+def test_default_sources_exclude_retired_manheim():
+    assert DEFAULT_SOURCES == ("pickles", "slattery")
 
 
 def test_build_source_list_urls_interleaves_manheim_locations_by_page():

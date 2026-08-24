@@ -435,7 +435,7 @@ def test_external_auction_daily_scrape_uses_source_specific_caps(monkeypatch, tm
                 [
                     {
                         "source": source,
-                        "completeness_status": "incomplete" if source == "manheim" else "complete",
+                        "completeness_status": "complete",
                         "notes": "",
                     }
                 ]
@@ -477,18 +477,6 @@ def test_external_auction_daily_scrape_uses_source_specific_caps(monkeypatch, tm
             "detail_batch_size": 2,
         },
         {
-            "source": "manheim",
-            "max_list_pages_per_source": 0,
-            "max_details_per_source": 0,
-            "headless": True,
-            "prefilter_list_to_curves": True,
-            "detail_timeout_ms": 12000,
-            "detail_wait_ms": 1000,
-            "detail_browser_recycle_size": 40,
-            "discovery_browser_recycle_pages": 10,
-            "detail_batch_size": 2,
-        },
-        {
             "source": "slattery",
             "max_list_pages_per_source": 0,
             "max_details_per_source": 0,
@@ -502,10 +490,10 @@ def test_external_auction_daily_scrape_uses_source_specific_caps(monkeypatch, tm
         },
     ]
     assert len(written) == 1
-    assert len(written[0][0]) == 3
-    assert len(written[0][1]) == 3
+    assert len(written[0][0]) == 2
+    assert len(written[0][1]) == 2
     assert written[0][2] == tmp_path / "daily"
-    assert coverage_issues == ["manheim=incomplete"]
+    assert coverage_issues == []
 
 
 def test_external_auction_daily_scrape_can_be_disabled(monkeypatch) -> None:
@@ -858,7 +846,7 @@ def test_degraded_daily_coverage_is_visible_without_triggering_full_catchup(monk
     monkeypatch.setattr(scheduled_jobs, "DAILY_STATE_PATH", daily_state_path)
     monkeypatch.setattr(scheduled_jobs, "METRICS_PATH", tmp_path / "metrics.json")
     monkeypatch.setattr(scheduled_jobs, "LOCK_PATH", tmp_path / "scrape.lock")
-    monkeypatch.setattr(scheduled_jobs, "run_daily_pipeline", lambda: ["manheim=incomplete (HTTP 403)"])
+    monkeypatch.setattr(scheduled_jobs, "run_daily_pipeline", lambda: ["slattery=incomplete (HTTP 500)"])
     monkeypatch.setattr(scheduled_jobs, "_run_runtime_backup_if_configured", lambda: None)
     monkeypatch.setattr(scheduled_jobs, "write_scraper_health_report", lambda **kwargs: health_calls.append(kwargs))
     monkeypatch.setattr(scheduled_jobs, "_write_daily_metrics", lambda **kwargs: metric_calls.append(kwargs))
@@ -869,7 +857,7 @@ def test_degraded_daily_coverage_is_visible_without_triggering_full_catchup(monk
     state = json.loads(daily_state_path.read_text(encoding="utf-8"))
     assert state["last_status"] == "degraded"
     assert state["last_coverage_date_local"] == "2026-04-21"
-    assert "manheim=incomplete" in state["last_error_message"]
+    assert "slattery=incomplete" in state["last_error_message"]
     assert health_calls[0]["job_status"] == "degraded"
     assert metric_calls[0]["degraded"] is True
 
