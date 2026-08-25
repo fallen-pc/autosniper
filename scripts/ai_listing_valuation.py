@@ -1,4 +1,5 @@
 import json
+import math
 import os
 import re
 import warnings
@@ -196,6 +197,17 @@ if INTERSTATE_BUYING_ALLOWED and _INTERSTATE_ENV_RAW not in _INTERSTATE_TRUE_TOK
     ) or None
 DEFAULT_PREP = 300.0
 ROADWORTHY_ESTIMATE = float(os.getenv("AUTOSNIPER_ROADWORTHY_ESTIMATE", "250").strip() or "250")
+# Acquisition charges included in the aggregate fees_estimate.
+# Grays publishes a $49.50 automotive administration fee. Victorian duty is
+# calculated here on purchase price as the minimum dutiable value. A higher
+# open-market declaration remains a required pre-purchase check because it cannot
+# be inferred reliably from auction data alone.
+GRAYS_ADMIN_FEE = float(os.getenv("AUTOSNIPER_GRAYS_ADMIN_FEE", "49.50").strip() or "49.50")
+VIC_TRANSFER_FEE = float(os.getenv("AUTOSNIPER_VIC_TRANSFER_FEE", "47.50").strip() or "47.50")
+VIC_DUTY_PER_200 = float(os.getenv("AUTOSNIPER_VIC_DUTY_PER_200", "8.40").strip() or "8.40")
+VIC_LUXURY_DUTY_PER_200 = 10.40
+VIC_UPPER_LUXURY_DUTY_PER_200 = 14.00
+VIC_SUPER_LUXURY_DUTY_PER_200 = 18.00
 DETAILING_HATCH_SEDAN = 99.0
 DETAILING_SMALL_SUV_WAGON = 115.0
 DETAILING_LARGE_SUV_4WD = 129.0
@@ -205,6 +217,7 @@ COST_BUFFER = 1_500.0
 REGISTERED_REGO_COST = 0.0
 MIN_FEES = 500.0
 FEES_RATE = 0.08
+VALUATION_POLICY_VERSION = "location_and_acquisition_costs_v3"
 # Max headroom we give above the current live bid before we cap the recommendation.
 CURRENT_BID_HEADROOM = 3_500.0
 EDGE_BUFFER = 50.0
@@ -412,7 +425,7 @@ def _valuation_input_hash(
             for key, value in (reauction_context or {}).items()
         },
         "repair_rules_signature": _repair_rules_signature(),
-        "valuation_policy_version": "class_aware_repair_pricing_v2",
+        "valuation_policy_version": VALUATION_POLICY_VERSION,
     }
     encoded = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
     return sha256(encoded.encode("utf-8")).hexdigest()
@@ -1103,11 +1116,64 @@ def _estimate_transport_cost(location: Any) -> float:
 def _state_from_text(value: Any) -> str | None:
     if value is None or (isinstance(value, float) and pd.isna(value)):
         return None
-    text = re.sub(r"[^A-Z]", " ", str(value).upper())
+    raw_text = str(value).upper()
+    text = re.sub(r"[^A-Z0-9]", " ", raw_text)
     tokens = {token for token in text.split() if token}
     for state in ("NSW", "VIC", "QLD", "SA", "WA", "TAS", "NT", "ACT"):
         if state in tokens:
             return state
+
+    full_state_names = {
+        "AUSTRALIAN CAPITAL TERRITORY": "ACT",
+        "NORTHERN TERRITORY": "NT",
+        "NEW SOUTH WALES": "NSW",
+        "SOUTH AUSTRALIA": "SA",
+        "WESTERN AUSTRALIA": "WA",
+        "QUEENSLAND": "QLD",
+        "TASMANIA": "TAS",
+        "VICTORIA": "VIC",
+    }
+    normalized_text = " ".join(text.split())
+    for state_name, state in full_state_names.items():
+        if state_name in normalized_text:
+            return state
+
+    for postcode_match in re.finditer(r"(?<!\d)(\d{4})(?!\d)", raw_text):
+        state = _state_from_postcode(int(postcode_match.group(1)))
+        if state:
+            return state
+
+    # Current Grays yards occasionally omit the postcode and state entirely.
+    # Keep this deliberately small and limited to observed auction locations.
+    known_auction_locations = {
+        "DANDENONG SOUTH": "VIC",
+        "POORAKA": "SA",
+        "JANDAKOT": "WA",
+    }
+    for location_name, state in known_auction_locations.items():
+        if location_name in normalized_text:
+            return state
+    return None
+
+
+def _state_from_postcode(postcode: int) -> str | None:
+    """Return an Australian state/territory for a standard four-digit postcode."""
+    if 200 <= postcode <= 299 or 2600 <= postcode <= 2618 or 2900 <= postcode <= 2920:
+        return "ACT"
+    if 800 <= postcode <= 999:
+        return "NT"
+    if 1000 <= postcode <= 2599 or 2619 <= postcode <= 2899 or 2921 <= postcode <= 2999:
+        return "NSW"
+    if 3000 <= postcode <= 3999 or 8000 <= postcode <= 8999:
+        return "VIC"
+    if 4000 <= postcode <= 4999 or 9000 <= postcode <= 9999:
+        return "QLD"
+    if 5000 <= postcode <= 5999:
+        return "SA"
+    if 6000 <= postcode <= 6999:
+        return "WA"
+    if 7000 <= postcode <= 7999:
+        return "TAS"
     return None
 
 
@@ -1164,11 +1230,31 @@ def _grays_buyer_premium(final_bid: float) -> float:
     return final_bid * 0.05
 
 
+def _victorian_motor_vehicle_duty(dutiable_value: float) -> float:
+    """Estimate Victorian passenger-vehicle duty from the supplied dutiable value."""
+    if OPERATING_STATE != "VIC" or dutiable_value <= 0:
+        return 0.0
+    if dutiable_value > 150_000:
+        rate_per_200 = VIC_SUPER_LUXURY_DUTY_PER_200
+    elif dutiable_value > 100_000:
+        rate_per_200 = VIC_UPPER_LUXURY_DUTY_PER_200
+    elif dutiable_value > 80_567:
+        rate_per_200 = VIC_LUXURY_DUTY_PER_200
+    else:
+        rate_per_200 = VIC_DUTY_PER_200
+    return math.ceil(dutiable_value / 200.0) * rate_per_200
+
+
 def _estimate_bid_cost_components(purchase_price: float, listing: Mapping[str, Any]) -> dict[str, float]:
-    if _is_grays_listing(listing):
+    is_grays = _is_grays_listing(listing)
+    if is_grays:
         auction_fee = _grays_buyer_premium(purchase_price)
     else:
         auction_fee = max(MIN_FEES, purchase_price * FEES_RATE)
+    motor_vehicle_duty = _victorian_motor_vehicle_duty(purchase_price)
+    transfer_fee = 0.0 if _is_unregistered(listing) or OPERATING_STATE != "VIC" else VIC_TRANSFER_FEE
+    administration_fee = GRAYS_ADMIN_FEE if is_grays else 0.0
+    fees_total = auction_fee + motor_vehicle_duty + transfer_fee + administration_fee
     transport_cost = _estimate_transport_cost(listing.get("location"))
     rego_cost = REGISTERED_REGO_COST
     roadworthy_cost = ROADWORTHY_ESTIMATE if _is_unregistered(listing) else 0.0
@@ -1176,6 +1262,10 @@ def _estimate_bid_cost_components(purchase_price: float, listing: Mapping[str, A
     prep_cost = DEFAULT_PREP + detail_cost
     return {
         "auction_fee": auction_fee,
+        "motor_vehicle_duty": motor_vehicle_duty,
+        "transfer_fee": transfer_fee,
+        "administration_fee": administration_fee,
+        "fees_total": fees_total,
         "transport_cost": transport_cost,
         "detail_cost": detail_cost,
         "rego_cost": rego_cost,
@@ -1187,7 +1277,7 @@ def _estimate_bid_cost_components(purchase_price: float, listing: Mapping[str, A
 def _estimate_costs(purchase_price: float, listing: Mapping[str, Any]) -> dict[str, float]:
     components = _estimate_bid_cost_components(purchase_price, listing)
     return {
-        "fees_estimate": components["auction_fee"],
+        "fees_estimate": components["fees_total"],
         "transport_estimate": components["transport_cost"],
         "rego_estimate": components["rego_cost"],
         "roadworthy_estimate": components["roadworthy_cost"],

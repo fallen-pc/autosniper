@@ -45,10 +45,10 @@ def test_missed_decision_metrics_uses_curve_proxy_and_repair_cost(monkeypatch) -
     )
 
     assert result["expected_auction_price"] == 15_000
-    assert result["max_bid"] == 11_214
+    assert result["max_bid"] == 10_755
     assert result["repair_cost"] == 700
     assert result["risk_buffer"] == 300
-    assert result["projected_profit_at_sold"] == 7351
+    assert result["projected_profit_at_sold"] == 6931
 
 
 def test_missed_decision_metrics_blocks_buy_when_repair_is_unresolved(monkeypatch) -> None:
@@ -243,10 +243,10 @@ def test_missed_decision_metrics_can_run_no_repair_hypothesis(monkeypatch) -> No
         include_repairs=False,
     )
 
-    assert round(result["max_bid"]) == 12_214
+    assert round(result["max_bid"]) == 11_755
     assert result["repair_cost"] == 0
     assert result["risk_buffer"] == 0
-    assert result["projected_profit_at_sold"] == 8351
+    assert result["projected_profit_at_sold"] == 7931
 
 
 def test_missed_decision_metrics_zeroes_interstate_max_bid(monkeypatch) -> None:
@@ -302,7 +302,7 @@ def test_missed_decision_metrics_keeps_historical_median_context_without_capping
     )
 
     assert result["expected_auction_price"] == 12_300
-    assert result["max_bid"] == 12_214
+    assert result["max_bid"] == 11_755
 
 
 def test_missed_decision_metrics_uses_shared_buy_policy(monkeypatch) -> None:
@@ -331,7 +331,7 @@ def test_missed_decision_metrics_uses_shared_buy_policy(monkeypatch) -> None:
     )
 
     assert result["computed_verdict"] == "Marginal (expected finish)"
-    assert result["bid_status"] == "Cheap"
+    assert result["bid_status"] == "Near ceiling"
     assert result["hard_max_safety"] == "Conditional"
     assert result["action_label"] == "Buy"
 
@@ -363,7 +363,7 @@ def test_missed_decision_metrics_keeps_thin_comps_informational(monkeypatch) -> 
     )
 
     assert result["computed_verdict"] == "Marginal (expected finish)"
-    assert result["bid_status"] == "Cheap"
+    assert result["bid_status"] == "Near ceiling"
     assert result["hard_max_safety"] == "Conditional"
     assert result["action_label"] == "Buy"
 
@@ -393,7 +393,7 @@ def test_missed_decision_metrics_uses_shared_over_max_avoid_policy(monkeypatch) 
         include_repairs=True,
     )
 
-    assert result["max_bid"] == 12_214
+    assert result["max_bid"] == 11_755
     assert result["bid_status"] == "Over max"
     assert result["action_label"] == "Avoid"
 
@@ -442,7 +442,7 @@ def test_live_and_missed_surfaces_use_identical_curve_economics(monkeypatch) -> 
     missed = missed_opportunities.compute_decision_metrics(row, 20_000, include_repairs=True)
 
     live_max = ai_listing_valuation._parse_currency(live["recommended_max_bid"])
-    assert live_max == missed["max_bid"] == 13_714
+    assert live_max == missed["max_bid"] == 13_200
     assert live_max > missed["expected_auction_price"]
     assert ai_listing_valuation._parse_currency(live["profit_at_current_bid_worst"]) == round(
         missed["projected_profit_worst_at_sold"]
