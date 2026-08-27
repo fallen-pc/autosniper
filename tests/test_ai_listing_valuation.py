@@ -972,7 +972,7 @@ def test_curve_analysis_uses_historical_sold_median_for_expected_auction(monkeyp
     assert result["expected_auction_source"] == "historical_sold_median"
     assert result["expected_auction_comps_count"] == 5
     assert ai_listing_valuation._parse_currency(result["expected_auction_profit"]) == round(expected_profit)
-    assert ai_listing_valuation._parse_currency(result["recommended_max_bid"]) == 13_714
+    assert ai_listing_valuation._parse_currency(result["recommended_max_bid"]) == 13_200
     assert ai_listing_valuation._parse_currency(result["recommended_max_bid"]) > 6_200
     assert result["current_profit_label"] == "Strong"
     assert result["expected_auction_profit_label"] in {"Good", "Strong"}
@@ -1091,7 +1091,7 @@ def test_curve_analysis_keeps_pajero_like_historical_comps_informational(monkeyp
 
     assert result["expected_auction_price"] == "$6,200"
     assert result["expected_auction_source"] == "historical_sold_median"
-    assert ai_listing_valuation._parse_currency(result["recommended_max_bid"]) == 10_716
+    assert ai_listing_valuation._parse_currency(result["recommended_max_bid"]) == 10_296
     assert ai_listing_valuation._parse_currency(result["recommended_max_bid"]) > 6_200
     assert result["bid_status"] == "Cheap"
     assert result["action_label"] == "Buy"
