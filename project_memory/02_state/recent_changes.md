@@ -492,3 +492,7 @@
 - Aggregate fees_estimate now includes Grays' $49.50 automotive administration fee, Victorian passenger-vehicle duty by the current value bands (calculated on purchase price as a minimum; a higher open-market declaration remains a pre-purchase check), and the $47.50 transfer fee for registered vehicles. The valuation policy version was bumped so unchanged listings refresh instead of retaining stale cached economics.
 - Read-only production shadow replay against the nine Buy rows copied from /opt/autosniper changed the result to four Buy and five Avoid: three Pooraka SA rows and one Jandakot WA row are now interstate-blocked, while the local 2010 Hyundai i30 current bid of $2,609 exceeds its new $2,588 safe maximum. All nine shadow maximum bids fell. No VPS file, timer, code, or valuation CSV was changed; deployed production remains commit 9aa624b.
 - Verification: focused live/replay/acquisition-cost suites passed 81 tests and the full repository suite passed 1,108 tests.
+
+# 2026-08-28 - Repair quote reply classification
+
+- Classified the August 21 Classic Motor Trimmers batch and August 23 MPS/Boronia representative requests as replied/no-price after Gmail replies required photos, in-person inspection, or pictures before quoting. No direct supplier prices were promotable into `repair_pricing_schedule.csv`; no follow-up drafts or fresh requests were created because overdue candidates returned zero after the blocker update and the dry-run batch helper found the top 20 gaps already request-covered. Focused repair pricing tests passed with 32 tests.
