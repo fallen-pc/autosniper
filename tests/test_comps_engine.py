@@ -1,9 +1,16 @@
 import unittest
 from datetime import datetime, timedelta
 
+import numpy as np
 import pandas as pd
 
-from shared.comps_engine import CompsEngine, CompsEngineConfig, _variant_family, parse_currency
+from shared.comps_engine import (
+    CompsEngine,
+    CompsEngineConfig,
+    _variant_family,
+    fit_adjustment_constants,
+    parse_currency,
+)
 
 
 def _base_row(**overrides):
@@ -188,6 +195,79 @@ class TestCompsEngineRun(unittest.TestCase):
         self.assertEqual(len(result), 3)
         for col in ("comps_p50", "comps_p90", "comps_count", "comps_confidence"):
             self.assertIn(col, result.columns)
+
+
+class TestTimeDecayWeighting(unittest.TestCase):
+    """Recent comps should influence the weighted median more than old ones."""
+
+    def _row(self, price: int, days_ago: int, idx: int = 0) -> dict:
+        return _base_row(
+            sale_price=price,
+            date_sold=_sold_date(days_ago),
+            url=f"http://example.com/{price}/{days_ago}/{idx}",
+        )
+
+    def test_recent_comps_pull_median_toward_their_value(self):
+        # 10 old (2yr ago) comps at $10k, 3 recent (1mo) comps at $20k.
+        # Unweighted median = $10k. Decay-weighted median should be higher.
+        rows = (
+            [self._row(10000, 730, i) for i in range(10)]
+            + [self._row(20000, 30, i) for i in range(10, 13)]
+        )
+        cfg_decay = CompsEngineConfig(min_comps=3, decay_halflife_days=180)
+        cfg_flat = CompsEngineConfig(min_comps=3, decay_halflife_days=0)
+        engine_decay = CompsEngine(pd.DataFrame(rows), cfg_decay)
+        engine_flat = CompsEngine(pd.DataFrame(rows), cfg_flat)
+        subject = engine_decay.data.iloc[-1]
+        p50_decay, _, _, _ = engine_decay.predict_row(subject)
+        p50_flat, _, _, _ = engine_flat.predict_row(subject)
+        assert p50_decay is not None and p50_flat is not None
+        assert p50_decay > p50_flat, (
+            f"Decay-weighted median ({p50_decay}) should exceed flat median ({p50_flat})"
+        )
+
+
+class TestFitAdjustmentConstants(unittest.TestCase):
+    """fit_adjustment_constants should recover known coefficients from synthetic data."""
+
+    def _make_synthetic_rows(self, n: int = 200) -> pd.DataFrame:
+        rng = np.random.default_rng(42)
+        years = rng.integers(2010, 2023, size=n).astype(float)
+        odos = rng.uniform(20000, 200000, size=n)
+        severities = rng.uniform(0, 50, size=n)
+        prices = (
+            15000
+            + (years - 2016) * 800   # $800/yr
+            + (80000 - odos) / 10000 * 300  # $300/10k
+            - severities * 60          # -$60/severity pt
+            + rng.normal(0, 500, n)    # noise
+        )
+        return pd.DataFrame(
+            {
+                "make": "TOYOTA",
+                "model": "Corolla",
+                "year": years,
+                "odometer_reading": odos,
+                "repair_severity": severities,
+                "sale_price": prices.round(0),
+                "date_sold": "2023-06-01",
+                "location_state": "NSW",
+                "url": [f"http://x.com/{i}" for i in range(n)],
+                "body_type": "Hatch",
+                "transmission": "Auto",
+            }
+        )
+
+    def test_fitted_year_coeff_roughly_correct(self):
+        cfg = fit_adjustment_constants(self._make_synthetic_rows())
+        # Synthetic truth = 800; allow ±300 tolerance given noise
+        assert 500 <= cfg.year_adjustment <= 1100, f"year_adjustment={cfg.year_adjustment:.0f}"
+
+    def test_fallback_when_too_few_rows(self):
+        rows = self._make_synthetic_rows(10)
+        default = CompsEngineConfig()
+        cfg = fit_adjustment_constants(rows)
+        assert cfg.year_adjustment == default.year_adjustment
 
 
 class TestVariantFamily(unittest.TestCase):

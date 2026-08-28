@@ -72,6 +72,7 @@ class CompsEngineConfig:
     odo_adjustment_per_10k: float = 280.0
     severity_adjustment: float = 80.0
     state_penalty: float = 200.0
+    decay_halflife_days: float = 365.0  # time-decay half-life for comp weighting
 
 
 class CompsEngine:
@@ -205,6 +206,29 @@ class CompsEngine:
             return None
         return float(np.percentile(arr, percentile))
 
+    @staticmethod
+    def _weighted_percentile(
+        values: np.ndarray, weights: np.ndarray, percentile: float
+    ) -> float | None:
+        mask = np.isfinite(values) & np.isfinite(weights) & (weights > 0)
+        if not mask.any():
+            return None
+        v = values[mask]
+        w = weights[mask]
+        order = np.argsort(v)
+        v, w = v[order], w[order]
+        cumw = np.cumsum(w)
+        threshold = (percentile / 100.0) * cumw[-1]
+        idx = int(np.searchsorted(cumw, threshold, side="left"))
+        return float(v[min(idx, len(v) - 1)])
+
+    def _decay_weights(self, pool: pd.DataFrame, subject_date: pd.Timestamp) -> np.ndarray:
+        halflife = self.config.decay_halflife_days
+        if halflife <= 0 or not pd.notna(subject_date):
+            return np.ones(len(pool), dtype=float)
+        days_old = (subject_date - pool["date_sold"]).dt.days.fillna(halflife).clip(lower=0)
+        return np.exp(-np.log(2) / halflife * days_old.to_numpy(dtype=float))
+
     def predict_row(self, row: pd.Series) -> Tuple[float | None, float | None, int, float]:
         pool = self._filtered_pool(row)
         if pool.empty:
@@ -216,11 +240,13 @@ class CompsEngine:
             return (None, None, 0, 0.0)
 
         comps_count = len(pool)
-        p50 = self._percentile(pool["adjusted_price"], 50)
-        p90 = self._percentile(pool["adjusted_price"], 90)
+        subject_date = row["date_sold"]
+        weights = self._decay_weights(pool, subject_date)
+        vals = pool["adjusted_price"].to_numpy(dtype=float)
+        p50 = self._weighted_percentile(vals, weights, 50)
+        p90 = self._weighted_percentile(vals, weights, 90)
 
         cfg = self.config
-        subject_date = row["date_sold"]
         recent_ratio = 0.0
         if pd.notna(subject_date):
             recent_cutoff = subject_date - pd.Timedelta(days=cfg.recent_days)
@@ -241,3 +267,56 @@ class CompsEngine:
                 }
             )
         return pd.DataFrame(predictions)
+
+
+def fit_adjustment_constants(
+    data: pd.DataFrame,
+    config: CompsEngineConfig | None = None,
+) -> CompsEngineConfig:
+    """Derive adjustment constants from OLS regression on sold data.
+
+    Fits sale_price ~ year + odometer_per_10k + repair_severity + cross_state
+    and returns a new CompsEngineConfig whose adjustment fields are replaced with
+    the regression coefficients (clamped to reasonable ranges so a thin dataset
+    doesn't produce nonsense).  Any non-numeric rows are silently dropped.
+    """
+    base = config or CompsEngineConfig()
+    engine = CompsEngine(data, base)
+    df = engine.data.copy()
+    df = df.dropna(subset=["sale_price_value", "year_numeric", "odometer_numeric", "repair_severity"])
+    if len(df) < 30:
+        return base  # not enough data to trust the fit
+
+    mode_state = df["location_state"].mode()
+    ref_state = mode_state.iloc[0] if not mode_state.empty else ""
+    df["cross_state"] = (
+        df["location_state"].fillna("").ne(ref_state) & df["location_state"].notna()
+    ).astype(float)
+
+    X = df[["year_numeric", "odometer_numeric", "repair_severity", "cross_state"]].copy()
+    X["odometer_per_10k"] = X["odometer_numeric"] / 10_000.0
+    X = X.drop(columns=["odometer_numeric"])
+    X.insert(0, "intercept", 1.0)
+    y = df["sale_price_value"].to_numpy(dtype=float)
+    Xm = X.to_numpy(dtype=float)
+
+    try:
+        coeffs, *_ = np.linalg.lstsq(Xm, y, rcond=None)
+    except np.linalg.LinAlgError:
+        return base
+
+    _, year_coeff, odo_per_10k_coeff, severity_coeff, state_coeff = coeffs
+
+    return CompsEngineConfig(
+        min_comps=base.min_comps,
+        preferred_comps=base.preferred_comps,
+        year_window=base.year_window,
+        severity_window=base.severity_window,
+        odometer_ratio=base.odometer_ratio,
+        recent_days=base.recent_days,
+        decay_halflife_days=base.decay_halflife_days,
+        year_adjustment=float(np.clip(year_coeff, 200.0, 3000.0)),
+        odo_adjustment_per_10k=float(np.clip(odo_per_10k_coeff, 50.0, 1000.0)),
+        severity_adjustment=float(np.clip(severity_coeff, 10.0, 500.0)),
+        state_penalty=float(np.clip(-state_coeff, 0.0, 2000.0)),
+    )
