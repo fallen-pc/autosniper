@@ -496,3 +496,7 @@
 # 2026-08-28 - Repair quote reply classification
 
 - Classified the August 21 Classic Motor Trimmers batch and August 23 MPS/Boronia representative requests as replied/no-price after Gmail replies required photos, in-person inspection, or pictures before quoting. No direct supplier prices were promotable into `repair_pricing_schedule.csv`; no follow-up drafts or fresh requests were created because overdue candidates returned zero after the blocker update and the dry-run batch helper found the top 20 gaps already request-covered. Focused repair pricing tests passed with 32 tests.
+
+# 2026-08-29 - Repair quote class expansion
+
+- Promoted A Grade Upholstery's 2026-08-28 Gmail confirmation into `repair_pricing_schedule.csv` by widening the direct `seat_damage` cloth-bolster quote from `small_hatch` to `generic` for ordinary small hatch, sedan, medium SUV, dual-cab ute, and van seats. Kept Mobile Car Scratch Repair and Acetune replies out of the schedule because they required photos/details or had no price response.
