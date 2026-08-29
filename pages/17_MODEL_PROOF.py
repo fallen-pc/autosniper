@@ -393,66 +393,6 @@ else:
     )
 
 
-CONFIDENCE_CALIBRATION_PATH = Path("artifacts/confidence_calibration.json")
-
-
-@st.cache_data(ttl=600)
-def load_confidence_calibration(path: Path) -> dict | None:
-    if not path.exists():
-        return None
-    try:
-        import json
-        with open(path, encoding="utf-8") as fh:
-            return json.load(fh)
-    except Exception:
-        return None
-
-
-section_heading(
-    "CatBoost Confidence Calibration",
-    "How accurately does the q50 prediction track actual close prices, and does the q90 spread signal uncertainty?",
-)
-cal = load_confidence_calibration(CONFIDENCE_CALIBRATION_PATH)
-if cal is None:
-    st.info(
-        "Run `python scripts/calibrate_confidence.py` to generate `artifacts/confidence_calibration.json`."
-    )
-else:
-    cc = st.columns(4)
-    cc[0].metric("Rows calibrated", f"{cal.get('n_rows_with_prediction', 0):,}")
-    cc[1].metric("MAE (q50 vs actual)", f"${cal.get('mae', 0):,.0f}")
-    cc[2].metric("MdAE (q50 vs actual)", f"${cal.get('mdae', 0):,.0f}")
-    cc[3].metric("MAPE", f"{cal.get('mape_pct', 0):.1f}%")
-    q90_cov = cal.get("q90_coverage_pct")
-    if q90_cov is not None:
-        st.metric(
-            "q90 coverage (% actual ≤ q90)",
-            f"{q90_cov:.1f}%",
-            help="Target ~90%. Below target means the model's upper bound is too tight; above means too loose.",
-        )
-    buckets = cal.get("by_spread_bucket", [])
-    if buckets:
-        st.markdown("**Error by spread bucket** — does a wider q90-q50 spread predict higher error?")
-        bucket_df = pd.DataFrame(
-            [b for b in buckets if b.get("n", 0) > 0]
-        ).rename(
-            columns={
-                "spread_bucket": "q90−q50 spread",
-                "n": "n",
-                "mae": "MAE",
-                "mdae": "MdAE",
-                "mape_pct": "MAPE %",
-                "q90_coverage_pct": "q90 coverage %",
-            }
-        )
-        st.dataframe(bucket_df, hide_index=True)
-    st.caption(
-        "MAE = mean absolute error vs actual close price. "
-        "MdAE = median. MAPE = mean absolute percentage error. "
-        "q90 coverage = fraction of actual prices ≤ predicted q90 ceiling."
-    )
-
-
 section_heading(
     "Historical Valuation Calibration",
     "Back-test the current auction-site proxy ceiling and profit rules against restricted sold outcomes.",

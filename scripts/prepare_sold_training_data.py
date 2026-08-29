@@ -15,7 +15,7 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.append(str(ROOT_DIR))
 
 from scripts.atomic_csv import write_dataframe_csv_atomic
-from shared.comps_engine import CompsEngine, fit_adjustment_constants, parse_currency, parse_numeric
+from shared.comps_engine import CompsEngine, parse_currency, parse_numeric
 from shared.repair_features import REPAIR_CATEGORIES
 from shared.data_loader import dataset_path
 
@@ -209,14 +209,7 @@ def main() -> None:
     df = add_repair_tag_features(df)
     df = add_temporal_features(df)
     df = merge_snapshot_features(df, args.snapshots_path, args.snapshot_archive_dir)
-    fitted_config = fit_adjustment_constants(df)
-    print(
-        f"[comps] fitted constants: year={fitted_config.year_adjustment:.0f} "
-        f"odo/10k={fitted_config.odo_adjustment_per_10k:.0f} "
-        f"severity={fitted_config.severity_adjustment:.0f} "
-        f"state_penalty={fitted_config.state_penalty:.0f}"
-    )
-    engine = CompsEngine(df, fitted_config)
+    engine = CompsEngine(df)
     comps_df = engine.run()
     merged = pd.concat([df.reset_index(drop=True), comps_df], axis=1)
     if "sale_price_value" in merged.columns and "comps_p50" in merged.columns:
