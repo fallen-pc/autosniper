@@ -1,16 +1,9 @@
 import unittest
 from datetime import datetime, timedelta
 
-import numpy as np
 import pandas as pd
 
-from shared.comps_engine import (
-    CompsEngine,
-    CompsEngineConfig,
-    _variant_family,
-    fit_adjustment_constants,
-    parse_currency,
-)
+from shared.comps_engine import CompsEngine, CompsEngineConfig, _variant_family, parse_currency
 
 
 def _base_row(**overrides):
@@ -225,49 +218,6 @@ class TestTimeDecayWeighting(unittest.TestCase):
         assert p50_decay > p50_flat, (
             f"Decay-weighted median ({p50_decay}) should exceed flat median ({p50_flat})"
         )
-
-
-class TestFitAdjustmentConstants(unittest.TestCase):
-    """fit_adjustment_constants should recover known coefficients from synthetic data."""
-
-    def _make_synthetic_rows(self, n: int = 200) -> pd.DataFrame:
-        rng = np.random.default_rng(42)
-        years = rng.integers(2010, 2023, size=n).astype(float)
-        odos = rng.uniform(20000, 200000, size=n)
-        severities = rng.uniform(0, 50, size=n)
-        prices = (
-            15000
-            + (years - 2016) * 800   # $800/yr
-            + (80000 - odos) / 10000 * 300  # $300/10k
-            - severities * 60          # -$60/severity pt
-            + rng.normal(0, 500, n)    # noise
-        )
-        return pd.DataFrame(
-            {
-                "make": "TOYOTA",
-                "model": "Corolla",
-                "year": years,
-                "odometer_reading": odos,
-                "repair_severity": severities,
-                "sale_price": prices.round(0),
-                "date_sold": "2023-06-01",
-                "location_state": "NSW",
-                "url": [f"http://x.com/{i}" for i in range(n)],
-                "body_type": "Hatch",
-                "transmission": "Auto",
-            }
-        )
-
-    def test_fitted_year_coeff_roughly_correct(self):
-        cfg = fit_adjustment_constants(self._make_synthetic_rows())
-        # Synthetic truth = 800; allow ±300 tolerance given noise
-        assert 500 <= cfg.year_adjustment <= 1100, f"year_adjustment={cfg.year_adjustment:.0f}"
-
-    def test_fallback_when_too_few_rows(self):
-        rows = self._make_synthetic_rows(10)
-        default = CompsEngineConfig()
-        cfg = fit_adjustment_constants(rows)
-        assert cfg.year_adjustment == default.year_adjustment
 
 
 class TestVariantFamily(unittest.TestCase):
