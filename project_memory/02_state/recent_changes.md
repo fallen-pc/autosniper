@@ -500,3 +500,7 @@
 # 2026-08-29 - Repair quote class expansion
 
 - Promoted A Grade Upholstery's 2026-08-28 Gmail confirmation into `repair_pricing_schedule.csv` by widening the direct `seat_damage` cloth-bolster quote from `small_hatch` to `generic` for ordinary small hatch, sedan, medium SUV, dual-cab ute, and van seats. Kept Mobile Car Scratch Repair and Acetune replies out of the schedule because they required photos/details or had no price response.
+
+# 2026-09-01 - Grays image evidence pilot
+
+- Added an opt-in Grays image evidence pilot that discovers listing image URLs, optionally caches image bytes under ignored `output/grays_images/cache`, writes an ignored image manifest, and joins images to `grays_condition_repair_fragments.csv` by listing URL with low-confidence repair-line links. Verified on one current damaged Grays listing: 10 images downloaded and 80 repair-image link rows generated without changing the production Grays scraper path or valuation logic.
