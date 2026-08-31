@@ -496,3 +496,6 @@
 # 2026-08-28 - Repair quote reply classification
 
 - Classified the August 21 Classic Motor Trimmers batch and August 23 MPS/Boronia representative requests as replied/no-price after Gmail replies required photos, in-person inspection, or pictures before quoting. No direct supplier prices were promotable into `repair_pricing_schedule.csv`; no follow-up drafts or fresh requests were created because overdue candidates returned zero after the blocker update and the dry-run batch helper found the top 20 gaps already request-covered. Focused repair pricing tests passed with 32 tests.
+# 2026-09-01 - Grays image evidence pilot
+
+- Added an opt-in Grays image evidence pilot that discovers listing image URLs, optionally caches image bytes under ignored `output/grays_images/cache`, writes an ignored image manifest, and joins images to `grays_condition_repair_fragments.csv` by listing URL with low-confidence repair-line links. Verified on one current damaged Grays listing: 10 images downloaded and 80 repair-image link rows generated without changing the production Grays scraper path or valuation logic.
