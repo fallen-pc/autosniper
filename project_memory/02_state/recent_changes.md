@@ -496,7 +496,6 @@
 # 2026-08-28 - Repair quote reply classification
 
 - Classified the August 21 Classic Motor Trimmers batch and August 23 MPS/Boronia representative requests as replied/no-price after Gmail replies required photos, in-person inspection, or pictures before quoting. No direct supplier prices were promotable into `repair_pricing_schedule.csv`; no follow-up drafts or fresh requests were created because overdue candidates returned zero after the blocker update and the dry-run batch helper found the top 20 gaps already request-covered. Focused repair pricing tests passed with 32 tests.
-
 # 2026-08-29 - Repair quote class expansion
 
 - Promoted A Grade Upholstery's 2026-08-28 Gmail confirmation into `repair_pricing_schedule.csv` by widening the direct `seat_damage` cloth-bolster quote from `small_hatch` to `generic` for ordinary small hatch, sedan, medium SUV, dual-cab ute, and van seats. Kept Mobile Car Scratch Repair and Acetune replies out of the schedule because they required photos/details or had no price response.
@@ -508,3 +507,7 @@
 # 2026-08-31 - Art Trim direct-price promotion
 
 - Promoted Art Trim Upholstery's direct GST-exclusive seat-repair and standard-headlining ranges as GST-inclusive generic repair reserves. Kept the door-insert starting price and carpet guidance out of the schedule because they did not provide bounded low/default/high job prices; the cleaning request also received no price.
+
+# 2026-09-01 - Grays image evidence pilot
+
+- Added an opt-in Grays image evidence pilot that discovers listing image URLs, optionally caches image bytes under ignored `output/grays_images/cache`, writes an ignored image manifest, and joins images to `grays_condition_repair_fragments.csv` by listing URL with low-confidence repair-line links. Verified on one current damaged Grays listing: 10 images downloaded and 80 repair-image link rows generated without changing the production Grays scraper path or valuation logic.
