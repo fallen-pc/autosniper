@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 
 import pandas as pd
 
-from shared.comps_engine import CompsEngine, CompsEngineConfig, parse_currency
+from shared.comps_engine import CompsEngine, CompsEngineConfig, _variant_family, parse_currency
 
 
 def _base_row(**overrides):
@@ -188,6 +188,94 @@ class TestCompsEngineRun(unittest.TestCase):
         self.assertEqual(len(result), 3)
         for col in ("comps_p50", "comps_p90", "comps_count", "comps_confidence"):
             self.assertIn(col, result.columns)
+
+
+class TestTimeDecayWeighting(unittest.TestCase):
+    """Recent comps should influence the weighted median more than old ones."""
+
+    def _row(self, price: int, days_ago: int, idx: int = 0) -> dict:
+        return _base_row(
+            sale_price=price,
+            date_sold=_sold_date(days_ago),
+            url=f"http://example.com/{price}/{days_ago}/{idx}",
+        )
+
+    def test_recent_comps_pull_median_toward_their_value(self):
+        # 10 old (2yr ago) comps at $10k, 3 recent (1mo) comps at $20k.
+        # Unweighted median = $10k. Decay-weighted median should be higher.
+        rows = (
+            [self._row(10000, 730, i) for i in range(10)]
+            + [self._row(20000, 30, i) for i in range(10, 13)]
+        )
+        cfg_decay = CompsEngineConfig(min_comps=3, decay_halflife_days=180)
+        cfg_flat = CompsEngineConfig(min_comps=3, decay_halflife_days=0)
+        engine_decay = CompsEngine(pd.DataFrame(rows), cfg_decay)
+        engine_flat = CompsEngine(pd.DataFrame(rows), cfg_flat)
+        subject = engine_decay.data.iloc[-1]
+        p50_decay, _, _, _ = engine_decay.predict_row(subject)
+        p50_flat, _, _, _ = engine_flat.predict_row(subject)
+        assert p50_decay is not None and p50_flat is not None
+        assert p50_decay > p50_flat, (
+            f"Decay-weighted median ({p50_decay}) should exceed flat median ({p50_flat})"
+        )
+
+
+class TestVariantFamily(unittest.TestCase):
+    def test_returns_first_informative_token(self):
+        assert _variant_family("SR5 Double Cab") == "sr5"
+        assert _variant_family("GXL Turbo Diesel") == "gxl"
+        assert _variant_family("Equipe") == "equipe"
+
+    def test_skips_noise_tokens(self):
+        assert _variant_family("4WD Turbo SR") == "sr"
+        assert _variant_family("Auto") == ""
+
+    def test_blank_or_none(self):
+        assert _variant_family("") == ""
+        assert _variant_family(None) == ""
+
+
+class TestVariantFilteringInComps(unittest.TestCase):
+    """Variant filtering prevents cross-spec contamination (e.g. Hilux SR vs SR5)."""
+
+    def _hilux_row(self, variant: str, price: int, days_ago: int = 10) -> dict:
+        return _base_row(
+            make="TOYOTA",
+            model="Hilux",
+            variant=variant,
+            sale_price=price,
+            odometer_reading=100000,
+            date_sold=_sold_date(days_ago),
+            url=f"http://example.com/{variant}/{price}/{days_ago}",
+        )
+
+    def test_variant_pool_used_when_enough_comps(self):
+        # 8 SR5 comps at $30k, 8 SR comps at $20k. Subject is SR5.
+        rows = (
+            [self._hilux_row("SR5", 30000, days_ago=d) for d in range(20, 28)]
+            + [self._hilux_row("SR", 20000, days_ago=d) for d in range(28, 36)]
+        )
+        cfg = CompsEngineConfig(min_comps=5)
+        engine = CompsEngine(pd.DataFrame(rows), config=cfg)
+        subject = engine.data[engine.data["variant_family"] == "sr5"].iloc[0]
+        p50, _, count, _ = engine.predict_row(subject)
+        # Should use SR5 pool only — median near $30k, not the contaminated ~$25k
+        assert p50 is not None
+        assert p50 >= 25000, f"Expected SR5 price ≥25k, got {p50}"
+        assert count == 7  # 8 SR5 rows minus the subject itself
+
+    def test_falls_back_to_full_pool_when_variant_pool_thin(self):
+        # 2 SR5 comps (below min), 8 SR comps — must fall back to full pool
+        rows = (
+            [self._hilux_row("SR5", 30000, days_ago=d) for d in range(20, 22)]
+            + [self._hilux_row("SR", 20000, days_ago=d) for d in range(22, 30)]
+        )
+        cfg = CompsEngineConfig(min_comps=5)
+        engine = CompsEngine(pd.DataFrame(rows), config=cfg)
+        subject = engine.data[engine.data["variant_family"] == "sr5"].iloc[0]
+        _, _, count, _ = engine.predict_row(subject)
+        # Falls back to full Hilux pool (1 SR5 + 8 SR)
+        assert count >= 5
 
 
 if __name__ == "__main__":
