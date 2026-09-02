@@ -496,3 +496,15 @@
 # 2026-08-28 - Repair quote reply classification
 
 - Classified the August 21 Classic Motor Trimmers batch and August 23 MPS/Boronia representative requests as replied/no-price after Gmail replies required photos, in-person inspection, or pictures before quoting. No direct supplier prices were promotable into `repair_pricing_schedule.csv`; no follow-up drafts or fresh requests were created because overdue candidates returned zero after the blocker update and the dry-run batch helper found the top 20 gaps already request-covered. Focused repair pricing tests passed with 32 tests.
+
+# 2026-08-29 - Repair quote class expansion
+
+- Promoted A Grade Upholstery's 2026-08-28 Gmail confirmation into `repair_pricing_schedule.csv` by widening the direct `seat_damage` cloth-bolster quote from `small_hatch` to `generic` for ordinary small hatch, sedan, medium SUV, dual-cab ute, and van seats. Kept Mobile Car Scratch Repair and Acetune replies out of the schedule because they required photos/details or had no price response.
+
+# 2026-08-30 - Repair quote direct-price promotion
+
+- Promoted MEDAUTO's direct Gmail quote for bonnet struts, hatch struts, bolt-on panel alignment, and non-engine warning diagnostics into `repair_pricing_schedule.csv`, normalizing the supplier's explicitly GST-exclusive ranges to GST-inclusive repair reserves; promoted QuickGlass fitted side-window quotes for small hatch, small sedan, medium SUV, ute, and van. Kept MEDAUTO's door-handle and fuel-flap labour-only figures in the quote ledger but out of the canonical schedule because the required parts were not priced. Classified Scratch HQ and Conroy's Auto Solutions replies as no-price/detail-blocked because they required inspection/photos/VIN/rego or gave only broad non-job-specific guidance. No overdue follow-up drafts or fresh requests were created.
+
+# 2026-08-31 - Art Trim direct-price promotion
+
+- Promoted Art Trim Upholstery's direct GST-exclusive seat-repair and standard-headlining ranges as GST-inclusive generic repair reserves. Kept the door-insert starting price and carpet guidance out of the schedule because they did not provide bounded low/default/high job prices; the cleaning request also received no price.
