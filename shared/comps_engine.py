@@ -9,6 +9,33 @@ import numpy as np
 import pandas as pd
 
 
+_VARIANT_NOISE = frozenset(
+    {
+        "4x2", "4x4", "4wd", "2wd", "rwd", "fwd", "awd",
+        "auto", "manual", "turbo", "diesel", "petrol", "hybrid",
+        "cab", "crew", "extra", "double", "single", "king",
+        "sedan", "hatch", "hatchback", "wagon", "ute", "suv",
+        "van", "coupe", "convertible",
+    }
+)
+
+
+def _variant_family(text: object) -> str:
+    """Return a normalised trim-grade token for variant matching.
+
+    Takes the first space-delimited token that isn't a generic body/drivetrain
+    descriptor.  Returns empty string when variant is absent or uninformative.
+    """
+    if text is None:
+        return ""
+    tokens = str(text).lower().strip().split()
+    for token in tokens:
+        clean = token.strip("()-/")
+        if clean and clean not in _VARIANT_NOISE and not clean.isdigit():
+            return clean
+    return ""
+
+
 def parse_currency(value: object) -> float | None:
     if value is None:
         return None
@@ -45,6 +72,7 @@ class CompsEngineConfig:
     odo_adjustment_per_10k: float = 280.0
     severity_adjustment: float = 80.0
     state_penalty: float = 200.0
+    decay_halflife_days: float = 365.0  # time-decay half-life for comp weighting
 
 
 class CompsEngine:
@@ -88,6 +116,8 @@ class CompsEngine:
             location_base = pd.Series("", index=working.index)
         working["location_state"] = location_base.astype(str).str.strip()
         working["location_state"] = working["location_state"].replace("", np.nan)
+        variant_col = working["variant"] if "variant" in working.columns else pd.Series("", index=working.index)
+        working["variant_family"] = variant_col.apply(_variant_family)
         return working.reset_index(drop=True)
 
     def _initial_pool(self, row: pd.Series) -> pd.DataFrame:
@@ -99,6 +129,15 @@ class CompsEngine:
         subject_date = row["date_sold"]
         if pd.notna(subject_date):
             pool = pool[pool["date_sold"] <= subject_date]
+
+        # Prefer same variant family (e.g. "sr5" vs "sr") to avoid cross-spec contamination.
+        # Fall back to full make/model pool only when the variant pool is too thin.
+        subject_variant = _variant_family(row.get("variant", ""))
+        if subject_variant and "variant_family" in pool.columns:
+            variant_pool = pool[pool["variant_family"] == subject_variant]
+            if len(variant_pool) >= self.config.min_comps:
+                return variant_pool
+
         return pool
 
     def _filtered_pool(self, row: pd.Series) -> pd.DataFrame:
@@ -167,6 +206,29 @@ class CompsEngine:
             return None
         return float(np.percentile(arr, percentile))
 
+    @staticmethod
+    def _weighted_percentile(
+        values: np.ndarray, weights: np.ndarray, percentile: float
+    ) -> float | None:
+        mask = np.isfinite(values) & np.isfinite(weights) & (weights > 0)
+        if not mask.any():
+            return None
+        v = values[mask]
+        w = weights[mask]
+        order = np.argsort(v)
+        v, w = v[order], w[order]
+        cumw = np.cumsum(w)
+        threshold = (percentile / 100.0) * cumw[-1]
+        idx = int(np.searchsorted(cumw, threshold, side="left"))
+        return float(v[min(idx, len(v) - 1)])
+
+    def _decay_weights(self, pool: pd.DataFrame, subject_date: pd.Timestamp) -> np.ndarray:
+        halflife = self.config.decay_halflife_days
+        if halflife <= 0 or not pd.notna(subject_date):
+            return np.ones(len(pool), dtype=float)
+        days_old = (subject_date - pool["date_sold"]).dt.days.fillna(halflife).clip(lower=0)
+        return np.exp(-np.log(2) / halflife * days_old.to_numpy(dtype=float))
+
     def predict_row(self, row: pd.Series) -> Tuple[float | None, float | None, int, float]:
         pool = self._filtered_pool(row)
         if pool.empty:
@@ -178,11 +240,13 @@ class CompsEngine:
             return (None, None, 0, 0.0)
 
         comps_count = len(pool)
-        p50 = self._percentile(pool["adjusted_price"], 50)
-        p90 = self._percentile(pool["adjusted_price"], 90)
+        subject_date = row["date_sold"]
+        weights = self._decay_weights(pool, subject_date)
+        vals = pool["adjusted_price"].to_numpy(dtype=float)
+        p50 = self._weighted_percentile(vals, weights, 50)
+        p90 = self._weighted_percentile(vals, weights, 90)
 
         cfg = self.config
-        subject_date = row["date_sold"]
         recent_ratio = 0.0
         if pd.notna(subject_date):
             recent_cutoff = subject_date - pd.Timedelta(days=cfg.recent_days)
