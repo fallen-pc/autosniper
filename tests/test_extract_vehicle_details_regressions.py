@@ -6,6 +6,34 @@ from bs4 import BeautifulSoup
 import scripts.extract_vehicle_details as evd
 
 
+def test_assemble_details_preserves_grays_identity_in_existing_variant_field():
+    html = """
+    <html>
+      <body>
+        <h1 class="dls-heading-3">2013 Toyota RAV4 GX Petrol</h1>
+        <ul>
+          <li>2013 TOYOTA RAV4 GX ASA44R AUTO AWD PETROL SUV 2494cc 132kw 6sp 4cyl 4dr 5seat</li>
+          <li>Body Type: SUV</li>
+          <li>No. of Seats: 5</li>
+          <li>VIN: JTMBFREV605020630</li>
+          <li>Fuel Type: Petrol</li>
+          <li>Drive Type: Four Wheel Drive</li>
+          <li>Transmission: Sports Automatic</li>
+          <li>Indicated Odometer Reading: 177321</li>
+        </ul>
+      </body>
+    </html>
+    """
+
+    details = evd.assemble_details(
+        BeautifulSoup(html, "html.parser"),
+        "https://www.grays.com/lot/0012-23502113/motor-vehicles-motor-cycles/2013-toyota-rav4-gx-petrol",
+        html,
+    )
+
+    assert details["variant"] == "GX Petrol asa44r Four Wheel Drive"
+
+
 def test_checkpoint_mode_seeds_active_once(monkeypatch, tmp_path):
     input_path = tmp_path / "active_vehicle_links.csv"
     output_path = tmp_path / "vehicle_static_details.csv"

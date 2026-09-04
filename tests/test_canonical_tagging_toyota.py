@@ -419,6 +419,48 @@ def test_rav4_gx_petrol_maps_by_generation_and_drivetrain():
         assert assign_canonical_tag(row, require_price=True)[0] == "UNCLASSIFIED"
 
 
+def test_rav4_live_asa44r_identity_cannot_fall_back_to_zsa42r_curve():
+    _load_curve_year_band.cache_clear()
+    row = {
+        "make": "Toyota",
+        "model": "RAV4",
+        "variant": "GX Petrol",
+        "series": "ASA44R",
+        "drivetrain": "Four Wheel Drive",
+        "body_type": "SUV",
+        "transmission": "Sports Automatic",
+        "fuel_type": "Petrol",
+        "year": "2013",
+        "price": "4750",
+        "url": "https://www.grays.com/lot/0012-23502113/motor-vehicles-motor-cycles/2013-toyota-rav4-gx-petrol",
+    }
+
+    assert assign_canonical_tag(row, require_price=True)[0:2] == (
+        "UNCLASSIFIED",
+        "[OUT_OF_SCOPE_YEAR]",
+    )
+
+
+def test_rav4_drivetrain_split_fails_closed_without_series_or_drivetrain():
+    _load_curve_year_band.cache_clear()
+    row = {
+        "make": "Toyota",
+        "model": "RAV4",
+        "variant": "GX Petrol",
+        "body_type": "SUV",
+        "transmission": "Sports Automatic",
+        "fuel_type": "Petrol",
+        "year": "2013",
+        "price": "4750",
+        "url": "https://example.test/rav4-identity-ambiguous",
+    }
+
+    assert assign_canonical_tag(row, require_price=True)[0:2] == (
+        "UNCLASSIFIED",
+        "[AMBIG_DRIVETRAIN]",
+    )
+
+
 def test_rav4_cv_aca33r_maps_automatic_4x4_only():
     _load_curve_year_band.cache_clear()
     base_row = {
