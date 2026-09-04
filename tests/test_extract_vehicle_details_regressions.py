@@ -6,6 +6,56 @@ from bs4 import BeautifulSoup
 import scripts.extract_vehicle_details as evd
 
 
+def test_assemble_details_preserves_grays_series_and_drivetrain_identity():
+    html = """
+    <html>
+      <body>
+        <h1 class="dls-heading-3">2013 Toyota RAV4 GX Petrol</h1>
+        <ul>
+          <li>2013 TOYOTA RAV4 GX ASA44R AUTO AWD PETROL SUV 2494cc 132kw 6sp 4cyl 4dr 5seat</li>
+          <li>Body Type: SUV</li>
+          <li>No. of Seats: 5</li>
+          <li>VIN: JTMBFREV605020630</li>
+          <li>Fuel Type: Petrol</li>
+          <li>Drive Type: Four Wheel Drive</li>
+          <li>Transmission: Sports Automatic</li>
+          <li>Indicated Odometer Reading: 177321</li>
+        </ul>
+      </body>
+    </html>
+    """
+
+    details = evd.assemble_details(
+        BeautifulSoup(html, "html.parser"),
+        "https://www.grays.com/lot/0012-23502113/motor-vehicles-motor-cycles/2013-toyota-rav4-gx-petrol",
+        html,
+    )
+
+    assert details["series"] == "asa44r"
+    assert details["drivetrain"] == "Four Wheel Drive"
+
+
+def test_seed_active_dataset_preserves_series_and_drivetrain(monkeypatch, tmp_path):
+    active_output_path = tmp_path / "active_vehicle_details.csv"
+    monkeypatch.setattr(evd, "ACTIVE_OUTPUT_FILE", active_output_path)
+    monkeypatch.setattr(evd, "tag_dataframe", lambda df, **_: df.copy())
+    static_df = pd.DataFrame(
+        [
+            {
+                "url": "https://example.test/rav4",
+                "series": "asa44r",
+                "drivetrain": "four wheel drive",
+            }
+        ]
+    )
+
+    evd.seed_active_dataset(static_df)
+
+    active = pd.read_csv(active_output_path)
+    assert active.loc[0, "series"] == "asa44r"
+    assert active.loc[0, "drivetrain"] == "four wheel drive"
+
+
 def test_checkpoint_mode_seeds_active_once(monkeypatch, tmp_path):
     input_path = tmp_path / "active_vehicle_links.csv"
     output_path = tmp_path / "vehicle_static_details.csv"

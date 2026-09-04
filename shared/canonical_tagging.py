@@ -465,6 +465,11 @@ def _extract_series_code(text: str) -> str:
     return ""
 
 
+def extract_series_code(text: object) -> str:
+    """Extract a normalized vehicle series code from source identity text."""
+    return _normalize_series_code(_extract_series_code(str(text or "")))
+
+
 def _normalize_series_code(series_code: str) -> str:
     code = (series_code or "").lower()
     if not code:
@@ -488,6 +493,18 @@ def _normalize_series_code(series_code: str) -> str:
     if code in {"bl10f"}:
         return "bl10f1"
     return code
+
+
+def _requires_drivetrain_evidence(candidates: Sequence[AllowedVariant]) -> bool:
+    """Return True when otherwise-matching lanes are separated by drivetrain."""
+    exclusions = {
+        keyword.lower()
+        for candidate in candidates
+        for keyword in candidate.excluded_keywords
+    }
+    two_wheel_markers = {"2wd", "fwd", "4x2", "2x4", "front wheel drive", "two wheel drive"}
+    four_wheel_markers = {"awd", "4wd", "4x4", "efour", "all wheel drive", "four wheel drive"}
+    return bool(exclusions & two_wheel_markers) and bool(exclusions & four_wheel_markers)
 
 
 def _body_matches(row_body: str, body_aliases: Iterable[str], body_value: str, text: str) -> bool:
@@ -776,6 +793,7 @@ def assign_canonical_tag(
     if not candidates:
         return UNCLASSIFIED, OUT_OF_SCOPE
 
+    identity_candidates = tuple(candidates)
     candidates = [v for v in candidates if not _has_excluded_keyword(text_blob, v.excluded_keywords)]
     if not candidates:
         return UNCLASSIFIED, DISALLOWED_VARIANT
@@ -793,6 +811,10 @@ def assign_canonical_tag(
             series_matches = [v for v in series_matches if _badge_matches(text_blob, v.badge_aliases)]
             unique_series_tags = {v.canonical_tag for v in series_matches}
             if len(unique_series_tags) == 1:
+                if _requires_drivetrain_evidence(identity_candidates) and not _year_in_any_band(
+                    series_matches, year
+                ):
+                    return UNCLASSIFIED, OUT_OF_SCOPE_YEAR
                 required_reason = _validate_required_fields(
                     {
                         "year": year,
@@ -813,6 +835,9 @@ def assign_canonical_tag(
         return UNCLASSIFIED, AMBIG_BADGE
     unique_tags = {v.canonical_tag for v in badge_matches}
     if len(unique_tags) > 1:
+        drivetrain = _derive_drivetrain(normalized_row)
+        if not series_code and not drivetrain and _requires_drivetrain_evidence(badge_matches):
+            return UNCLASSIFIED, AMBIG_DRIVETRAIN
         year_choice = _disambiguate_by_year(badge_matches, year)
         if year_choice is not None:
             required_reason = _validate_required_fields(
@@ -855,6 +880,8 @@ def _snapshot_fields(row: Mapping[str, object]) -> dict[str, object]:
         "body_type",
         "transmission",
         "fuel_type",
+        "series",
+        "drivetrain",
         "price",
         "location",
     )

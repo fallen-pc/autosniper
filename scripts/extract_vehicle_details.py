@@ -27,7 +27,12 @@ if __package__ in (None, ""):
         normalize_listing_fields,
         remove_compliance_markers,
     )
-    from shared.canonical_tagging import ELIGIBLE_CANONICAL_REASONS, UNCLASSIFIED, tag_dataframe
+    from shared.canonical_tagging import (
+        ELIGIBLE_CANONICAL_REASONS,
+        UNCLASSIFIED,
+        extract_series_code,
+        tag_dataframe,
+    )
     from shared.validators import ValidatorConfig, validate_static_row
     from shared.validators import validate_vehicle_static_df
     from shared.exclusions import append_pipeline_exclusions
@@ -41,7 +46,12 @@ else:
         normalize_listing_fields,
         remove_compliance_markers,
     )
-    from shared.canonical_tagging import ELIGIBLE_CANONICAL_REASONS, UNCLASSIFIED, tag_dataframe
+    from shared.canonical_tagging import (
+        ELIGIBLE_CANONICAL_REASONS,
+        UNCLASSIFIED,
+        extract_series_code,
+        tag_dataframe,
+    )
     from shared.validators import ValidatorConfig, validate_static_row
     from shared.validators import validate_vehicle_static_df
     from shared.exclusions import append_pipeline_exclusions
@@ -57,7 +67,7 @@ FAILURES_FILE = dataset_path("excluded_listings.csv")
 ACTIVE_LINKS_FILE = dataset_path("active_vehicle_links.csv")
 SKIPPED_LOG = ROOT_DIR / "logs" / "skipped_links.txt"
 
-SCHEMA_FIELDS = SOLD_RAW_SCRAPE_COLUMNS.copy()
+SCHEMA_FIELDS = list(dict.fromkeys(SOLD_RAW_SCRAPE_COLUMNS + ["series", "drivetrain"]))
 STATIC_OUTPUT_COLUMNS = list(
     dict.fromkeys(list(STATIC_VEHICLE_SCHEMA) + ["canonical_tag", "canonical_reason"])
 )
@@ -76,6 +86,7 @@ FIELD_MAP = {
     "no_of_cylinders": "No. of Cylinders",
     "engine_capacity": "Engine Capacity",
     "fuel_type": "Fuel Type",
+    "drivetrain": "Drive Type",
     "transmission": "Transmission",
     "odometer_reading": "Indicated Odometer Reading",
     "exterior_colour": "Exterior Colour",
@@ -533,6 +544,23 @@ def extract_field(soup: BeautifulSoup, label: str) -> str:
     return ""
 
 
+def extract_vehicle_descriptor(soup: BeautifulSoup) -> str:
+    """Return the unlabeled Grays identity row that precedes the specification list."""
+    for ul in soup.find_all("ul"):
+        items = ul.find_all("li", recursive=False)
+        if not items:
+            continue
+        texts = [safe_get_text(item) for item in items]
+        labeled = sum(
+            bool(re.match(r"^(?:Body Type|VIN|Fuel Type|Drive Type|Transmission)\s*:", text, re.IGNORECASE))
+            for text in texts
+        )
+        first = texts[0].strip()
+        if labeled >= 3 and first and ":" not in first:
+            return clean_joined_fields(first)
+    return ""
+
+
 def extract_bullets(soup: BeautifulSoup, title_pattern: str) -> str:
     title = soup.find("strong", string=re.compile(title_pattern, re.IGNORECASE))
     if not title:
@@ -876,6 +904,9 @@ def assemble_details(soup: BeautifulSoup, url: str, html: str) -> dict[str, Any]
     for field_key, label in FIELD_MAP.items():
         value = extract_field(soup, label)
         details[field_key] = value
+
+    descriptor = extract_vehicle_descriptor(soup)
+    details["series"] = extract_series_code(descriptor)
 
     if not details.get("year") and details.get("build_date"):
         match = YEAR_RE.search(details["build_date"])

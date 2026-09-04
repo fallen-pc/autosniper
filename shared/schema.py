@@ -51,9 +51,13 @@ SOLD_RAW_SCRAPE_COLUMNS: list[str] = list(
 )
 
 # Static scrape schema (base spec without dynamic bidding columns).
-STATIC_VEHICLE_SCHEMA: list[str] = [
-    column for column in SOLD_LISTING_SCHEMA if column not in {"bids", "price", "date_sold"}
-]
+STATIC_IDENTITY_COLUMNS: list[str] = ["series", "drivetrain"]
+STATIC_VEHICLE_SCHEMA: list[str] = list(
+    dict.fromkeys(
+        [column for column in SOLD_LISTING_SCHEMA if column not in {"bids", "price", "date_sold"}]
+        + STATIC_IDENTITY_COLUMNS
+    )
+)
 
 # Static detail export enriched with canonical tagging metadata.
 STATIC_CANONICAL_SCHEMA: list[str] = list(
