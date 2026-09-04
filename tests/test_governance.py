@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import pandas as pd
+import yaml
 
 import shared.curves as curves
 import shared.governance as gov
@@ -27,6 +28,61 @@ def test_validate_dataset_contracts_flags_schema_mismatch(monkeypatch, tmp_path)
     assert len(errors) == 1
     assert "schema mismatch" in errors[0]
     assert "missing=['b']" in errors[0]
+
+
+def test_validate_schema_contract_lock_matches_current_contracts(tmp_path):
+    lock_path = tmp_path / "dataset_contracts.yaml"
+    lock_path.write_text(
+        yaml.safe_dump(
+            {
+                "datasets": {
+                    contract.filename: {
+                        "mode": contract.mode,
+                        "columns": list(contract.columns),
+                    }
+                    for contract in gov.DATASET_CONTRACTS
+                }
+            },
+            sort_keys=False,
+        ),
+        encoding="utf-8",
+    )
+
+    assert gov.validate_schema_contract_lock(lock_path) == []
+
+
+def test_validate_schema_contract_lock_flags_code_drift(tmp_path):
+    lock_path = tmp_path / "dataset_contracts.yaml"
+    lock_path.write_text(
+        yaml.safe_dump(
+            {
+                "datasets": {
+                    "raw_vehicle_data.csv": {
+                        "mode": "exact",
+                        "columns": ["year", "invented_column"],
+                    }
+                }
+            },
+            sort_keys=False,
+        ),
+        encoding="utf-8",
+    )
+
+    errors = gov.validate_schema_contract_lock(lock_path)
+
+    assert len(errors) == 1
+    assert "differ from the protected schema contract lock" in errors[0]
+
+
+def test_validate_schema_authority_changes_requires_dedicated_approval():
+    changed = ["shared/schema.py", "CSV_data/scrapers/raw_vehicle_data.csv"]
+
+    blocked = gov.validate_schema_authority_changes(changed, approval_granted=False)
+    approved = gov.validate_schema_authority_changes(changed, approval_granted=True)
+
+    assert len(blocked) == 1
+    assert "schema-migration-approved" in blocked[0]
+    assert approved == []
 
 
 def test_validate_curve_table_rejects_upward_drift():

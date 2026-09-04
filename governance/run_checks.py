@@ -11,18 +11,24 @@ if __package__ in (None, ""):
     from shared.curve_versioning import snapshot_curve_version
     from shared.data_loader import dataset_path
     from shared.governance import (
+        SCHEMA_AUTHORITY_PATHS,
         classify_dataset_deltas,
         validate_curves_dataset,
         validate_dataset_contracts,
+        validate_schema_authority_changes,
+        validate_schema_contract_lock,
         write_governance_report_bundle,
     )
 else:  # pragma: no cover
     from shared.curve_versioning import snapshot_curve_version
     from shared.data_loader import dataset_path
     from shared.governance import (
+        SCHEMA_AUTHORITY_PATHS,
         classify_dataset_deltas,
         validate_curves_dataset,
         validate_dataset_contracts,
+        validate_schema_authority_changes,
+        validate_schema_contract_lock,
         write_governance_report_bundle,
     )
 
@@ -86,6 +92,7 @@ def command_check(args: argparse.Namespace) -> int:
 
     if not args.skip_schema:
         errors.extend(validate_dataset_contracts())
+        errors.extend(validate_schema_contract_lock())
 
     if not args.skip_curves:
         errors.extend(validate_curves_dataset())
@@ -114,6 +121,17 @@ def command_check(args: argparse.Namespace) -> int:
 
     if not args.skip_dataset_delta:
         changed_paths = _git_changed_paths(args.base_ref, args.head_ref)
+        schema_approval = os.getenv("AUTOSNIPER_SCHEMA_MIGRATION_APPROVED", "").strip() == "1"
+        schema_errors = validate_schema_authority_changes(
+            changed_paths,
+            approval_granted=schema_approval,
+        )
+        errors.extend(schema_errors)
+        print(
+            "[governance] schema authority delta "
+            f"changed={int(any(path in changed_paths for path in SCHEMA_AUTHORITY_PATHS))} "
+            f"approved={int(schema_approval)}"
+        )
         allowed_patterns = _effective_allowed_dataset_changes(
             changed_paths,
             list(args.allow_dataset_change or []),
