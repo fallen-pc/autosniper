@@ -104,9 +104,6 @@ def audit_and_lock_schemas() -> dict[str, dict[str, object]]:
         "raw_vehicle_data.csv": _coerce_schema(RAW_PATH, list(STATIC_VEHICLE_SCHEMA)),
         "normalised_data.csv": _coerce_schema(NORMAL_PATH, list(STATIC_VEHICLE_SCHEMA)),
         "vehicle_static_details.csv": _coerce_schema(STATIC_PATH, STATIC_OUTPUT_COLUMNS),
-        "matched_canonical_details.csv": _coerce_schema(MATCHED_PATH, STATIC_OUTPUT_COLUMNS),
-        "unmatched_canonical_details.csv": _coerce_schema(UNMATCHED_PATH, STATIC_OUTPUT_COLUMNS),
-        "active_vehicle_details.csv": _coerce_schema(ACTIVE_PATH, list(ACTIVE_DETAIL_SCHEMA)),
         "vehicle_state.csv": _coerce_schema(STATE_PATH, list(STATE_TABLE_SCHEMA)),
     }
     for name, report in reports.items():

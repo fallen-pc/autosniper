@@ -29,8 +29,6 @@ datasets:
     - location
     - url
     - general_condition
-    - series
-    - drivetrain
   normalised_data.csv:
     mode: exact
     columns:
@@ -58,8 +56,6 @@ datasets:
     - location
     - url
     - general_condition
-    - series
-    - drivetrain
   vehicle_static_details.csv:
     mode: exact
     columns:
@@ -87,8 +83,6 @@ datasets:
     - location
     - url
     - general_condition
-    - series
-    - drivetrain
     - canonical_tag
     - canonical_reason
   matched_canonical_details.csv:
@@ -118,8 +112,6 @@ datasets:
     - location
     - url
     - general_condition
-    - series
-    - drivetrain
     - canonical_tag
     - canonical_reason
   unmatched_canonical_details.csv:
@@ -149,8 +141,6 @@ datasets:
     - location
     - url
     - general_condition
-    - series
-    - drivetrain
     - canonical_tag
     - canonical_reason
   vehicle_state.csv:
@@ -198,8 +188,6 @@ datasets:
     - engine_turns_over
     - location
     - general_condition
-    - series
-    - drivetrain
     - canonical_tag
     - canonical_reason
     - status

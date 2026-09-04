@@ -67,7 +67,7 @@ FAILURES_FILE = dataset_path("excluded_listings.csv")
 ACTIVE_LINKS_FILE = dataset_path("active_vehicle_links.csv")
 SKIPPED_LOG = ROOT_DIR / "logs" / "skipped_links.txt"
 
-SCHEMA_FIELDS = list(dict.fromkeys(SOLD_RAW_SCRAPE_COLUMNS + ["series", "drivetrain"]))
+SCHEMA_FIELDS = SOLD_RAW_SCRAPE_COLUMNS.copy()
 STATIC_OUTPUT_COLUMNS = list(
     dict.fromkeys(list(STATIC_VEHICLE_SCHEMA) + ["canonical_tag", "canonical_reason"])
 )
@@ -86,7 +86,6 @@ FIELD_MAP = {
     "no_of_cylinders": "No. of Cylinders",
     "engine_capacity": "Engine Capacity",
     "fuel_type": "Fuel Type",
-    "drivetrain": "Drive Type",
     "transmission": "Transmission",
     "odometer_reading": "Indicated Odometer Reading",
     "exterior_colour": "Exterior Colour",
@@ -906,7 +905,10 @@ def assemble_details(soup: BeautifulSoup, url: str, html: str) -> dict[str, Any]
         details[field_key] = value
 
     descriptor = extract_vehicle_descriptor(soup)
-    details["series"] = extract_series_code(descriptor)
+    series = extract_series_code(descriptor)
+    drivetrain = extract_field(soup, "Drive Type")
+    identity_parts = [str(details.get("variant") or "").strip(), series, drivetrain]
+    details["variant"] = " ".join(part for part in identity_parts if part)
 
     if not details.get("year") and details.get("build_date"):
         match = YEAR_RE.search(details["build_date"])

@@ -880,8 +880,6 @@ def _snapshot_fields(row: Mapping[str, object]) -> dict[str, object]:
         "body_type",
         "transmission",
         "fuel_type",
-        "series",
-        "drivetrain",
         "price",
         "location",
     )
