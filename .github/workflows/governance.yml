@@ -56,7 +56,7 @@ jobs:
         run: |
           python scripts/project_memory.py check --base-ref "${{ github.event.pull_request.base.sha }}" --head-ref "${{ github.event.pull_request.head.sha }}"
 
-      - name: Resolve tracked dataset approval
+      - name: Resolve governance approvals
         id: dataset_approval
         env:
           GH_TOKEN: ${{ github.token }}
@@ -66,10 +66,13 @@ jobs:
           BEFORE_SHA: ${{ github.event.before }}
           BASE_REF: ${{ github.ref_name }}
           PR_APPROVED: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'tracked-dataset-changes-approved') && 'true' || 'false' }}
+          SCHEMA_APPROVED: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'schema-migration-approved') && 'true' || 'false' }}
         run: |
           approved="$PR_APPROVED"
+          schema_approved="$SCHEMA_APPROVED"
           if [[ "$EVENT_NAME" == "push" ]]; then
             approved="false"
+            schema_approved="false"
             first_parent="$(git rev-parse "${HEAD_SHA}^1" 2>/dev/null || true)"
             if [[ -n "$first_parent" && "$BEFORE_SHA" == "$first_parent" ]]; then
               labels=""
@@ -78,15 +81,20 @@ jobs:
                 if grep -Fxq 'tracked-dataset-changes-approved' <<< "$labels"; then
                   approved="true"
                 fi
+                if grep -Fxq 'schema-migration-approved' <<< "$labels"; then
+                  schema_approved="true"
+                fi
               fi
             fi
           fi
           echo "approved=$approved" >> "$GITHUB_OUTPUT"
+          echo "schema_approved=$schema_approved" >> "$GITHUB_OUTPUT"
 
       - name: Run governed checks
         if: steps.dataset_approval.outputs.approved != 'true'
         env:
           GOVERNANCE_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          AUTOSNIPER_SCHEMA_MIGRATION_APPROVED: ${{ steps.dataset_approval.outputs.schema_approved == 'true' && '1' || '0' }}
         run: |
           python scripts/governance_checks.py check --publish-summary
 
@@ -94,6 +102,7 @@ jobs:
         if: steps.dataset_approval.outputs.approved == 'true'
         env:
           GOVERNANCE_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          AUTOSNIPER_SCHEMA_MIGRATION_APPROVED: ${{ steps.dataset_approval.outputs.schema_approved == 'true' && '1' || '0' }}
         run: |
           python scripts/governance_checks.py check --publish-summary \
             --allow-dataset-change CSV_data/restricted/restricted_group_map.csv \

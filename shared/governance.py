@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Iterable
 
 import pandas as pd
+import yaml
 
 from shared.canonical_tagging import UNCLASSIFIED
 from shared.curves import (
@@ -82,6 +83,17 @@ TRACKED_DATASET_PATHS: tuple[str, ...] = (
     "CSV_data/restricted/curves.csv",
 )
 
+SCHEMA_CONTRACT_LOCK_PATH = (
+    Path(__file__).resolve().parents[1]
+    / "project_memory"
+    / "01_machine_rules"
+    / "dataset_contracts.yaml"
+)
+SCHEMA_AUTHORITY_PATHS: tuple[str, ...] = (
+    "shared/schema.py",
+    "project_memory/01_machine_rules/dataset_contracts.yaml",
+)
+
 IGNORED_CANONICAL_TAGS = {"", "nan", "none", UNCLASSIFIED.lower(), UNCLASSIFIED.upper().lower()}
 
 
@@ -140,6 +152,67 @@ def validate_dataset_contracts() -> list[str]:
                 f"unexpected={unexpected or '[]'}"
             )
     return errors
+
+
+def validate_schema_contract_lock(path: Path = SCHEMA_CONTRACT_LOCK_PATH) -> list[str]:
+    """Require code-backed dataset contracts to match the protected schema lock."""
+    if not path.exists():
+        return [f"Missing protected schema contract lock: {path}"]
+    try:
+        payload = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    except (OSError, yaml.YAMLError) as exc:
+        return [f"Could not read protected schema contract lock {path}: {exc}"]
+
+    locked_datasets = payload.get("datasets")
+    if not isinstance(locked_datasets, dict):
+        return [f"Protected schema contract lock has no datasets mapping: {path}"]
+
+    current = {
+        contract.filename: {
+            "mode": contract.mode,
+            "columns": list(contract.columns),
+        }
+        for contract in DATASET_CONTRACTS
+    }
+    locked = {
+        str(filename): {
+            "mode": str(spec.get("mode", "")),
+            "columns": list(spec.get("columns", [])),
+        }
+        for filename, spec in locked_datasets.items()
+        if isinstance(spec, dict)
+    }
+    if current == locked:
+        return []
+
+    missing = sorted(set(locked) - set(current))
+    unexpected = sorted(set(current) - set(locked))
+    changed = sorted(
+        filename
+        for filename in set(current) & set(locked)
+        if current[filename] != locked[filename]
+    )
+    return [
+        "Code-backed dataset schemas differ from the protected schema contract lock; "
+        f"missing={missing or []} unexpected={unexpected or []} changed={changed or []}. "
+        "Schema migrations require an explicit protected lock update and approval."
+    ]
+
+
+def validate_schema_authority_changes(
+    changed_paths: Iterable[str | Path],
+    *,
+    approval_granted: bool,
+) -> list[str]:
+    """Block schema-authority edits unless a dedicated migration approval is present."""
+    changed = sorted({_normalize_path(path) for path in changed_paths})
+    protected = [path for path in changed if path in SCHEMA_AUTHORITY_PATHS]
+    if not protected or approval_granted:
+        return []
+    return [
+        "Schema authority changes require explicit approval via the "
+        "schema-migration-approved PR label: " + ", ".join(protected)
+    ]
 
 
 def validate_curve_table(curves_df: pd.DataFrame) -> list[str]:

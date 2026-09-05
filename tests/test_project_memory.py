@@ -247,3 +247,6 @@ def test_governance_workflow_enforces_pr_memory_diff_and_label_approval():
     assert '.merged_at != null' in workflow
     assert r'.merge_commit_sha == \"$HEAD_SHA\"' in workflow
     assert 'approved="false"' in workflow
+    assert "schema-migration-approved" in workflow
+    assert 'schema_approved="false"' in workflow
+    assert "AUTOSNIPER_SCHEMA_MIGRATION_APPROVED" in workflow

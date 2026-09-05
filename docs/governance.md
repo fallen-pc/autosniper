@@ -2,6 +2,8 @@
 
 ## Controls
 - Exact schema contracts are enforced for the governed CSV datasets.
+- Code-backed schema contracts must exactly match the protected machine-readable lock in `project_memory/01_machine_rules/dataset_contracts.yaml`.
+- Pull requests that change `shared/schema.py` or the protected schema lock are blocked unless a maintainer applies the dedicated `schema-migration-approved` label. Updating code and CSV headers together is not sufficient.
 - Restricted curves must stay in canonical-tag format, keep `price_low <= price_mid <= price_high`, and not increase as `km_bucket` rises within an anchor year.
 - Curve coverage is reported from `vehicle_static_details.csv` plus `restricted_group_map.csv` so missing canonical curves are visible in CI and the Curves page.
 - Tracked dataset changes are blocked in CI unless explicitly allowlisted or accompanied by the required curve versioning artifacts.
@@ -34,3 +36,4 @@ python scripts/readiness_smoke.py
 - GitHub Actions runs the governed checks in `.github/workflows/governance.yml`.
 - The workflow writes curve coverage artifacts into `output/governance/` and publishes the markdown summary into the job summary.
 - Set `AUTOSNIPER_EXPECTED_DATASET_CHANGES` only for intentional tracked dataset updates that are not curve-versioned changes.
+- For a deliberate schema migration, update the protected schema lock, migration code, affected tests, and state memory together, then obtain both `schema-migration-approved` and `protected-memory-approved`. Direct pushes remain blocked.
