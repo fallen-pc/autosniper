@@ -121,15 +121,13 @@ st.dataframe(
 )
 
 section_heading("Operations", "Read-only shortcuts to investigation and buying screens.")
-link_cols = st.columns(4)
+link_cols = st.columns(3)
 with link_cols[0]:
     st.page_link("pages/6_AI_ANALYSIS.py", label="Open AI Analysis", icon=":material/analytics:")
 with link_cols[1]:
     st.page_link("pages/05_HEALTH.py", label="Open Pipeline Health", icon=":material/monitor_heart:")
 with link_cols[2]:
     st.page_link("pages/12_GRAYS_PIPELINE.py", label="Open Grays Pipeline", icon=":material/directions_car:")
-with link_cols[3]:
-    st.page_link("pages/7_AUTOTRADER_SCRAPER.py", label="Open Autotrader", icon=":material/travel_explore:")
 
 st.caption(
     "This public screen is deliberately read-only. Scraper starts, restarts, credentials, "

@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 from shared.navigation import HIDDEN_ROUTABLE_PAGES, navigation_spec
@@ -51,6 +52,15 @@ def test_vps_navigation_uses_scraper_operations_landing_page() -> None:
     assert "pages/7_AUTOTRADER_SCRAPER.py" not in paths
     assert "OPERATIONS" not in spec
     assert defaults == ["pages/00_SCRAPER_OPERATIONS.py"]
+
+
+def test_vps_scraper_operations_links_are_registered() -> None:
+    spec = navigation_spec(vps_mode=True)
+    registered_paths = {path for entries in spec.values() for path, _title, _default in entries}
+    source = Path("pages/00_SCRAPER_OPERATIONS.py").read_text(encoding="utf-8")
+    linked_paths = set(re.findall(r'st\.page_link\("([^"]+)"', source))
+
+    assert linked_paths <= registered_paths
 
 
 def test_health_failure_summary_does_not_expose_raw_exception() -> None:
