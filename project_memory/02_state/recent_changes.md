@@ -1,5 +1,7 @@
 # Recent Changes
 
+- 2026-09-10: Shared dropdown styling now applies the control border once without duplicate wrapper padding. Select boxes grow to fit wrapped listing URLs and multiselect tags wrap long labels instead of clipping them. Browser checks cover desktop, tablet and phone widths, sidebar filters, search, keyboard selection and tag removal; production release remains a separate verification step.
+
 - 2026-09-10: Listing Detail now synchronizes pasted URLs, dropdown selection, and Exceptions handoffs around one full listing URL. Vehicle changes clear unsaved notes and flags, while ordinary reruns preserve drafts. Page-level interaction tests check displayed records, auction links, save/queue targets, repeated selection changes, and unknown URLs; live deployment remains a separate verification step.
 
 - 2026-09-09: Replaced raw sidebar anchors with native Streamlit page links so page changes retain the authenticated session. Both the entrypoint and cold-start direct-page path register routes before the password gate, so sign-in preserves the requested page. Authentication remains required. Regression tests cover protected execution and route registration; real-browser checks cover rejected passwords, direct-page sign-in, and subsequent sidebar navigation. Production verification is a separate release step.

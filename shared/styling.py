@@ -623,12 +623,7 @@ _BASE_STYLES = textwrap.dedent(
     select,
     .stTextInput input,
     .stNumberInput input,
-    .stSelectbox select,
-    .stSelectbox > div > div,
-    .stMultiSelect > div > div,
-    .stSelectbox [data-baseweb="select"],
-    .stMultiSelect [data-baseweb="select"],
-    [data-baseweb="select"] [aria-label="Select"] {
+    .stSelectbox select {
         background: var(--autosniper-surface);
         color: var(--autosniper-text);
         border: 1px solid var(--autosniper-border);
@@ -777,8 +772,8 @@ _BASE_STYLES = textwrap.dedent(
         border-radius: var(--autosniper-radius-sm);
         padding: 6px 8px;
     }
-    .stSelectbox [data-baseweb="select"],
-    .stMultiSelect [data-baseweb="select"],
+    .stSelectbox [data-baseweb="select"] > div,
+    .stMultiSelect [data-baseweb="select"] > div,
     .stTextInput input,
     .stNumberInput input,
     .stTextArea textarea,
@@ -790,6 +785,26 @@ _BASE_STYLES = textwrap.dedent(
         background: rgba(17, 22, 31, 0.92) !important;
         color: #E5E5E5 !important;
         box-shadow: none !important;
+    }
+    /* Style the control once, leaving Base Web's internal padding intact.
+       Padding both the wrapper and its fixed-height control clips the value. */
+    .stSelectbox [data-baseweb="select"] > div,
+    .stMultiSelect [data-baseweb="select"] > div {
+        height: auto;
+    }
+    .stSelectbox [data-baseweb="select"] div[value] {
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+    .stMultiSelect [data-baseweb="tag"] {
+        height: auto;
+        max-width: 100%;
+    }
+    .stMultiSelect [data-baseweb="tag"] span[title] {
+        max-width: none;
+        white-space: normal;
+        overflow-wrap: anywhere;
+        line-height: 1.4;
     }
     @media (max-width: 640px) {
         .autosniper-banner {
