@@ -62,6 +62,9 @@ from shared.styling import clean_html, display_banner, inject_global_styles, pag
 from shared.validators import validate_sold_cars_df
 from shared.valuation_display import (
     action_signal_tone,
+    valuation_scenario_values,
+    valuation_snapshot_caption,
+    valuation_next_step,
     bid_display_parts,
     bid_status_signal_tone,
     confidence_signal_tone,
@@ -229,9 +232,9 @@ def _format_price_text(value: object) -> str:
 
 
 def _expected_finish_display_parts(row: pd.Series) -> tuple[str, str]:
-    raw_expected = parse_currency(row.get("expected_auction_price"))
-    bid_basis = parse_currency(row.get("expected_auction_bid_basis"))
-    display_value = row.get("expected_auction_bid_basis") or row.get("expected_auction_price")
+    raw_expected = first_currency_value(row.get("expected_auction_price_value"), row.get("expected_auction_price"))
+    bid_basis = first_currency_value(row.get("expected_auction_bid_basis_value"), row.get("expected_auction_bid_basis"))
+    display_value = valuation_scenario_values(row)["finish"]
     display_text = _format_price_text(display_value)
     cap_status = _expected_finish_cap_status(row)
     status_text = cap_status or _safe_text(row.get("bid_status"), fallback="Unknown")
@@ -247,9 +250,7 @@ def _expected_finish_display_parts(row: pd.Series) -> tuple[str, str]:
 
 
 def _expected_finish_cap_status(row: pd.Series) -> str:
-    expected_value = parse_currency(row.get("expected_auction_bid_basis"))
-    if expected_value is None:
-        expected_value = parse_currency(row.get("expected_auction_price"))
+    expected_value = valuation_scenario_values(row)["finish"]
     max_bid = parse_currency(row.get("recommended_max_bid"))
     if max_bid is None:
         max_bid = parse_currency(row.get("max_bid_value"))
@@ -1203,7 +1204,7 @@ def _condition_summary_sections(row: pd.Series) -> tuple[list[dict[str, object]]
                 "title": "Cosmetic damage",
                 "bullets": (cosmetic_lines or ["Multiple dents/scratches/scuffs (summarised from notes)"])
                 + [f"Assumed {panels_label}: {cosmetic_panels_capped} (cap {PANEL_CAP})"],
-                "cost_line": f"Cost applied: ${cosmetic_cost:,} (panel rate ${PANEL_RATE:,})",
+                "cost_line": f"Base component before caps/adjustments: ${cosmetic_cost:,} (panel rate ${PANEL_RATE:,})",
             }
         )
     else:
@@ -1254,7 +1255,7 @@ def _condition_summary_sections(row: pd.Series) -> tuple[list[dict[str, object]]
             {
                 "title": "Glass",
                 "bullets": glass_lines or ["Windscreen issue flagged (chip/crack)."],
-                "cost_line": f"Cost applied: ${glass_cost:,}" + (" (ADAS)" if adas_windscreen else ""),
+                "cost_line": f"Base component before caps/adjustments: ${glass_cost:,}" + (" (ADAS)" if adas_windscreen else ""),
             }
         )
     else:
@@ -1314,7 +1315,7 @@ def _condition_summary_sections(row: pd.Series) -> tuple[list[dict[str, object]]
             {
                 "title": "Admin / risk flags",
                 "bullets": admin_bullets,
-                "impact_line": "Impact: Included in risk buffer / max-bid reduction.",
+                "impact_line": "Impact: review these flags before bidding; a flag does not necessarily carry a priced allowance.",
             }
         )
     else:
@@ -1345,15 +1346,18 @@ def _condition_summary_sections(row: pd.Series) -> tuple[list[dict[str, object]]
             {
                 "title": "Repair / risk allowance",
                 "bullets": [
-                    "Likely allowance is shown separately from the conservative max-bid deduction.",
+                    "Recalculated from current notes and pricing. Saved valuation reserves above are the amounts used by the displayed bid.",
+                    "Component prices are before caps/adjustments; do not add them to the total again.",
                 ],
                 "cost_line": (
                     f"Likely: ${total_deduction:,}"
-                    f" (range ${low_deduction:,}-${high_deduction:,}; max-bid deduction uses ${high_deduction:,})"
+                    f" (range ${low_deduction:,}-${high_deduction:,}; conservative reserve ${high_deduction:,})"
                 ),
             }
         )
 
+    if assessment.reasons:
+        sections.append({"title": "Repair adjustments / evidence", "bullets": list(assessment.reasons)})
     return sections, raw_notes
 
 
@@ -1456,10 +1460,10 @@ def _render_condition_summary(row: pd.Series) -> None:
     for section in sections:
         st.markdown(f"**{section['title']}**")
         for bullet in section.get("bullets", []):
-            st.write(f"- {bullet}")
+            st.write("- " + str(bullet).replace("$", "\\$"))
         cost_line = section.get("cost_line")
         if cost_line:
-            st.write(f"**{cost_line}**")
+            st.write("**" + str(cost_line).replace("$", "\\$") + "**")
         impact_line = section.get("impact_line")
         if impact_line:
             st.write(f"*{impact_line}*")
@@ -1766,9 +1770,8 @@ def _curve_range_for_row(row: pd.Series) -> tuple[Optional[float], Optional[floa
     return low_value, high_value
 
 
-def _repair_deduction_value(row: pd.Series) -> int:
-    assessment = _repair_assessment_for_row(row)
-    return int(assessment.total_cost or 0)
+def _repair_deduction_value(row: pd.Series) -> Optional[float]:
+    return valuation_scenario_values(row)["repair_mid"]
 
 
 def _repair_assessment_for_row(row: pd.Series):
@@ -1786,10 +1789,7 @@ def _repair_assessment_for_row(row: pd.Series):
 
 
 def _format_repair_max_bid_deduction(row: pd.Series) -> str:
-    assessment = _repair_assessment_for_row(row)
-    if assessment.hard_avoid:
-        return "Blocked"
-    return _format_currency_value(assessment.total_cost_high or assessment.total_cost)
+    return _format_currency_value(valuation_scenario_values(row)["repair_high"])
 
 
 def _render_grays_comparables(row: pd.Series, comps_items: list[str]) -> None:
@@ -2031,8 +2031,8 @@ def _render_condition_tab(row: pd.Series, defect_profile: dict[str, object]) -> 
     metric_cols[0].metric("Cosmetic damage", str(int(defect_profile.get("cosmetic", 0) or 0)))
     metric_cols[1].metric("Structural flags", str(int(defect_profile.get("structural", 0) or 0)))
     metric_cols[2].metric("Mechanical notes", str(int(defect_profile.get("mechanical", 0) or 0)))
-    metric_cols[3].metric("Allowance", _format_currency_value(repair_deduction))
-    metric_cols[4].metric("Bid deduction", max_bid_deduction)
+    metric_cols[3].metric("Saved repair allowance", _format_currency_value(repair_deduction))
+    metric_cols[4].metric("Saved conservative repair reserve", max_bid_deduction)
     _render_condition_summary(row)
 
 
@@ -2056,10 +2056,10 @@ def _render_bid_logic_tab(
         confidence_display = _curve_confidence_label(row.get("confidence"))
     expected_finish_display, expected_finish_status = _expected_finish_display_parts(row)
     bid_display = bid_display_parts(row)
-    cap_profit_display = _format_price_text(row.get("net_profit_worst") or row.get("net_profit_mid"))
-    expected_profit_display = _format_price_text(row.get("expected_auction_worst_profit") or row.get("expected_auction_profit"))
+    cap_profit_display = _format_price_text(valuation_scenario_values(row)["net_downside"])
+    expected_profit_display = _format_price_text(valuation_scenario_values(row)["finish_downside"])
     expected_profit_label = _display_profit_label(row.get("expected_auction_profit_label"))
-    expected_finish_detail = f"Scenario profit {expected_profit_display}"
+    expected_finish_detail = f"Downside profit {expected_profit_display}"
     if expected_profit_label not in ("Unknown", "N/A"):
         expected_finish_detail = f"{expected_finish_detail}; {expected_profit_label.lower()}"
     expected_finish_source = _safe_text(row.get("expected_auction_source"), "N/A")
@@ -2074,16 +2074,16 @@ def _render_bid_logic_tab(
     metric_rows = [
         ("Resale estimate", _format_currency_value(_compute_resale_value(row))),
         ("Proxy max bid", bid_display["max_label"]),
-        ("Worst profit at proxy max", cap_profit_display),
+        (valuation_scenario_values(row)["net_label"], cap_profit_display),
         ("Current vs proxy max", bid_display["status"]),
         ("Expected finish guide", expected_finish_display),
-        ("Scenario profit at expected finish", expected_profit_display),
+        ("Downside profit at expected finish", expected_profit_display),
         ("Current price", _format_price_text(row.get("price"))),
-        ("Auction cost", _format_currency_value(auction_cost)),
+        ("Costs excluding hammer", _format_currency_value(auction_cost)),
         ("Fees", _format_price_text(row.get("fees_estimate"))),
         ("Transport", _format_price_text(row.get("transport_estimate"))),
-        ("Allowance", _format_currency_value(repair_deduction)),
-        ("Bid deduction", max_bid_deduction),
+        ("Saved repair allowance", _format_currency_value(repair_deduction)),
+        ("Saved conservative repair reserve", max_bid_deduction),
         ("Confidence", confidence_display),
     ]
 
@@ -2097,10 +2097,12 @@ def _render_bid_logic_tab(
     for column, (label, value) in zip(third_row, metric_rows[8:]):
         column.metric(label, value)
 
+    st.caption(valuation_snapshot_caption(row))
+    st.caption("Expected-finish downside uses low resale and the saved likely repair allowance. Proxy-max profit uses low resale and the conservative repair reserve; that reserve is deducted from the pre-repair bid ceiling. Current-bid downside uses low resale and the likely repair allowance. Costs exclude the hammer bid and include fees, transport, registration, roadworthy, preparation and repairs; fees vary with bid price.")
     _render_bullets(
         "Bid decision",
         [
-            f"Action: {_display_action_label(row.get('action_label'))}",
+            valuation_next_step(row),
             f"{bid_display['status']}: {bid_display['status_detail']}",
             f"Expected finish: {expected_finish_display} ({expected_finish_detail}; {expected_finish_status})",
             f"Expected finish evidence: {expected_finish_source}; comps {expected_finish_comps}; discount {discount_display}",
@@ -3677,7 +3679,7 @@ def _compute_auction_cost_value(row: pd.Series) -> Optional[float]:
         parse_currency(row.get("prep_estimate")),
         parse_currency(row.get("repair_estimate")),
     ]
-    if all(value is None for value in values):
+    if any(value is None for value in values):
         return None
     return float(sum(value or 0.0 for value in values))
 
@@ -3925,7 +3927,7 @@ def _render_bullets(title: str, items: list[str]) -> None:
     if not cleaned:
         return
     st.markdown(f"**{title}**")
-    st.markdown("\n".join(f"- {item}" for item in cleaned))
+    st.markdown("\n".join("- " + str(item).replace("$", "\\$") for item in cleaned))
 
 
 def _profit_tier_class(value: Optional[float]) -> str:
@@ -3987,10 +3989,11 @@ def _confidence_badges_html(curve_confidence: str, data_completeness: str, risk_
     ]
     badges = []
     for label, value in badge_values:
+        tone_value = {"high": "low", "low": "high"}.get(value.lower(), value) if label == "Risk Level" else value
         badges.append(
             "".join(
                 [
-                    f'<div class="confidence-badge {_badge_tone(value)}">',
+                    f'<div class="confidence-badge {_badge_tone(tone_value)}">',
                     f'<span class="confidence-badge-label">{html.escape(label)}</span>',
                     f'<span class="confidence-badge-value">{html.escape(value.upper())}</span>',
                     "</div>",
@@ -4046,11 +4049,11 @@ def render_listing_card(row: pd.Series) -> None:
     resale_display = _format_currency_value(row.get("resale_value"))
     profit_pct_display = _format_percent(row.get("profit_margin_value"))
     expected_auction_display, expected_finish_status = _expected_finish_display_parts(row)
-    expected_profit_display = _format_price_text(row.get("expected_auction_worst_profit") or row.get("expected_auction_profit"))
+    expected_profit_display = _format_price_text(valuation_scenario_values(row)["finish_downside"])
     expected_profit_label = _display_profit_label(row.get("expected_auction_profit_label"))
     hard_max_safety = _max_bid_safety_text(row)
-    cap_profit_display = _format_price_text(row.get("net_profit_worst") or row.get("net_profit_mid"))
-    expected_finish_sub = f"{expected_finish_status}; scenario profit {expected_profit_display}"
+    cap_profit_display = _format_price_text(valuation_scenario_values(row)["net_downside"])
+    expected_finish_sub = f"{expected_finish_status}; downside profit {expected_profit_display}"
     if expected_profit_label not in ("Unknown", "N/A"):
         expected_finish_sub = f"{expected_finish_sub}; {expected_profit_label.lower()}"
     flip_difficulty = _safe_text(row.get("flip_difficulty"), fallback="Unknown")
@@ -4139,15 +4142,13 @@ def render_listing_card(row: pd.Series) -> None:
         except (TypeError, ValueError):
             confidence_percent = None
     confidence_text = _format_percent(confidence_percent)
-    if confidence_text == "N/A":
-        confidence_text = _format_percent(_parse_percent(row.get("profit_margin_percent")))
     signal_row_html = "".join(
         [
             '<div class="decision-signal-row">',
             _build_signal_tile(
                 "Action",
                 action_label,
-                f"{_display_action_detail(row.get('action_label'))} Verdict: {verdict_label}.",
+                valuation_next_step(row),
                 action_signal_tone(action_label),
             ),
             _build_signal_tile(
@@ -4207,6 +4208,7 @@ def render_listing_card(row: pd.Series) -> None:
         [
             f'<div class="vehicle-card {verdict_class} {profit_class}">',
             signal_row_html,
+            f'<div class="card-top-meta">{html.escape(valuation_snapshot_caption(row))}</div>',
             '<div class="card-metrics">',
             _build_metric_group(
                 "Live auction",
@@ -4221,7 +4223,7 @@ def render_listing_card(row: pd.Series) -> None:
                 "Deal maths",
                 [
                     _build_metric_item("Proxy max bid", max_bid_display, bid_display["max_detail"], "primary"),
-                    _build_metric_item("Worst profit at proxy max", cap_profit_display, hard_max_safety),
+                    _build_metric_item(valuation_scenario_values(row)["net_label"], cap_profit_display, hard_max_safety),
                     _build_metric_item("Current vs proxy max", bid_status, bid_display["status_detail"]),
                     _build_metric_item("Expected finish", expected_auction_display, expected_finish_sub),
                 ],

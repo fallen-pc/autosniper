@@ -1,5 +1,7 @@
 # Recent Changes
 
+- 2026-09-10: Dashboard and AI Analysis now share explicit downside scenario fields, preserve zero/missing values, identify the current-bid profit basis when applicable and show valuation timestamps. Repair metrics use saved reserves; recalculated component details expose adjustment evidence without claiming raw prices were applied. Next-step guidance follows the existing action and high risk uses warning colours. Valuation formulas and repair pricing rules are unchanged; release verification is separate.
+
 - 2026-09-10: Shared dropdown styling now applies the control border once without duplicate wrapper padding. Select boxes grow to fit wrapped listing URLs and multiselect tags wrap long labels instead of clipping them. Browser checks cover desktop, tablet and phone widths, sidebar filters, search, keyboard selection and tag removal; production release remains a separate verification step.
 
 - 2026-09-10: Listing Detail now synchronizes pasted URLs, dropdown selection, and Exceptions handoffs around one full listing URL. Vehicle changes clear unsaved notes and flags, while ordinary reruns preserve drafts. Page-level interaction tests check displayed records, auction links, save/queue targets, repeated selection changes, and unknown URLs; live deployment remains a separate verification step.

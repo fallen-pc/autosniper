@@ -21,6 +21,8 @@ from shared.global_filters import apply_global_sidebar_filters, render_global_si
 from shared.styling import clean_html, display_banner, escape_html, inject_global_styles, page_intro, safe_url, section_heading
 from shared.valuation_display import (
     build_ai_analysis_summary_rows,
+    valuation_next_step,
+    valuation_snapshot_caption,
     parse_currency_value,
     parse_percent_value,
 )
@@ -530,7 +532,7 @@ else:
                                     <span class="top-auction-value">{escape_html(resale_estimate)}</span>
                                 </div>
                                 <div class="top-auction-metric">
-                                    <span class="top-auction-label">Worst profit at proxy max</span>
+                                    <span class="top-auction-label">{escape_html(row.get("profit_basis_label"))}</span>
                                     <span class="top-auction-value">{escape_html(profit)}</span>
                                 </div>
                                 <div class="top-auction-metric">
@@ -548,8 +550,10 @@ else:
                             </div>
                             <div class="top-auction-context">
                                 <strong>{escape_html(bid_status)}</strong> &mdash; {escape_html(bid_detail)}<br/>
-                                Scenario profit at expected finish: <strong>{escape_html(expected_profit)}</strong><br/>
-                                Risk: {escape_html(risk_summary)} &bull; Time left: {escape_html(time_remaining)}
+                                Downside profit at expected finish: <strong>{escape_html(expected_profit)}</strong><br/>
+                                Risk: {escape_html(risk_summary)} &bull; Time left: {escape_html(time_remaining)}<br/>
+                                {escape_html(valuation_next_step(row))}<br/>
+                                {escape_html(valuation_snapshot_caption(row))}
                             </div>
                             <div class="top-auction-actions">
                                 <a class="ghost-button" href="{safe_url(ai_url)}" target="_blank">Open Listing</a>
