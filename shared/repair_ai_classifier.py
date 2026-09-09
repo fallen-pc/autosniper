@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import json
 import logging
+import math
 import os
+import time
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -20,6 +22,11 @@ logger = logging.getLogger(__name__)
 REPORT_DIR = Path("CSV_data/reports")
 AI_SUGGESTIONS_PATH = REPORT_DIR / "repair_review_ai_suggestions.csv"
 DICTIONARY_PATH = Path("config/condition_dictionary_v2.yaml")
+DEFAULT_MODEL = "gpt-6-astra"
+# Bound cost and latency for the default 25-row advisory batch. A truncated
+# response fails closed; larger manual batches should use a smaller --limit.
+ASTRA_MAX_COMPLETION_TOKENS = 8192
+ASTRA_TIMEOUT_SECONDS = 120.0
 
 AI_SUGGESTION_COLUMNS = [
     "repair_key",
@@ -68,6 +75,7 @@ class ClassifierResult:
     suggested: int
     output_path: Path
     skipped_reason: str = ""
+    failed: bool = False
 
 
 def load_ai_suggestions(path: Path = AI_SUGGESTIONS_PATH) -> pd.DataFrame:
@@ -174,6 +182,7 @@ def _build_prompt(rows: pd.DataFrame) -> str:
             "known_dictionary_categories": vocab["categories"],
             "known_canonical_defects": vocab["canonical_defects"][:160],
             "rules": [
+                "Return exactly one suggestion for every supplied repair_key, preserving each key exactly. Do not add or omit keys.",
                 "Mechanical, structural, chassis, transmission, engine, overheating, warning-light faults should be high severity and hard_avoid.",
                 "Boilerplate, feature lists, locations, legal disclaimers, roadworthy/as-is wording should not add repair cost.",
                 "Use snake_case canonical defects. Prefer an existing canonical_defect when one fits.",
@@ -226,7 +235,42 @@ def _json_schema() -> dict[str, Any]:
     }
 
 
-def _coerce_suggestions(raw: Iterable[dict[str, Any]], source_rows: pd.DataFrame, *, model: str) -> pd.DataFrame:
+def _validate_repair_keys(keys: Iterable[Any], source_rows: pd.DataFrame) -> None:
+    keys = list(keys)
+    if any(not isinstance(key, str) or not key for key in keys):
+        raise ValueError("Suggestions contain an invalid repair_key")
+    if len(keys) != len(set(keys)):
+        raise ValueError("Suggestions contain duplicate repair_keys")
+    expected = set(source_rows["repair_key"])
+    if set(keys) != expected:
+        raise ValueError(
+            "Suggestions must cover every requested repair_key exactly "
+            f"(missing={len(expected - set(keys))}, extra={len(set(keys) - expected)})"
+        )
+
+
+def _coerce_suggestions(raw: Any, source_rows: pd.DataFrame, *, model: str) -> pd.DataFrame:
+    if not isinstance(raw, list):
+        raise ValueError("Response suggestions must be an array")
+    properties = _json_schema()["schema"]["properties"]["suggestions"]["items"]["properties"]
+    for item in raw:
+        if not isinstance(item, dict) or set(item) != set(properties):
+            raise ValueError("Suggestion fields do not match the response schema")
+        for field, spec in properties.items():
+            value = item[field]
+            if spec["type"] == "string" and not isinstance(value, str):
+                raise ValueError(f"Suggestion {field} must be a string")
+            if "enum" in spec and value not in spec["enum"]:
+                raise ValueError(f"Suggestion {field} is outside the allowed vocabulary")
+        confidence = item["confidence"]
+        if (
+            isinstance(confidence, bool)
+            or not isinstance(confidence, (int, float))
+            or not math.isfinite(confidence)
+            or not 0 <= confidence <= 1
+        ):
+            raise ValueError("Suggestion confidence must be a finite number between 0 and 1")
+    _validate_repair_keys((item["repair_key"] for item in raw), source_rows)
     source_lookup = {
         safe_text(row.get("repair_key")): safe_text(row.get("repair_item"))
         for _, row in source_rows.iterrows()
@@ -234,35 +278,17 @@ def _coerce_suggestions(raw: Iterable[dict[str, Any]], source_rows: pd.DataFrame
     now = datetime.now(tz=timezone.utc).isoformat()
     rows: list[dict[str, object]] = []
     for item in raw:
-        repair_key = safe_text(item.get("repair_key"))
-        if not repair_key or repair_key not in source_lookup:
-            continue
-        decision = safe_text(item.get("decision"))
-        target_category = safe_text(item.get("target_category"))
-        severity = safe_text(item.get("severity_hint"))
-        cost_model = safe_text(item.get("cost_model"))
-        if decision not in DECISION_OPTIONS:
-            decision = "Leave unclassified"
-        if target_category not in CATEGORY_OPTIONS:
-            target_category = ""
-        if severity not in SEVERITY_OPTIONS:
-            severity = ""
-        if cost_model not in COST_MODEL_OPTIONS:
-            cost_model = ""
-        try:
-            confidence = max(0.0, min(1.0, float(item.get("confidence"))))
-        except (TypeError, ValueError):
-            confidence = 0.0
+        repair_key = item["repair_key"]
         rows.append(
             {
                 "repair_key": repair_key,
                 "repair_item": source_lookup[repair_key],
-                "ai_decision": decision,
-                "ai_target_category": target_category,
+                "ai_decision": item["decision"],
+                "ai_target_category": item["target_category"],
                 "ai_canonical_defect": safe_text(item.get("canonical_defect")),
-                "ai_severity_hint": severity,
-                "ai_cost_model": cost_model,
-                "ai_confidence": confidence,
+                "ai_severity_hint": item["severity_hint"],
+                "ai_cost_model": item["cost_model"],
+                "ai_confidence": float(item["confidence"]),
                 "ai_rationale": safe_text(item.get("rationale")),
                 "model": model,
                 "suggested_at": now,
@@ -274,22 +300,54 @@ def _coerce_suggestions(raw: Iterable[dict[str, Any]], source_rows: pd.DataFrame
 def _call_openai(rows: pd.DataFrame, *, model: str) -> pd.DataFrame:
     from openai import OpenAI
 
-    client = OpenAI()
-    response = client.chat.completions.create(
-        model=model,
-        temperature=0,
-        response_format={"type": "json_schema", "json_schema": _json_schema()},
-        messages=[
+    is_astra = model == DEFAULT_MODEL or model.startswith(f"{DEFAULT_MODEL}-")
+    client = OpenAI(timeout=ASTRA_TIMEOUT_SECONDS, max_retries=1) if is_astra else OpenAI()
+    request: dict[str, Any] = {
+        "model": model,
+        "response_format": {"type": "json_schema", "json_schema": _json_schema()},
+        "messages": [
             {
                 "role": "system",
                 "content": "You are a conservative vehicle repair classification assistant. Output JSON only.",
             },
             {"role": "user", "content": _build_prompt(rows)},
         ],
-    )
-    content = response.choices[0].message.content or "{}"
+    }
+    if is_astra:
+        request.update(reasoning_effort="low", max_completion_tokens=ASTRA_MAX_COMPLETION_TOKENS)
+    else:
+        request["temperature"] = 0
+    started = time.monotonic()
+    response = None
+    try:
+        response = client.chat.completions.create(**request)
+    finally:
+        usage = getattr(response, "usage", None)
+        logger.info(
+            "Repair AI request model=%s rows=%d elapsed_seconds=%.2f "
+            "prompt_tokens=%s completion_tokens=%s cached_tokens=%s reasoning_tokens=%s",
+            model,
+            len(rows),
+            time.monotonic() - started,
+            getattr(usage, "prompt_tokens", None),
+            getattr(usage, "completion_tokens", None),
+            getattr(getattr(usage, "prompt_tokens_details", None), "cached_tokens", None),
+            getattr(getattr(usage, "completion_tokens_details", None), "reasoning_tokens", None),
+        )
+    if not response.choices or len(response.choices) != 1:
+        raise ValueError("Expected exactly one completion choice")
+    choice = response.choices[0]
+    if getattr(choice.message, "refusal", None):
+        raise ValueError("Model refused the repair classification request")
+    if choice.finish_reason != "stop":
+        raise ValueError(f"Incomplete repair classification response (finish_reason={choice.finish_reason})")
+    content = choice.message.content
+    if not isinstance(content, str) or not content.strip():
+        raise ValueError("Empty repair classification response")
     payload = json.loads(content)
-    return _coerce_suggestions(payload.get("suggestions") or [], rows, model=model)
+    if not isinstance(payload, dict) or set(payload) != {"suggestions"}:
+        raise ValueError("Response must contain only the suggestions array")
+    return _coerce_suggestions(payload["suggestions"], rows, model=model)
 
 
 def classify_repair_review_queue(
@@ -312,9 +370,12 @@ def classify_repair_review_queue(
     if pending.empty:
         return ClassifierResult(0, 0, output_path)
 
-    model_name = model or os.getenv("AUTOSNIPER_REPAIR_AI_MODEL", "gpt-4.1-mini")
+    model_name = model or os.getenv("AUTOSNIPER_REPAIR_AI_MODEL") or DEFAULT_MODEL
     try:
         new_suggestions = caller(pending, model=model_name) if caller is not None else _call_openai(pending, model=model_name)
+        if not isinstance(new_suggestions, pd.DataFrame) or "repair_key" not in new_suggestions:
+            raise ValueError("Classifier must return suggestions with repair_keys")
+        _validate_repair_keys(new_suggestions["repair_key"], pending)
     except Exception as exc:  # noqa: BLE001 - reported to the caller via skipped_reason
         logger.error("Repair AI classification call failed (%s: %s).", type(exc).__name__, exc)
         return ClassifierResult(
@@ -322,6 +383,7 @@ def classify_repair_review_queue(
             0,
             output_path,
             skipped_reason=f"{type(exc).__name__}: {str(exc)[:180]}",
+            failed=True,
         )
     for column in AI_SUGGESTION_COLUMNS:
         if column not in new_suggestions.columns:
