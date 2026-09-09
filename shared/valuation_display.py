@@ -217,6 +217,49 @@ def expected_finish_profit_value(row: Mapping[str, Any]) -> float | None:
     )
 
 
+def valuation_scenario_values(row: Mapping[str, Any]) -> dict[str, Any]:
+    """Project one valuation snapshot without substituting a different profit scenario."""
+    def value(*names: str) -> float | None:
+        return first_currency_value(*(row.get(name) for name in names))
+
+    no_edge = str(row.get("no_edge_at_current_bid", "")).strip().lower() in {"true", "1", "1.0"}
+    return {
+        "finish": value("expected_auction_bid_basis_value", "expected_auction_bid_basis",
+                        "expected_auction_price_value", "expected_auction_price"),
+        "finish_downside": value("expected_auction_worst_profit_value", "expected_auction_worst_profit"),
+        "net_downside": value("net_profit_worst_value", "net_profit_worst"),
+        "net_label": "Downside profit at current bid" if no_edge else "Worst profit at proxy max",
+        "repair_mid": value("repair_estimate"),
+        "repair_high": value("repair_estimate_high_value", "repair_estimate_high"),
+    }
+
+
+def valuation_snapshot_caption(row: Mapping[str, Any]) -> str:
+    timestamp = pd.to_datetime(row.get("analysis_timestamp"), utc=True, errors="coerce")
+    if pd.isna(timestamp) or timestamp is None:
+        return "Valuation time unavailable; refresh analysis before relying on these figures."
+    return "Valuation: " + timestamp.strftime("%d %b %Y %H:%M:%S UTC") + ". Figures may change when analysis refreshes."
+
+
+def valuation_next_step(row: Mapping[str, Any]) -> str:
+    """Explain the existing action; this helper does not make or override policy decisions."""
+    def text(name: str) -> str:
+        raw = row.get(name)
+        return "" if raw is None or pd.isna(raw) else str(raw).strip()
+
+    action = text("action_label")
+    verdict = text("computed_verdict")
+    if action == ACTION_BUY:
+        return "Next: inspect condition and confirm costs before using the proxy max. Buy is a model shortlist signal; a marginal verdict or high risk still needs review."
+    if action == ACTION_AVOID:
+        reason = text("bid_policy_gate") or verdict or text("bid_status") or "policy or safety block"
+        return f"Next: do not bid. Reason: {reason}."
+    missing = [label for key, label in (("computed_verdict", "valuation verdict"),
+               ("bid_status", "bid status"), ("hard_max_safety", "max-bid safety")) if not text(key)]
+    reason = ", ".join(missing) + " missing" if missing else verdict or "valuation needs manual review"
+    return f"Next: resolve {reason} in AI Analysis before bidding. Check valuation evidence and condition notes."
+
+
 def recommended_max_bid_value(row: Mapping[str, Any]) -> float | None:
     """Return only a real recommended max bid; do not fall back to current price."""
     return first_currency_value(
@@ -465,16 +508,12 @@ def build_ai_analysis_summary_rows(
         ),
         axis=1,
     )
-    merged["profit_value"] = merged.apply(active_profit_value, axis=1)
+    merged["profit_value"] = merged.apply(lambda row: valuation_scenario_values(row)["net_downside"], axis=1)
     merged["margin_value"] = merged.apply(conservative_margin_percent, axis=1)
-    merged["expected_finish_value"] = merged.apply(
-        lambda row: first_currency_value(
-            row.get("expected_auction_bid_basis"),
-            row.get("expected_auction_price"),
-        ),
-        axis=1,
-    )
-    merged["expected_finish_profit_value"] = merged.apply(expected_finish_profit_value, axis=1)
+    scenarios = merged.apply(valuation_scenario_values, axis=1)
+    merged["expected_finish_value"] = scenarios.map(lambda values: values["finish"])
+    merged["expected_finish_profit_value"] = scenarios.map(lambda values: values["finish_downside"])
+    merged["profit_basis_label"] = scenarios.map(lambda values: values["net_label"])
     merged["confidence_value"] = pd.to_numeric(merged.get("confidence"), errors="coerce")
 
     bid_parts = merged.apply(bid_display_parts, axis=1)
