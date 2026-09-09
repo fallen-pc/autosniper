@@ -38,19 +38,41 @@ urls = sorted(
     }
 )
 
-selected_default = st.session_state.get("ops_selected_url")
-if selected_default and selected_default not in urls:
-    urls.append(selected_default)
+def select_listing(url: str) -> None:
+    """Keep both inputs and all record actions on the same full listing URL."""
+    url = url.strip()
+    if url != st.session_state.get("detail_current_url"):
+        st.session_state["detail_note_text"] = ""
+        st.session_state["detail_flag_choice"] = ""
+        st.session_state["detail_flag_reason"] = ""
+    st.session_state["ops_selected_url"] = url
+    st.session_state["detail_current_url"] = url
+    st.session_state["detail_url_input"] = url
+    st.session_state["detail_url_choice"] = url or None
+
+
+def select_pasted_url() -> None:
+    # Clearing the paste box does not silently choose a different vehicle.
+    select_listing(st.session_state["detail_url_input"].strip() or st.session_state["detail_current_url"])
+
+
+def select_dropdown_url() -> None:
+    select_listing(st.session_state["detail_url_choice"] or "")
+
+
+selected_url = st.session_state.get("ops_selected_url") or (urls[0] if urls else "")
+# Also synchronize handoffs from Exceptions and widgets recreated after leaving
+# this page. Callbacks run before rerendering, so neither input wins implicitly.
+select_listing(selected_url)
+if selected_url and selected_url not in urls:
+    urls.append(selected_url)
 
 section_heading("Pick a URL", "Paste a URL or choose from the list.")
 input_col, pick_col = st.columns([2, 3])
 with input_col:
-    manual_url = st.text_input("Paste URL", value=selected_default or "")
+    st.text_input("Paste URL", key="detail_url_input", on_change=select_pasted_url)
 with pick_col:
-    selected_url = st.selectbox("Or select", options=urls, index=urls.index(selected_default) if selected_default in urls else 0)
-
-if manual_url.strip():
-    selected_url = manual_url.strip()
+    st.selectbox("Or select", options=urls, key="detail_url_choice", on_change=select_dropdown_url)
 
 if not selected_url:
     st.info("Select a URL to view details.")
@@ -139,12 +161,13 @@ else:
         )
 
 section_heading("Fix Actions", "Make changes the moment you spot a problem.")
+st.caption("Notes and flags apply to the vehicle above. Changing vehicles clears unsaved entries.")
 
 actions_left, actions_right = st.columns([2, 2])
 
 with actions_left:
     st.markdown("**Notes**")
-    note_text = st.text_area("Add a note", value="", height=100)
+    note_text = st.text_area("Add a note", key="detail_note_text", height=100)
     if st.button("Save note", key="detail_save_note"):
         if note_text.strip():
             append_note(selected_url, note_text.strip())
