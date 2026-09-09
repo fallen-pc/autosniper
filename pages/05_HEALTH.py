@@ -7,6 +7,7 @@ from shared.navigation import render_sidebar_navigation
 
 from shared.csv_utils import read_csv_or_empty
 from shared.data_loader import dataset_path
+from shared.ops_display import reason_category
 from shared.ops_utils import load_active_df, load_static_df, load_valuations_df
 from shared.scraper_health import friendly_health_failure, load_scraper_health_report
 from shared.styling import display_banner, inject_global_styles, page_intro, section_heading
@@ -27,8 +28,18 @@ def _last_run(path: Path) -> str:
     if not path.exists():
         return "never"
     ts = datetime.fromtimestamp(path.stat().st_mtime, tz=timezone.utc)
-    local_ts = ts.astimezone().strftime("%Y-%m-%d %H:%M")
+    local_ts = ts.strftime("%Y-%m-%d %H:%M UTC")
     return f"{local_ts}"
+
+
+def _render_reason_groups(counts: pd.DataFrame) -> None:
+    rows = counts.copy()
+    rows["category"] = rows["reason_code"].apply(reason_category)
+    for category in ("Collection failures", "Data needing review", "Unclassified — investigate", "Expected scope exclusions", "Successful records"):
+        group = rows[rows["category"] == category]
+        if not group.empty:
+            st.markdown(f"**{category}**")
+            st.dataframe(group[["reason_code", "count"]], use_container_width=True, hide_index=True)
 
 
 links_path = dataset_path("all_vehicle_links.csv")
@@ -89,8 +100,8 @@ else:
 
     failure_reasons = pd.DataFrame(health_report.get("top_failure_reasons") or [])
     if not failure_reasons.empty:
-        section_heading("Top Failure Reasons", "Latest aggregated pipeline failure reasons.")
-        st.dataframe(failure_reasons, use_container_width=True, hide_index=True)
+        section_heading("Recorded Outcomes", "Top reason codes stored in the scheduler snapshot; counts are log records, not current active vehicles. This may omit less frequent codes.")
+        _render_reason_groups(failure_reasons)
 
 if curve_coverage_report_path.exists() or curve_monotonicity_report_path.exists():
     section_heading("Governance Reports", "Automated curve coverage and monotonicity outputs.")
@@ -106,7 +117,7 @@ if curve_coverage_report_path.exists() or curve_monotonicity_report_path.exists(
         governance_cols[2].metric("Curve Errors", f"{int((severity == 'error').sum()):,}")
         governance_cols[3].metric("Curve Warnings", f"{int((severity == 'warning').sum()):,}")
 
-section_heading("Pipeline Counts", "Are the numbers flowing correctly?")
+section_heading("Pipeline Counts", "Rows in separate feeds: links and static history, the active feed, saved valuations, sold and referred records. These populations are not a sequential conversion funnel.")
 metrics = st.columns(6)
 metrics[0].metric("Links", f"{len(links_df):,}")
 metrics[1].metric("Static", f"{len(static_df):,}")
@@ -115,7 +126,7 @@ metrics[3].metric("Valuations", f"{len(valuations_df):,}")
 metrics[4].metric("Sold", f"{len(sold_df):,}")
 metrics[5].metric("Referred", f"{len(referred_df):,}")
 
-section_heading("Freshness", "Last write time for each feed.")
+section_heading("Freshness", "File modification times in UTC, not per-listing collection or valuation times.")
 
 freshness = {
     "links_last_run": _last_run(links_path),
@@ -141,17 +152,17 @@ else:
         "not_active_rate": f"{withdrawn_rate:.1%}",
     })
 
-section_heading("Error Logs", "Top failure reasons from excluded_listings.csv.")
+section_heading("Exclusion / Collection Log", "Recorded reasons across the log history, separated by meaning. Repeated records can refer to the same vehicle.")
 log_path = failures_path if failures_path.exists() else legacy_failures_path
 if log_path.exists():
     if log_path == legacy_failures_path and not failures_path.exists():
         st.caption("Using legacy scrape_failures.csv (excluded_listings.csv not found yet).")
-    failures_df = read_csv_or_empty(log_path, usecols=["timestamp", "reason_code"], nrows=50000)
+    failures_df = read_csv_or_empty(log_path, usecols=["timestamp", "reason_code"])
     if failures_df.empty:
-        st.info("No scrape failures recorded.")
+        st.info("No log records available.")
     else:
         failures_df["timestamp"] = pd.to_datetime(failures_df["timestamp"], errors="coerce")
-        reason_counts = failures_df["reason_code"].fillna("Unknown").value_counts().head(20)
-        st.dataframe(reason_counts.reset_index(name="count"), use_container_width=True, hide_index=True)
+        reason_counts = failures_df["reason_code"].fillna("Unknown").value_counts()
+        _render_reason_groups(reason_counts.rename_axis("reason_code").reset_index(name="count"))
 else:
     st.info("excluded_listings.csv not found.")
