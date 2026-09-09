@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 from collections import OrderedDict
-import html
-import re
 
 import streamlit as st
 
@@ -102,6 +100,9 @@ def build_navigation() -> "OrderedDict[str, list[st.Page]]":
 
 
 def render_sidebar_navigation() -> None:
+    # On a cold server, a direct URL can enter a legacy pages/ script before
+    # app.py has run. Register the same routes before its login gate as well.
+    st.navigation(build_navigation(), position="hidden")
     require_dashboard_auth()
     st.sidebar.markdown(
         """
@@ -114,28 +115,13 @@ def render_sidebar_navigation() -> None:
             text-transform: uppercase;
             color: rgba(229, 229, 229, 0.52);
         }
-        .autosniper-nav-link {
-            display: block;
-            padding: 0.32rem 0.52rem;
-            border-radius: 8px;
-            color: inherit !important;
-            text-decoration: none !important;
-        }
-        .autosniper-nav-link:hover {
-            background: rgba(31, 166, 255, 0.10);
-        }
         </style>
         """,
         unsafe_allow_html=True,
     )
     for group, entries in navigation_spec().items():
         st.sidebar.markdown(f"<div class='autosniper-nav-group'>{group}</div>", unsafe_allow_html=True)
-        for path, title, is_default in entries:
-            filename = path.replace("\\", "/").rsplit("/", 1)[-1].rsplit(".", 1)[0]
-            url_path = re.sub(r"^\d+_?", "", filename)
-            href = "/" if is_default else f"/{url_path}"
-            st.sidebar.markdown(
-                f'<a class="autosniper-nav-link" href="{html.escape(href, quote=True)}" '
-                f'target="_self">{html.escape(title)}</a>',
-                unsafe_allow_html=True,
-            )
+        for path, title, _is_default in entries:
+            # Native navigation keeps the WebSocket session (and its login).
+            # An ordinary anchor reloads the app with an unauthenticated session.
+            st.sidebar.page_link(path, label=title)
