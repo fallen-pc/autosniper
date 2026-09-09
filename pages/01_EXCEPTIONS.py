@@ -2,6 +2,7 @@ import pandas as pd
 import streamlit as st
 from shared.navigation import render_sidebar_navigation
 
+from shared.ops_display import filtered_issue_summary, issue_guidance
 from shared.ops_utils import (
     apply_global_filters,
     ISSUE_DEFINITIONS,
@@ -26,7 +27,7 @@ st.set_page_config(page_title="Exceptions - Ops", layout="wide")
 render_sidebar_navigation()
 inject_global_styles()
 display_banner()
-page_intro("EXCEPTIONS", "Ruthless list of everything broken or incomplete.", show_logo=False)
+page_intro("EXCEPTIONS", "Data gaps, coverage questions and lifecycle information, with a next step for each issue.", show_logo=False)
 
 static_df = load_static_df()
 active_df = load_active_df()
@@ -48,21 +49,10 @@ if not flags_df.empty and "url" in flags_df.columns:
     flag_lookup = latest_flags.set_index("url").to_dict(orient="index")
 
 if issue_df.empty:
-    st.success("No exceptions found. Everything is clean.")
+    st.success("No issues detected by the current checks. This does not certify a vehicle for purchase.")
     st.stop()
 
 exploded = explode_issues(issue_df)
-summary = (
-    exploded.groupby("issue_code")
-    .size()
-    .reset_index(name="count")
-    .sort_values("count", ascending=False)
-)
-summary["label"] = summary["issue_code"].apply(format_issue_label)
-summary["hint"] = summary["issue_code"].apply(issue_hint)
-summary["severity"] = summary["issue_code"].apply(
-    lambda code: ISSUE_DEFINITIONS.get(code, {}).get("severity", "gray")
-)
 
 section_heading("Global Filters", "Filters persist across the Ops + QA + Builder pages.")
 filter_container = st.container()
@@ -84,13 +74,59 @@ with filter_container:
         "Confidence", confidence_levels, default=confidence_levels, key="ops_conf_filter"
     )
 
-    c7, c8, c9 = st.columns(3)
+    c7, c8 = st.columns(2)
     has_curve_filter = c7.selectbox("Has curve", ["All", "Yes", "No"], key="ops_curve_filter")
     hide_flagged = c8.checkbox("Hide flagged listings", value=False, key="ops_hide_flagged")
-    issues_only = c9.checkbox("Only listings with issues", value=True, key="ops_issues_only")
 
-section_heading("Exception Buckets", "Pick a reason code and fix it now.")
-st.dataframe(summary[["issue_code", "label", "count", "severity", "hint"]], use_container_width=True)
+subset = static_df[static_df["url"].isin(issue_df["url"])].copy()
+if not active_df.empty:
+    subset = subset.merge(
+        active_df[["url", "status", "time_remaining_or_date_sold", "price", "bids"]],
+        on="url",
+        how="left",
+    )
+if not valuations_df.empty:
+    subset = subset.merge(
+        valuations_df[["url", "verdict", "confidence"]],
+        on="url",
+        how="left",
+    )
+if "time_remaining_or_date_sold" in subset.columns:
+    subset["time_remaining_hours"] = subset["time_remaining_or_date_sold"].apply(parse_time_remaining_hours)
+else:
+    subset["time_remaining_hours"] = pd.Series([None] * len(subset), index=subset.index)
+subset["time_bucket"] = subset["time_remaining_hours"].apply(time_bucket)
+subset["confidence_bucket"] = subset.get("confidence", pd.Series(None, index=subset.index, dtype=object)).apply(confidence_bucket)
+subset["has_curve"] = subset["canonical_tag"].apply(
+    lambda tag: bool(tag) and str(tag).strip() in curve_meta
+)
+subset["is_flagged"] = subset["url"].map(lambda url: bool(flag_lookup.get(url)))
+subset = apply_global_filters(
+    subset,
+    make_filter=make_filter,
+    model_filter=model_filter,
+    status_filter=status_filter,
+    verdict_filter=verdict_filter,
+    confidence_filter=confidence_filter,
+    time_bucket_filter=time_filter,
+    has_curve_filter=None if has_curve_filter == "All" else has_curve_filter,
+)
+if hide_flagged:
+    subset = subset[~subset["is_flagged"]]
+filtered_subset = subset.drop_duplicates("url").copy()
+summary = filtered_issue_summary(exploded, filtered_subset["url"])
+if summary.empty:
+    st.info("No issue records match these filters. Broaden the filters to inspect other records.")
+    st.stop()
+summary["label"] = summary["issue_code"].apply(format_issue_label)
+summary["hint"] = summary["issue_code"].apply(issue_hint)
+summary["severity"] = summary["issue_code"].apply(
+    lambda code: ISSUE_DEFINITIONS.get(code, {}).get("severity", "gray")
+)
+
+summary["category"] = summary["issue_code"].map(lambda code: issue_guidance(code)[0])
+section_heading("Exception Buckets", "Counts use the filters above. One listing may contribute to several buckets; totals are not additive.")
+st.dataframe(summary[["issue_code", "label", "category", "count", "severity", "hint"]], use_container_width=True)
 
 selected_issue = st.selectbox(
     "Issue group",
@@ -103,43 +139,8 @@ left, right = st.columns([3, 2])
 with left:
     section_heading("Exception List", f"Listings flagged with {selected_issue}.")
     issue_urls = exploded[exploded["issue_code"] == selected_issue]["url"].unique().tolist()
-    subset = static_df[static_df["url"].isin(issue_urls)].copy()
-    if not active_df.empty:
-        subset = subset.merge(
-            active_df[["url", "status", "time_remaining_or_date_sold", "price", "bids"]],
-            on="url",
-            how="left",
-        )
-    if not valuations_df.empty:
-        subset = subset.merge(
-            valuations_df[["url", "verdict", "confidence"]],
-            on="url",
-            how="left",
-        )
-    if "time_remaining_or_date_sold" in subset.columns:
-        subset["time_remaining_hours"] = subset["time_remaining_or_date_sold"].apply(parse_time_remaining_hours)
-    else:
-        subset["time_remaining_hours"] = pd.Series([None] * len(subset), index=subset.index)
-    subset["time_bucket"] = subset["time_remaining_hours"].apply(time_bucket)
-    subset["confidence_bucket"] = subset.get("confidence", pd.Series(dtype=float)).apply(confidence_bucket)
-    subset["has_curve"] = subset["canonical_tag"].apply(
-        lambda tag: bool(tag) and str(tag).strip() in curve_meta
-    )
-    subset["is_flagged"] = subset["url"].map(lambda url: bool(flag_lookup.get(url)))
-    subset = apply_global_filters(
-        subset,
-        make_filter=make_filter,
-        model_filter=model_filter,
-        status_filter=status_filter,
-        verdict_filter=verdict_filter,
-        confidence_filter=confidence_filter,
-        time_bucket_filter=time_filter,
-        has_curve_filter=None if has_curve_filter == "All" else has_curve_filter,
-    )
-    if hide_flagged:
-        subset = subset[~subset["is_flagged"]]
-    if issues_only:
-        subset = subset[subset["url"].isin(issue_df["url"])]
+    subset = filtered_subset[filtered_subset["url"].isin(issue_urls)].copy()
+    st.caption(f"{subset['url'].nunique():,} matching listings for this issue. A listing can appear in multiple issue groups.")
     display_cols = [
         "issue_codes",
         "year",
@@ -184,6 +185,9 @@ with left:
 
 with right:
     section_heading("Fix Kit", "Inspect the listing or its governed valuation curve.")
+    category, next_step = issue_guidance(selected_issue)
+    st.markdown(f"**{category}**")
+    st.write(next_step)
     selected_url = st.session_state.get("ops_selected_url")
     if not selected_url:
         st.info("Select a row on the left to populate this panel.")

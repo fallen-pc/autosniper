@@ -1,5 +1,7 @@
 # Recent Changes
 
+- 2026-09-10: Health separates success, expected scope exclusions, collection failures, data review and unknown log reasons without changing pipeline classifications; counts identify their populations and file freshness is UTC. Exceptions buckets share the listing filters and count unique URLs per issue, with issue-specific next steps and lifecycle/coverage explanations. No data or buying policy changed; release verification is separate.
+
 - 2026-09-10: Missed Opportunities labels projected historical profit as estimated, explains current-curve/cost assumptions and retrospective policy actions, aligns miss summaries with active filters, distinguishes coverage populations and preserves global sort order after the display limit. AI Review/Avoid cards no longer instruct entering the reference bid cap. Pricing and buying rules are unchanged; verification and deployment are separate.
 
 - 2026-09-10: Dashboard and AI Analysis now share explicit downside scenario fields, preserve zero/missing values, identify the current-bid profit basis when applicable and show valuation timestamps. Repair metrics use saved reserves; recalculated component details expose adjustment evidence without claiming raw prices were applied. Next-step guidance follows the existing action and high risk uses warning colours. Valuation formulas and repair pricing rules are unchanged; release verification is separate.
