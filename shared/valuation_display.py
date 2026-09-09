@@ -376,6 +376,10 @@ def bid_display_parts(row: Mapping[str, Any]) -> dict[str, str]:
         else:
             max_detail = "Enter as auction-site max"
 
+    action = _clean_display_text(row.get("action_label"))
+    if action in {"Review", "Watch", "Avoid"} and max_detail.startswith("Enter as auction-site max"):
+        max_detail = "Reference ceiling only; resolve review before bidding" if action != "Avoid" else "Reference ceiling only; do not bid"
+
     return {
         "status": status,
         "status_detail": status_detail,
