@@ -18,7 +18,6 @@ from shared.curves import (
     resolve_curve_canonical_tag,
 )
 from shared.data_loader import dataset_path, ensure_datasets_available
-from shared.decision_policy import action_display_parts
 from shared.global_filters import apply_global_sidebar_filters, render_global_sidebar_filters
 from shared.repair_pricing import (
     assess_repairs,
@@ -284,23 +283,22 @@ def confidence_badges_html(curve_status: str, miss_status: str, risk_status: str
 
 def sold_action_parts(row: pd.Series) -> tuple[str, str, str]:
     action_label = safe_text(row.get("action_label"), "").strip()
-    if action_label in {"Buy", "Watch", "Avoid", "Review"}:
-        action_display, action_detail = action_display_parts(action_label)
-        if action_label == "Buy":
-            return action_display, action_detail, "verdict-good"
-        if action_label == "Watch":
-            return action_display, action_detail, "verdict-marginal"
-        if action_label == "Avoid":
-            return action_display, action_detail, "verdict-avoid"
-        return action_display, action_detail, "verdict-marginal"
+    historical_actions = {
+        "Buy": ("Historical Buy", "Would meet the current model's buying rules at the recorded sold price; this auction has ended.", "verdict-good"),
+        "Watch": ("Historical Review", "Would require review under the current rules; this auction has ended.", "verdict-marginal"),
+        "Review": ("Historical Review", "Would require review under the current rules; this auction has ended.", "verdict-marginal"),
+        "Avoid": ("Historical Avoid", "Would be rejected under the current rules; this auction has ended.", "verdict-avoid"),
+    }
+    if action_label in historical_actions:
+        return historical_actions[action_label]
     missed = bool(row.get("missed"))
     profit = _to_float(row.get("projected_profit_at_sold"))
     sold_price = _to_float(row.get("sold_price"))
     max_bid = _to_float(row.get("max_bid"))
     if missed:
-        return "Missed buy", "Good historical deal", "verdict-good"
+        return "Missed buy", "Modelled opportunity at the recorded sold price; this auction has ended.", "verdict-good"
     if profit is not None and profit > 0 and sold_price is not None and max_bid is not None and sold_price > max_bid:
-        return "Sold above max", "Watch only", "verdict-marginal"
+        return "Sold above max", "Recorded sold price exceeded the modelled ceiling; this auction has ended.", "verdict-marginal"
     if profit is not None and profit > 0:
         return "Positive but blocked", "Review", "verdict-marginal"
     return "No buy", "Avoid", "verdict-avoid"
@@ -412,7 +410,7 @@ def render_missed_overview_tab(
 ) -> None:
     metric_cols = st.columns(3)
     metric_cols[0].metric("Historical action", action_label)
-    metric_cols[1].metric("Profit at sold price", money(projected_profit))
+    metric_cols[1].metric("Estimated profit at sold price", money(projected_profit))
     metric_cols[2].metric("Risk level", risk_status)
 
     render_bullet_block(
@@ -534,9 +532,9 @@ def render_missed_bid_logic_tab(
     sold_vs_cap = sold_vs_cap_text(sold_price, max_bid)
     metric_cols = st.columns(4)
     metric_cols[0].metric("Action", action_label)
-    metric_cols[1].metric("Proxy max", money(max_bid))
+    metric_cols[1].metric("Historical model bid cap", money(max_bid))
     metric_cols[2].metric("Sold vs cap", sold_vs_cap)
-    metric_cols[3].metric("Profit at sold price", money(projected_profit))
+    metric_cols[3].metric("Estimated profit at sold price", money(projected_profit))
     render_detail_grid(
         [
             ("Verdict", computed_verdict),
@@ -548,7 +546,7 @@ def render_missed_bid_logic_tab(
             ("Admin", money(row.get("admin_costs"))),
             ("Risk buffer", money(row.get("risk_buffer"))),
             ("Repair estimate", money(row.get("repair_cost_estimate"))),
-            ("Total costs", money(row.get("total_costs"))),
+            ("Estimated costs excluding hammer", money(row.get("total_costs"))),
         ],
         columns=3,
     )
@@ -585,8 +583,8 @@ def render_sold_analysis_card(
     action_label, verdict_label, verdict_class = sold_action_parts(row)
     profit_class = profit_tier_class(row.get("profit_margin_pct"))
     metric_value = row.get(metric_field)
-    metric_label = "Profit at sold price" if only_missed else "Curve delta"
-    metric_sub = "Historical sold result" if only_missed else "Curve estimate minus sold price"
+    metric_label = "Estimated profit at sold price" if only_missed else "Curve delta"
+    metric_sub = "Modelled resale minus recorded sold price and estimated costs" if only_missed else "Curve estimate minus sold price"
     top_badge = ""
     metric_numeric = _to_float(metric_value)
     if metric_numeric is not None and top_threshold is not None and metric_numeric >= top_threshold:
@@ -641,7 +639,7 @@ def render_sold_analysis_card(
             '<div class="card-top-right">',
             f'<div class="verdict-pill action-pill">{html.escape(action_label)}</div>',
             top_badge,
-            f'<div class="verdict-pill {verdict_class}-pill support-pill">{html.escape(verdict_label)}</div>',
+            f'<div class="verdict-pill {verdict_class}-pill support-pill">{html.escape(computed_verdict)}</div>',
             '<div class="card-actions">',
             f'<a href="{html.escape(url)}" target="_blank">Open</a>'
             if url and not url.lower().lstrip().startswith("javascript:")
@@ -664,10 +662,10 @@ def render_sold_analysis_card(
                 "Deal maths",
                 [
                     build_metric_item(metric_label, money(metric_value), metric_sub, "primary"),
-                    build_metric_item("Proxy max", money(max_bid), hard_max_safety),
+                    build_metric_item("Historical model bid cap", money(max_bid), hard_max_safety),
                     build_metric_item("Sold vs cap", sold_vs_cap, bid_status),
-                    build_metric_item("Profit at sold price", money(projected_profit), "Realised sold scenario"),
-                    build_metric_item("Total costs", money(total_costs)),
+                    build_metric_item("Estimated profit at sold price", money(projected_profit), "Modelled resale and costs; recorded auction price"),
+                    build_metric_item("Estimated costs excluding hammer", money(total_costs)),
                 ],
                 "money-group",
             ),
@@ -1733,8 +1731,8 @@ if only_net_positive:
     view = view[view["projected_profit_at_sold"].fillna(0) > 0]
 
 metric_series = view["projected_profit_at_sold"] if only_missed else view["delta"]
-true_miss_view = eligible_view[
-    eligible_view["missed"] & (eligible_view["projected_profit_at_sold"].fillna(0) > 0)
+true_miss_view = view[
+    view["missed"] & (view["projected_profit_at_sold"].fillna(0) > 0)
 ].copy()
 sold_count = int(view.shape[0])
 with_curve = int(eligible_view.shape[0]) if not eligible_view.empty else 0
@@ -1766,7 +1764,7 @@ if sold_count == 0:
     summary_line = "No listings match the current hypotheses."
 elif only_missed:
     if total_missed > 0:
-        summary_line = f"Yes. Total missed profit: {money(total_missed)} across {sold_count:,} listings."
+        summary_line = f"Estimated missed profit: {money(total_missed)} across {sold_count:,} listings."
     else:
         summary_line = "No. No profitable misses in the current view."
 else:
@@ -1776,6 +1774,14 @@ else:
         summary_line = "Curve Delta view: no positive deltas in the current view."
 
 st.markdown(f'<div class="notice">{summary_line}</div>', unsafe_allow_html=True)
+st.caption(
+    "Historical auction prices are recorded outcomes. Resale and profit are modelled using current curves and cost rules, "
+    "not actual post-purchase results or a reconstruction of what was known on the auction date. "
+    "Estimated profit = curve resale midpoint minus sold hammer price, fees, transport, registration, roadworthy, "
+    "preparation and any enabled repair/risk allowance. Curve delta excludes these costs. "
+    "Summed estimates are not earned profit or an achievable portfolio return."
+)
+st.caption("Repair/risk allowance: " + ("included in the scenario." if include_repairs else "excluded from the scenario."))
 
 if excluded_count:
     st.markdown(
@@ -1800,9 +1806,9 @@ if future_sold_count:
 
 st.markdown('<div class="kpi-row">', unsafe_allow_html=True)
 
-miss_label = "Total Missed Profit" if only_missed else "Curve Delta (Total)"
-miss_sub = "After fees, transport, admin, risk" + (" + repairs" if include_repairs else "")
-avg_label = "Average Missed Profit" if only_missed else "Average Curve Delta"
+miss_label = "Estimated Missed Profit" if only_missed else "Positive Curve Delta (Total)"
+miss_sub = ("After estimated fees, transport and admin" + (" + repair/risk" if include_repairs else "; repair/risk excluded")) if only_missed else "Positive curve-minus-hammer gaps; costs excluded"
+avg_label = "Average Estimated Missed Profit" if only_missed else "Average Curve Delta"
 
 kpi_html = f"""
 <div class="kpi">
@@ -1823,7 +1829,7 @@ kpi_html = f"""
 <div class="kpi">
   <div class="k">With Curve Estimate</div>
   <div class="v">{with_curve:,}</div>
-  <div class="s">Coverage in current view</div>
+  <div class="s">Before missed/profit filters; selected vehicle scope</div>
 </div>
 <div class="kpi">
   <div class="k">NO_CURVE Sold</div>
@@ -1833,12 +1839,12 @@ kpi_html = f"""
 <div class="kpi">
   <div class="k">Average Missed Margin</div>
   <div class="v">{pct(avg_missed_margin)}</div>
-  <div class="s">True misses only</div>
+  <div class="s">Filtered modelled misses only</div>
 </div>
 <div class="kpi">
   <div class="k">Largest Missed Deal</div>
   <div class="v">{money(largest_missed_deal)}</div>
-  <div class="s">Highest realised missed profit</div>
+  <div class="s">Highest estimated profit among filtered misses</div>
 </div>
 <div class="kpi">
   <div class="k">Average Underbid %</div>
@@ -1848,7 +1854,7 @@ kpi_html = f"""
 <div class="kpi">
   <div class="k">Highest Theoretical Profit</div>
   <div class="v">{money(highest_theoretical_profit)}</div>
-  <div class="s">Best profit signal in covered sold listings</div>
+  <div class="s">Before missed/profit filters; covered sold listings</div>
 </div>
 """
 st.markdown(clean_html(kpi_html), unsafe_allow_html=True)
@@ -1890,8 +1896,6 @@ if pattern_bits:
     st.markdown(f'<div class="pattern">{chips}</div>', unsafe_allow_html=True)
 
 timeline_source = true_miss_view.copy()
-if min_metric > 0:
-    timeline_source = timeline_source[timeline_source["projected_profit_at_sold"].fillna(0) >= min_metric]
 
 if not timeline_source.empty and "sold_month" in timeline_source.columns:
     timeline_df = (
@@ -1903,17 +1907,13 @@ if not timeline_source.empty and "sold_month" in timeline_source.columns:
     )
     if not timeline_df.empty:
         st.markdown('<div class="section-card" style="margin-top:14px;">', unsafe_allow_html=True)
-        st.markdown("### Missed Profit Timeline")
-        st.caption("True missed profit aggregated by sold month.")
-        chart_df = timeline_df.rename(columns={"sold_month": "Month", "month_profit": "Missed Profit"})
+        st.markdown("### Estimated Missed Profit Timeline")
+        st.caption("Estimated profit for the filtered modelled misses, aggregated by sold month.")
+        chart_df = timeline_df.rename(columns={"sold_month": "Month", "month_profit": "Estimated Missed Profit"})
         st.line_chart(chart_df.set_index("Month"))
         st.markdown("</div>", unsafe_allow_html=True)
 
 classification_source = true_miss_view.copy()
-if min_metric > 0:
-    classification_source = classification_source[
-        classification_source["projected_profit_at_sold"].fillna(0) >= min_metric
-    ]
 if not classification_source.empty and "miss_classification" in classification_source.columns:
     classification_df = (
         classification_source.assign(
@@ -1953,7 +1953,7 @@ st.markdown("</div>", unsafe_allow_html=True)
 
 st.markdown('<div class="section-card" style="margin-top:14px;">', unsafe_allow_html=True)
 st.markdown(
-    "### Misses (sorted by highest profit at sold price)"
+    "### Modelled misses"
     if only_missed
     else "### Curve Delta View"
 )
@@ -2001,54 +2001,16 @@ if not metric_values.empty:
     top_threshold = float(metric_values.quantile(0.85))
     low_threshold = float(metric_values.quantile(0.4))
 
-group_key = render_df.apply(
-    lambda row: " ".join(
-        part
-        for part in [safe_text(row.get("make"), ""), safe_text(row.get("model"), "")]
-        if part
-    ).strip()
-    or "Other",
-    axis=1,
-)
-render_df = render_df.assign(group_key=group_key)
-
-group_scores = (
-    render_df.assign(metric_value=render_df[metric_field].fillna(0))
-    .groupby("group_key")["metric_value"]
-    .sum()
-    .sort_values(ascending=False)
-)
-top_groups = group_scores.head(3).index.tolist()
-render_df["group_bucket"] = render_df["group_key"].apply(
-    lambda value: value if value in top_groups else "Other"
-)
-
-group_order = [group for group in top_groups if group in render_df["group_bucket"].unique()]
-if "Other" in render_df["group_bucket"].unique() and "Other" not in group_order:
-    group_order.append("Other")
-
-for group in group_order:
-    group_df = render_df[render_df["group_bucket"] == group].copy()
-    if group_df.empty:
-        continue
-    group_avg = group_df[metric_field].mean()
-    avg_label = "avg profit" if only_missed else "avg delta"
-    group_summary = f"{money(group_avg)} {avg_label} | {len(group_df):,} listings"
-    st.markdown(
-        f'<div class="group-header">{html.escape(group)} <span>{group_summary}</span></div>',
-        unsafe_allow_html=True,
+st.caption(f"Showing {len(render_df):,} of {len(sort_df):,} filtered listings, in the selected sort order. Summary totals include all {len(sort_df):,} filtered listings.")
+for _, row in render_df.iterrows():
+    render_sold_analysis_card(
+        row,
+        only_missed=only_missed,
+        include_repairs=include_repairs,
+        metric_field=metric_field,
+        top_threshold=top_threshold,
+        low_threshold=low_threshold,
     )
-
-    group_df = group_df.sort_values(metric_field, ascending=False, na_position="last")
-    for _, row in group_df.iterrows():
-        render_sold_analysis_card(
-            row,
-            only_missed=only_missed,
-            include_repairs=include_repairs,
-            metric_field=metric_field,
-            top_threshold=top_threshold,
-            low_threshold=low_threshold,
-        )
 
 
 st.markdown("</div>", unsafe_allow_html=True)
