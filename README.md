@@ -12,7 +12,7 @@ whole workflow can be shared on GitHub and hosted on Streamlit Cloud.
 - **Streamlit app** (`app.py`, `DASHBOARD.py` & `pages/`) with curated navigation, status metrics, and detailed listings.
 - **Data bundle loader** (`shared/data_loader.py`) that optionally pulls CSVs from a remote ZIP.
 - **Scrapers** for Grays (production) and Exploratory Autotrader utilities under `scripts/` and `autotrader/`.
-- **AI enrichment** via OpenAI for vehicle valuations (`scripts/ai_listing_valuation.py`, Streamlit actions).
+- **Curve-based valuations** with deterministic buying rules (`scripts/ai_listing_valuation.py`) and optional OpenAI repair-review suggestions (`shared/repair_ai_classifier.py`).
 
 ---
 

@@ -50,8 +50,16 @@ configured:
 ```text
 AUTOSNIPER_REPAIR_AI_CLASSIFIER=1
 AUTOSNIPER_REPAIR_AI_LIMIT=25
-AUTOSNIPER_REPAIR_AI_MODEL=gpt-4.1-mini
+AUTOSNIPER_REPAIR_AI_MODEL=gpt-6-astra
 ```
+
+GPT-6 Astra uses low reasoning with the existing strict JSON output contract.
+The classifier remains disabled unless `AUTOSNIPER_REPAIR_AI_CLASSIFIER=1`.
+Set `AUTOSNIPER_REPAIR_AI_MODEL=gpt-4.1-mini` to return new requests to the prior
+model. Existing cached suggestions are keyed by repair fragment, so a model
+change does not automatically reclassify them. See
+[the Astra migration runbook](gpt_6_astra_migration.md) for evaluation, deliberate
+cache refresh, and rollback.
 
 ## Hourly Active Monitor
 
