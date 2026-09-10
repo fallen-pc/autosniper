@@ -19,6 +19,7 @@ from scripts.ai_listing_valuation import (
 )
 from scripts.atomic_csv import write_dataframe_csv_atomic
 from scripts.process_curve_candidates import DEFAULT_AUTOTRADER_SOURCE, load_autotrader_market
+from shared.auction_fees import url_operator
 from shared.canonical_tagging import UNCLASSIFIED, is_canonical_eligible
 from shared.comps_engine import parse_currency, parse_numeric
 from shared.csv_utils import CSV_READ_ERRORS
@@ -139,6 +140,28 @@ def _load_external_auction_active_rows() -> pd.DataFrame:
     if "source" not in working.columns:
         working["source"] = "external_auction"
     working["status"] = working["status"].fillna("").astype(str).str.strip()
+    slattery = (
+        working["source"].fillna("").astype(str).str.lower().eq("slattery")
+        | working["url"].map(url_operator).eq("slattery")
+    )
+    if slattery.any():
+        # Rediscovery alone cannot turn an unparsed or closed Slattery lot into
+        # a live candidate. Require the structured detail contract and a future
+        # closing timestamp, including when the daily snapshot ages overnight.
+        for column in ("detail_completeness_status", "time_remaining_or_date_sold"):
+            if column not in working.columns:
+                working[column] = ""
+        ready = (
+            working["status"].str.lower().eq("active")
+            & working["detail_completeness_status"].fillna("").eq("complete")
+        )
+        for column in ("year", "make", "model", "odometer_reading", "vin", "location", "general_condition"):
+            if column not in working.columns:
+                working[column] = ""
+            ready &= working[column].fillna("").astype(str).str.strip().ne("")
+        closes_at = pd.to_datetime(working["time_remaining_or_date_sold"], errors="coerce", utc=True, format="mixed")
+        ready &= closes_at.gt(pd.Timestamp.now(tz="UTC"))
+        working = working[~slattery | ready].copy()
     blank_status = working["status"].eq("")
     if blank_status.any():
         links_df = _load_csv(_external_auction_links_path())

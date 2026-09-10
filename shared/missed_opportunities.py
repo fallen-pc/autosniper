@@ -29,6 +29,7 @@ from scripts.ai_listing_valuation import (
     apply_platform_risk_adjustments,
 )
 from shared.comps_engine import parse_currency, parse_numeric
+from shared.auction_fees import fee_evidence_problem, url_operator
 from shared.csv_utils import CSV_READ_ERRORS
 from shared.decision_economics import calculate_curve_decision_economics, derive_curve_verdict
 from shared.decision_policy import derive_action_label_from_row
@@ -125,8 +126,24 @@ def load_external_auction_sold_rows(path: Path | None = None) -> pd.DataFrame:
 
     working["price_numeric"] = working["price"].apply(parse_currency)
     working["status_norm"] = working["status"].fillna("").astype(str).str.lower().str.strip()
+    slattery = (
+        working["source"].fillna("").astype(str).str.lower().eq("slattery")
+        | working["url"].map(url_operator).eq("slattery")
+    )
+    # A closed Slattery auction may be unsold/referred. Its last bid and closing
+    # date are not settled-sale evidence, even if a search card calls it a price.
+    final_prices = working.get("final_sale_price", pd.Series("", index=working.index)).apply(parse_currency)
+    slattery_settled = (
+        working["status_norm"].eq("sold")
+        & working["date_sold"].fillna("").astype(str).str.strip().ne("")
+        & final_prices.notna()
+        & final_prices.gt(0)
+    )
+    working.loc[slattery & slattery_settled, "price_numeric"] = final_prices
+    working.loc[slattery & slattery_settled, "price"] = final_prices
     working["date_sold"] = working.apply(_external_settled_date, axis=1)
     settled_mask = working["status_norm"].isin(EXTERNAL_SETTLED_STATUSES) | working["date_sold"].astype(str).str.strip().ne("")
+    settled_mask &= ~slattery | slattery_settled
     working = working[settled_mask & working["price_numeric"].notna()].copy()
     if working.empty:
         return working.drop(columns=[column for column in ("status_norm",) if column in working.columns])
@@ -396,6 +413,16 @@ def compute_decision_metrics(
         return _blank_decision()
 
     listing_data = dict(row)
+    fee_problem = fee_evidence_problem(listing_data)
+    if fee_problem:
+        return {
+            **_blank_decision(), "max_bid": 0.0,
+            "projected_profit_worst_at_sold": None,
+            "computed_verdict": "Review (auction fee evidence)",
+            "bid_policy_gate": "AUCTION_FEE_EVIDENCE",
+            "hard_max_safety": "Unknown", "bid_status": "Unknown",
+            "confidence_notes": fee_problem,
+        }
     resale_mid_val = _round_to_10(resale_mid)
     repair_assessment = assess_repairs(
         listing_data.get("general_condition", ""),

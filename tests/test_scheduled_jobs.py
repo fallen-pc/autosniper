@@ -395,6 +395,84 @@ def test_daily_pipeline_runs_external_auction_stage(monkeypatch) -> None:
     ]
 
 
+def test_external_seed_loading_preserves_and_merges_saved_provenance(tmp_path) -> None:
+    output_dir = tmp_path / "daily"
+    archive_dir = tmp_path / "archive"
+    output_dir.mkdir()
+    archive_dir.mkdir()
+    listing_url = "https://slatteryauctions.com.au/assets/137614?auctionId=10301"
+    numeric_alias = listing_url
+    alpha_alias = "https://slatteryauctions.com.au/assets/02iOa00000EHP8PIAX?auctionId=a0lOa00000PfsvhIAB"
+    old_discovery = "https://www.grays.com/search?q=toyota&tab=items"
+    new_discovery = "https://slatteryauctions.com.au/api/slattery/assets?categoryIds=1&pageNumber=1&pageSize=18"
+    third_discovery = "https://www.grays.com/search/automotive-trucks-and-marine/motor-vehiclesmotor-cycles?tab=items&page=7"
+
+    def row(discoveries, aliases):
+        return {
+            "source": "slattery", "url": listing_url, "title": "2018 Toyota RAV4 GX Petrol",
+            "discovery_urls": json.dumps(discoveries), "url_aliases": json.dumps(aliases),
+        }
+
+    pd.DataFrame([row([old_discovery], [alpha_alias])]).to_csv(
+        archive_dir / "external_auction_curve_matches.csv", index=False,
+    )
+    pd.DataFrame([
+        row([new_discovery, old_discovery], [numeric_alias, alpha_alias]),
+        row([third_discovery, new_discovery], [numeric_alias]),
+    ]).to_csv(output_dir / "external_auction_curve_matches.csv", index=False)
+
+    seeds = scheduled_jobs._load_external_auction_seed_listings(output_dir)
+
+    assert len(seeds) == 1
+    assert seeds[0].url == listing_url
+    assert seeds[0].title_hint == "2018 Toyota RAV4 GX Petrol"
+    assert set(seeds[0].discovery_urls) == {old_discovery, new_discovery, third_discovery}
+    assert len(seeds[0].discovery_urls) == 3
+    assert set(seeds[0].url_aliases) == {numeric_alias, alpha_alias}
+    assert len(seeds[0].url_aliases) == 2
+
+
+def test_external_seed_loading_ignores_malformed_provenance_and_keeps_valid_urls(tmp_path) -> None:
+    output_dir = tmp_path / "daily"
+    output_dir.mkdir()
+    valid_discovery = "https://www.grays.com/search?q=toyota&tab=items"
+    invalid_values = ["not json", "{", "{}", '"https://example.test/scalar"', "null", "7", ""]
+    rows = [
+        {"source": "slattery", "url": f"https://slatteryauctions.com.au/assets/{137614 + index}?auctionId=10301",
+         "title": "Saved vehicle", "discovery_urls": value, "url_aliases": value}
+        for index, value in enumerate(invalid_values)
+    ]
+    rows.append({
+        "source": "slattery", "url": "https://slatteryauctions.com.au/assets/139070?auctionId=10727",
+        "title": "Saved mixed provenance",
+        "discovery_urls": json.dumps([valid_discovery, valid_discovery, 12, None, {}, [], "javascript:alert(1)", "http://example.test/plain"]),
+        "url_aliases": json.dumps(["https://slatteryauctions.com.au/assets/139070?auctionId=10727"]),
+    })
+    pd.DataFrame(rows).to_csv(output_dir / "external_auction_curve_matches.csv", index=False)
+
+    seeds = scheduled_jobs._load_external_auction_seed_listings(output_dir)
+
+    assert len(seeds) == len(rows)
+    assert all(not seed.discovery_urls and not seed.url_aliases for seed in seeds[:-1])
+    assert seeds[-1].discovery_urls == (valid_discovery,)
+    assert seeds[-1].url_aliases == (seeds[-1].url,)
+
+
+def test_external_seed_loading_accepts_legacy_rows_without_provenance(tmp_path) -> None:
+    output_dir = tmp_path / "daily"
+    output_dir.mkdir()
+    listing_url = "https://slatteryauctions.com.au/assets/137614?auctionId=10301"
+    pd.DataFrame([{"source": "slattery", "url": listing_url, "title": "Saved vehicle"}]).to_csv(
+        output_dir / "external_auction_curve_matches.csv", index=False,
+    )
+
+    seeds = scheduled_jobs._load_external_auction_seed_listings(output_dir)
+
+    assert len(seeds) == 1
+    assert seeds[0].url == listing_url
+    assert seeds[0].discovery_urls == seeds[0].url_aliases == ()
+
+
 def test_external_auction_daily_scrape_uses_source_specific_caps(monkeypatch, tmp_path) -> None:
     calls: list[dict[str, object]] = []
     written: list[tuple[pd.DataFrame, pd.DataFrame, object]] = []

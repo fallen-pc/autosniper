@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from typing import Any, Callable, Mapping
 
 from shared.repair_pricing import RepairAssessment, apply_repairs_to_max_bid
+from shared.auction_fees import auction_operator
 
 
 CostEstimator = Callable[[float, Mapping[str, Any]], Mapping[str, float]]
@@ -77,6 +78,13 @@ def calculate_curve_decision_economics(
                 vehicle_value=resale_mid,
             )
             proxy_max_bid = float(adjusted_bid)
+            if auction_operator(listing) == "slattery" and repair_verdict not in {"Avoid", "Not Viable"}:
+                # Include repairs in the solver so fee cliffs remain safe even
+                # when a repair deduction crosses into a more expensive band.
+                proxy_max_bid = min(
+                    proxy_max_bid,
+                    float(solve_max_bid(resale_low, min_net_profit + repair_cost_high, listing)),
+                )
 
     if policy_blocked or (include_repairs and repair_assessment.hard_avoid):
         proxy_max_bid = 0.0

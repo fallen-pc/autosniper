@@ -13,6 +13,10 @@ import pandas as pd
 
 from scripts.atomic_csv import append_dict_rows_csv_atomic, write_dataframe_csv_atomic
 from shared.auction_model import predict_auction_price
+from shared.auction_fees import (
+    FEE_FIELDS, FeeEvidenceError, auction_operator, fee_evidence_problem,
+    slattery_buyer_charges, slattery_fee_breakpoints,
+)
 from shared.csv_utils import CSV_READ_ERRORS
 from shared.data_loader import dataset_path
 from shared.decision_economics import calculate_curve_decision_economics, derive_curve_verdict
@@ -217,7 +221,7 @@ COST_BUFFER = 1_500.0
 REGISTERED_REGO_COST = 0.0
 MIN_FEES = 500.0
 FEES_RATE = 0.08
-VALUATION_POLICY_VERSION = "location_and_acquisition_costs_v3"
+VALUATION_POLICY_VERSION = "lot_bound_slattery_acquisition_costs_v4"
 # Max headroom we give above the current live bid before we cap the recommendation.
 CURRENT_BID_HEADROOM = 3_500.0
 EDGE_BUFFER = 50.0
@@ -329,6 +333,7 @@ def _cached_result_needs_refresh(existing: Mapping[str, Any]) -> bool:
 
 
 VALUATION_INPUT_FIELDS = (
+    "source", "platform", "auction_operator", *FEE_FIELDS,
     "url",
     "price",
     "bids",
@@ -1211,9 +1216,7 @@ def _interstate_purchase_blocked(listing: Mapping[str, Any]) -> bool:
 
 
 def _is_grays_listing(listing: Mapping[str, Any]) -> bool:
-    url = str(listing.get("url") or "").lower()
-    source = str(listing.get("source") or listing.get("platform") or "").lower()
-    return "grays" in url or "grays" in source
+    return auction_operator(listing) == "grays"
 
 
 def _grays_buyer_premium(final_bid: float) -> float:
@@ -1246,9 +1249,14 @@ def _victorian_motor_vehicle_duty(dutiable_value: float) -> float:
 
 
 def _estimate_bid_cost_components(purchase_price: float, listing: Mapping[str, Any]) -> dict[str, float]:
+    fee_problem = fee_evidence_problem(listing)
+    if fee_problem:
+        raise FeeEvidenceError(fee_problem)
     is_grays = _is_grays_listing(listing)
     if is_grays:
         auction_fee = _grays_buyer_premium(purchase_price)
+    elif auction_operator(listing) == "slattery":
+        auction_fee = slattery_buyer_charges(purchase_price, listing)
     else:
         auction_fee = max(MIN_FEES, purchase_price * FEES_RATE)
     motor_vehicle_duty = _victorian_motor_vehicle_duty(purchase_price)
@@ -1720,6 +1728,21 @@ def _solve_max_bid(
 ) -> float:
     if resale_low is None or resale_low <= 0:
         return 0.0
+    if fee_evidence_problem(listing):
+        return 0.0
+    if auction_operator(listing) == "slattery":
+        # A proxy may win at any lower price. Protect fee drops as well as the
+        # final cap; never let a cheaper hammer price break the profit floor.
+        breakpoints = [p for p in slattery_fee_breakpoints(listing) if p <= resale_low]
+        low, high, best = 0, int(math.floor(resale_low)), 0
+        while low <= high:
+            mid = (low + high) // 2
+            prices = [float(mid)] + [p for p in breakpoints if p < mid]
+            if min(_net_profit_value(resale_low, p, listing) for p in prices) >= min_net_profit:
+                best, low = mid, mid + 1
+            else:
+                high = mid - 1
+        return float(best)
     if _net_profit_value(resale_low, 0.0, listing) < min_net_profit:
         return 0.0
     low = 0.0
@@ -1799,7 +1822,8 @@ def run_curve_listing_analysis(
             existing["cached"] = True
             return existing
 
-    if resale_mid is None or resale_mid <= 0:
+    fee_problem = fee_evidence_problem(listing_row)
+    if resale_mid is None or resale_mid <= 0 or fee_problem:
         result_row = {
             "url": url,
             "analysis_timestamp": datetime.now(tz=timezone.utc).isoformat(),
@@ -1878,6 +1902,19 @@ def run_curve_listing_analysis(
             "profit_at_current_bid_worst_value": None,
             "profit_margin_value": None,
         }
+        if fee_problem:
+            result_row.update({
+                "year": listing_row.get("year"), "make": listing_row.get("make"),
+                "model": listing_row.get("model"), "variant": listing_row.get("variant"),
+                "location": listing_row.get("location"),
+                "computed_verdict": "Review (auction fee evidence)",
+                "verdict": "Review (auction fee evidence)",
+                "risk_flags": "AUCTION_FEE_EVIDENCE", "bid_policy_gate": "AUCTION_FEE_EVIDENCE",
+                "confidence_notes": fee_problem, "difficulty_reasons": fee_problem,
+                "carsales_price_estimate": _format_currency(resale_mid),
+                "resale_mid": _format_currency(resale_mid), "resale_mid_value": resale_mid,
+                "economic_max_bid": None, "economic_max_bid_value": None,
+            })
         _save_result_row(result_row)
         result_row["cached"] = False
         return result_row
