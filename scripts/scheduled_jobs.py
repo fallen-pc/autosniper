@@ -930,7 +930,16 @@ def _load_external_auction_seed_listings(output_dir: Path) -> list[scrape_extern
     if evidence_root.exists():
         seed_paths.update(evidence_root.rglob("external_auction_curve_matches.csv"))
     seeds: list[scrape_external_auction_sources.BrowserListing] = []
-    seen: set[str] = set()
+    indexes: dict[str, int] = {}
+
+    def provenance_urls(value: object) -> tuple[str, ...]:
+        try:
+            values = json.loads(str(value))
+        except (ValueError, TypeError):
+            return ()
+        if not isinstance(values, list):
+            return ()
+        return tuple(dict.fromkeys(url for url in values if isinstance(url, str) and url.startswith("https://")))
     for path in sorted(seed_paths):
         if not path.exists():
             continue
@@ -947,16 +956,24 @@ def _load_external_auction_seed_listings(output_dir: Path) -> list[scrape_extern
             if not url.startswith("http") or source not in scrape_external_auction_sources.DEFAULT_SOURCES:
                 continue
             key = f"{source}|{url}"
-            if key in seen:
-                continue
-            seen.add(key)
-            seeds.append(
-                scrape_external_auction_sources.BrowserListing(
-                    source=source,
-                    url=url,
-                    title_hint=str(row.get("title") or ""),
-                )
+            seed = scrape_external_auction_sources.BrowserListing(
+                source=source,
+                url=url,
+                title_hint=str(row.get("title") or ""),
+                discovery_urls=provenance_urls(row.get("discovery_urls")),
+                url_aliases=provenance_urls(row.get("url_aliases")),
             )
+            if key in indexes:
+                index = indexes[key]
+                previous = seeds[index]
+                seeds[index] = scrape_external_auction_sources.BrowserListing(
+                    source=source, url=url, title_hint=previous.title_hint or seed.title_hint,
+                    discovery_urls=tuple(dict.fromkeys((*previous.discovery_urls, *seed.discovery_urls))),
+                    url_aliases=tuple(dict.fromkeys((*previous.url_aliases, *seed.url_aliases))),
+                )
+            else:
+                indexes[key] = len(seeds)
+                seeds.append(seed)
     return seeds
 
 

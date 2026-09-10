@@ -5,13 +5,15 @@ import asyncio
 import ctypes
 import gc
 import html
+import json
 import re
 import sys
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from html.parser import HTMLParser
 from pathlib import Path
 from typing import Awaitable, Callable, Iterable
-from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
+from urllib.parse import parse_qsl, urlencode, urljoin, urlsplit, urlunsplit
 
 import pandas as pd
 
@@ -28,6 +30,9 @@ else:  # pragma: no cover
     from shared.schema import ACTIVE_DETAIL_SCHEMA
 
 
+from shared.auction_fees import FEE_FIELDS, url_operator
+from shared.slattery_source import extract_slattery_listing, normalize_slattery_url
+
 DEFAULT_OUTPUT_DIR = Path("output") / "external_auction_scrape"
 DEFAULT_SOURCES = ("pickles", "slattery")
 
@@ -41,6 +46,14 @@ LISTING_COLUMNS = list(
             *[column for column in ACTIVE_DETAIL_SCHEMA if column != "url"],
             "curve_tag",
             "scrape_status",
+            "requested_url",
+            "discovery_urls",
+            "url_aliases",
+            "detail_completeness_status",
+            "detail_fields_missing",
+            "final_sale_price",
+            "rego_state",
+            *FEE_FIELDS,
         ]
     )
 )
@@ -75,6 +88,8 @@ LINK_COLUMNS = [
     "canonical_reason",
     "curve_tag",
     "selected_for_detail",
+    "discovery_urls",
+    "url_aliases",
 ]
 
 SOURCE_URLS: dict[str, list[str]] = {
@@ -93,8 +108,10 @@ SOURCE_URLS: dict[str, list[str]] = {
 MAX_AUTO_LIST_PAGES: dict[str, int] = {
     "pickles": 100,
     "manheim": 20,
-    "slattery": 1,
+    "slattery": 100,
 }
+SLATTERY_ASSETS_API = "https://slatteryauctions.com.au/api/slattery/assets"
+GRAYS_SLATTERY_SEARCH = "https://www.grays.com/search/automotive-trucks-and-marine/motor-vehiclesmotor-cycles?tab=items"
 DETAIL_BATCH_SIZE = 4
 DEFAULT_DETAIL_BROWSER_RECYCLE_SIZE = 40
 DEFAULT_DISCOVERY_BROWSER_RECYCLE_PAGES = 10
@@ -102,14 +119,14 @@ DEFAULT_DISCOVERY_BROWSER_RECYCLE_PAGES = 10
 DETAIL_PATTERNS: dict[str, re.Pattern[str]] = {
     "pickles": re.compile(r"/used/details/cars/[^/?#]+/\d+", re.IGNORECASE),
     "manheim": re.compile(r"/passenger-vehicles/\d{8,}/[^/?#]+", re.IGNORECASE),
-    "slattery": re.compile(r"/assets/\d+\?auctionId=\d+", re.IGNORECASE),
+    "slattery": re.compile(r"/assets/[A-Za-z0-9]+\?auctionId=[A-Za-z0-9]+", re.IGNORECASE),
 }
 
 DETAIL_URL_FALLBACKS: dict[str, re.Pattern[str]] = {
     "pickles": re.compile(r"https://www\.pickles\.com\.au/used/details/cars/[^\"'<>\s#]+/\d+", re.IGNORECASE),
     "manheim": re.compile(r"https://www\.manheim\.com\.au/passenger-vehicles/\d{8,}/[^\"'<>\s#]+", re.IGNORECASE),
     "slattery": re.compile(
-        r"(?:https://slatteryauctions\.com\.au)?/assets/\d+\?auctionId=\d+",
+        r"(?:https://(?:www\.)?slatteryauctions\.com\.au)?/assets/[A-Za-z0-9]+\?auctionId=[A-Za-z0-9]+",
         re.IGNORECASE,
     ),
 }
@@ -261,6 +278,8 @@ class BrowserListing:
     source: str
     url: str
     title_hint: str = ""
+    discovery_urls: tuple[str, ...] = ()
+    url_aliases: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -271,6 +290,8 @@ class DiscoveryResult:
     pagination_exhausted: bool
     page_cap_reached: bool
     blocked_pages: int
+    incomplete_reasons: tuple[str, ...] = ()
+    seed_listings: tuple[BrowserListing, ...] = ()
 
 
 def _with_query_params(url: str, **updates: object) -> str:
@@ -282,10 +303,15 @@ def _with_query_params(url: str, **updates: object) -> str:
 
 
 def build_source_list_urls(source: str, max_list_pages: int) -> list[str]:
-    if source == "slattery":
-        return SOURCE_URLS[source]
     page_count = max_list_pages if max_list_pages > 0 else MAX_AUTO_LIST_PAGES[source]
     urls: list[str] = []
+    if source == "slattery":
+        # The site's category client uses this public API for its 18-row pages.
+        # Grays' broader category is a second discovery surface, not a new operator.
+        return [
+            _with_query_params(SLATTERY_ASSETS_API, categoryIds=1, pageNumber=page, pageSize=18)
+            for page in range(1, page_count + 1)
+        ] + [_with_query_params(GRAYS_SLATTERY_SEARCH, page=page) for page in range(1, page_count + 1)]
     if source == "pickles":
         base = SOURCE_URLS[source][0]
         for page in range(1, page_count + 1):
@@ -890,6 +916,8 @@ def tag_discovered_links(listings: Iterable[BrowserListing]) -> pd.DataFrame:
         row["source"] = listing.source
         row["url"] = listing.url
         row["title_hint"] = listing.title_hint
+        row["discovery_urls"] = json.dumps(listing.discovery_urls)
+        row["url_aliases"] = json.dumps(listing.url_aliases)
         rows.append(row)
     if not rows:
         return pd.DataFrame(columns=LINK_COLUMNS)
@@ -930,6 +958,8 @@ def tag_discovered_links(listings: Iterable[BrowserListing]) -> pd.DataFrame:
                 "canonical_reason": row.get("canonical_reason", ""),
                 "curve_tag": curve_tag,
                 "selected_for_detail": "1" if selected else "0",
+                "discovery_urls": row.get("discovery_urls", ""),
+                "url_aliases": row.get("url_aliases", ""),
             }
         )
     return pd.DataFrame(out_rows).reindex(columns=LINK_COLUMNS, fill_value="")
@@ -1011,6 +1041,7 @@ async def _discover_source_links_with_browser_recycling(
     *,
     headless: bool,
     browser_recycle_pages: int,
+    seed_listings: Iterable[BrowserListing] = (),
 ) -> DiscoveryResult:
     browser: object | None = None
     context: object | None = None
@@ -1042,6 +1073,7 @@ async def _discover_source_links_with_browser_recycling(
             urls,
             max_details=0,
             page_batch_loader=load_page_batch,
+            seed_listings=seed_listings,
         )
     finally:
         if context is not None:
@@ -1084,6 +1116,7 @@ async def scrape_sources(
                 build_source_list_urls(source, max_list_pages_per_source),
                 headless=headless,
                 browser_recycle_pages=discovery_browser_recycle_pages,
+                seed_listings=seeds_by_source.get(source, ()),
             )
 
             listings = discovery.listings
@@ -1103,7 +1136,7 @@ async def scrape_sources(
             if max_details_per_source > 0:
                 selected_listings = selected_listings[:max_details_per_source]
             seen_selected = {listing.url for listing in selected_listings}
-            for seed in seeds_by_source.get(source, []):
+            for seed in (discovery.seed_listings if source == "slattery" else seeds_by_source.get(source, [])):
                 if seed.url in seen_selected:
                     continue
                 selected_listings.append(seed)
@@ -1143,8 +1176,8 @@ async def scrape_sources(
                 if str(row.get("url", "")) in selected_urls
             )
             selected_missing = max(0, len(selected_urls - scraped_selected_urls))
-            discovery_status = "blocked" if discovery.blocked_pages else "complete"
-            incomplete_reasons: list[str] = []
+            discovery_status = "blocked" if discovery.blocked_pages else ("degraded" if discovery.incomplete_reasons or not discovery.pagination_exhausted else "complete")
+            incomplete_reasons: list[str] = list(discovery.incomplete_reasons)
             if discovery_status == "blocked":
                 incomplete_reasons.append("listing discovery blocked by HTTP access response")
             if discovery.page_cap_reached:
@@ -1155,6 +1188,12 @@ async def scrape_sources(
                 incomplete_reasons.append(f"{selected_missing} selected listing(s) were not detail-scraped")
             if detail_errors:
                 incomplete_reasons.append(f"{detail_errors} selected detail scrape(s) failed")
+            if source == "slattery":
+                incomplete_details = sum(
+                    row.get("detail_completeness_status") != "complete" for row in source_records
+                )
+                if incomplete_details:
+                    incomplete_reasons.append(f"{incomplete_details} Slattery detail row(s), including seeds, lack required evidence")
             audit_rows.append(
                 {
                     "source": source,
@@ -1187,6 +1226,18 @@ async def _discover_list_page(
     url: str,
 ) -> tuple[int, list[list[str]], str]:
     """Load one listing page; callers combine several pages in bounded batches."""
+    parts = urlsplit(url)
+    if parts.hostname in {"slatteryauctions.com.au", "www.slatteryauctions.com.au"} or url.startswith(GRAYS_SLATTERY_SEARCH):
+        # These public responses include the authoritative JSON/SSR cards. Do not
+        # scroll: that silently mixes more pages into one pagination observation.
+        try:
+            response = await context.request.get(url, timeout=45_000)
+            content = await response.text()
+            parser = _ListingAnchors()
+            parser.feed(content)
+            return response.status, parser.anchors, content
+        except Exception as exc:
+            return 0, [], f"discovery request failed: {type(exc).__name__}"
     page = await context.new_page()
     try:
         response = await page.goto(url, wait_until="domcontentloaded", timeout=45_000)
@@ -1202,6 +1253,248 @@ async def _discover_list_page(
         await page.close()
 
 
+class _ListingAnchors(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__()
+        self.anchors: list[list[str]] = []
+        self.href = ""
+        self.text: list[str] = []
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if tag == "a":
+            self.href = dict(attrs).get("href") or ""
+            self.text = []
+
+    def handle_data(self, data: str) -> None:
+        if self.href:
+            self.text.append(data)
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag == "a" and self.href:
+            self.anchors.append([self.href, _clean_text(" ".join(self.text))])
+            self.href = ""
+
+
+def _slattery_referral(href: str, origin: str) -> str:
+    from shared.slattery_source import normalize_slattery_url
+
+    return normalize_slattery_url(urljoin(origin, html.unescape(href)))
+
+
+def _merge_browser_listings(listings: Iterable[BrowserListing]) -> list[BrowserListing]:
+    merged: dict[str, BrowserListing] = {}
+    for listing in listings:
+        existing = merged.get(listing.url)
+        if existing is None:
+            merged[listing.url] = listing
+            continue
+        merged[listing.url] = BrowserListing(
+            source=listing.source,
+            url=listing.url,
+            title_hint=existing.title_hint or listing.title_hint,
+            discovery_urls=tuple(dict.fromkeys((*existing.discovery_urls, *listing.discovery_urls))),
+            url_aliases=tuple(dict.fromkeys((*existing.url_aliases, *listing.url_aliases))),
+        )
+    return list(merged.values())
+
+
+async def _resolve_slattery_aliases(
+    listings: list[BrowserListing],
+    load: Callable[[list[str]], Awaitable[list[tuple[int, list[list[str]], str]]]],
+) -> tuple[list[BrowserListing], list[str]]:
+    from shared.slattery_source import canonical_slattery_url, extract_slattery_records, normalize_slattery_url, slattery_listing_identity
+
+    listings = [BrowserListing(
+        "slattery", normalize_slattery_url(listing.url) or listing.url,
+        listing.title_hint, listing.discovery_urls,
+        tuple(dict.fromkeys((*listing.url_aliases, listing.url))),
+    ) for listing in listings]
+    canonical_by_url: dict[str, str] = {}
+    reasons: list[str] = []
+    aliases = list(dict.fromkeys(
+        listing.url for listing in listings
+        if (identity := slattery_listing_identity(listing.url)) and not all(part.isdigit() for part in identity)
+    ))
+    # Explicit site IDs are the only permitted join. Titles, VINs and stock
+    # numbers do not establish that two auction URLs are the same lifecycle.
+    for start in range(0, len(aliases), DETAIL_BATCH_SIZE):
+        batch = aliases[start:start + DETAIL_BATCH_SIZE]
+        responses = await load(batch)
+        if len(responses) != len(batch):
+            reasons.append("Slattery: missing alias resolution response(s)")
+        for url, (status, _, content) in zip(batch, responses):
+            canonical = canonical_slattery_url(url, extract_slattery_records(content)) if status == 200 else ""
+            identity = slattery_listing_identity(canonical)
+            if identity and all(part.isdigit() for part in identity):
+                canonical_by_url[url] = canonical
+            else:
+                reasons.append(f"Slattery alias could not be reconciled: {url}")
+    resolved = []
+    for listing in listings:
+        canonical = canonical_by_url.get(listing.url) or canonical_slattery_url(listing.url, ()) or listing.url
+        aliases_for_listing = tuple(dict.fromkeys((*listing.url_aliases, listing.url)))
+        resolved.append(BrowserListing(
+            "slattery", canonical, listing.title_hint, listing.discovery_urls, aliases_for_listing,
+        ))
+    return resolved, reasons
+
+
+def _slattery_api_page(content: str) -> tuple[list[dict], dict] | None:
+    try:
+        payload = json.loads(content)
+    except (ValueError, TypeError):
+        return None
+    if not isinstance(payload, dict) or payload.get("ok") is not True or payload.get("status") != 200:
+        return None
+    records, metadata = payload.get("data"), payload.get("metadata")
+    if not isinstance(records, list) or not isinstance(metadata, dict):
+        return None
+    if not all(isinstance(record, dict) for record in records):
+        return None
+    required = ("currentPage", "totalPages", "pageSize", "totalCount")
+    if any(type(metadata.get(key)) is not int or metadata[key] < 0 for key in required):
+        return None
+    if type(metadata.get("hasNext")) is not bool or metadata["pageSize"] < 1:
+        return None
+    return records, metadata
+
+
+def _grays_page_counts(content: str) -> tuple[int, int, bool] | None:
+    footer = re.search(r'<footer\b[^>]*aria-label=["\']Pagination["\'][^>]*>(.*?)</footer>', content, re.I | re.S)
+    if not footer:
+        return None
+    text = _clean_text(html.unescape(re.sub(r"<[^>]+>", " ", footer.group(1))))
+    counts = re.search(r"Showing\s+([\d,]+)\s+of\s+([\d,]+)\s+results", text, re.I)
+    if not counts:
+        return None
+    return int(counts[1].replace(",", "")), int(counts[2].replace(",", "")), "load more" in text.lower()
+
+
+async def _discover_slattery_links(
+    context: object,
+    list_urls: list[str],
+    *,
+    max_details: int,
+    page_batch_loader: Callable[[list[str]], Awaitable[list[tuple[int, list[list[str]], str]]]] | None,
+    seed_listings: Iterable[BrowserListing],
+) -> DiscoveryResult:
+    from shared.slattery_source import normalize_slattery_url
+
+    async def load(urls: list[str]) -> list[tuple[int, list[list[str]], str]]:
+        if page_batch_loader is not None:
+            return await page_batch_loader(urls)
+        return await asyncio.gather(*(_discover_list_page(context, url) for url in urls))
+
+    native_urls = [url for url in list_urls if urlsplit(url).hostname in {"slatteryauctions.com.au", "www.slatteryauctions.com.au"}]
+    grays_urls = [url for url in list_urls if urlsplit(url).hostname in {"grays.com", "www.grays.com"}]
+    found: list[BrowserListing] = []
+    reasons: list[str] = []
+    visited = blocked = planned = 0
+    cap_reached = False
+    exhausted: list[bool] = []
+    for surface, urls in (("Slattery", native_urls), ("Grays referrals", grays_urls)):
+        if not urls:
+            continue
+        surface_seen: set[str] = set()
+        total_count: int | None = None
+        complete = False
+        for page_index, url in enumerate(urls, 1):
+            results = await load([url])
+            if len(results) != 1:
+                reasons.append(f"{surface}: missing listing page response")
+                break
+            status, anchors, content = results[0]
+            visited += 1
+            if status != 200:
+                blocked += int(status in {401, 403, 429})
+                reasons.append(f"{surface}: listing page returned HTTP {status}")
+                break
+            page_keys: set[str] = set()
+            if surface == "Slattery":
+                parsed = _slattery_api_page(content)
+                if parsed is None:
+                    reasons.append("Slattery: unrecognised listing payload or pagination metadata")
+                    break
+                assets, metadata = parsed
+                advertised = metadata["totalCount"]
+                if metadata["currentPage"] != page_index or metadata["hasNext"] != (metadata["currentPage"] < metadata["totalPages"]):
+                    reasons.append("Slattery: inconsistent page traversal metadata")
+                    break
+                for asset in assets:
+                    candidate = normalize_slattery_url(f"https://slatteryauctions.com.au/assets/{asset.get('id', '')}?auctionId={asset.get('auctionId', '')}")
+                    if candidate:
+                        page_keys.add(candidate)
+                        found.append(BrowserListing("slattery", candidate, _clean_text(asset.get("name", "")), (url,), (candidate,)))
+                if len(page_keys) != len(assets):
+                    reasons.append("Slattery: asset rows missing unique asset/auction identity")
+                    break
+                has_next = metadata["hasNext"]
+                if page_index == 1:
+                    planned += min(len(urls), max(1, metadata["totalPages"]))
+            else:
+                counts = _grays_page_counts(content)
+                if counts is None:
+                    reasons.append("Grays referrals: unrecognised listing page or pagination count")
+                    break
+                shown, advertised, has_next = counts
+                for href, title in anchors:
+                    candidate = _slattery_referral(href, url)
+                    if candidate:
+                        page_keys.add(candidate)
+                        referral_title = dict(parse_qsl(urlsplit(html.unescape(href)).query)).get("title") or title
+                        found.append(BrowserListing("slattery", candidate, _clean_text(referral_title), (url,), (urljoin(url, href), candidate)))
+                    else:
+                        absolute = urljoin(url, href)
+                        if urlsplit(absolute).hostname in {"grays.com", "www.grays.com"} and re.match(r"^/lot/[^/]+/", urlsplit(absolute).path):
+                            page_keys.add(_normalise_url(absolute))
+                if len(page_keys) != shown:
+                    reasons.append("Grays referrals: recognised card count differs from displayed count")
+                    break
+                if page_index == 1:
+                    planned += min(len(urls), max(1, (advertised + max(shown, 1) - 1) // max(shown, 1)))
+            if total_count is not None and total_count != advertised:
+                reasons.append(f"{surface}: advertised result count changed during discovery")
+                break
+            total_count = advertised
+            if page_keys & surface_seen:
+                reasons.append(f"{surface}: repeated listing(s) across pages")
+                break
+            surface_seen.update(page_keys)
+            if not has_next:
+                complete = len(surface_seen) == total_count
+                if not complete:
+                    reasons.append(f"{surface}: unique listings do not reconcile to advertised total")
+                break
+            if not page_keys:
+                reasons.append(f"{surface}: empty page before pagination exhaustion")
+                break
+            if max_details > 0 and len(_merge_browser_listings(found)) >= max_details:
+                reasons.append("configured discovery detail limit reached before pagination exhaustion")
+                break
+        else:
+            cap_reached = True
+            reasons.append(f"{surface}: configured page safety cap reached before pagination exhaustion")
+        exhausted.append(complete)
+        print(f"slattery: {surface} visited {page_index} page(s); recognised {len(surface_seen)} of {total_count} result(s)", flush=True)
+
+    if not exhausted:
+        reasons.append("Slattery: no recognised discovery surfaces configured")
+    seeds = list(seed_listings)
+    resolved, alias_reasons = await _resolve_slattery_aliases([*found, *seeds], load)
+    reasons.extend(alias_reasons)
+    merged_by_url = {listing.url: listing for listing in _merge_browser_listings(resolved)}
+    found_urls = list(dict.fromkeys(listing.url for listing in resolved[:len(found)]))
+    seed_urls = list(dict.fromkeys(listing.url for listing in resolved[len(found):]))
+    return DiscoveryResult(
+        listings=[merged_by_url[url] for url in found_urls],
+        pages_planned=max(planned, visited), pages_visited=visited,
+        pagination_exhausted=bool(exhausted) and all(exhausted),
+        page_cap_reached=cap_reached, blocked_pages=blocked,
+        incomplete_reasons=tuple(dict.fromkeys(reasons)),
+        seed_listings=tuple(merged_by_url[url] for url in seed_urls),
+    )
+
+
 async def discover_source_links(
     context: object,
     source: str,
@@ -1213,7 +1506,13 @@ async def discover_source_links(
         Awaitable[list[tuple[int, list[list[str]], str]]],
     ]
     | None = None,
+    seed_listings: Iterable[BrowserListing] = (),
 ) -> DiscoveryResult:
+    if source == "slattery":
+        return await _discover_slattery_links(
+            context, list(urls), max_details=max_details,
+            page_batch_loader=page_batch_loader, seed_listings=seed_listings,
+        )
     pattern = DETAIL_PATTERNS[source]
     fallback_pattern = DETAIL_URL_FALLBACKS[source]
     listings_by_url: dict[str, BrowserListing] = {}
@@ -1222,7 +1521,7 @@ async def discover_source_links(
     blocked_pages = 0
     consecutive_stale_pages = 0
     stale_page_limit = max(2, len(SOURCE_URLS[source]) * 2)
-    pagination_exhausted = source == "slattery"
+    pagination_exhausted = False
 
     def add_listing(clean_url: str, title: str = "") -> None:
         title_hint = _clean_text(title)
@@ -1325,6 +1624,57 @@ async def auto_scroll(page: object, *, max_rounds: int = 12, delay_ms: int = 900
             break
 
 
+async def _scrape_slattery_detail(
+    context: object,
+    listing: BrowserListing,
+    *,
+    detail_timeout_ms: int,
+) -> dict[str, object]:
+    """Read the lot-bound public hydration data without rendering its image UI."""
+    row: dict[str, object] = {column: "" for column in LISTING_COLUMNS}
+    request_url = normalize_slattery_url(listing.url)
+    row.update({
+        "source": "slattery",
+        "scraped_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "url": request_url or listing.url,
+        "requested_url": listing.url,
+        "title": listing.title_hint,
+        "status": "Unknown",
+        "detail_completeness_status": "incomplete",
+        "detail_fields_missing": "matched_asset",
+        "discovery_urls": json.dumps(list(listing.discovery_urls)),
+        "url_aliases": json.dumps(list(listing.url_aliases)),
+    })
+    if not request_url:
+        row["scrape_status"] = "error:invalid_slattery_url"
+        return row
+    response = None
+    try:
+        response = await context.request.get(request_url, timeout=detail_timeout_ms)
+        if response.status != 200:
+            row["scrape_status"] = f"error:http_{response.status}"
+            return row
+        if url_operator(response.url) != "slattery":
+            row["scrape_status"] = "error:unexpected_slattery_redirect"
+            return row
+        fields = extract_slattery_listing(await response.text(), request_url)
+        if not fields:
+            row["scrape_status"] = "error:slattery_asset_identity_unverified"
+            return row
+        row.update(fields)
+        row["url_aliases"] = json.dumps(sorted({
+            *listing.url_aliases, request_url, str(row["url"]),
+        }))
+        row["scrape_status"] = "parsed_http_200"
+        return row
+    except Exception as exc:
+        row["scrape_status"] = f"error:{type(exc).__name__}:{str(exc)[:160]}"
+        return row
+    finally:
+        if response is not None:
+            await response.dispose()
+
+
 async def scrape_detail(
     context: object,
     listing: BrowserListing,
@@ -1332,6 +1682,8 @@ async def scrape_detail(
     detail_timeout_ms: int,
     detail_wait_ms: int,
 ) -> dict[str, object]:
+    if listing.source == "slattery":
+        return await _scrape_slattery_detail(context, listing, detail_timeout_ms=detail_timeout_ms)
     page = await context.new_page()
     try:
         response = await page.goto(listing.url, wait_until="domcontentloaded", timeout=detail_timeout_ms)
