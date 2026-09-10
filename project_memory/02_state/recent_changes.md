@@ -1,5 +1,7 @@
 # Recent Changes
 
+- 2026-09-10: Grays Pipeline UI slice is limited to explaining inspection versus manual execution, command scope, schema rewriting, UTC file timestamps and measured dataset/log counts. Adjacent operator page changes are deliberate; scraper commands, scheduling, schemas and buying rules remain outside this slice. Validation and deployment are tracked separately.
+
 - 2026-09-10: Curves now shows the checked tag population, exact active-feed counts, shared curve identities and read-only saved price grids. Missing update dates are explicit; production explains the development review/release workflow instead of offering an unavailable editor. Exceptions filters use two columns after the signed-in visual check found six-column clipping in the narrow app panel. No curve data, pricing or navigation permissions changed; release and visual verification remain separate.
 
 - 2026-09-10: Health separates success, expected scope exclusions, collection failures, data review and unknown log reasons without changing pipeline classifications; counts identify their populations and file freshness is UTC. Exceptions buckets share the listing filters and count unique URLs per issue, with issue-specific next steps and lifecycle/coverage explanations. No data or buying policy changed; release verification is separate.

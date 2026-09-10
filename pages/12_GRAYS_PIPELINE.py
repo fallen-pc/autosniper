@@ -1,6 +1,6 @@
 import subprocess
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable
 
@@ -10,7 +10,7 @@ from shared.navigation import render_sidebar_navigation
 
 from shared.csv_utils import read_csv_or_empty
 from shared.data_loader import dataset_path
-from shared.schema import STATIC_VEHICLE_SCHEMA
+from shared.schema import STATIC_VEHICLE_SCHEMA, STATE_TABLE_SCHEMA
 from shared.curves import list_curve_tags, load_curves
 from shared.styling import clean_html, display_banner, inject_global_styles, page_intro
 
@@ -154,7 +154,7 @@ st.markdown(
 
 
 def _format_ts(ts: float) -> str:
-    return datetime.fromtimestamp(ts).strftime("%Y-%m-%d %H:%M:%S")
+    return datetime.fromtimestamp(ts, timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
 
 def _safe_read_csv(path: Path) -> pd.DataFrame:
@@ -190,15 +190,15 @@ def _exclusion_rule_lines() -> list[str]:
     ]
 
 
-def _run_stage_command(args: list[str], *, spinner_text: str, success_text: str) -> None:
+def _run_stage_command(args: list[str], *, spinner_text: str) -> None:
     with st.spinner(spinner_text):
         result = subprocess.run(args, capture_output=True, text=True)
     if result.returncode == 0:
-        st.success(success_text)
+        st.info("Command exited successfully. Check the output and dataset summaries below to see whether any records changed.")
     else:
         st.error(f"Stage failed (exit code {result.returncode}).")
     if result.stdout.strip() or result.stderr.strip():
-        with st.expander("Stage output", expanded=False):
+        with st.expander("Command output", expanded=True):
             if result.stdout.strip():
                 st.code(result.stdout, language="text")
             if result.stderr.strip():
@@ -209,8 +209,8 @@ def _file_summary(path: Path) -> dict[str, str]:
     if not path.exists():
         return {
             "status": "Missing",
-            "rows": "0",
-            "columns": "0",
+            "rows": "Unavailable",
+            "columns": "Unavailable",
             "modified": "-",
         }
     df = _safe_read_csv(path)
@@ -236,11 +236,11 @@ def _render_dataset_summary_row(title: str, filename: str) -> None:
         ),
         unsafe_allow_html=True,
     )
-    col_a, col_b, col_c, col_d = st.columns(4)
+    col_a, col_b, col_c = st.columns(3)
     col_a.metric("Status", summary["status"])
     col_b.metric("Rows", summary["rows"])
     col_c.metric("Columns", summary["columns"])
-    col_d.metric("Last modified", summary["modified"])
+    st.caption(f"File last modified: {summary['modified']}. This is a file timestamp, not a successful job or per-listing refresh time.")
 
 
 def _render_stage_header(step_label: str, title: str, subtitle: str) -> None:
@@ -277,6 +277,7 @@ def _render_rules_block(title: str, lines: Iterable[str]) -> None:
 
 def _render_schema_audit_block(*, show_header: bool = True) -> None:
     expected = {
+        "vehicle_state.csv": list(STATE_TABLE_SCHEMA),
         "raw_vehicle_data.csv": list(STATIC_VEHICLE_SCHEMA),
         "normalised_data.csv": list(STATIC_VEHICLE_SCHEMA),
         "vehicle_static_details.csv": list(
@@ -328,11 +329,11 @@ def render_stage_1_panel() -> None:
         "Links",
         "Collect the raw Grays listing URLs that seed the rest of the pipeline.",
     )
-    if st.button("Run: Scrape Links", key="panel_stage1_run"):
+    st.caption("Contacts Grays and updates the full link history and active intake queue. This starts only link extraction; later stages do not run automatically.")
+    if st.button("Start link scrape", key="panel_stage1_run"):
         _run_stage_command(
             [sys.executable, "scripts/extract_links.py"],
             spinner_text="Running link scraper...",
-            success_text="Link scraping completed.",
         )
     _render_rules_block(
         "Rules",
@@ -361,11 +362,11 @@ def render_stage_2_panel() -> None:
         "Details",
         "Extract raw vehicle attributes from each queued Grays listing before cleanup.",
     )
-    if st.button("Run: Scrape Details", key="panel_stage2_run"):
+    st.caption("Contacts queued Grays listings and writes raw vehicle attributes. This uses raw-only mode; normalisation and later stages are separate.")
+    if st.button("Start raw detail scrape", key="panel_stage2_run"):
         _run_stage_command(
             [sys.executable, "scripts/extract_vehicle_details.py", "--raw-only"],
             spinner_text="Running detail scrape...",
-            success_text="Detail scraping completed.",
         )
     st.markdown('<div class="pipeline-subsection-title">Dataset Summary</div>', unsafe_allow_html=True)
     _render_dataset_summary_row("Raw Vehicle Data", "raw_vehicle_data.csv")
@@ -392,11 +393,11 @@ def render_stage_3_panel() -> None:
         "Normalise",
         "Standardise vehicle fields so exclusions, tagging, and valuation run on consistent inputs.",
     )
-    if st.button("Run: Normalise", key="panel_stage3_run"):
+    st.caption("Reads saved raw records and replaces the normalised dataset. Does not scrape Grays or run later stages.")
+    if st.button("Rebuild normalised data", key="panel_stage3_run"):
         _run_stage_command(
             [sys.executable, "scripts/pipeline_stages.py", "normalize"],
             spinner_text="Running normalisation stage...",
-            success_text="Normalisation completed.",
         )
     st.markdown('<div class="pipeline-subsection-title">Dataset Summary</div>', unsafe_allow_html=True)
     _render_dataset_summary_row("Normalised Data", "normalised_data.csv")
@@ -415,11 +416,11 @@ def render_stage_4_panel() -> None:
         "Exclude",
         "Remove out-of-policy or malformed records and produce the static canonical-ready dataset.",
     )
-    if st.button("Run: Exclusions", key="panel_stage4_run"):
+    st.caption("Reads normalised records, applies exclusions, merges static details and seeds active data. Completed sold/referred URLs are skipped. This writes datasets.")
+    if st.button("Apply exclusions and rebuild static data", key="panel_stage4_run"):
         _run_stage_command(
             [sys.executable, "scripts/pipeline_stages.py", "exclude"],
             spinner_text="Applying exclusion rules...",
-            success_text="Exclusion stage completed.",
         )
     st.markdown('<div class="pipeline-subsection-title">Dataset Summary</div>', unsafe_allow_html=True)
     _render_dataset_summary_row("Excluded Listings", "excluded_listings.csv")
@@ -428,17 +429,10 @@ def render_stage_4_panel() -> None:
     excluded_df = _safe_read_csv(dataset_path("excluded_listings.csv"))
     normal_df = _safe_read_csv(dataset_path("normalised_data.csv"))
     static_df = _safe_read_csv(dataset_path("vehicle_static_details.csv"))
-    excluded_this_run = 0
-    if not excluded_df.empty and "timestamp" in excluded_df.columns:
-        ts_series = pd.to_datetime(excluded_df["timestamp"], errors="coerce")
-        latest_ts = ts_series.max()
-        if pd.notna(latest_ts):
-            excluded_this_run = int((ts_series == latest_ts).sum())
-    written_from_normalised = max(len(normal_df) - excluded_this_run, 0)
-    metric_col_a, metric_col_b, metric_col_c = st.columns(3)
-    metric_col_a.metric("Excluded (this run)", f"{excluded_this_run:,}")
-    metric_col_b.metric("Written to static", f"{written_from_normalised:,}")
-    metric_col_c.metric("Static total rows", f"{len(static_df):,}")
+    metric_col_a, metric_col_b = st.columns(2)
+    metric_col_a.metric("Saved normalised rows", f"{len(normal_df):,}")
+    metric_col_b.metric("Saved static rows", f"{len(static_df):,}")
+    st.caption("These are separate saved dataset totals. The exclusion log is cumulative and may include successful records or repeated URLs; it cannot establish how many rows this run wrote to static.")
 
     _render_rules_block("Rules", _exclusion_rule_lines())
     with st.expander("Preview tables", expanded=False):
@@ -454,13 +448,13 @@ def render_stage_5_panel() -> None:
     _render_stage_header(
         "Stage 5",
         "Canonical",
-        "Map normalised records onto supported canonical tags and show the live curve universe.",
+        "Inspect saved canonical tags and the matched/unmatched outputs.",
     )
-    if st.button("Run: Match Canonical Tags", key="panel_stage5_run"):
+    st.caption("Splits existing static tags by exact membership in saved curve tags and overwrites the matched/unmatched tables. This command does not assign new tags or resolve aliases.")
+    if st.button("Rebuild matched / unmatched tables", key="panel_stage5_run"):
         _run_stage_command(
             [sys.executable, "scripts/pipeline_stages.py", "match"],
             spinner_text="Running canonical match...",
-            success_text="Canonical match completed.",
         )
     st.markdown('<div class="pipeline-subsection-title">Dataset Summary</div>', unsafe_allow_html=True)
     _render_dataset_summary_row("Matched Canonical", "matched_canonical_details.csv")
@@ -468,16 +462,16 @@ def render_stage_5_panel() -> None:
     _render_rules_block(
         "Rules",
         [
-            "- Match make/model/body/fuel/transmission against allowed variants.",
-            "- Use badge aliases and series codes to disambiguate trims.",
-            "- Fail closed to unmatched when policy checks do not pass.",
+            "- This manual split reads tags already assigned in static details.",
+            "- Exact saved-curve tag membership determines these matched/unmatched tables.",
+            "- The curve library below also includes aliases; its count is a different population.",
         ],
     )
 
     curves_df = load_curves()
     available_tags = sorted(list_curve_tags(curves_df))
-    with st.expander("Available canonical tags", expanded=False):
-        st.metric("Available tags", f"{len(available_tags):,}")
+    with st.expander("Inspect saved curve tags and aliases", expanded=False):
+        st.metric("Saved curve tags and aliases", f"{len(available_tags):,}")
         if available_tags:
             st.dataframe(
                 pd.DataFrame({"canonical_tag": available_tags}),
@@ -494,18 +488,17 @@ def render_stage_6_panel() -> None:
         "Active Listings",
         "Refresh bidding/status data and roll records into active, sold, and referred outputs.",
     )
+    st.caption("Refresh bids contacts Grays for up to 25 listings and saves bid/status observations. It skips the master update. Rebuild tables uses saved observations to refresh active, sold and referred datasets; it does not scrape fresh bids.")
     col_a, col_b = st.columns(2)
-    if col_a.button("Run: Update Bids", key="panel_stage6_bids_run"):
+    if col_a.button("Refresh bids: up to 25 listings", key="panel_stage6_bids_run"):
         _run_stage_command(
             [sys.executable, "scripts/update_bids.py", "--limit", "25", "--batch-interval", "5", "--skip-master"],
             spinner_text="Refreshing active bid/status data...",
-            success_text="Active bid/status refresh completed.",
         )
-    if col_b.button("Run: Update Master", key="panel_stage6_master_run"):
+    if col_b.button("Rebuild active / sold / referred tables", key="panel_stage6_master_run"):
         _run_stage_command(
             [sys.executable, "scripts/update_master.py"],
             spinner_text="Sorting active, sold, and referred datasets...",
-            success_text="Master update completed.",
         )
     _render_rules_block(
         "Rules",
@@ -547,25 +540,25 @@ def render_stage_7_panel() -> None:
     _render_stage_header(
         "Stage 7",
         "Audit",
-        "Check locked schemas and validate the handoff between raw, normalised, and static datasets.",
+        "Inspect required column names and order. Schema rewriting is a separate manual action.",
     )
-    if st.button("Run: Audit & Lock", key="panel_stage7_run"):
+    st.caption("Writes raw, normalised, static and vehicle-state files when their columns differ from the required schema. Missing columns are added blank; extra columns are removed. Missing files are created empty. The inspection table below does not write files.")
+    if st.button("Rewrite files to required schemas", key="panel_stage7_run"):
         _run_stage_command(
             [sys.executable, "scripts/pipeline_stages.py", "audit"],
             spinner_text="Auditing schemas...",
-            success_text="Schema audit completed.",
         )
     _render_rules_block(
         "Rules",
         [
             "- Raw, normalised, and static datasets must match exact schema contracts.",
             "- Schema mismatches are surfaced before later stages consume the data.",
-            "- This stage is the quality gate for pipeline stability.",
+            "- Matching columns alone does not validate values, freshness or buying readiness.",
         ],
     )
     st.markdown('<div class="pipeline-subsection-title">Dataset Summary</div>', unsafe_allow_html=True)
     _render_dataset_summary_row("Active Vehicle Details", "active_vehicle_details.csv")
-    with st.expander("Audit results", expanded=True):
+    with st.expander("Inspect current schemas (read-only)", expanded=True):
         _render_schema_audit_block(show_header=False)
 
 
@@ -597,7 +590,7 @@ STAGE_CONFIG = {
     "Canonical": {
         "step": "Stage 5",
         "title": "Canonical",
-        "subtitle": "Assign canonical tags and mappings.",
+        "subtitle": "Inspect tags and rebuild matched tables.",
         "panel": render_stage_5_panel,
     },
     "Active": {
@@ -609,7 +602,7 @@ STAGE_CONFIG = {
     "Audit": {
         "step": "Stage 7",
         "title": "Audit",
-        "subtitle": "Run schema and handoff checks.",
+        "subtitle": "Inspect schemas or explicitly rewrite files.",
         "panel": render_stage_7_panel,
     },
 }
@@ -662,17 +655,20 @@ stage_options = list(STAGE_CONFIG.keys())
 selected_stage = st.session_state.get("pipeline_stage_selector", default_stage)
 if selected_stage not in STAGE_CONFIG:
     selected_stage = default_stage
-st.markdown("## Pipeline Overview")
-_render_pipeline_graph(selected_stage)
+st.markdown("## Inspect a stage")
+st.info("Selecting a stage or opening a preview only reads saved data. Action buttons start a command immediately on the server and can change datasets. Each action runs only the scope described beside it.")
+st.caption("For routine monitoring, use Scraper Operations to inspect scheduled jobs and Health for pipeline status. Check that scheduled work is idle before starting a manual command.")
 if hasattr(st, "segmented_control"):
-    stage = st.segmented_control("Stage Selector", stage_options, default=selected_stage, key="pipeline_stage_selector")
+    stage = st.segmented_control("Stage to inspect", stage_options, default=selected_stage, key="pipeline_stage_selector")
 else:
     stage = st.radio(
-        "Stage Selector",
+        "Stage to inspect",
         stage_options,
         horizontal=True,
         index=stage_options.index(selected_stage),
         key="pipeline_stage_selector",
     )
-st.caption("Select one stage to inspect its controls, summaries, rules, logs, and preview tables.")
+stage = stage if stage in STAGE_CONFIG else default_stage
+with st.expander("View pipeline flow", expanded=False):
+    _render_pipeline_graph(stage)
 STAGE_CONFIG[stage]["panel"]()
