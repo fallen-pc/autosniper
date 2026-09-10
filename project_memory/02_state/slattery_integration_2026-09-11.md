@@ -12,4 +12,6 @@ Live verification: 325 unique Slattery vehicle URLs reconciled across 19 native 
 
 Validation: full suite 1,334 passed with two pre-existing pandas FutureWarnings; readiness and governance passed. Governance reports all 446 observed tags covered, zero schema/dataset authority changes and 13 existing monotonicity warnings with no errors. Ruff, diff, project-memory and staged commit-hygiene checks passed; the staged slice contains source/test/docs/memory files only, with no runtime artifacts.
 
-Status: implementation and local verification complete. No push, deployment or production data refresh has occurred in this work slice. The read-only VPS check observed deployed commit `ac1b2b5` and a successful latest daily run.
+Status at completion of local validation: implementation commit `4bbc89f` was local only. The pre-release VPS check observed deployed commit `ac1b2b5` and a successful latest daily run.
+
+Release authorisation: on 11 September the owner explicitly requested memory update, push and deployment. Publish the reviewed branch through checked main, use `scripts/deploy_vps.ps1 -Release` from the clean synchronized release checkout, and verify the deployed/governed markers, health, restored timers and a bounded Slattery smoke. The markers in `/opt/autosniper/status/` are authoritative for the resulting release revision; retain the evidence under isolated output paths without rewriting the canonical feeds during the smoke.
