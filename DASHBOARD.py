@@ -122,6 +122,13 @@ st.markdown(
             font-size: 0.82rem;
             line-height: 1.4;
         }
+        [data-testid="stMetricLabel"] p,
+        [data-testid="stMetricValue"] > div {
+            white-space: normal;
+            overflow-wrap: anywhere;
+            overflow: visible;
+            text-overflow: clip;
+        }
         .top-auction-metrics {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -278,10 +285,11 @@ other_total = max(total_listings - tracked_total, 0)
 
 
 def render_metric(column: "st.delta_generator.DeltaGenerator", label: str, value: int, share: float | None = None) -> None:
-    """Display a formatted metric with an optional share-of-total delta."""
+    """Display a count with its share as explanatory text, not a trend."""
     formatted_value = f"{int(value):,}"
     if share is not None and total_listings:
-        column.metric(label, formatted_value, f"{share:.1%} of these rows")
+        column.metric(label, formatted_value)
+        column.caption(f"{share:.1%} of these rows")
     else:
         column.metric(label, formatted_value)
 
@@ -584,7 +592,7 @@ excluded_count = count_csv_records(EXCLUDED_FILE)
 analysed_count, analysis_target = ai_scope_valuation_counts(ai_active_scope_df, valuations_df)
 analysis_ratio = (analysed_count / analysis_target) if analysis_target else None
 
-health_cols = st.columns(4)
+health_cols = [*st.columns(2), *st.columns(2)]
 with health_cols[0]:
     _render_health_card(
         "Saved link rows",
@@ -655,7 +663,7 @@ tracked_counts = {
     "referred": int(len(referred_scope_df)),
 }
 tracked_total = sum(tracked_counts.values())
-status_columns = st.columns(4)
+status_columns = [*st.columns(2), *st.columns(2)]
 render_metric(status_columns[0], "Rows across these feeds", tracked_total)
 for idx, (code, label) in enumerate(tracked_statuses, start=1):
     count = tracked_counts.get(code, 0)
@@ -672,7 +680,7 @@ def unique_count(column: str) -> int | None:
 
 
 section_heading("Static Inventory Coverage", "Distinct recorded values across the full static dataset, before Buying View Filters. N/A means the field is not recorded.")
-coverage_columns = st.columns(4)
+coverage_columns = [*st.columns(2), *st.columns(2)]
 coverage_config = [
     ("make", "Unique Makes"),
     ("model", "Unique Models"),
@@ -817,11 +825,13 @@ transparency_cols = st.columns(3)
 transparency_cols[0].metric(
     "Curve Coverage %",
     f"{curve_coverage_pct * 100:,.1f}%" if curve_coverage_pct is not None else "N/A",
-    f"{active_curve_count:,} with curves / {active_no_curve_count:,} without",
 )
+transparency_cols[0].caption(f"{active_curve_count:,} with curves / {active_no_curve_count:,} without")
 transparency_cols[1].metric(
     "Average stored confidence",
     f"{transparency_confidence_avg * 100:,.1f}%" if transparency_confidence_avg is not None else "N/A",
+)
+transparency_cols[1].caption(
     (
         f"{transparency_confidence_share * 100:,.0f}% high-confidence listings"
         if transparency_confidence_share is not None
@@ -831,8 +841,8 @@ transparency_cols[1].metric(
 transparency_cols[2].metric(
     "Saved scoring hit rate",
     accuracy_display,
-    f"{settled_count:,} rows with recorded hit values; see Model Proof for evidence type",
 )
+transparency_cols[2].caption(f"{settled_count:,} rows with recorded hit values; see Model Proof for evidence type")
 
 transparency_left, transparency_right = st.columns([1.3, 1], gap="large")
 with transparency_left:

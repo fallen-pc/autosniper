@@ -1,5 +1,7 @@
 # Recent Changes
 
+- 2026-09-10: Dashboard narrow-panel metrics wrap labels and use two-column rows for four-card groups; population shares and evidence notes use captions instead of trend deltas. A pages/ compatibility entry routes cold /DASHBOARD requests through the existing authenticated app router before the curated navigation has warmed up. Authentication, valuation and dataset rules remain unchanged; local cold-start and production verification are recorded separately.
+
 - 2026-09-10: Dashboard distinguishes AI-eligible valuation coverage from filtered active tag coverage and full static/history populations. Unique eligible URL counts exclude historical valuations when the eligible set is empty; file modification times are labelled UTC, missing inventory fields show N/A, and empty shortlist guidance identifies the next inspection step. Scoring/confidence labels identify their stored evidence populations. No valuation, buying or filter rules changed; release verification is separate.
 
 - 2026-09-10: Grays Pipeline UI slice is limited to explaining inspection versus manual execution, command scope, schema rewriting, UTC file timestamps and measured dataset/log counts. Adjacent operator page changes are deliberate; scraper commands, scheduling, schemas and buying rules remain outside this slice. Validation and deployment are tracked separately.
