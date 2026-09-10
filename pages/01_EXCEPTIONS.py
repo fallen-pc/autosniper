@@ -57,7 +57,9 @@ exploded = explode_issues(issue_df)
 section_heading("Global Filters", "Filters persist across the Ops + QA + Builder pages.")
 filter_container = st.container()
 with filter_container:
-    c1, c2, c3, c4, c5, c6 = st.columns(6)
+    c1, c2 = st.columns(2)
+    c3, c4 = st.columns(2)
+    c5, c6 = st.columns(2)
     makes = sorted(static_df["make"].dropna().unique().tolist()) if "make" in static_df.columns else []
     models = sorted(static_df["model"].dropna().unique().tolist()) if "model" in static_df.columns else []
     statuses = sorted(active_df["status"].dropna().unique().tolist()) if "status" in active_df.columns else []
