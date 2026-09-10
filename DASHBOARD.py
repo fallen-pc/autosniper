@@ -14,6 +14,7 @@ from shared.navigation import render_sidebar_navigation
 from ops.active_monitor import load_ai_analysis_active_df
 from scripts.ai_listing_valuation import MIN_NET_PROFIT_ABSOLUTE
 from shared.decision_policy import action_display_parts
+from shared.dashboard_display import ai_scope_valuation_counts
 from shared.csv_utils import count_csv_records, read_csv_stable
 from shared.curves import list_curve_tags, load_curves
 from shared.data_loader import dataset_path, ensure_datasets_available
@@ -280,7 +281,7 @@ def render_metric(column: "st.delta_generator.DeltaGenerator", label: str, value
     """Display a formatted metric with an optional share-of-total delta."""
     formatted_value = f"{int(value):,}"
     if share is not None and total_listings:
-        column.metric(label, formatted_value, f"{share:.0%} of total")
+        column.metric(label, formatted_value, f"{share:.1%} of these rows")
     else:
         column.metric(label, formatted_value)
 
@@ -310,8 +311,8 @@ def _format_rows(value: int | None) -> str:
 
 def format_last_run(ts: datetime | None) -> str:
     if ts is None:
-        return "Last run - never"
-    local_ts = ts.astimezone()
+        return "File update unavailable"
+    local_ts = ts.astimezone(timezone.utc)
     delta_minutes = max((datetime.now(timezone.utc) - ts).total_seconds() / 60.0, 0.0)
     if delta_minutes < 60:
         ago = f"{int(delta_minutes)} min ago"
@@ -319,13 +320,13 @@ def format_last_run(ts: datetime | None) -> str:
         ago = f"{delta_minutes / 60:.1f} h ago"
     else:
         ago = f"{delta_minutes / 1440:.1f} d ago"
-    return f"Last run - {local_ts.strftime('%d %b %Y %H:%M')} ({ago})"
+    return f"File updated {local_ts.strftime('%d %b %Y %H:%M')} UTC ({ago})"
 
 
 def describe_last_run(path: "os.PathLike[str] | str") -> tuple[str, datetime | None]:
     file_path = Path(path)
     if not file_path.exists():
-        return "Last run - never", None
+        return "File update unavailable", None
     ts = datetime.fromtimestamp(file_path.stat().st_mtime, tz=timezone.utc)
     return format_last_run(ts), ts
 
@@ -383,7 +384,7 @@ def _render_health_card(title: str, value_text: str, note: str, tone: str) -> No
         clean_html(
             f"""
             <div class="pipeline-health-card" data-tone="{tone}">
-                <div class="pipeline-health-status">{tone}</div>
+                <div class="pipeline-health-status">{ {"green": "Data check passed", "orange": "Partial / ageing data", "red": "Check data", "gray": "No eligible set"}.get(tone, "Data check") }</div>
                 <div class="pipeline-health-title">{title}</div>
                 <div class="pipeline-health-value">{value_text}</div>
                 <div class="pipeline-health-note">{note}</div>
@@ -467,17 +468,20 @@ ai_summary_df = apply_global_sidebar_filters(
 
 section_heading(
     "Active AI Analysis",
-    "A condensed view of every actionable or review listing currently shown by AI Analysis. AI Analysis remains the source of truth.",
+    "Saved Buy and Review listings with a proxy ceiling, after the Buying View Filters. Open AI Analysis to inspect condition, costs and current valuation evidence.",
 )
-if valuations_df.empty or ai_active_scope_df.empty:
-    st.info("No current AI Analysis active set is available. Refresh AI valuations to populate this section.")
+st.caption("Start with a listing below and choose Open in AI Analysis. For collection or freshness questions, open Health from the sidebar.")
+if ai_active_scope_df.empty:
+    st.info("No AI-eligible active listings are currently loaded. Check Active Inventory and Health; an empty eligible set can be valid and does not by itself mean valuations need refreshing.")
+elif valuations_df.empty:
+    st.info("AI-eligible listings exist but no saved valuations are loaded. Open AI Analysis to inspect or refresh valuations.")
 else:
     if ai_summary_df.empty:
-        st.info("AI Analysis currently has no actionable or review listings with a proxy max bid.")
+        st.info("No Buy or Review listings with a proxy ceiling match this view. Check Buying View Filters, or open AI Analysis and include Avoid listings to inspect the reasons.")
     else:
         st.caption(
-            f"Showing {len(ai_summary_df):,} current AI Analysis listing(s) from "
-            f"{len(ai_active_scope_df):,} curve-covered active listing(s). Avoid rows are hidden, matching the AI Analysis default."
+            f"Showing {len(ai_summary_df):,} saved shortlist listing(s) after Buying View Filters. "
+            f"The AI-eligible active set contains {len(ai_active_scope_df):,} rows before these filters. Avoid rows are hidden."
         )
         summary_rows = list(ai_summary_df.iterrows())
         for row_offset in range(0, len(summary_rows), 2):
@@ -571,22 +575,19 @@ else:
                         except Exception:
                             st.info("Open the AI Pricing Analysis page from the sidebar to view this listing.")
 
-section_heading("Pipeline Health", "Current processing health across link intake, normalisation, exclusions, and AI analysis.")
+section_heading("Pipeline Data Snapshot", "Saved-file checks and AI valuation coverage. These are separate populations, not a conversion funnel or proof a scheduled job succeeded.")
+st.caption("File times below are modification times. Use Health or Scraper Operations for job status. Exclusion log rows include historical, repeated and successful records.")
 links_count = count_csv_records(LINKS_FILE)
 raw_count = count_csv_records(RAW_FILE)
 normalised_count = count_csv_records(NORMALISED_FILE)
 excluded_count = count_csv_records(EXCLUDED_FILE)
-analysed_count = len(valuations_df) if not valuations_df.empty else 0
-analysis_target = len(ai_active_scope_df) if not ai_active_scope_df.empty else 0
-if analysis_target and not valuations_df.empty:
-    ai_active_urls = set(ai_active_scope_df["url"].dropna().astype(str))
-    analysed_count = int(valuations_df["url"].astype(str).isin(ai_active_urls).sum())
+analysed_count, analysis_target = ai_scope_valuation_counts(ai_active_scope_df, valuations_df)
 analysis_ratio = (analysed_count / analysis_target) if analysis_target else None
 
 health_cols = st.columns(4)
 with health_cols[0]:
     _render_health_card(
-        "Links scraped",
+        "Saved link rows",
         _format_rows(links_count),
         describe_last_run(LINKS_FILE)[0],
         _health_tone(links_count, expected_min=1),
@@ -598,7 +599,7 @@ with health_cols[1]:
     elif normalised_count:
         normalise_tone = "orange"
     _render_health_card(
-        "Vehicles normalized",
+        "Saved normalised rows",
         _format_rows(normalised_count),
         describe_last_run(NORMALISED_FILE)[0],
         normalise_tone,
@@ -623,13 +624,13 @@ with health_cols[2]:
     )
 with health_cols[3]:
     _render_health_card(
-        "Vehicles analysed",
+        "AI-eligible listings with valuations",
         _format_rows(analysed_count),
-        f"{analysis_ratio:.0%} of filtered active listings" if analysis_ratio is not None else "No active listings loaded",
-        _coverage_tone(analysis_ratio),
+        f"{analysed_count:,} of {analysis_target:,} unique AI-eligible URLs before Buying View Filters ({analysis_ratio:.0%}). Saved valuations may need refresh." if analysis_ratio is not None else "No AI-eligible URLs loaded; historical valuations are excluded.",
+        _coverage_tone(analysis_ratio) if analysis_target else "gray",
     )
 
-section_heading("AI Coverage", "Curve coverage health across the current active listing set.")
+section_heading("Active Tag Coverage", "Active-feed rows after Buying View Filters whose tags have saved curves, including aliases. Tag coverage does not establish year/km eligibility or buying readiness.")
 active_curve_count = 0
 active_no_curve_count = 0
 curve_coverage_pct = None
@@ -647,7 +648,7 @@ coverage_cols[2].metric(
     "Curve Coverage %",
     f"{curve_coverage_pct * 100:,.1f}%" if curve_coverage_pct is not None else "N/A",
 )
-section_heading("Status Snapshot", "Distribution of tracked listings by workflow state.")
+section_heading("Status Snapshot", "Rows in the active, sold and referred feeds after Buying View Filters. Sold and referred include history; the total is not today's shortlist or a deduplicated vehicle count.")
 tracked_counts = {
     "active": int(len(active_scope_df)),
     "sold": int(len(sold_scope_df)),
@@ -655,22 +656,22 @@ tracked_counts = {
 }
 tracked_total = sum(tracked_counts.values())
 status_columns = st.columns(4)
-render_metric(status_columns[0], "Visible Listings", tracked_total)
+render_metric(status_columns[0], "Rows across these feeds", tracked_total)
 for idx, (code, label) in enumerate(tracked_statuses, start=1):
     count = tracked_counts.get(code, 0)
     share = (count / tracked_total) if tracked_total else None
     render_metric(status_columns[idx], label, count, share)
 
 
-def unique_count(column: str) -> int:
+def unique_count(column: str) -> int | None:
     if column not in df.columns:
-        return 0
+        return None
     series = df[column].dropna().astype(str).str.strip()
     series = series[series != ""]
     return int(series.nunique())
 
 
-section_heading("Inventory Coverage", "Distinct values across key identifiers.")
+section_heading("Static Inventory Coverage", "Distinct recorded values across the full static dataset, before Buying View Filters. N/A means the field is not recorded.")
 coverage_columns = st.columns(4)
 coverage_config = [
     ("make", "Unique Makes"),
@@ -679,7 +680,8 @@ coverage_config = [
     ("location", "Locations"),
 ]
 for column, (field, label) in zip(coverage_columns, coverage_config):
-    column.metric(label, f"{unique_count(field):,}")
+    count = unique_count(field)
+    column.metric(label, f"{count:,}" if count is not None else "N/A")
 
 
 def build_top_table(column: str, display_name: str, limit: int = 10) -> pd.DataFrame | None:
@@ -701,7 +703,7 @@ def build_top_table(column: str, display_name: str, limit: int = 10) -> pd.DataF
     return counts
 
 
-section_heading("Top Sources & Makes", "Highest-volume channels in the current dataset.")
+section_heading("Top Sources & Makes", "Counts from the full static dataset, before Buying View Filters.")
 top_columns = st.columns(2)
 with top_columns[0]:
     st.markdown("**By Auction House**")
@@ -740,13 +742,13 @@ if not valuations_df.empty and "analysis_timestamp" in valuations_df.columns:
             ai_latest_ts = latest_stamp
         if ai_latest_ts and ai_latest_ts.tzinfo is None:
             ai_latest_ts = ai_latest_ts.replace(tzinfo=timezone.utc)
-ai_last_text = format_last_run(ai_latest_ts)
+ai_last_text = format_last_run(ai_latest_ts).replace("File updated", "Latest saved analysis").replace("File update unavailable", "Analysis timestamp unavailable")
 ai_avg_score = valuations_df["score_value"].dropna().mean() if "score_value" in valuations_df else None
 transparency_confidence_avg = None
 transparency_confidence_share = None
 transparency_profit_df = pd.DataFrame()
 if not active_scope_df.empty:
-    confidence_series = pd.to_numeric(active_scope_df.get("confidence"), errors="coerce").dropna()
+    confidence_series = pd.to_numeric(active_scope_df.get("confidence", pd.Series(dtype=float)), errors="coerce").dropna()
     if not confidence_series.empty:
         transparency_confidence_avg = float(confidence_series.mean())
         transparency_confidence_share = float((confidence_series >= 0.75).mean())
@@ -810,7 +812,7 @@ if not scored_df.empty and "hit" in scored_df.columns:
         accuracy = valid_hits.astype(float).mean()
         accuracy_display = f"{accuracy * 100:,.1f}%"
 
-section_heading("Decision Health", "Coverage, confidence, and profit-shape health for the current filtered universe.")
+section_heading("Decision Evidence", "Coverage and stored confidence use filtered active rows. The saved scoring result uses the separate, unfiltered scored dataset.")
 transparency_cols = st.columns(3)
 transparency_cols[0].metric(
     "Curve Coverage %",
@@ -818,24 +820,24 @@ transparency_cols[0].metric(
     f"{active_curve_count:,} with curves / {active_no_curve_count:,} without",
 )
 transparency_cols[1].metric(
-    "Model Confidence",
+    "Average stored confidence",
     f"{transparency_confidence_avg * 100:,.1f}%" if transparency_confidence_avg is not None else "N/A",
     (
         f"{transparency_confidence_share * 100:,.0f}% high-confidence listings"
         if transparency_confidence_share is not None
-        else "No active confidence data"
+        else "No recorded confidence in this view"
     ),
 )
 transparency_cols[2].metric(
-    "Observed Accuracy",
+    "Saved scoring hit rate",
     accuracy_display,
-    f"{settled_count:,} settled scored listings",
+    f"{settled_count:,} rows with recorded hit values; see Model Proof for evidence type",
 )
 
 transparency_left, transparency_right = st.columns([1.3, 1], gap="large")
 with transparency_left:
     st.markdown("**Profit Distribution**")
-    st.caption("Expected profit spread across currently visible active listings.")
+    st.caption("Saved profit estimates for filtered active listings with a recorded value. Missing values are excluded; this is not realised profit.")
     if transparency_profit_df.empty:
         st.info("No profit distribution available for the current filter set.")
     else:
@@ -846,9 +848,9 @@ with transparency_right:
     st.markdown(
         "\n".join(
             [
-                f"- AI valuations refreshed: {ai_last_text}",
-                f"- Scoring model refreshed: {model_last_text}",
-                f"- Average score /10: {f'{ai_avg_score:.1f}' if ai_avg_score is not None else 'N/A'}",
+                f"- {ai_last_text}",
+                f"- Scored dataset: {model_last_text}",
+                f"- Average saved valuation score /10 (all stored valuations): {f'{ai_avg_score:.1f}' if ai_avg_score is not None else 'N/A'}",
                 f"- Active listings in scope: {len(active_scope_df):,}",
             ]
         )
