@@ -8,6 +8,32 @@ import shared.auth as auth
 import shared.navigation as navigation
 
 
+def test_cold_dashboard_route_resolves_and_remains_password_gated(monkeypatch):
+    from streamlit.commands import navigation as streamlit_navigation
+    from streamlit.runtime.pages_manager import PagesManager
+    from streamlit.testing.v1 import AppTest
+
+    monkeypatch.setenv("AUTOSNIPER_VPS_MODE", "1")
+    monkeypatch.setenv(auth.AUTH_DISABLED_ENV, "0")
+    monkeypatch.setenv(auth.PASSWORD_ENV, "local-route-check")
+    monkeypatch.delenv(auth.PASSWORD_PBKDF2_ENV, raising=False)
+    # Exercise the actual legacy scan that runs before app.py on a cold server.
+    monkeypatch.setattr(PagesManager, "uses_pages_directory", None)
+    missing_pages = []
+    monkeypatch.setattr(streamlit_navigation, "send_page_not_found", lambda ctx: missing_pages.append(True))
+    app = AppTest.from_file("app.py", default_timeout=30)
+    app.switch_page("pages/04_DASHBOARD.py").run()
+    assert not app.exception
+    assert not missing_pages
+    assert [title.value for title in app.title] == ["AutoSniper"]
+    assert app.text_input[0].label == "Password"
+    assert not app.metric
+    app.text_input[0].set_value("wrong-password")
+    app.button[0].click().run()
+    assert any(error.value == "Incorrect password." for error in app.error)
+    assert not app.metric
+
+
 @pytest.mark.parametrize("vps_mode", [False, True])
 def test_sidebar_links_use_registered_session_routes(monkeypatch, vps_mode):
     spec = navigation.navigation_spec(vps_mode=vps_mode)

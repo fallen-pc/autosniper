@@ -1,6 +1,7 @@
 import pandas as pd
 import pytest
 from streamlit.testing.v1 import AppTest
+from streamlit.runtime.pages_manager import PagesManager
 import shared.navigation as navigation
 import shared.data_loader as loader
 import shared.global_filters as filters
@@ -18,6 +19,8 @@ def test_unique_eligible_coverage_excludes_history_and_blank_urls():
 
 @pytest.mark.parametrize("eligible", [True, False])
 def test_dashboard_labels_populations_and_empty_eligibility(monkeypatch, tmp_path, eligible):
+    # This isolates the page body, normally executed by app.py's modern router.
+    monkeypatch.setattr(PagesManager, "uses_pages_directory", False)
     monkeypatch.setattr(navigation, "render_sidebar_navigation", lambda: None)
     monkeypatch.setattr(filters, "render_global_sidebar_filters", lambda: None)
     monkeypatch.setattr(loader, "ensure_datasets_available", lambda *a: [])
