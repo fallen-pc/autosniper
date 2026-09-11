@@ -1121,6 +1121,7 @@ def assess_repairs(
                 line_category = "interior"
                 if any(hit.canonical_defect == "seat_damage" for hit in interior_hits):
                     interior_hits = [hit for hit in interior_hits if hit.canonical_defect != "seat_issue"]
+                has_replacement = True
                 for hit in interior_hits:
                     cost_band = _effective_cost_band(hit.canonical_defect, 200, vehicle_class)
                     current_cost = cost_band.default

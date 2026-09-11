@@ -204,29 +204,28 @@ def test_injected_caller_cannot_bypass_coverage_check(paths, keys):
     assert result.failed and not output.exists()
 
 
-def test_dry_run_calls_api_and_validates_without_writing(sdk, paths):
+def test_dry_run_skips_api_without_writing(sdk, paths):
     queue, output = paths
     result = classify_repair_review_queue(queue_path=queue, output_path=output, dry_run=True)
-    assert not result.failed and result.suggested == 1
-    assert len(sdk.requests) == 1
+    assert not result.failed and result.suggested == 0
+    assert result.skipped_reason == "dry_run: classifier call skipped"
+    assert not sdk.requests
     assert not output.exists()
 
 
-def test_cache_skips_other_model_until_force_refresh(sdk, paths):
+def test_cache_identity_includes_repair_item_until_force_refresh(sdk, paths):
     queue, output = paths
     pd.DataFrame([{
         "repair_key": "unknown fragment",
         "repair_item": "Old suggestion",
         "model": "gpt-4.1-mini",
     }]).to_csv(output, index=False)
-    before = output.read_bytes()
 
-    skipped = classify_repair_review_queue(queue_path=queue, output_path=output)
-    assert skipped.considered == 0 and not sdk.requests
-    assert output.read_bytes() == before
+    refreshed_for_new_item = classify_repair_review_queue(queue_path=queue, output_path=output)
+    assert refreshed_for_new_item.considered == 1 and len(sdk.requests) == 1
 
     refreshed = classify_repair_review_queue(queue_path=queue, output_path=output, force=True)
-    assert refreshed.suggested == 1 and len(sdk.requests) == 1
+    assert refreshed.suggested == 1 and len(sdk.requests) == 2
     saved = load_ai_suggestions(output)
     assert len(saved) == 1 and list(saved.columns) == AI_SUGGESTION_COLUMNS
     assert saved.iloc[0]["model"] == "gpt-6-astra"
