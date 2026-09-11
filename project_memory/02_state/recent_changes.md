@@ -543,3 +543,7 @@
 # 2026-09-09 - Repair pricing evidence and classifier guards
 
 - Added the reviewed public/supplier-backed repair-pricing rows needed by current condition canonicals. Tightened optional OpenAI repair-classifier response validation and logging while retaining disabled-by-default scheduling and advisory-only suggestions.
+
+# 2026-09-12 - Repair quote direct-price promotion
+
+- Promoted Expert Body Repairs' direct Gmail quote for the 2019 Mercedes-Benz GLS400d front bumper cosmetic repair into `repair_pricing_schedule.csv` as `cosmetic_surface_damage` / `medium_suv` at `$700`. Marked `RQ-0269` priced with reply/thread evidence. No follow-up drafts were created because overdue candidates were zero; no fresh outreach was sent because remaining low-confidence gaps were generic, overlapping, or lacked safe concrete supplier/recipient pairs.
