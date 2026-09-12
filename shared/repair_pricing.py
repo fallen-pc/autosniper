@@ -72,6 +72,7 @@ V2_HARD_AVOID_CANONICALS = {
 }
 
 STRUCTURAL_HARD_AVOID_CANONICALS = {
+    "salvage_vehicle",
     "structural_damage",
 }
 
@@ -356,6 +357,8 @@ MECH_AVOID_PATTERNS = [
     r"\bengine light\b",
     r"\b(epc|vsa|master warning) light\b",
     r"\bwarning lights? on dash\b",
+    r"\b(?:places)?warning light/?s?\s*:\s*(airbag|tyre pressure)\b",
+    r"\b(?:brake )?light warning (?:message|on)\b",
     r"\bengine (light|warning) on\b",
     r"\bother warning light on\b",
     r"\babs light on\b",
@@ -363,6 +366,7 @@ MECH_AVOID_PATTERNS = [
     r"\btraction control light on\b",
     r"\bcheck engine\b",
     r"\bengine noise\b",
+    r"\brattle(?: noise)?\b.*\bengine\b",
     r"\bunusual sound from (?:the )?engine\b",
     r"\bengine idling rough\b",
     r"\bengine lacks power\b",
@@ -389,6 +393,7 @@ MECH_AVOID_PATTERNS = [
     r"\bpower steering\b.*\b(attention|fault|issue|leak)\b",
     r"\bdrivetrain\b.*\b(fault|issue)\b",
     r"\bsuspension\b.*\b(attention|fault|issue|noise)\b",
+    r"\bsuspension\b.*\bsoft\b",
     r"\balignment\b.*\b(issue|pull)\b",
     r"\bbrakes?\b.*\b(attention|fault|issue|require|requires)\b",
     r"\bmechanical\b.*\b(attention|fault|issue|require|requires)\b",
@@ -396,9 +401,20 @@ MECH_AVOID_PATTERNS = [
     r"\bdoes not start\b",
     r"\bwon't start\b",
     r"\bnot running\b",
+    r"\bnon[- ]running\b",
+    r"\bengine turns over\s*:\s*no\b",
+    r"\bstarter motor\b.*\b(fault|faulty|failed)\b",
+    r"\bkey not found error\b",
+    r"\bstop/start malfunction\b",
+    r"\bonly run\b.*\bconnected to jump pack\b",
+    r"\bcut out\b.*\b(?:after|while) running\b",
+    r"\bissues? evident with\b.*\b(gearbox|driveline)\b",
+    r"\bdriveable\s*:\s*no\b",
+    r"\bbrakes?\b.*\b(squeak|squeaking|sensitive)\b",
     r"\bcannot be driven off site\b",
     r"\btilt tray\b.*\b(required|recommended)\b",
     r"\btowing required\b",
+    r"\btow required\b",
 ]
 
 MECH_AVOID_RE = [re.compile(pattern, re.IGNORECASE) for pattern in MECH_AVOID_PATTERNS]
@@ -1190,7 +1206,21 @@ def assess_repairs(
                     normalized_text=_fragment_key(line),
                     status=(
                         "ignored"
-                        if (line_category == "boilerplate" or categories == {"boilerplate"}) and line_cost == 0
+                        if (
+                            line_cost == 0
+                            and (
+                                line_category == "boilerplate"
+                                or categories == {"boilerplate"}
+                                or (
+                                    any(hit.category == "boilerplate" for hit in hits)
+                                    and all(
+                                        hit.category == "boilerplate"
+                                        or hit.canonical_defect == "body_location_list"
+                                        for hit in hits
+                                    )
+                                )
+                            )
+                        )
                         else "matched"
                         if line_reasons
                         else "unclassified"

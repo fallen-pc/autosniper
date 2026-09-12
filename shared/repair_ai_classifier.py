@@ -199,7 +199,25 @@ def _build_prompt(rows: pd.DataFrame) -> str:
             "rules": [
                 "Return exactly one suggestion for every supplied repair_key, preserving each key exactly. Do not add or omit keys.",
                 "Mechanical, structural, chassis, transmission, engine, overheating, warning-light faults should be high severity and hard_avoid.",
+                (
+                    "Project buying policy treats sold-as-salvage status, Driveable: No, "
+                    "non-running or unable-to-drive wording, tow or tilt-tray requirements, "
+                    "coolant issues, and warning lights including tyre-pressure warnings as "
+                    "high-severity hard_avoid. Do not relabel these as boilerplate, context, "
+                    "usage risk, or no_cost."
+                ),
+                (
+                    "A service-due reminder is a priced service_warning_message rather than "
+                    "a hard avoid. A bare component extracted from a longer sentence can be "
+                    "context only when its supplied example_condition_notes prove that the "
+                    "damage predicate was lost during splitting."
+                ),
                 "Boilerplate, feature lists, locations, legal disclaimers, roadworthy/as-is wording should not add repair cost.",
+                (
+                    "Do not remove a repair allowance merely because the exact remedy is "
+                    "unknown when the fragment still states a clear fault, breakage, wear, "
+                    "leak, non-operation, or required attention for a named component."
+                ),
                 "Use snake_case canonical defects. Prefer an existing canonical_defect when one fits.",
                 "Do not classify a bare body location as damage unless damage words are present.",
             ],
