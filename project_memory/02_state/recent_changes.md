@@ -539,3 +539,11 @@
 # 2026-09-01 - Grays image evidence pilot
 
 - Added an opt-in Grays image evidence pilot that discovers listing image URLs, optionally caches image bytes under ignored `output/grays_images/cache`, writes an ignored image manifest, and joins images to `grays_condition_repair_fragments.csv` by listing URL with low-confidence repair-line links. Verified on one current damaged Grays listing: 10 images downloaded and 80 repair-image link rows generated without changing the production Grays scraper path or valuation logic.
+
+# 2026-09-09 - Repair pricing evidence and classifier guards
+
+- Added the reviewed public/supplier-backed repair-pricing rows needed by current condition canonicals. Tightened optional OpenAI repair-classifier response validation and logging while retaining disabled-by-default scheduling and advisory-only suggestions.
+
+# 2026-09-12 - Repair quote direct-price promotion
+
+- Promoted Expert Body Repairs' direct Gmail quote for the 2019 Mercedes-Benz GLS400d front bumper cosmetic repair into `repair_pricing_schedule.csv` as `cosmetic_surface_damage` / `medium_suv` at `$700`. Marked `RQ-0269` priced with reply/thread evidence. No follow-up drafts were created because overdue candidates were zero; no fresh outreach was sent because remaining low-confidence gaps were generic, overlapping, or lacked safe concrete supplier/recipient pairs.

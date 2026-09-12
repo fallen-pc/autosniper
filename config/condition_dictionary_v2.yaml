@@ -61,6 +61,36 @@ entries:
     category: boilerplate
     severity_hint: low
 
+  - pattern: "^\\s*(driveable\\s*:\\s*yes|registration expires\\s*:.*|plates come with vehicle|sold unregistered(?: without plates)?|untested (?:and|&) unregistered)\\.?\\s*$"
+    canonical_defect: boilerplate_vehicle_metadata
+    category: boilerplate
+    severity_hint: low
+
+  - pattern: "^\\s*1 ownerlog books includedservice records includedregistration:sold registered to all buyers\\.?\\s*$"
+    canonical_defect: boilerplate_vehicle_metadata
+    category: boilerplate
+    severity_hint: low
+
+  - pattern: "^\\s*(registered vehicles will only be transferred to .* license holders|vehicles will be sold unregistered to interstate buyers)\\.?\\s*$"
+    canonical_defect: boilerplate_registration_terms
+    category: boilerplate
+    severity_hint: low
+
+  - pattern: "^\\s*(dvd player untested|low fuel|bluetooth|tow bar)\\.?\\s*$"
+    canonical_defect: boilerplate_vehicle_metadata
+    category: boilerplate
+    severity_hint: low
+
+  - pattern: "^\\s*(suitability|inclusions|and any faults|any descriptions|photographs|by placing a bid|nan)\\.?\\s*$"
+    canonical_defect: boilerplate_joiner_noise
+    category: boilerplate
+    severity_hint: low
+
+  - pattern: "^\\s*(please handle with care|or information provided are intended as a guide only and do not constitute a warranty or guarantee|the buyer acknowledges they have had the opportunity to inspect the asset and accept it in its current condition|subject to any rights and remedies that cannot be excluded under the australian consumer law)\\.?\\s*$"
+    canonical_defect: boilerplate_auction_disclaimer
+    category: boilerplate
+    severity_hint: low
+
   - pattern: "\\b(security interest|ppsr check|business days|registration to be removed|monies are cleared)\\b"
     canonical_defect: boilerplate_ppsr_security_interest
     category: boilerplate
@@ -68,6 +98,31 @@ entries:
 
   - pattern: "\\b(ppsr attached|state-based road authority|roadworthy condition|salvage auction|as is|where is|mechanical inspection|grays does not conduct|repairs or maintenance|inspection is highly recommended|extra parts not listed|jump pack to start on collection)\\b"
     canonical_defect: boilerplate_salvage_wovr_disclaimer
+    category: boilerplate
+    severity_hint: low
+
+  - pattern: "\\b(inspection highly recommended|inspection advised before bidding|strongly encouraged to inspect)\\b"
+    canonical_defect: boilerplate_arrange_inspection
+    category: boilerplate
+    severity_hint: low
+
+  - pattern: "^\\s*sold as salvage vehicle\\.?\\s*$"
+    canonical_defect: salvage_vehicle
+    category: structural
+    severity_hint: high
+
+  - pattern: "^\\s*(cab|body|seat|trim|brake|paint|carpet|interior|rust) condition\\s*:?\\s*(good|excellent|nil)\\.?\\s*$"
+    canonical_defect: boilerplate_vehicle_metadata
+    category: boilerplate
+    severity_hint: low
+
+  - pattern: "^.*\\s-\\snull\\.?\\s*$"
+    canonical_defect: body_location_list
+    category: boilerplate
+    severity_hint: low
+
+  - pattern: "^\\s*steering wheel\\.?\\s*$"
+    canonical_defect: body_location_list
     category: boilerplate
     severity_hint: low
 
@@ -111,15 +166,25 @@ entries:
     category: glass
     severity_hint: low
 
+  - pattern: "\\b(windscreen|windshield).*(requires attention|needs attention)"
+    canonical_defect: windscreen_damage
+    category: glass
+    severity_hint: medium
+
   - pattern: "\\b(window|glass).*(crack|cracked|chip|chipped|broken)"
     canonical_defect: window_damage
     category: glass
     severity_hint: medium
 
-  - pattern: "\\b(tint).*(requires attention|peel|peeling|damage|damaged|bubbling)"
+  - pattern: "\\b(tint).*(requires attention|needs attention|peel|peeling|damage|damaged|bubbling)"
     canonical_defect: window_tint_damage
     category: glass
     severity_hint: low
+
+  - pattern: "\\b(window|glass).*(smashed)"
+    canonical_defect: window_damage
+    category: glass
+    severity_hint: medium
 
   - pattern: "\\b(hail)\\b"
     canonical_defect: hail_damage
@@ -186,7 +251,12 @@ entries:
     category: interior
     severity_hint: low
 
-  - pattern: "\\b(steering wheel|steering|gear knob|centre console|center console|roof lining|rooflining).*(worn|broken|missing|sagging|requires attention)"
+  - pattern: "\\b(steering wheel|steering|gear knob|gearshift|shift knob|centre console|center console|roof lining|rooflining|head lining|roof liner).*(worn|broken|missing|sagging|tear|torn|cracked|misaligned|stain|stained|requires attention)"
+    canonical_defect: interior_trim_damage
+    category: interior
+    severity_hint: low
+
+  - pattern: "\\bhandbrake\\b.*\\bworn\\b"
     canonical_defect: interior_trim_damage
     category: interior
     severity_hint: low
@@ -196,12 +266,77 @@ entries:
     category: interior
     severity_hint: low
 
-  - pattern: "\\b(door card|carpet|hood lining|headlining).*(worn|sagging|marks|stain|stained|requires attention)"
+  - pattern: "\\b(stain|stained|stains).*(centre console|center console|roof liner)|\\b(dash|dashboard).*(stain|stained|sticky residue)|\\bsticky residue on (?:the )?dashboard\\b"
     canonical_defect: interior_trim_damage
     category: interior
     severity_hint: low
 
-  - pattern: "\\b(tail light|taillight|indicator).*(crack|cracked|broken|missing|damaged)"
+  - pattern: "\\bcoating on (?:the )?console coming off\\b"
+    canonical_defect: interior_trim_damage
+    category: interior
+    severity_hint: low
+
+  - pattern: "\\bholes? (?:on|in) (?:the )?carpet\\b"
+    canonical_defect: carpet_torn
+    category: interior
+    severity_hint: low
+
+  - pattern: "\\bodou?r inside (?:the )?vehicle\\b"
+    canonical_defect: interior_odour
+    category: interior
+    severity_hint: low
+
+  - pattern: "\\b(door card|doorcards|door trim|carpet|flooring|hood lining|headlining|trim).*(worn|sagging|marks|stain|stained|tear|torn|holes|broken|peeling|faded|requires attention|require attention)"
+    canonical_defect: interior_trim_damage
+    category: interior
+    severity_hint: low
+
+  - pattern: "\\b(aerial).*(requires attention|require attention|needs attention|broken|missing|damaged)"
+    canonical_defect: aerial_damage
+    category: replacement
+    severity_hint: low
+
+  - pattern: "\\b(boot|tailgate|hatch) struts?.*(requires attention|require attention|needs attention|need attention|not holding|not working|broken|fault)"
+    canonical_defect: hatch_strut_damage
+    category: replacement
+    severity_hint: medium
+
+  - pattern: "\\b(sun ?visors?|sunvisor mirror covers?).*(requires attention|require attention|needs attention|broken|missing|damaged)"
+    canonical_defect: sun_visor_damage
+    category: interior
+    severity_hint: low
+
+  - pattern: "\\b(glove ?box|sunglasses holder).*(unable to open|cannot open|won.?t open|misaligned|requires attention|needs attention|broken)"
+    canonical_defect: interior_compartment_latch_damage
+    category: interior
+    severity_hint: low
+
+  - pattern: "\\b(tailgate|boot).*(cannot open|unable to open|won.?t open|not opening)"
+    canonical_defect: tailgate_latch_or_tailgate_repair
+    category: replacement
+    severity_hint: medium
+
+  - pattern: "\\bspare key.*(?:requires attention|needs attention|missing|not working)\\b"
+    canonical_defect: key_missing
+    category: replacement
+    severity_hint: low
+
+  - pattern: "\\bbonnet struts?.*(don.?t work|doesn.?t work|not working|requires attention|needs attention|broken|fault)"
+    canonical_defect: bonnet_strut_damage
+    category: replacement
+    severity_hint: medium
+
+  - pattern: "\\bservice (due|required) message on dash\\b"
+    canonical_defect: service_warning_message
+    category: replacement
+    severity_hint: medium
+
+  - pattern: "\\b(tail light|taillight|indicator|reflector|fog light|foglight|dome light).*(crack|cracked|broken|missing|damaged|flicker|flickering)|\\b(crack|cracked|broken|missing|damaged).*\\b(tail light|taillight|indicator|reflector|fog light|foglight)"
+    canonical_defect: lighting_damage
+    category: replacement
+    severity_hint: medium
+
+  - pattern: "\\b(headlight|head light).*(misaligned)|\\b(dislodge|dislodged).*\\b(indicator|light)"
     canonical_defect: lighting_damage
     category: replacement
     severity_hint: medium
@@ -211,8 +346,13 @@ entries:
     category: replacement
     severity_hint: medium
 
-  - pattern: "\\b(?:(headlights?|head lights?).*(hazed|faded|cloudy)|(hazed|faded|cloudy).*\\b(headlights?|head lights?))"
+  - pattern: "\\b(?:(headlights?|head lights?).*(hazy|hazed|faded|cloudy)|(hazy|hazed|faded|cloudy).*\\b(headlights?|head lights?))"
     canonical_defect: lighting_damage
+    category: replacement
+    severity_hint: medium
+
+  - pattern: "\\b(condensed|condensation).*(brake ?light|tail ?light)|\\b(brake ?light|tail ?light).*(condensed|condensation)"
+    canonical_defect: lighting_condensation_damage
     category: replacement
     severity_hint: medium
 
@@ -221,7 +361,7 @@ entries:
     category: replacement
     severity_hint: medium
 
-  - pattern: "\\b(fuel flap|fuel door).*(broken|missing|damaged|requires attention)"
+  - pattern: "\\b(fuel flap|fuel door|fuel cap release).*(broken|missing|damaged|requires attention|needs attention|cannot open|unable to open|stuck)"
     canonical_defect: fuel_flap_damage
     category: replacement
     severity_hint: medium
@@ -236,7 +376,7 @@ entries:
     category: replacement
     severity_hint: medium
 
-  - pattern: "\\b(bumper|bar).*(crack|cracked|broken|torn|missing|damaged)"
+  - pattern: "\\b(bumper|bar).*(crack|cracked|broken|tear|torn|missing|damaged)"
     canonical_defect: bumper_damage
     category: replacement
     severity_hint: medium
@@ -245,6 +385,16 @@ entries:
     canonical_defect: tyre_replacement
     category: replacement
     severity_hint: medium
+
+  - pattern: "\\bvehicle on rim\\b|\\bwheels?\\s*-\\s*(?:passenger|driver) (?:front|rear)\\)?\\s*-\\s*tear\\b"
+    canonical_defect: tyre_replacement
+    category: replacement
+    severity_hint: medium
+
+  - pattern: "^\\s*low (?:tyre|tire) pressure\\.?\\s*$"
+    canonical_defect: usage_risk_low_tyre_pressure
+    category: boilerplate
+    severity_hint: low
 
   - pattern: "\\b(tyre|tire).*(puncture|punctured|pin|nail|screw)|\\b(puncture|punctured|pin|nail|screw).*\\b(tyre|tire)"
     canonical_defect: tyre_puncture
@@ -271,17 +421,52 @@ entries:
     category: replacement
     severity_hint: medium
 
-  - pattern: "\\b(paint).*(fade|fading|peel|peeling|crack|cracked)"
+  - pattern: "\\bpart replacement required\\b|\\bneeds replacement\\b"
+    canonical_defect: replacement_required
+    category: replacement
+    severity_hint: medium
+
+  - pattern: "\\b(lower mould|moulding).*(broken|missing|damaged)"
+    canonical_defect: replacement_required
+    category: replacement
+    severity_hint: medium
+
+  - pattern: "\\b(paint|clear coat).*(fade|faded|fading|worn|peel|peeling|crack|cracked|defect|doesn.?t match|mismatch)"
     canonical_defect: paint_damage
     category: cosmetic
     severity_hint: low
+
+  - pattern: "\\bstickypaint cracked\\b"
+    canonical_defect: paint_damage
+    category: cosmetic
+    severity_hint: low
+
+  - pattern: "\\b(poor previous (paint )?repair|poor (paint )?respray|poor previous respray)"
+    canonical_defect: paint_surface_issue
+    category: cosmetic
+    severity_hint: low
+
+  - pattern: "\\b(door pillars?|exterior plastic trim|roof gutter trims?|windscreen trim).*(faded|worn|peeling)"
+    canonical_defect: cosmetic_surface_damage
+    category: cosmetic
+    severity_hint: low
+
+  - pattern: "\\b(side skirt).*(crack|cracked|broken|damaged)|\\b(crack|cracked|broken|damaged).*\\bside skirt"
+    canonical_defect: panel_damage
+    category: cosmetic
+    severity_hint: medium
+
+  - pattern: "\\b(driver|passenger) (?:side )?sill panel\\)?\\s*-\\s*tear\\b"
+    canonical_defect: structural_damage
+    category: structural
+    severity_hint: high
 
   - pattern: "\\b(corrosion|rust).*(visible|evident|panel|panels|tub|bonnet|area|areas|vehicle|roof)|\\b(visible|evident|under[- ]?body|surface|exterior).*\\b(corrosion|rust)"
     canonical_defect: corrosion_damage
     category: cosmetic
     severity_hint: high
 
-  - pattern: "\\b(misaligned).*(bumper|bar|panel|door|bonnet|boot)|\\b(bumper|bar|panel|door|bonnet|boot).*\\b(misaligned|requires attention)"
+  - pattern: "\\b(misaligned|dislodged).*(bumper|bar|panel|door|bonnet|boot|guard|trim)|\\b(bumper|bar|panel|door|bonnet|boot|guard|trim).*\\b(misaligned|dislodged|out of alignment|requires attention)"
     canonical_defect: panel_alignment_damage
     category: cosmetic
     severity_hint: low

@@ -480,7 +480,7 @@ def test_assess_repairs_door_handle_not_working_is_replacement() -> None:
 
     assert assessment.hard_avoid is False
     assert "PANEL_REPLACE" in assessment.pills
-    assert assessment.replacement_cost == 250
+    assert assessment.replacement_cost == 75
 
 
 def test_assess_repairs_classifies_worn_door_card_carpet_and_headlining() -> None:

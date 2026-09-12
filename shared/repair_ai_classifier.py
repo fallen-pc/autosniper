@@ -147,12 +147,27 @@ def _pending_rows(queue_df: pd.DataFrame, suggestions_df: pd.DataFrame, *, force
         return queue_df
     working = queue_df[queue_df.apply(_needs_ai_suggestion, axis=1)].copy()
     working["repair_key"] = working["repair_key"].map(safe_text)
+    working["repair_item"] = working["repair_item"].map(safe_text)
     working = working[working["repair_key"] != ""]
     working = working.drop_duplicates(subset=["repair_key"], keep="last")
     if force or suggestions_df.empty:
         return working
-    suggested_keys = set(suggestions_df["repair_key"].map(safe_text))
-    return working[~working["repair_key"].isin(suggested_keys)].copy()
+    suggested_lookup = {
+        (safe_text(row.get("repair_key")).lower(), safe_text(row.get("repair_item")).lower())
+        for _, row in suggestions_df.iterrows()
+    }
+    if not suggested_lookup:
+        return working
+
+    pending = []
+    for _, row in working.iterrows():
+        key = safe_text(row.get("repair_key")).lower()
+        item = safe_text(row.get("repair_item")).lower()
+        if (key, item) not in suggested_lookup:
+            pending.append(True)
+        else:
+            pending.append(False)
+    return working[pending].copy()
 
 
 def _build_prompt(rows: pd.DataFrame) -> str:
@@ -184,7 +199,25 @@ def _build_prompt(rows: pd.DataFrame) -> str:
             "rules": [
                 "Return exactly one suggestion for every supplied repair_key, preserving each key exactly. Do not add or omit keys.",
                 "Mechanical, structural, chassis, transmission, engine, overheating, warning-light faults should be high severity and hard_avoid.",
+                (
+                    "Project buying policy treats sold-as-salvage status, Driveable: No, "
+                    "non-running or unable-to-drive wording, tow or tilt-tray requirements, "
+                    "coolant issues, and warning lights including tyre-pressure warnings as "
+                    "high-severity hard_avoid. Do not relabel these as boilerplate, context, "
+                    "usage risk, or no_cost."
+                ),
+                (
+                    "A service-due reminder is a priced service_warning_message rather than "
+                    "a hard avoid. A bare component extracted from a longer sentence can be "
+                    "context only when its supplied example_condition_notes prove that the "
+                    "damage predicate was lost during splitting."
+                ),
                 "Boilerplate, feature lists, locations, legal disclaimers, roadworthy/as-is wording should not add repair cost.",
+                (
+                    "Do not remove a repair allowance merely because the exact remedy is "
+                    "unknown when the fragment still states a clear fault, breakage, wear, "
+                    "leak, non-operation, or required attention for a named component."
+                ),
                 "Use snake_case canonical defects. Prefer an existing canonical_defect when one fits.",
                 "Do not classify a bare body location as damage unless damage words are present.",
             ],
@@ -371,6 +404,8 @@ def classify_repair_review_queue(
         return ClassifierResult(0, 0, output_path)
 
     model_name = model or os.getenv("AUTOSNIPER_REPAIR_AI_MODEL") or DEFAULT_MODEL
+    if dry_run:
+        return ClassifierResult(len(pending), 0, output_path, skipped_reason="dry_run: classifier call skipped")
     try:
         new_suggestions = caller(pending, model=model_name) if caller is not None else _call_openai(pending, model=model_name)
         if not isinstance(new_suggestions, pd.DataFrame) or "repair_key" not in new_suggestions:
