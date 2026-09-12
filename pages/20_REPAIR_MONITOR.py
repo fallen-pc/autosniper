@@ -85,7 +85,7 @@ with download_left:
         data=rows.to_csv(index=False),
         file_name="autosniper_current_repairs.csv",
         mime="text/csv",
-        use_container_width=True,
+        width="stretch",
     )
 with download_right:
     st.download_button(
@@ -93,7 +93,7 @@ with download_right:
         data=build_printable_repair_html(rows),
         file_name="autosniper_current_repairs.html",
         mime="text/html",
-        use_container_width=True,
+        width="stretch",
     )
 with status_column:
     status = load_run_status()
@@ -156,7 +156,7 @@ def show_table(frame: pd.DataFrame, *, empty_message: str) -> None:
         return
     st.dataframe(
         frame[DISPLAY_COLUMNS],
-        use_container_width=True,
+        width="stretch",
         hide_index=True,
         column_config=COLUMN_CONFIG,
         height=min(720, 38 + 35 * min(len(frame), 19)),
@@ -211,7 +211,7 @@ with all_tab:
     all_columns = ["outcome", *DISPLAY_COLUMNS]
     st.dataframe(
         filtered[all_columns],
-        use_container_width=True,
+        width="stretch",
         hide_index=True,
         column_config={"outcome": "Current outcome", **COLUMN_CONFIG},
         height=720,
@@ -222,6 +222,6 @@ with activity_tab:
     if history.empty:
         st.info("Classifier activity will be recorded after the next scheduled check.")
     else:
-        st.dataframe(history.tail(50).iloc[::-1], use_container_width=True, hide_index=True)
+        st.dataframe(history.tail(50).iloc[::-1], width="stretch", hide_index=True)
 
 st.caption("This page is read-only. Approvals remain part of the tested and governed Repair Review release workflow.")
