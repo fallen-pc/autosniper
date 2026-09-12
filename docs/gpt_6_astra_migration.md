@@ -91,3 +91,25 @@ Code deployment must keep the classifier disabled until a funded credential
 is available and the comparison and production canary pass. Production
 credential configuration and live activation are separate from shipping this
 compatible code.
+
+## 2026-09-12 full pass and policy canary
+
+A funded production credential completed the frozen 439-row live-queue pass: 18
+valid requests returned every repair key exactly once. Post-pass deterministic
+reconciliation retained conservative project policy instead of importing the model
+output wholesale.
+
+An isolated VPS canary then loaded commit `8d88084` from `/tmp`, used the production
+credential, and left `/opt/autosniper` and its classifier flag unchanged. One Astra
+request returned all 10 expected keys in 12.46 seconds using 1,619 input and 683
+output tokens. All 10 matched their expected decision family and cost model,
+including salvage, coolant, non-driveable, towing, tilt-tray, tyre-pressure warning,
+service reminder, bare steering-wheel context, tailgate operation, and low tyre
+pressure cases.
+
+The candidate is not deployed. Production's repair-pricing schedule hash differs
+from the local governed schedule, so a code-only deployment would use generic
+fallback costs for some new canonicals. Ship this change only through the governed
+release path after the reviewed commit reaches synchronized `main`; keep recurring
+classification disabled until the deployed marker, governed-data marker, health,
+and a post-deploy bounded smoke are verified.
