@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import csv
 import logging
 import math
 import os
@@ -21,12 +22,27 @@ logger = logging.getLogger(__name__)
 
 REPORT_DIR = Path("CSV_data/reports")
 AI_SUGGESTIONS_PATH = REPORT_DIR / "repair_review_ai_suggestions.csv"
+AI_RUN_STATUS_NAME = "repair_ai_run_status.json"
+AI_RUN_HISTORY_NAME = "repair_ai_run_history.csv"
 DICTIONARY_PATH = Path("config/condition_dictionary_v2.yaml")
 DEFAULT_MODEL = "gpt-6-astra"
 # Bound cost and latency for the default 25-row advisory batch. A truncated
 # response fails closed; larger manual batches should use a smaller --limit.
 ASTRA_MAX_COMPLETION_TOKENS = 8192
 ASTRA_TIMEOUT_SECONDS = 120.0
+AI_RUN_COLUMNS = [
+    "finished_at_utc",
+    "status",
+    "model",
+    "considered",
+    "suggested",
+    "prompt_tokens",
+    "completion_tokens",
+    "cached_tokens",
+    "reasoning_tokens",
+    "elapsed_seconds",
+    "message",
+]
 
 AI_SUGGESTION_COLUMNS = [
     "repair_key",
@@ -95,6 +111,48 @@ def load_ai_suggestions(path: Path = AI_SUGGESTIONS_PATH) -> pd.DataFrame:
         if column not in df.columns:
             df[column] = ""
     return df[AI_SUGGESTION_COLUMNS]
+
+
+def _record_classifier_run(
+    output_path: Path,
+    *,
+    status: str,
+    model: str,
+    considered: int,
+    suggested: int,
+    elapsed_seconds: float,
+    usage: dict[str, object] | None = None,
+    message: str = "",
+) -> None:
+    usage = usage or {}
+    record = {
+        "finished_at_utc": datetime.now(timezone.utc).isoformat(),
+        "status": status,
+        "model": model,
+        "considered": int(considered),
+        "suggested": int(suggested),
+        "prompt_tokens": usage.get("prompt_tokens", ""),
+        "completion_tokens": usage.get("completion_tokens", ""),
+        "cached_tokens": usage.get("cached_tokens", ""),
+        "reasoning_tokens": usage.get("reasoning_tokens", ""),
+        "elapsed_seconds": round(float(elapsed_seconds), 2),
+        "message": safe_text(message)[:240],
+    }
+    try:
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        status_path = output_path.parent / AI_RUN_STATUS_NAME
+        history_path = output_path.parent / AI_RUN_HISTORY_NAME
+        temporary = status_path.with_suffix(status_path.suffix + ".tmp")
+        temporary.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
+        temporary.replace(status_path)
+        write_header = not history_path.exists() or history_path.stat().st_size == 0
+        with history_path.open("a", newline="", encoding="utf-8") as stream:
+            writer = csv.DictWriter(stream, fieldnames=AI_RUN_COLUMNS)
+            if write_header:
+                writer.writeheader()
+            writer.writerow(record)
+    except OSError as exc:
+        logger.warning("Could not persist Repair AI run status (%s: %s).", type(exc).__name__, exc)
 
 
 def _load_queue(path: Path) -> pd.DataFrame:
@@ -380,7 +438,14 @@ def _call_openai(rows: pd.DataFrame, *, model: str) -> pd.DataFrame:
     payload = json.loads(content)
     if not isinstance(payload, dict) or set(payload) != {"suggestions"}:
         raise ValueError("Response must contain only the suggestions array")
-    return _coerce_suggestions(payload["suggestions"], rows, model=model)
+    suggestions = _coerce_suggestions(payload["suggestions"], rows, model=model)
+    suggestions.attrs["repair_ai_usage"] = {
+        "prompt_tokens": getattr(usage, "prompt_tokens", ""),
+        "completion_tokens": getattr(usage, "completion_tokens", ""),
+        "cached_tokens": getattr(getattr(usage, "prompt_tokens_details", None), "cached_tokens", ""),
+        "reasoning_tokens": getattr(getattr(usage, "completion_tokens_details", None), "reasoning_tokens", ""),
+    }
+    return suggestions
 
 
 def classify_repair_review_queue(
@@ -393,7 +458,19 @@ def classify_repair_review_queue(
     dry_run: bool = False,
     caller: Any | None = None,
 ) -> ClassifierResult:
+    started = time.monotonic()
+    model_name = model or os.getenv("AUTOSNIPER_REPAIR_AI_MODEL") or DEFAULT_MODEL
     if not os.getenv("OPENAI_API_KEY") and caller is None:
+        if not dry_run:
+            _record_classifier_run(
+                output_path,
+                status="skipped",
+                model=model_name,
+                considered=0,
+                suggested=0,
+                elapsed_seconds=time.monotonic() - started,
+                message="OPENAI_API_KEY missing",
+            )
         return ClassifierResult(0, 0, output_path, skipped_reason="OPENAI_API_KEY missing")
     queue_df = _load_queue(queue_path)
     suggestions_df = load_ai_suggestions(output_path)
@@ -401,9 +478,17 @@ def classify_repair_review_queue(
     if limit > 0:
         pending = pending.head(limit).copy()
     if pending.empty:
+        if not dry_run:
+            _record_classifier_run(
+                output_path,
+                status="no_pending",
+                model=model_name,
+                considered=0,
+                suggested=0,
+                elapsed_seconds=time.monotonic() - started,
+            )
         return ClassifierResult(0, 0, output_path)
 
-    model_name = model or os.getenv("AUTOSNIPER_REPAIR_AI_MODEL") or DEFAULT_MODEL
     if dry_run:
         return ClassifierResult(len(pending), 0, output_path, skipped_reason="dry_run: classifier call skipped")
     try:
@@ -413,6 +498,15 @@ def classify_repair_review_queue(
         _validate_repair_keys(new_suggestions["repair_key"], pending)
     except Exception as exc:  # noqa: BLE001 - reported to the caller via skipped_reason
         logger.error("Repair AI classification call failed (%s: %s).", type(exc).__name__, exc)
+        _record_classifier_run(
+            output_path,
+            status="failed",
+            model=model_name,
+            considered=len(pending),
+            suggested=0,
+            elapsed_seconds=time.monotonic() - started,
+            message=f"{type(exc).__name__}: {str(exc)[:180]}",
+        )
         return ClassifierResult(
             len(pending),
             0,
@@ -435,4 +529,13 @@ def classify_repair_review_queue(
     combined = new_suggestions.copy() if existing.empty else pd.concat([existing, new_suggestions], ignore_index=True)
     combined = combined.drop_duplicates(subset=["repair_key"], keep="last")
     combined.to_csv(output_path, index=False)
+    _record_classifier_run(
+        output_path,
+        status="complete",
+        model=model_name,
+        considered=len(pending),
+        suggested=len(new_suggestions),
+        elapsed_seconds=time.monotonic() - started,
+        usage=new_suggestions.attrs.get("repair_ai_usage", {}),
+    )
     return ClassifierResult(len(pending), len(new_suggestions), output_path)

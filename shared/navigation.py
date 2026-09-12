@@ -32,6 +32,7 @@ def navigation_spec(*, vps_mode: bool | None = None) -> NavigationSpec:
     ]
     intelligence_pages = [
         ("pages/8_MISSED_OPPORTUNITIES.py", "Missed Opportunities", False),
+        ("pages/20_REPAIR_MONITOR.py", "Repair Monitor", False),
     ]
     operations_pages: list[tuple[str, str, bool]] = []
     if not vps_mode:

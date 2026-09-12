@@ -28,6 +28,7 @@ def test_navigation_exposes_only_current_workflow_surfaces() -> None:
     assert "pages/6_AI_ANALYSIS.py" in paths
     assert "pages/00_SCRAPER_OPERATIONS.py" not in paths
     assert "pages/17_MODEL_PROOF.py" in paths
+    assert "pages/20_REPAIR_MONITOR.py" in paths
     assert paths.isdisjoint(RETIRED_PAGE_PATHS)
     assert all(not Path(path).exists() for path in RETIRED_PAGE_PATHS)
     assert "Active Inventory" in titles
@@ -49,6 +50,7 @@ def test_vps_navigation_uses_scraper_operations_landing_page() -> None:
     assert "pages/14_CURVE_PIPELINE.py" not in paths
     assert "pages/18_REPAIR_REVIEW.py" not in paths
     assert "pages/19_REPAIR_PRICING.py" not in paths
+    assert "pages/20_REPAIR_MONITOR.py" in paths
     assert "pages/7_AUTOTRADER_SCRAPER.py" not in paths
     assert "OPERATIONS" not in spec
     assert defaults == ["pages/00_SCRAPER_OPERATIONS.py"]

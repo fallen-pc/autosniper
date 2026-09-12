@@ -102,6 +102,14 @@ def test_astra_request_uses_low_reasoning_strict_schema_and_bounded_cost(sdk, pa
     assert "elapsed_seconds=" in caplog.text
     assert "test-key-never-sent" not in caplog.text
     assert "Unknown fragment" not in caplog.text
+    status = json.loads((output.parent / "repair_ai_run_status.json").read_text(encoding="utf-8"))
+    history = pd.read_csv(output.parent / "repair_ai_run_history.csv").fillna("")
+    assert status["status"] == "complete"
+    assert status["model"] == "gpt-6-astra"
+    assert status["considered"] == 1 and status["suggested"] == 1
+    assert status["prompt_tokens"] == 321 and status["completion_tokens"] == 123
+    assert status["cached_tokens"] == 100 and status["reasoning_tokens"] == 20
+    assert history.iloc[-1]["status"] == "complete"
 
 
 @pytest.mark.parametrize(
@@ -211,6 +219,8 @@ def test_dry_run_skips_api_without_writing(sdk, paths):
     assert result.skipped_reason == "dry_run: classifier call skipped"
     assert not sdk.requests
     assert not output.exists()
+    assert not (output.parent / "repair_ai_run_status.json").exists()
+    assert not (output.parent / "repair_ai_run_history.csv").exists()
 
 
 def test_cache_identity_includes_repair_item_until_force_refresh(sdk, paths):
